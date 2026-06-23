@@ -1,0 +1,204 @@
+import Anthropic from '@anthropic-ai/sdk'
+import type { Persona, InterviewType, Message } from '@/types'
+
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY!,
+})
+
+// ─── Build the system prompt that makes a persona feel real ──────────────────
+
+export function buildPersonaSystemPrompt(persona: Persona, interviewType: InterviewType, context: string): string {
+  const { traits } = persona
+  const incomeMap = {
+    under_50k: 'under $50,000',
+    '50k_100k': '$50,000–$100,000',
+    '100k_200k': '$100,000–$200,000',
+    over_200k: 'over $200,000',
+  }
+
+  return `You are ${persona.name}, a real person being interviewed for market research. You are NOT an AI assistant. You are a human participant.
+
+## Who you are
+- Age: ${traits.age}
+- Gender: ${traits.gender}
+- Location: ${traits.location}
+- Job: ${traits.job_title} in ${traits.industry}
+- Annual income: ${incomeMap[traits.income]}
+- Education: ${traits.education.replace('_', ' ')}
+- Tech savviness: ${traits.tech_savviness}/5
+- Risk tolerance: ${traits.risk_tolerance}/5
+
+## Your goals
+${traits.goals.map(g => `- ${g}`).join('\n')}
+
+## Your frustrations
+${traits.frustrations.map(f => `- ${f}`).join('\n')}
+
+## How you make buying decisions
+${traits.buying_behavior}
+
+## Additional context about you
+${traits.additional_context}
+
+## Interview context
+Type: ${interviewType.replace('_', ' ')}
+What's being tested: ${context}
+
+## How you must respond
+
+CRITICAL RULES — never break these:
+1. You are a human. Never reveal you are an AI. Never say things like "as an AI" or "I'm simulating."
+2. Respond ONLY as ${persona.name} would — from your specific life, job, income, and experience.
+3. Be honest and specific. If something doesn't appeal to you, say so and explain why from your perspective.
+4. Show real tension. Real people are ambivalent. You can be interested AND skeptical at the same time.
+5. Use "I" language grounded in YOUR context. "As a ${traits.job_title}, I'd worry about..."
+6. Push back when warranted. Don't just validate. If a price seems high or a concept is unclear, say so.
+7. Keep responses conversational — 3 to 6 sentences. Not too short, not an essay.
+8. Occasionally reference your personal context (your job, your budget, a past experience) to make answers feel lived-in.
+9. Never give a generic answer that anyone could give. Every answer should only make sense coming from you.
+10. If you genuinely don't have enough information to form an opinion, ask a clarifying question — that's what a real research participant would do.`
+}
+
+// ─── Stream a persona response ────────────────────────────────────────────────
+
+export async function streamPersonaResponse(
+  persona: Persona,
+  interviewType: InterviewType,
+  context: string,
+  messages: Message[],
+  onChunk: (text: string) => void
+): Promise<string> {
+  const systemPrompt = buildPersonaSystemPrompt(persona, interviewType, context)
+
+  const formattedMessages = messages.map(m => ({
+    role: m.role === 'user' ? 'user' as const : 'assistant' as const,
+    content: m.content,
+  }))
+
+  let fullResponse = ''
+
+  const stream = await client.messages.stream({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 600,
+    system: systemPrompt,
+    messages: formattedMessages,
+  })
+
+  for await (const chunk of stream) {
+    if (
+      chunk.type === 'content_block_delta' &&
+      chunk.delta.type === 'text_delta'
+    ) {
+      fullResponse += chunk.delta.text
+      onChunk(chunk.delta.text)
+    }
+  }
+
+  return fullResponse
+}
+
+// ─── Generate a structured research report ───────────────────────────────────
+
+export async function generateReport(
+  persona: Persona,
+  interviewType: InterviewType,
+  context: string,
+  messages: Message[]
+) {
+  const transcript = messages
+    .map(m => `${m.role === 'user' ? 'Researcher' : persona.name}: ${m.content}`)
+    .join('\n\n')
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 2000,
+    messages: [
+      {
+        role: 'user',
+        content: `You are a senior market researcher analyzing a qualitative interview transcript.
+
+Interview type: ${interviewType.replace('_', ' ')}
+Concept being tested: ${context}
+Participant: ${persona.name}, ${persona.traits.age}, ${persona.traits.job_title}
+
+Transcript:
+${transcript}
+
+Produce a structured research report as a JSON object with this exact shape:
+{
+  "executive_summary": "2-3 sentence summary of the key finding",
+  "key_themes": [
+    {
+      "title": "Short theme title",
+      "summary": "What this theme reveals",
+      "quotes": ["direct quote from participant", "another quote"],
+      "sentiment": "positive" | "neutral" | "negative" | "mixed"
+    }
+  ],
+  "recommendations": [
+    {
+      "title": "Action title",
+      "detail": "Specific recommendation based on what the participant said",
+      "priority": "high" | "medium" | "low"
+    }
+  ],
+  "confidence_score": 0-100
+}
+
+Return ONLY the JSON. No preamble, no markdown fences.`,
+      },
+    ],
+  })
+
+  const raw = response.content[0].type === 'text' ? response.content[0].text : ''
+
+  try {
+    return JSON.parse(raw)
+  } catch {
+    throw new Error('Failed to parse report JSON from AI response')
+  }
+}
+
+// ─── Generate persona suggestions ────────────────────────────────────────────
+
+export async function suggestPersonaTraits(description: string) {
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 800,
+    messages: [
+      {
+        role: 'user',
+        content: `A user wants to create a market research persona with this description: "${description}"
+
+Generate realistic, specific persona traits as JSON with this shape:
+{
+  "name": "Full name",
+  "age": number,
+  "gender": "male" | "female" | "non-binary",
+  "location": "City, State",
+  "job_title": "Specific job title",
+  "industry": "Industry",
+  "income": "under_50k" | "50k_100k" | "100k_200k" | "over_200k",
+  "education": "high_school" | "bachelors" | "masters" | "phd",
+  "goals": ["specific goal 1", "specific goal 2", "specific goal 3"],
+  "frustrations": ["specific frustration 1", "specific frustration 2", "specific frustration 3"],
+  "buying_behavior": "2-3 sentence description of how they research and make purchases",
+  "tech_savviness": 1-5,
+  "risk_tolerance": 1-5,
+  "additional_context": "2-3 sentences of rich personal context that makes this person feel real",
+  "tags": ["tag1", "tag2", "tag3"]
+}
+
+Make it specific and believable. Return ONLY the JSON.`,
+      },
+    ],
+  })
+
+  const raw = response.content[0].type === 'text' ? response.content[0].text : ''
+
+  try {
+    return JSON.parse(raw)
+  } catch {
+    throw new Error('Failed to parse persona suggestion JSON')
+  }
+}
