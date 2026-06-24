@@ -14,12 +14,7 @@
   --font-serif: 'Instrument Serif', Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Dark mode intentionally disabled — SignalRoom uses a light-only design */
 
 body {
   background: var(--background);
