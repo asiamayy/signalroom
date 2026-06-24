@@ -18,7 +18,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [confirmed, setConfirmed] = useState(false)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,7 +30,6 @@ export default function SignupPage() {
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: 'https://signalroom-beta.vercel.app/auth/confirm',
       },
     })
 
@@ -39,28 +37,8 @@ export default function SignupPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      setConfirmed(true)
-      setLoading(false)
+      window.location.href = '/personas'
     }
-  }
-
-  if (confirmed) {
-    return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-sm text-center">
-          <div className="mb-8"><Logo href="/" size="lg" /></div>
-          <div className="bg-white border border-neutral-200 rounded-2xl p-8">
-            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check size={20} className="text-emerald-600" />
-            </div>
-            <h2 className="text-lg font-serif tracking-tight text-neutral-900 mb-2">Check your email</h2>
-            <p className="text-sm text-neutral-500 leading-relaxed">
-              We sent a confirmation link to <span className="font-medium text-neutral-700">{email}</span>. Click it to activate your account.
-            </p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
