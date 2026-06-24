@@ -31,7 +31,7 @@ export default function SignupPage() {
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: 'https://signalroom-asiahs-projects-8378231d.vercel.app/auth/confirm',
+        emailRedirectTo: 'https://signalroom-beta.vercel.app/auth/confirm',
       },
     })
 
