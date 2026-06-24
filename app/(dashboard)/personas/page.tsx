@@ -59,12 +59,20 @@ export default async function PersonasPage() {
                 className="bg-white border border-neutral-200 rounded-xl p-5 hover:border-neutral-300 hover:shadow-sm transition-all"
               >
                 {/* Avatar */}
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-3"
-                  style={{ background: color?.bg ?? '#E1F5EE', color: color?.text ?? '#0F6E56' }}
-                >
-                  {persona.avatar_initials}
-                </div>
+                {persona.avatar_url ? (
+                  <img
+                    src={persona.avatar_url}
+                    alt={persona.name}
+                    className="w-10 h-10 rounded-full object-cover mb-3"
+                  />
+                ) : (
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium mb-3"
+                    style={{ background: color?.bg ?? '#E1F5EE', color: color?.text ?? '#0F6E56' }}
+                  >
+                    {persona.avatar_initials}
+                  </div>
+                )}
 
                 <h3 className="text-sm font-medium text-neutral-900 mb-0.5">{persona.name}</h3>
                 <p className="text-xs text-neutral-500 mb-3">

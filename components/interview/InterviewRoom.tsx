@@ -27,6 +27,14 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         : interview.persona.avatar_color)
     : { bg: '#E1F5EE', text: '#0F6E56' }
 
+  const avatarContent = interview.persona?.avatar_url ? (
+    <img src={interview.persona.avatar_url} alt={interview.persona?.name ?? ''} className="w-full h-full object-cover rounded-full" />
+  ) : (
+    <span className="text-xs font-medium" style={{ color: color.text }}>{interview.persona?.avatar_initials ?? '?'}</span>
+  )
+
+  const avatarStyle = interview.persona?.avatar_url ? {} : { background: color.bg }
+
   // Auto-scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })

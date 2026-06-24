@@ -44,6 +44,7 @@ export interface Persona {
   name: string
   avatar_initials: string
   avatar_color: string
+  avatar_url: string | null
   traits: PersonaTraits
   tags: string[]
   created_at: string

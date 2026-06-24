@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Sparkles, ChevronRight, ChevronLeft, User, Briefcase, Brain, Check } from 'lucide-react'
+import { Sparkles, ChevronRight, ChevronLeft, User, Briefcase, Brain, Check, Camera, Loader2 } from 'lucide-react'
 import { Button, Input, Textarea, Select, Slider, TagInput, ListInput, Card } from '@/components/ui'
 import { cn, getAvatarColor, getInitials } from '@/lib/utils'
 import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation } from '@/types'
@@ -66,6 +66,8 @@ export default function PersonaBuilder() {
   const [traits, setTraits] = useState<PersonaTraits>(DEFAULT_TRAITS)
   const [aiPrompt, setAiPrompt] = useState('')
   const [generating, setGenerating] = useState(false)
+  const [generatingAvatar, setGeneratingAvatar] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -113,6 +115,33 @@ export default function PersonaBuilder() {
     }
   }
 
+  // ─── Avatar generation ───────────────────────────────────────────────────────
+
+  const handleGenerateAvatar = async () => {
+    setGeneratingAvatar(true)
+    setError('')
+    try {
+      const res = await fetch('/api/avatars', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          age: traits.age,
+          gender: traits.gender,
+          job_title: traits.job_title,
+          additional_context: traits.additional_context,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error)
+      setAvatarUrl(json.url)
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to generate avatar')
+    } finally {
+      setGeneratingAvatar(false)
+    }
+  }
+
   // ─── Save ────────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
@@ -127,7 +156,7 @@ export default function PersonaBuilder() {
       const res = await fetch('/api/personas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, tags, traits }),
+        body: JSON.stringify({ name, tags, traits, avatar_url: avatarUrl }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
@@ -216,18 +245,47 @@ export default function PersonaBuilder() {
 
       {/* Preview avatar */}
       <div className="flex items-center gap-3 mb-6 p-3 bg-neutral-50 border border-neutral-100 rounded-lg">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0"
-          style={{ background: avatarColor.bg, color: avatarColor.text }}
-        >
-          {initials}
+        <div className="relative flex-shrink-0">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={name}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium"
+              style={{ background: avatarColor.bg, color: avatarColor.text }}
+            >
+              {initials}
+            </div>
+          )}
+          {generatingAvatar && (
+            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
+              <Loader2 size={14} className="text-white animate-spin" />
+            </div>
+          )}
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-neutral-900">{name || 'Unnamed persona'}</p>
           <p className="text-xs text-neutral-500">
             {traits.job_title ? `${traits.job_title}${traits.location ? ` · ${traits.location}` : ''}` : 'Fill in details below'}
           </p>
         </div>
+        <button
+          type="button"
+          onClick={handleGenerateAvatar}
+          disabled={generatingAvatar || !name}
+          className={cn(
+            'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border transition-colors flex-shrink-0',
+            name && !generatingAvatar
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+              : 'border-neutral-200 text-neutral-400 cursor-not-allowed'
+          )}
+        >
+          <Camera size={12} />
+          {generatingAvatar ? 'Generating...' : avatarUrl ? 'Regenerate' : 'Generate avatar'}
+        </button>
       </div>
 
       {/* ── Step 0: Identity ─────────────────────────────────────────────── */}

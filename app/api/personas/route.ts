@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
       name: formData.name,
       avatar_initials: initials,
       avatar_color: JSON.stringify(color),
+      avatar_url: body.avatar_url ?? null,
       traits: formData.traits,
       tags: formData.tags ?? [],
     })
