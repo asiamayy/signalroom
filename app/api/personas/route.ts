@@ -40,8 +40,9 @@ export async function POST(request: NextRequest) {
     try {
       const suggested = await suggestPersonaTraits(body.description)
       return NextResponse.json({ data: suggested })
-    } catch (e) {
-      return NextResponse.json({ error: 'Failed to generate persona' }, { status: 500 })
+    } catch (e: any) {
+      console.error('Persona generation error:', e?.message ?? e)
+      return NextResponse.json({ error: e?.message ?? 'Failed to generate persona' }, { status: 500 })
     }
   }
 
