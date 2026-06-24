@@ -153,7 +153,8 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
 
   try {
-    return JSON.parse(raw)
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    return JSON.parse(cleaned)
   } catch {
     throw new Error('Failed to parse report JSON from AI response')
   }
@@ -197,7 +198,8 @@ Make it specific and believable. Return ONLY the JSON.`,
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
 
   try {
-    return JSON.parse(raw)
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    return JSON.parse(cleaned)
   } catch {
     throw new Error('Failed to parse persona suggestion JSON')
   }
