@@ -29,9 +29,13 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
-      getAll() { return request.cookies.getAll() },
+      getAll() {
+        return request.cookies.getAll()
+      },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+        cookiesToSet.forEach(({ name, value }) =>
+          request.cookies.set(name, value)
+        )
         supabaseResponse = NextResponse.next({ request })
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options)
@@ -49,4 +53,10 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && isAuthRoute) {
-    const url =
+    const url = request.nextUrl.clone()
+    url.pathname = '/personas'
+    return NextResponse.redirect(url)
+  }
+
+  return supabaseResponse
+}
