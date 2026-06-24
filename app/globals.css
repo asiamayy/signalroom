@@ -1,6 +1,4 @@
 @import "tailwindcss";
-@source "../app";
-@source "../components";
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
 
 :root {
@@ -15,6 +13,8 @@
   --font-mono: ui-monospace, monospace;
   --font-serif: 'Instrument Serif', Georgia, serif;
 }
+
+/* Dark mode intentionally disabled — SignalRoom uses a light-only design */
 
 body {
   background: var(--background);
