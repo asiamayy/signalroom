@@ -1,15 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/auth', '/privacy', '/terms', '/contact']
-
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname
-
-  // Skip middleware entirely for public routes
-  const isPublic = PUBLIC_ROUTES.some(route =>
-    pathname === route || pathname.startsWith('/auth/')
-  )
 
   const isDashboardRoute =
     pathname.startsWith('/personas') ||
@@ -19,8 +12,8 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup')
 
-  // Public pages — just pass through, no Supabase call needed
-  if (isPublic && !isAuthRoute) {
+  // Skip Supabase entirely for public pages
+  if (!isDashboardRoute && !isAuthRoute) {
     return NextResponse.next({ request })
   }
 
@@ -35,13 +28,9 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
-      getAll() {
-        return request.cookies.getAll()
-      },
+      getAll() { return request.cookies.getAll() },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value)
-        )
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
         supabaseResponse = NextResponse.next({ request })
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options)
@@ -52,14 +41,12 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Redirect unauthenticated users away from dashboard
   if (!user && isDashboardRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Redirect logged-in users away from auth pages
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/personas'
