@@ -19,10 +19,16 @@ export function Logo({ size = 'md', href, className }: LogoProps) {
 
   const mark = (
     <span className={cn('flex items-baseline gap-0 select-none', className)}>
-      <span className={cn('font-serif italic tracking-tight text-neutral-900 leading-none', sizeClass)}>
+      <span
+        className={cn('tracking-tight text-neutral-900 leading-none', sizeClass)}
+        style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontStyle: 'italic' }}
+      >
         Signal
       </span>
-      <span className={cn('font-serif not-italic tracking-tight text-emerald-600 leading-none', sizeClass)}>
+      <span
+        className={cn('tracking-tight text-emerald-600 leading-none', sizeClass)}
+        style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontStyle: 'normal' }}
+      >
         room
       </span>
     </span>
