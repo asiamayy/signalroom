@@ -65,7 +65,8 @@ export async function POST(
       .eq('id', id)
 
     return NextResponse.json({ data: report }, { status: 201 })
-  } catch (e) {
-    return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 })
+  } catch (e: any) {
+    console.error('Report generation error:', e?.message ?? e)
+    return NextResponse.json({ error: e?.message ?? 'Failed to generate report' }, { status: 500 })
   }
 }
