@@ -41,28 +41,53 @@ export async function POST(
       interview.messages
     )
 
-    const { data: report, error: reportError } = await supabase
-      .from('reports')
-      .insert({
-        user_id: user.id,
-        interview_id: id,
-        executive_summary: reportData.executive_summary,
-        key_themes: reportData.key_themes,
-        recommendations: reportData.recommendations,
-        confidence_score: reportData.confidence_score,
-      })
-      .select()
-      .single()
+    let report
 
-    if (reportError) {
-      return NextResponse.json({ error: reportError.message }, { status: 500 })
+    // If a report already exists for this interview, update it instead of inserting
+    if (interview.report_id) {
+      const { data: updated, error: updateError } = await supabase
+        .from('reports')
+        .update({
+          executive_summary: reportData.executive_summary,
+          key_themes: reportData.key_themes,
+          recommendations: reportData.recommendations,
+          confidence_score: reportData.confidence_score,
+        })
+        .eq('id', interview.report_id)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 500 })
+      }
+      report = updated
+    } else {
+      // Create a new report
+      const { data: inserted, error: insertError } = await supabase
+        .from('reports')
+        .insert({
+          user_id: user.id,
+          interview_id: id,
+          executive_summary: reportData.executive_summary,
+          key_themes: reportData.key_themes,
+          recommendations: reportData.recommendations,
+          confidence_score: reportData.confidence_score,
+        })
+        .select()
+        .single()
+
+      if (insertError) {
+        return NextResponse.json({ error: insertError.message }, { status: 500 })
+      }
+      report = inserted
+
+      // Link report to interview
+      await supabase
+        .from('interviews')
+        .update({ status: 'completed', report_id: report.id })
+        .eq('id', id)
     }
-
-    // Mark interview as completed and link report
-    await supabase
-      .from('interviews')
-      .update({ status: 'completed', report_id: report.id })
-      .eq('id', id)
 
     return NextResponse.json({ data: report }, { status: 201 })
   } catch (e: any) {
