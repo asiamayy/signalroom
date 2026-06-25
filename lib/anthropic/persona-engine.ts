@@ -134,7 +134,12 @@ export async function generateReport(
   context: string,
   messages: Message[]
 ) {
-  const transcript = messages
+  // Limit to last 16 messages to prevent transcript from being too long
+  const trimmedMessages = messages.length > 16
+    ? messages.slice(-16)
+    : messages
+
+  const transcript = trimmedMessages
     .map(m => `${m.role === 'user' ? 'Researcher' : persona.name}: ${m.content}`)
     .join('\n\n')
 
