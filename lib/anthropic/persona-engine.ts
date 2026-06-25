@@ -156,6 +156,7 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
     const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     return JSON.parse(cleaned)
   } catch {
+    console.error('Report JSON parse failed. Raw response:', raw.substring(0, 500))
     throw new Error('Failed to parse report JSON from AI response')
   }
 }
