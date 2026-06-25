@@ -69,6 +69,7 @@ export interface Message {
   id: string
   role: 'user' | 'persona'
   content: string
+  image_url?: string | null
   timestamp: string
 }
 

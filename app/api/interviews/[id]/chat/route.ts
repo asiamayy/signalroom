@@ -15,9 +15,8 @@ export async function POST(
   }
 
   const { id } = await params
-  const { message } = await request.json()
+  const { message, image } = await request.json()
 
-  // Load the interview + persona
   const { data: interview, error: interviewError } = await supabase
     .from('interviews')
     .select('*, persona:personas(*)')
@@ -32,13 +31,12 @@ export async function POST(
   const userMessage: Message = {
     id: crypto.randomUUID(),
     role: 'user',
-    content: message,
+    content: message || '(shared an image)',
     timestamp: new Date().toISOString(),
   }
 
   const updatedMessages: Message[] = [...(interview.messages ?? []), userMessage]
 
-  // Stream the persona's response
   const encoder = new TextEncoder()
   let personaResponseText = ''
 
@@ -53,10 +51,10 @@ export async function POST(
           (chunk) => {
             personaResponseText += chunk
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`))
-          }
+          },
+          image ?? null
         )
 
-        // Save both messages to Supabase
         const personaMessage: Message = {
           id: crypto.randomUUID(),
           role: 'persona',

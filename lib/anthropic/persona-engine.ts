@@ -66,14 +66,43 @@ export async function streamPersonaResponse(
   interviewType: InterviewType,
   context: string,
   messages: Message[],
-  onChunk: (text: string) => void
+  onChunk: (text: string) => void,
+  imageBase64: string | null = null
 ): Promise<string> {
   const systemPrompt = buildPersonaSystemPrompt(persona, interviewType, context)
 
-  const formattedMessages = messages.map(m => ({
-    role: m.role === 'user' ? 'user' as const : 'assistant' as const,
-    content: m.content,
-  }))
+  const formattedMessages = messages.map((m, index) => {
+    const isLast = index === messages.length - 1
+    const isUser = m.role === 'user'
+
+    // Add image to the last user message if provided
+    if (isLast && isUser && imageBase64) {
+      return {
+        role: 'user' as const,
+        content: [
+          {
+            type: 'image' as const,
+            source: {
+              type: 'base64' as const,
+              media_type: 'image/jpeg' as const,
+              data: imageBase64,
+            },
+          },
+          {
+            type: 'text' as const,
+            text: (m.content && m.content !== '(shared an image)')
+              ? m.content
+              : 'What is your honest first reaction to this?',
+          },
+        ],
+      }
+    }
+
+    return {
+      role: isUser ? 'user' as const : 'assistant' as const,
+      content: m.content,
+    }
+  })
 
   let fullResponse = ''
 

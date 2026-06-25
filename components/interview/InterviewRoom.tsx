@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, FileText, Loader2, ChevronDown } from 'lucide-react'
+import { Send, FileText, Loader2, ImagePlus, X } from 'lucide-react'
 import { cn, formatRelativeTime, INTERVIEW_TYPE_LABELS, getAvatarColor } from '@/lib/utils'
 import type { Interview, Message } from '@/types'
 
@@ -14,12 +14,15 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>(interview.messages ?? [])
   const [input, setInput] = useState('')
+  const [imageData, setImageData] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [streaming, setStreaming] = useState(false)
   const [streamingText, setStreamingText] = useState('')
   const [generatingReport, setGeneratingReport] = useState(false)
   const [error, setError] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const color = interview.persona?.avatar_color
     ? (typeof interview.persona.avatar_color === 'string'
@@ -48,22 +51,59 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
     ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`
   }, [input])
 
+  // ─── Handle image upload ─────────────────────────────────────────────────────
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be under 5MB')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string
+      setImagePreview(result)
+      // Strip the data:image/...;base64, prefix for the API
+      setImageData(result.split(',')[1])
+    }
+    reader.readAsDataURL(file)
+
+    // Reset file input so same file can be re-uploaded
+    e.target.value = ''
+  }
+
+  const clearImage = () => {
+    setImageData(null)
+    setImagePreview(null)
+  }
+
   // ─── Send a message ─────────────────────────────────────────────────────────
 
   const handleSend = useCallback(async () => {
     const text = input.trim()
-    if (!text || streaming) return
+    if ((!text && !imageData) || streaming) return
 
     setInput('')
     setError('')
     setStreaming(true)
     setStreamingText('')
 
+    const currentImageData = imageData
+    const currentImagePreview = imagePreview
+    clearImage()
+
     // Optimistically add user message
     const userMsg: Message = {
       id: crypto.randomUUID(),
       role: 'user',
       content: text,
+      image_url: currentImagePreview ?? undefined,
       timestamp: new Date().toISOString(),
     }
     setMessages(prev => [...prev, userMsg])
@@ -72,7 +112,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
       const res = await fetch(`/api/interviews/${interview.id}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, image: currentImageData }),
       })
 
       if (!res.ok) throw new Error('Failed to get response')
@@ -282,14 +322,55 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 
       {/* ── Input bar ────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 px-5 py-4 bg-white border-t border-neutral-200">
+
+        {/* Image preview */}
+        {imagePreview && (
+          <div className="relative inline-block mb-3">
+            <img src={imagePreview} alt="Upload preview" className="h-20 w-auto rounded-lg border border-neutral-200 object-cover" />
+            <button
+              onClick={clearImage}
+              className="absolute -top-2 -right-2 w-5 h-5 bg-neutral-900 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+            >
+              <X size={11} />
+            </button>
+          </div>
+        )}
+
         <div className="flex gap-3 items-end max-w-3xl mx-auto">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+
+          {/* Image upload button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={streaming}
+            className={cn(
+              'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors border',
+              imagePreview
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
+                : 'border-neutral-200 text-neutral-400 hover:border-neutral-300 hover:text-neutral-600'
+            )}
+            title="Upload an image"
+          >
+            <ImagePlus size={16} />
+          </button>
+
           <div className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl focus-within:border-neutral-400 focus-within:bg-white transition-all">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`Ask ${interview.persona?.name ?? 'your persona'} something...`}
+              placeholder={imagePreview
+                ? `Ask ${interview.persona?.name ?? 'your persona'} about this image...`
+                : `Ask ${interview.persona?.name ?? 'your persona'} something...`
+              }
               rows={1}
               className="w-full px-4 py-3 text-sm bg-transparent text-neutral-900 placeholder:text-neutral-400 resize-none focus:outline-none"
               style={{ minHeight: '44px', maxHeight: '160px' }}
@@ -297,10 +378,10 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           </div>
           <button
             onClick={handleSend}
-            disabled={!input.trim() || streaming}
+            disabled={(!input.trim() && !imageData) || streaming}
             className={cn(
               'flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors',
-              input.trim() && !streaming
+              (input.trim() || imageData) && !streaming
                 ? 'bg-neutral-900 text-white hover:bg-neutral-700'
                 : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
             )}
@@ -309,7 +390,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           </button>
         </div>
         <p className="text-center text-xs text-neutral-400 mt-2">
-          Shift + Enter for new line · Enter to send
+          Shift + Enter for new line · Enter to send · Click <ImagePlus size={10} className="inline mb-0.5" /> to share an image
         </p>
       </div>
     </div>
@@ -333,9 +414,20 @@ function MessageBubble({
     return (
       <div className="flex justify-end">
         <div className="max-w-[75%]">
-          <div className="bg-neutral-900 text-white rounded-2xl rounded-tr-sm px-4 py-3">
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-          </div>
+          {message.image_url && (
+            <div className="mb-2 flex justify-end">
+              <img
+                src={message.image_url}
+                alt="Shared image"
+                className="max-h-48 w-auto rounded-xl border border-neutral-200 object-cover"
+              />
+            </div>
+          )}
+          {message.content && (
+            <div className="bg-neutral-900 text-white rounded-2xl rounded-tr-sm px-4 py-3">
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+            </div>
+          )}
           <p className="text-xs text-neutral-400 text-right mt-1">{formatRelativeTime(message.timestamp)}</p>
         </div>
       </div>
