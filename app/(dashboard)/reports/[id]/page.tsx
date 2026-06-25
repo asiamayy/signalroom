@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Info,
 } from 'lucide-react'
+import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { ReportTheme, ReportRecommendation } from '@/types'
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
@@ -70,12 +71,13 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       <div className="bg-white border border-neutral-200 rounded-xl p-6 mb-6">
         <div className="flex items-start justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0"
-              style={{ background: color.bg, color: color.text }}
-            >
-              {persona?.avatar_initials ?? '?'}
-            </div>
+            <PersonaAvatar
+              avatarUrl={persona?.avatar_url}
+              avatarInitials={persona?.avatar_initials}
+              avatarColor={persona?.avatar_color}
+              name={persona?.name}
+              size="lg"
+            />
             <div>
               <h1 className="text-xl font-serif tracking-tight text-neutral-900 mb-0.5">
                 {interview?.title ?? 'Untitled interview'}
@@ -202,12 +204,13 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 Interviewed
               </h3>
               <div className="flex items-center gap-2.5 mb-3">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
-                  style={{ background: color.bg, color: color.text }}
-                >
-                  {persona.avatar_initials}
-                </div>
+                <PersonaAvatar
+                  avatarUrl={persona.avatar_url}
+                  avatarInitials={persona.avatar_initials}
+                  avatarColor={persona.avatar_color}
+                  name={persona.name}
+                  size="sm"
+                />
                 <div>
                   <p className="text-sm font-medium text-neutral-900">{persona.name}</p>
                   <p className="text-xs text-neutral-500">{persona.traits?.job_title}</p>

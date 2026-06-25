@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Plus, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { formatRelativeTime, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
+import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Interview } from '@/types'
 
 const STATUS_STYLES: Record<string, string> = {
@@ -14,7 +15,7 @@ export default async function InterviewsPage() {
   const supabase = await createClient()
   const { data: interviews } = await supabase
     .from('interviews')
-    .select('*, persona:personas(name, avatar_initials, avatar_color)')
+    .select('*, persona:personas(name, avatar_initials, avatar_color, avatar_url)')
     .order('created_at', { ascending: false })
 
   return (
@@ -64,12 +65,13 @@ export default async function InterviewsPage() {
                 className="flex items-center gap-4 bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-300 hover:shadow-sm transition-all"
               >
                 {/* Persona avatar */}
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
-                  style={{ background: color?.bg, color: color?.text }}
-                >
-                  {interview.persona?.avatar_initials ?? '?'}
-                </div>
+                <PersonaAvatar
+                  avatarUrl={interview.persona?.avatar_url}
+                  avatarInitials={interview.persona?.avatar_initials}
+                  avatarColor={interview.persona?.avatar_color}
+                  name={interview.persona?.name}
+                  size="sm"
+                />
 
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-medium text-neutral-900 truncate">{interview.title}</h3>

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatDate, getAvatarColor, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import { Button } from '@/components/ui'
 import { MessageSquare, ArrowLeft } from 'lucide-react'
+import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Persona, Interview } from '@/types'
 
 export default async function PersonaDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -41,12 +42,13 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div
-            className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-medium flex-shrink-0"
-            style={{ background: color?.bg, color: color?.text }}
-          >
-            {persona.avatar_initials}
-          </div>
+          <PersonaAvatar
+            avatarUrl={persona.avatar_url}
+            avatarInitials={persona.avatar_initials}
+            avatarColor={persona.avatar_color}
+            name={persona.name}
+            size="xl"
+          />
           <div>
             <h1 className="text-2xl font-serif tracking-tight text-neutral-900">{persona.name}</h1>
             <p className="text-sm text-neutral-500 mt-0.5">

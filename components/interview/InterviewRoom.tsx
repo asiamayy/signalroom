@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Send, FileText, Loader2, ImagePlus, X } from 'lucide-react'
 import { cn, formatRelativeTime, INTERVIEW_TYPE_LABELS, getAvatarColor } from '@/lib/utils'
+import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Interview, Message } from '@/types'
 
 interface InterviewRoomProps {
@@ -197,12 +198,13 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
       <header className="flex items-center justify-between px-5 py-3.5 bg-white border-b border-neutral-200 flex-shrink-0">
         <div className="flex items-center gap-3">
           {/* Persona avatar */}
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
-            style={{ background: color.bg, color: color.text }}
-          >
-            {interview.persona?.avatar_initials ?? '?'}
-          </div>
+          <PersonaAvatar
+            avatarUrl={interview.persona?.avatar_url}
+            avatarInitials={interview.persona?.avatar_initials}
+            avatarColor={interview.persona?.avatar_color}
+            name={interview.persona?.name}
+            size="sm"
+          />
           <div>
             <h1 className="text-sm font-medium text-neutral-900">{interview.title}</h1>
             <p className="text-xs text-neutral-500">
@@ -245,12 +247,14 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         {/* Empty state */}
         {messages.length === 0 && !streaming && (
           <div className="flex flex-col items-center justify-center h-full text-center max-w-sm mx-auto">
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-medium mb-4"
-              style={{ background: color.bg, color: color.text }}
-            >
-              {interview.persona?.avatar_initials ?? '?'}
-            </div>
+            <PersonaAvatar
+              avatarUrl={interview.persona?.avatar_url}
+              avatarInitials={interview.persona?.avatar_initials}
+              avatarColor={interview.persona?.avatar_color}
+              name={interview.persona?.name}
+              size="xl"
+              className="mb-4"
+            />
             <h3 className="text-sm font-medium text-neutral-900 mb-1">
               Ready to meet {interview.persona?.name ?? 'your persona'}
             </h3>
@@ -284,12 +288,14 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         {/* Streaming indicator */}
         {streaming && (
           <div className="flex gap-3 items-start">
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5"
-              style={{ background: color.bg, color: color.text }}
-            >
-              {interview.persona?.avatar_initials ?? '?'}
-            </div>
+            <PersonaAvatar
+              avatarUrl={interview.persona?.avatar_url}
+              avatarInitials={interview.persona?.avatar_initials}
+              avatarColor={interview.persona?.avatar_color}
+              name={interview.persona?.name}
+              size="xs"
+              className="mt-0.5"
+            />
             <div className="flex-1">
               <p className="text-xs text-neutral-400 mb-1">{interview.persona?.name}</p>
               <div className="bg-white border border-neutral-200 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
@@ -436,12 +442,14 @@ function MessageBubble({
 
   return (
     <div className="flex gap-3 items-start">
-      <div
-        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5"
-        style={{ background: avatarColor.bg, color: avatarColor.text }}
-      >
-        {persona?.avatar_initials ?? '?'}
-      </div>
+      <PersonaAvatar
+        avatarUrl={persona?.avatar_url}
+        avatarInitials={persona?.avatar_initials}
+        avatarColor={persona?.avatar_color}
+        name={persona?.name}
+        size="xs"
+        className="mt-0.5"
+      />
       <div className="flex-1">
         <p className="text-xs text-neutral-400 mb-1">{persona?.name}</p>
         <div className="bg-white border border-neutral-200 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">

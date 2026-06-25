@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { formatDate, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import { FileText, ArrowRight } from 'lucide-react'
+import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Report } from '@/types'
 
 export default async function ReportsPage() {
@@ -14,7 +15,7 @@ export default async function ReportsPage() {
       *,
       interview:interviews(
         id, title, type,
-        persona:personas(name, avatar_initials, avatar_color)
+        persona:personas(name, avatar_initials, avatar_color, avatar_url)
       )
     `)
     .eq('user_id', user!.id)
@@ -62,12 +63,13 @@ export default async function ReportsPage() {
                 className="flex items-center gap-4 bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-300 hover:shadow-sm transition-all group"
               >
                 {/* Persona avatar */}
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
-                  style={{ background: color.bg, color: color.text }}
-                >
-                  {report.interview?.persona?.avatar_initials ?? '?'}
-                </div>
+                <PersonaAvatar
+                  avatarUrl={report.interview?.persona?.avatar_url}
+                  avatarInitials={report.interview?.persona?.avatar_initials}
+                  avatarColor={report.interview?.persona?.avatar_color}
+                  name={report.interview?.persona?.name}
+                  size="sm"
+                />
 
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-medium text-neutral-900 truncate">
