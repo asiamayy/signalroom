@@ -140,7 +140,7 @@ export async function generateReport(
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2000,
+    max_tokens: 4000,
     messages: [
       {
         role: 'user',
@@ -181,13 +181,53 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
 
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
 
-  try {
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    return JSON.parse(cleaned)
-  } catch {
-    console.error('Report JSON parse failed. Raw response:', raw.substring(0, 500))
-    throw new Error('Failed to parse report JSON from AI response')
+  // Try multiple parsing strategies
+  const attempts = [
+    // 1. Direct parse after stripping markdown
+    () => {
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      return JSON.parse(cleaned)
+    },
+    // 2. Extract JSON object between first { and last }
+    () => {
+      const start = raw.indexOf('{')
+      const end = raw.lastIndexOf('}')
+      if (start === -1 || end === -1) throw new Error('No JSON object found')
+      return JSON.parse(raw.slice(start, end + 1))
+    },
+    // 3. Build a fallback report from the raw text
+    () => {
+      return {
+        executive_summary: raw.slice(0, 300).replace(/[{}[\]"]/g, '').trim() || 'Report generated from interview transcript.',
+        key_themes: [
+          {
+            title: 'Interview Summary',
+            summary: 'The persona provided feedback during this interview session.',
+            quotes: [],
+            sentiment: 'neutral',
+          }
+        ],
+        recommendations: [
+          {
+            title: 'Review transcript for insights',
+            detail: 'The structured report could not be fully generated. Please review the full interview transcript for detailed feedback.',
+            priority: 'medium',
+          }
+        ],
+        confidence_score: 50,
+      }
+    },
+  ]
+
+  for (const attempt of attempts) {
+    try {
+      return attempt()
+    } catch {
+      continue
+    }
   }
+
+  throw new Error('Failed to parse report JSON from AI response')
 }
 
 // ─── Generate persona suggestions ────────────────────────────────────────────
