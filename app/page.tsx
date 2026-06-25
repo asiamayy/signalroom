@@ -22,7 +22,7 @@ function ROICalculator() {
     <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
       <div className="px-5 py-4 border-b border-neutral-100">
         <h3 className="text-base font-serif tracking-tight text-neutral-900">See your savings</h3>
-        <p className="text-sm text-neutral-500 mt-0.5">Adjust the slider to match your research volume</p>
+        <p className="text-sm text-neutral-500 mt-0.5">Traditional tools charge $8,000+ for 6 months. Compare that to SignalRoom.</p>
       </div>
       <div className="p-5 space-y-5">
         <div>
@@ -160,7 +160,7 @@ export default function LandingPage() {
           Now you can ask.
         </h1>
         <p className="text-base sm:text-lg text-neutral-500 max-w-xl mx-auto mb-7 leading-relaxed font-light">
-          Build AI personas that represent your exact target customer. Interview them. Get structured research insights in minutes — not weeks, not $8,000.
+          Build AI personas that represent your exact target customer — fully defined by you. Interview them. Get structured research insights in minutes, not weeks.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
           <Link href="/signup" className="w-full sm:w-auto bg-neutral-900 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-neutral-700 transition-colors inline-flex items-center justify-center gap-2">
@@ -174,7 +174,7 @@ export default function LandingPage() {
           {[
             ['~90%', 'Parity with real research'],
             ['< 10 min', 'First insight'],
-            ['$99/mo', 'vs. $8,000+ tools'],
+            ['$8,000+', 'What competitors charge for 6 months'],
           ].map(([num, label]) => (
             <div key={num} className="text-center">
               <p className="font-serif text-xl sm:text-2xl text-neutral-900">{num}</p>
@@ -205,6 +205,35 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Who it's for ── */}
+      <section className="max-w-5xl mx-auto px-5 py-12">
+        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Who it's for</p>
+        <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-8">
+          Built for people who <em className="text-emerald-600 not-italic">already do the work</em>
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            {
+              title: 'Founders pre-launch',
+              body: 'You\'re validating an idea before writing code or raising money. You need signal, not a $15,000 research engagement.',
+            },
+            {
+              title: 'Marketers with a brief',
+              body: 'You\'re already lurking Reddit threads and caregiver forums trying to find the right language. SignalRoom structures what you\'re already doing.',
+            },
+            {
+              title: 'Product teams moving fast',
+              body: 'You need customer reaction in hours, not weeks. Test your messaging, pricing, or concept before your next sprint.',
+            },
+          ].map(item => (
+            <div key={item.title} className="bg-white border border-neutral-200 rounded-2xl p-5">
+              <h3 className="text-sm font-semibold text-neutral-900 mb-2">{item.title}</h3>
+              <p className="text-sm text-neutral-500 leading-relaxed font-light">{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── ROI Calculator ── */}
       <section id="roi" className="max-w-5xl mx-auto px-5 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
@@ -214,10 +243,14 @@ export default function LandingPage() {
               See what you're <em className="text-emerald-600 not-italic">actually spending</em>
             </h2>
             <p className="text-sm text-neutral-500 leading-relaxed mb-5 font-light">
-              Traditional market research runs $500–$1,000 per in-depth interview. SignalRoom replaces all of that for a flat monthly fee.
+              Traditional market research tools cost $8,000 or more for a 6-month subscription — before you factor in recruiting, moderation, and analysis. SignalRoom replaces all of that for a flat monthly fee with no contracts.
             </p>
+            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-5">
+              <p className="text-xs font-semibold text-emerald-800 mb-1">Fully customizable to your market</p>
+              <p className="text-xs text-emerald-700 leading-relaxed">Every persona is built around your exact target customer — their age, job, income, frustrations, buying behavior, and emotional context. The more specific you are, the more precise the insight.</p>
+            </div>
             <div className="space-y-3">
-              {['No recruiting fees', 'No scheduling overhead', 'No transcription costs', 'Results in minutes, not weeks'].map(item => (
+              {['No recruiting fees', 'No scheduling overhead', 'No 6-month contracts', 'Results in minutes, not weeks'].map(item => (
                 <div key={item} className="flex items-center gap-2.5">
                   <Check size={14} className="text-emerald-500 flex-shrink-0" strokeWidth={2.5} />
                   <span className="text-sm text-neutral-700">{item}</span>
@@ -272,10 +305,10 @@ export default function LandingPage() {
       {/* ── CTA band ── */}
       <section className="bg-neutral-900 py-16 text-center px-5">
         <h2 className="font-serif text-3xl sm:text-4xl text-white tracking-tight mb-3">
-          Stop guessing.<br />
-          <em className="text-emerald-400 not-italic">Start listening.</em>
+          Bring your brief.<br />
+          <em className="text-emerald-400 not-italic">We'll find the signal.</em>
         </h2>
-        <p className="text-sm text-neutral-400 mb-7 font-light">First interview free. No credit card required.</p>
+        <p className="text-sm text-neutral-400 mb-7 font-light">Start with a real active project. First interview free. No credit card required.</p>
         <Link href="/signup" className="inline-flex items-center gap-2 bg-white text-neutral-900 text-sm font-medium px-6 py-3 rounded-lg hover:bg-neutral-100 transition-colors">
           Open the Signal<span className="text-emerald-500 font-serif not-italic">room</span>
           <ArrowRight size={15} />
