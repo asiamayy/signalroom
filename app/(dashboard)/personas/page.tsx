@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getInitials } from '@/lib/utils'
+import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
+import { PersonasPageClient } from '@/components/ui/PersonasPageClient'
 import type { Persona } from '@/types'
 
 export default async function PersonasPage() {
@@ -12,6 +14,7 @@ export default async function PersonasPage() {
     .order('created_at', { ascending: false })
 
   return (
+    <PersonasPageClient>
     <div className="p-8 max-w-5xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -98,5 +101,6 @@ export default async function PersonasPage() {
         </div>
       )}
     </div>
+    </PersonasPageClient>
   )
 }
