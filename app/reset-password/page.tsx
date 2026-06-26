@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/ui/Logo'
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,13 +16,32 @@ export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // Supabase puts the session in the URL hash after clicking the reset link
     const supabase = createClient()
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+
+    // Handle the hash fragment from the reset email
+    const hashParams = new URLSearchParams(window.location.hash.slice(1))
+    const accessToken = hashParams.get('access_token')
+    const refreshToken = hashParams.get('refresh_token')
+    const type = hashParams.get('type')
+
+    if (accessToken && type === 'recovery') {
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken ?? '',
+      }).then(() => {
         setReady(true)
-      }
-    })
+      })
+    } else {
+      // Also listen for the auth state change as fallback
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+          setReady(true)
+        }
+      })
+      // Give it a moment to detect
+      setTimeout(() => setReady(true), 2000)
+      return () => subscription.unsubscribe()
+    }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,6 +75,12 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-sm text-center">
           <div className="mb-8"><Logo href="/" size="lg" /></div>
           <div className="bg-white border border-neutral-200 rounded-2xl p-8">
+            <div className="flex justify-center mb-4">
+              <svg className="animate-spin h-6 w-6 text-neutral-400" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            </div>
             <p className="text-sm text-neutral-500">Verifying your reset link...</p>
           </div>
         </div>
@@ -85,7 +111,6 @@ export default function ResetPasswordPage() {
                 className="w-full px-3 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
               />
             </div>
-
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-neutral-700">Confirm password</label>
               <input
@@ -97,11 +122,9 @@ export default function ResetPasswordPage() {
                 className="w-full px-3 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
               />
             </div>
-
             {error && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
             )}
-
             <button
               type="submit"
               disabled={loading}
@@ -114,5 +137,17 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <p className="text-sm text-neutral-500">Loading...</p>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   )
 }
