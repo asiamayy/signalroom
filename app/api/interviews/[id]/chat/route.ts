@@ -52,7 +52,8 @@ export async function POST(
             personaResponseText += chunk
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`))
           },
-          image ?? null
+          image ?? null,
+          interview.devils_advocate ?? false
         )
 
         const personaMessage: Message = {

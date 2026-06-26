@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronRight, MessageSquare } from 'lucide-react'
+import { ChevronRight, MessageSquare, Swords } from 'lucide-react'
 import { Button, Input, Textarea, Select, Card } from '@/components/ui'
 import { cn, INTERVIEW_TYPE_LABELS, getAvatarColor } from '@/lib/utils'
 import type { Persona, InterviewType } from '@/types'
@@ -26,6 +26,7 @@ function NewInterviewForm() {
   const [type, setType] = useState<InterviewType>('concept_testing')
   const [title, setTitle] = useState('')
   const [context, setContext] = useState('')
+  const [devilsAdvocate, setDevilsAdvocate] = useState(false)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -52,7 +53,7 @@ function NewInterviewForm() {
       const res = await fetch('/api/interviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persona_id: personaId, title, type, context }),
+        body: JSON.stringify({ persona_id: personaId, title, type, context, devils_advocate: devilsAdvocate }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
@@ -200,6 +201,47 @@ function NewInterviewForm() {
           rows={4}
           hint="This gives the persona context for the session — they'll respond in light of it."
         />
+
+        {/* ── Devil's Advocate ──────────────────────────────────────────── */}
+        <button
+          type="button"
+          onClick={() => setDevilsAdvocate(d => !d)}
+          className={cn(
+            'w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all',
+            devilsAdvocate
+              ? 'border-red-300 bg-red-50'
+              : 'border-neutral-200 bg-white hover:border-neutral-300'
+          )}
+        >
+          <div className={cn(
+            'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5',
+            devilsAdvocate ? 'bg-red-100' : 'bg-neutral-100'
+          )}>
+            <Swords size={15} className={devilsAdvocate ? 'text-red-600' : 'text-neutral-500'} />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <p className={cn('text-sm font-medium', devilsAdvocate ? 'text-red-800' : 'text-neutral-900')}>
+                Devil's Advocate mode
+              </p>
+              <div className={cn(
+                'w-8 h-4 rounded-full transition-colors flex-shrink-0',
+                devilsAdvocate ? 'bg-red-500' : 'bg-neutral-200'
+              )}>
+                <div className={cn(
+                  'w-3 h-3 bg-white rounded-full shadow transition-transform mt-0.5',
+                  devilsAdvocate ? 'translate-x-4 ml-0.5' : 'translate-x-0.5'
+                )} />
+              </div>
+            </div>
+            <p className={cn('text-xs mt-0.5', devilsAdvocate ? 'text-red-700' : 'text-neutral-500')}>
+              {devilsAdvocate
+                ? 'On — persona will lead with skepticism and challenge your assumptions before engaging'
+                : 'Off — persona responds naturally. Turn on to stress-test your idea against hard pushback.'
+              }
+            </p>
+          </div>
+        </button>
 
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">

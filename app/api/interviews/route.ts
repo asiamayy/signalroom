@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body: InterviewFormData = await request.json()
+  const body: InterviewFormData & { devils_advocate?: boolean } = await request.json()
 
   const { data, error } = await supabase
     .from('interviews')
@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       context: body.context,
       status: 'active',
       messages: [],
+      devils_advocate: body.devils_advocate ?? false,
     })
     .select('*, persona:personas(*)')
     .single()

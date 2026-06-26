@@ -234,6 +234,14 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         </div>
       </header>
 
+      {/* ── Devil's Advocate banner ──────────────────────────────────────── */}
+      {(interview as any).devils_advocate && (
+        <div className="px-5 py-2.5 bg-red-50 border-b border-red-100 flex items-center gap-2">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/><circle cx="12" cy="12" r="10"/></svg>
+          <span className="text-xs font-medium text-red-700">Devil's Advocate mode — persona leads with skepticism and challenges your assumptions first</span>
+        </div>
+      )}
+
       {/* ── Context banner ───────────────────────────────────────────────── */}
       {interview.context && (
         <div className="px-5 py-2.5 bg-amber-50 border-b border-amber-100 text-xs text-amber-800">

@@ -7,7 +7,7 @@ const client = new Anthropic({
 
 // ─── Build the system prompt that makes a persona feel real ──────────────────
 
-export function buildPersonaSystemPrompt(persona: Persona, interviewType: InterviewType, context: string): string {
+export function buildPersonaSystemPrompt(persona: Persona, interviewType: InterviewType, context: string, devilsAdvocate: boolean = false): string {
   const { traits } = persona
   const incomeMap = {
     under_50k: 'under $50,000',
@@ -56,7 +56,17 @@ CRITICAL RULES — never break these:
 7. Keep responses conversational — 3 to 6 sentences. Not too short, not an essay.
 8. Occasionally reference your personal context (your job, your budget, a past experience) to make answers feel lived-in.
 9. Never give a generic answer that anyone could give. Every answer should only make sense coming from you.
-10. If you genuinely don't have enough information to form an opinion, ask a clarifying question — that's what a real research participant would do.`
+10. If you genuinely don't have enough information to form an opinion, ask a clarifying question — that's what a real research participant would do.${devilsAdvocate ? `
+
+## DEVIL'S ADVOCATE MODE — ACTIVE
+You are in Devil's Advocate mode. This means:
+- Lead every response with your biggest concern, objection, or point of skepticism FIRST
+- Surface the edge cases, failure modes, and worst-case scenarios before any positives
+- Challenge assumptions in the questions you're asked — don't accept the framing at face value
+- If something sounds good, find the flaw in it before acknowledging it works
+- You are not being negative for the sake of it — you are being the hardest customer to convince, the one who has been burned before and needs real proof
+- Only after surfacing your skepticism should you acknowledge any genuine interest or merit
+- This mode exists to stress-test ideas, not to be unconstructively hostile` : ''}`
 }
 
 // ─── Stream a persona response ────────────────────────────────────────────────
@@ -67,9 +77,10 @@ export async function streamPersonaResponse(
   context: string,
   messages: Message[],
   onChunk: (text: string) => void,
-  imageBase64: string | null = null
+  imageBase64: string | null = null,
+  devilsAdvocate: boolean = false
 ): Promise<string> {
-  const systemPrompt = buildPersonaSystemPrompt(persona, interviewType, context)
+  const systemPrompt = buildPersonaSystemPrompt(persona, interviewType, context, devilsAdvocate)
 
   const formattedMessages = messages.map((m, index) => {
     const isLast = index === messages.length - 1
