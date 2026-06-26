@@ -6,6 +6,7 @@ import { Check, Zap, Users, Building2, ExternalLink, LogOut } from 'lucide-react
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import type { Plan } from '@/types'
+import { PLAN_LIMITS } from '@/types'
 
 // ─── Plan definitions ─────────────────────────────────────────────────────────
 // Names inspired by momentum/signal theme — not Sprint/Grow/Scale from Zibble
@@ -69,15 +70,20 @@ const PLANS: {
 interface SettingsClientProps {
   profile: any
   user: any
+  personaCount: number
+  interviewCount: number
 }
 
-export default function SettingsClient({ profile, user }: SettingsClientProps) {
+export default function SettingsClient({ profile, user, personaCount, interviewCount }: SettingsClientProps) {
   const router = useRouter()
   const [upgrading, setUpgrading] = useState<Plan | null>(null)
   const [openingPortal, setOpeningPortal] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
   const currentPlan = profile?.plan ?? 'starter'
+  const currentPlanData = PLANS.find(p => p.id === currentPlan)
+  const personaLimit = PLAN_LIMITS[currentPlan as Plan].personas
+  const interviewLimit = PLAN_LIMITS[currentPlan as Plan].interviews_per_month
 
   const handleUpgrade = async (plan: Plan) => {
     if (plan === currentPlan) return
@@ -113,8 +119,6 @@ export default function SettingsClient({ profile, user }: SettingsClientProps) {
     router.push('/login')
   }
 
-  const currentPlanData = PLANS.find(p => p.id === currentPlan)
-
   return (
     <div className="p-8 max-w-4xl">
       <div className="mb-8">
@@ -140,6 +144,50 @@ export default function SettingsClient({ profile, user }: SettingsClientProps) {
               {signingOut ? 'Signing out...' : 'Sign out'}
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* ── Usage ────────────────────────────────────────────────────────── */}
+      <section className="mb-8">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Usage</h2>
+        <div className="bg-white border border-neutral-200 rounded-xl p-5 space-y-4">
+          {/* Personas */}
+          <div>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-neutral-700">Personas</span>
+              <span className="font-medium text-neutral-900">
+                {personaCount} / {personaLimit === Infinity ? '∞' : personaLimit}
+              </span>
+            </div>
+            <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+              <div
+                className={cn('h-1.5 rounded-full transition-all', personaLimit !== Infinity && personaCount >= personaLimit ? 'bg-red-400' : 'bg-emerald-400')}
+                style={{ width: personaLimit === Infinity ? '10%' : `${Math.min(100, (personaCount / personaLimit) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Interviews */}
+          <div>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-neutral-700">Interviews</span>
+              <span className="font-medium text-neutral-900">
+                {interviewCount} / {interviewLimit === Infinity ? '∞' : interviewLimit}
+              </span>
+            </div>
+            <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+              <div
+                className="h-1.5 bg-emerald-400 rounded-full transition-all"
+                style={{ width: interviewLimit === Infinity ? '10%' : `${Math.min(100, (interviewCount / interviewLimit) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          {personaLimit !== Infinity && personaCount >= personaLimit && (
+            <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              You've reached your persona limit. Upgrade to create more.
+            </p>
+          )}
         </div>
       </section>
 

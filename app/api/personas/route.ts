@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { suggestPersonaTraits } from '@/lib/anthropic/persona-engine'
 import { getInitials, getAvatarColor } from '@/lib/utils'
-import type { PersonaFormData } from '@/types'
+import { PLAN_LIMITS } from '@/types'
+import type { PersonaFormData, Plan } from '@/types'
 
 export async function GET() {
   const supabase = await createClient()
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json()
 
-  // If AI suggestion requested, generate traits first
+  // If AI suggestion requested, generate traits first — no limit check needed
   if (body.generate && body.description) {
     try {
       const suggested = await suggestPersonaTraits(body.description)
@@ -43,6 +44,30 @@ export async function POST(request: NextRequest) {
     } catch (e: any) {
       console.error('Persona generation error:', e?.message ?? e)
       return NextResponse.json({ error: e?.message ?? 'Failed to generate persona' }, { status: 500 })
+    }
+  }
+
+  // Check plan limit before creating
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', user.id)
+    .single()
+
+  const plan = (profile?.plan ?? 'starter') as Plan
+  const limit = PLAN_LIMITS[plan].personas
+
+  if (limit !== Infinity) {
+    const { count } = await supabase
+      .from('personas')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    if ((count ?? 0) >= limit) {
+      return NextResponse.json({
+        error: `You've reached the ${limit} persona limit on the ${plan} plan. Upgrade to create more.`,
+        limit_reached: true,
+      }, { status: 403 })
     }
   }
 
@@ -69,4 +94,31 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ data }, { status: 201 })
+}
+
+export async function DELETE(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { id } = await request.json()
+
+  if (!id) {
+    return NextResponse.json({ error: 'Persona ID required' }, { status: 400 })
+  }
+
+  const { error } = await supabase
+    .from('personas')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
 }

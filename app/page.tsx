@@ -320,7 +320,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-5 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <Logo href="/" size="sm" />
           <div className="flex gap-5">
-            {['Privacy', 'Terms', 'Contact'].map(l => (
+            {['Privacy', 'Terms', 'FAQ', 'Contact'].map(l => (
               <Link key={l} href={`/${l.toLowerCase()}`} className="text-xs text-neutral-400 hover:text-neutral-700 transition-colors">{l}</Link>
             ))}
           </div>

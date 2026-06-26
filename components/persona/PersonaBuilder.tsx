@@ -159,7 +159,15 @@ export default function PersonaBuilder() {
         body: JSON.stringify({ name, tags, traits, avatar_url: avatarUrl }),
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error)
+      if (!res.ok) {
+        if (json.limit_reached) {
+          setError(json.error + ' Go to Settings → Plans to upgrade.')
+        } else {
+          throw new Error(json.error)
+        }
+        setSaving(false)
+        return
+      }
 
       router.push('/personas')
       router.refresh()
