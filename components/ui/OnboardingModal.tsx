@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Users, MessageSquare, FileText, X, Sparkles } from 'lucide-react'
+import { ArrowRight, Users, MessageSquare, FileText, X, Sparkles, Lightbulb } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const STEPS = [
@@ -121,7 +121,7 @@ export function OnboardingModal() {
           {/* Tip */}
           <div className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3">
             <p className="text-xs text-neutral-500 leading-relaxed flex items-start gap-2">
-              <Sparkles size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+              <Lightbulb size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
               <span><span className="font-medium text-neutral-700">Tip: </span>{currentStep.tip}</span>
             </p>
           </div>
