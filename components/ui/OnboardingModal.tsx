@@ -120,9 +120,9 @@ export function OnboardingModal() {
 
           {/* Tip */}
           <div className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3">
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              <span className="font-medium text-neutral-700">💡 Tip: </span>
-              {currentStep.tip}
+            <p className="text-xs text-neutral-500 leading-relaxed flex items-start gap-2">
+              <Sparkles size={12} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+              <span><span className="font-medium text-neutral-700">Tip: </span>{currentStep.tip}</span>
             </p>
           </div>
         </div>
