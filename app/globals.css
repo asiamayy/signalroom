@@ -24,52 +24,71 @@ body {
 }
 
 @media print {
-  /* Hide everything except the report content */
+  /* Hide nav, sidebar, buttons */
   nav,
   aside,
   .no-print,
-  [href="/reports"],
-  a[href^="/interviews"] {
+  button {
     display: none !important;
   }
 
+  /* Full width, no padding */
   body {
     background: white !important;
-    font-size: 12px;
+    font-size: 11px;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Remove layout constraints */
+  .flex.h-screen {
+    display: block !important;
+    height: auto !important;
+  }
+
+  main {
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
   }
 
   .p-8 {
-    padding: 0 !important;
+    padding: 16px !important;
   }
 
-  /* Remove shadows and borders for clean print */
-  .bg-white,
-  .border,
-  .rounded-xl,
-  .rounded-2xl {
-    box-shadow: none !important;
-    border: 1px solid #e5e7eb !important;
+  .max-w-4xl {
+    max-width: 100% !important;
   }
 
-  /* Force page breaks before major sections */
-  .print-break {
-    page-break-before: always;
-  }
-
-  /* Ensure text is black */
+  /* Remove shadows */
   * {
-    color: #111 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    box-shadow: none !important;
   }
 
-  /* Keep backgrounds for colored elements */
-  .bg-emerald-50,
-  .bg-amber-50,
-  .bg-red-50,
-  .bg-neutral-50,
-  .bg-neutral-900 {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  /* Keep colors */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+
+  /* Grid to block for print */
+  .grid {
+    display: block !important;
+  }
+
+  .grid > * {
+    width: 100% !important;
+    margin-bottom: 12px;
+  }
+
+  /* Avoid breaking inside cards */
+  .bg-white,
+  .rounded-xl {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Hide back link and transcript link */
+  a[href="/reports"],
+  a[href*="/interviews/"] {
+    display: none !important;
   }
 }
