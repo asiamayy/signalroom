@@ -22,3 +22,54 @@ body {
   font-family: 'DM Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+@media print {
+  /* Hide everything except the report content */
+  nav,
+  aside,
+  .no-print,
+  [href="/reports"],
+  a[href^="/interviews"] {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    font-size: 12px;
+  }
+
+  .p-8 {
+    padding: 0 !important;
+  }
+
+  /* Remove shadows and borders for clean print */
+  .bg-white,
+  .border,
+  .rounded-xl,
+  .rounded-2xl {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  /* Force page breaks before major sections */
+  .print-break {
+    page-break-before: always;
+  }
+
+  /* Ensure text is black */
+  * {
+    color: #111 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Keep backgrounds for colored elements */
+  .bg-emerald-50,
+  .bg-amber-50,
+  .bg-red-50,
+  .bg-neutral-50,
+  .bg-neutral-900 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

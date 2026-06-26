@@ -18,6 +18,7 @@ import {
   Info,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
+import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
 import type { ReportTheme, ReportRecommendation } from '@/types'
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
@@ -115,7 +116,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             <p className="text-lg font-semibold text-neutral-900">{messageCount}</p>
             <p className="text-xs text-neutral-500">Messages</p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-3">
+            <DownloadReportButton />
             <Link
               href={`/interviews/${interview?.id}`}
               className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
