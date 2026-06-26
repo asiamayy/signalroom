@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, MessageSquare, FileText, Settings, Zap } from 'lucide-react'
+import { Users, MessageSquare, FileText, Settings, Zap, GitCompare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
 
 const NAV_ITEMS = [
   { href: '/personas', label: 'Personas', icon: Users },
   { href: '/interviews', label: 'Interviews', icon: MessageSquare },
+  { href: '/compare', label: 'Compare', icon: GitCompare },
   { href: '/reports', label: 'Reports', icon: FileText },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
