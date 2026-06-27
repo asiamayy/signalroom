@@ -62,7 +62,7 @@ const FAQS = [
       },
       {
         q: 'Is there a free trial?',
-        a: 'Yes — your first interview is free with no credit card required. Sign up and try the full product before committing to a plan.',
+        a: 'Yes — your first interview is free with no credit card required. Sign up, create a persona, and run a full interview before committing to a plan. When you\'re ready to do more, upgrade from the Settings page.',
       },
       {
         q: 'Do you offer refunds?',

@@ -306,7 +306,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
         </div>
 
         <p className="text-xs text-neutral-400 mt-4 text-center">
-          All plans include a 14-day free trial. Cancel anytime. Billed monthly.
+          Cancel anytime. Billed monthly.
         </p>
       </section>
     </div>
