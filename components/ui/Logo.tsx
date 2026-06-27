@@ -8,21 +8,15 @@ interface LogoProps {
   className?: string
 }
 
-const HEIGHTS = { sm: 32, md: 40, lg: 52, xl: 64 }
-
 export function Logo({ size = 'md', href, className }: LogoProps) {
-  const h = HEIGHTS[size]
-  // Logo image is approx 4.4:1 ratio
-  const w = Math.round(h * 4.4)
-
   const mark = (
     <span className={cn('flex items-center select-none', className)}>
       <Image
         src="/signalroom-logo.png"
         alt="Signalroom"
-        width={w}
-        height={h}
-        style={{ height: h, width: 'auto', objectFit: 'contain' }}
+        width={220}
+        height={52}
+        style={{ width: '220px', height: 'auto' }}
         priority
         unoptimized
       />

@@ -64,6 +64,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const handleArchive = async (e: React.MouseEvent, personaId: string) => {
     e.preventDefault()
     e.stopPropagation()
+    e.nativeEvent.stopImmediatePropagation()
     setArchiving(personaId)
     try {
       const res = await fetch('/api/personas', {
@@ -72,17 +73,10 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         body: JSON.stringify({ id: personaId, action: 'archive' }),
       })
       if (res.ok) {
-        // Update personas state with archived flag
-        setPersonas(prev => {
-          const updated = prev.map(p => p.id === personaId ? { ...p, archived: true } : p)
-          // If the archived persona was selected, pick next active immediately
-          if (selectedId === personaId) {
-            const nextActive = updated.find(p => !p.archived && p.id !== personaId)
-            // Use setTimeout 0 to ensure this runs after state update
-            setTimeout(() => setSelectedId(nextActive?.id ?? null), 0)
-          }
-          return updated
-        })
+        setPersonas(prev => prev.map(p => p.id === personaId ? { ...p, archived: true } : p))
+        // Only clear selectedId if THIS persona was the selected one
+        // If Marcus is selected and we archive Tyler, Marcus stays selected
+        setSelectedId(prev => prev === personaId ? null : prev)
       }
     } finally {
       setArchiving(null)
@@ -249,7 +243,12 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   <div
                     key={persona.id}
                     className="relative group rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer"
-                    onClick={() => setSelectedId(persona.id)}
+                    onClick={(e) => {
+                      // Don't change selection if clicking archive button area
+                      const target = e.target as HTMLElement
+                      if (target.closest('[data-archive-btn]')) return
+                      setSelectedId(persona.id)
+                    }}
                     onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)' }}
                     onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
                     style={{
@@ -270,6 +269,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     {/* Archive button — only on hover when not selected */}
                     {!isSelected && (
                       <div
+                        data-archive-btn="true"
                         className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={e => e.stopPropagation()}
                       >
