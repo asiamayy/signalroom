@@ -83,7 +83,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {/* Main hero content */}
-          <div className="relative z-10 flex items-center gap-5 px-7 pt-6 pb-5" style={{ paddingRight: '220px' }}>
+          <div className="relative z-10 flex items-center gap-6 px-8 pt-8 pb-7" style={{ paddingRight: '240px' }}>
             <div className="flex-shrink-0" style={{ border: '3px solid rgba(255,255,255,0.4)', borderRadius: '50%', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' }}>
               <PersonaAvatar
                 avatarUrl={persona.avatar_url}
@@ -111,7 +111,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {/* Score bars */}
-          <div className="relative z-10 flex gap-8 px-7 py-4" style={{ background: 'rgba(0,0,0,0.15)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="relative z-10 flex gap-10 px-8 py-5" style={{ background: 'rgba(0,0,0,0.15)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
             <div>
               <p className="text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Tech savviness</p>
               <div className="flex items-center gap-1">

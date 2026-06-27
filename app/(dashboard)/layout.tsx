@@ -2,9 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, MessageSquare, FileText, Settings, Zap, GitCompare } from 'lucide-react'
+import { Users, MessageSquare, FileText, Settings, GitCompare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 const NAV_ITEMS = [
   { href: '/personas', label: 'Personas', icon: Users },
@@ -16,18 +18,25 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   return (
-    <div className="flex h-screen bg-neutral-50">
+    <div className="flex h-screen" style={{ background: '#F4F6F8' }}>
       {/* Sidebar */}
-      <aside className="w-56 flex-shrink-0 bg-white border-r border-neutral-200 flex flex-col">
+      <aside className="w-56 flex-shrink-0 flex flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
         {/* Logo */}
-        <div className="px-5 py-5 border-b border-neutral-100">
+        <div className="px-4 py-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
           <Logo href="/personas" size="md" />
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 px-2 py-3 space-y-0.5">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname.startsWith(href)
             return (
@@ -35,11 +44,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors',
+                  'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all',
                   active
-                    ? 'bg-neutral-100 text-neutral-900 font-medium'
-                    : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'
+                    ? ''
+                    : 'text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50'
                 )}
+                style={active ? { background: '#E8F5F1', color: '#0D5C45' } : {}}
               >
                 <Icon size={15} strokeWidth={1.75} />
                 {label}
@@ -48,21 +58,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        {/* Upgrade nudge */}
-        <div className="px-3 pb-4">
-          <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Zap size={13} className="text-emerald-600" />
-              <span className="text-xs font-medium text-emerald-700">Upgrade to Pro</span>
-            </div>
-            <p className="text-xs text-emerald-600 mb-2 leading-relaxed">Unlimited personas and interviews.</p>
-            <Link
-              href="/settings"
-              className="block text-center text-xs font-medium bg-emerald-600 text-white rounded-md py-1.5 hover:bg-emerald-700 transition-colors"
-            >
-              View plans
-            </Link>
-          </div>
+        {/* Footer */}
+        <div className="px-3 pb-4 pt-2" style={{ borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+          <button
+            onClick={handleSignOut}
+            className="w-full text-left text-xs text-neutral-400 hover:text-neutral-600 transition-colors px-2 py-1.5"
+          >
+            Sign out
+          </button>
         </div>
       </aside>
 

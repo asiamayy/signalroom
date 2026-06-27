@@ -152,12 +152,20 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     key={persona.id}
                     className="relative group rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer"
                     onClick={() => setSelectedId(persona.id)}
+                    onMouseEnter={e => {
+                      if (!isSelected) (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'
+                    }}
+                    onMouseLeave={e => {
+                      if (!isSelected) (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
+                    }}
                     style={{
                       background: 'white',
                       boxShadow: isSelected
                         ? '0 0 0 2px #1A8C6A, 0 4px 16px rgba(26,140,106,0.12)'
                         : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
                       border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
+                      transform: 'translateY(0)',
+                      transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
                     }}
                   >
                     {/* Three dot menu */}
