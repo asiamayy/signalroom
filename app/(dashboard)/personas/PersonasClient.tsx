@@ -63,6 +63,11 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
     e.preventDefault()
     e.stopPropagation()
     setArchiving(personaId)
+    // Immediately clear selection if this persona is selected
+    if (selectedId === personaId) {
+      const nextActive = personas.find(p => p.id !== personaId && !p.archived)
+      setSelectedId(nextActive?.id ?? null)
+    }
     try {
       const res = await fetch('/api/personas', {
         method: 'PATCH',
@@ -70,15 +75,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         body: JSON.stringify({ id: personaId, action: 'archive' }),
       })
       if (res.ok) {
-        // Mark as archived and select next active persona if this was selected
-        setPersonas(prev => {
-          const updated = prev.map(p => p.id === personaId ? { ...p, archived: true } : p)
-          if (selectedId === personaId) {
-            const nextActive = updated.find(p => !p.archived && p.id !== personaId)
-            setSelectedId(nextActive?.id ?? null)
-          }
-          return updated
-        })
+        setPersonas(prev => prev.map(p => p.id === personaId ? { ...p, archived: true } : p))
       }
     } finally {
       setArchiving(null)

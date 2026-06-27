@@ -102,8 +102,10 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6))
-              if (data.type === 'text') {
-                full += data.content
+              // API sends { text: chunk } format
+              const textChunk = data.text ?? data.content ?? null
+              if (textChunk) {
+                full += textChunk
                 setStreamingText(full)
               }
             } catch {}
