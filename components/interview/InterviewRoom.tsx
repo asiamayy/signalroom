@@ -61,25 +61,38 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 
   const handleSend = useCallback(async () => {
     const text = input.trim()
-    if ((!text && !imageData) || streaming) return
+    const currentImageData = imageData
+    const currentImagePreview = imagePreview
+    if ((!text && !currentImageData) || streaming) return
     setInput('')
     setError('')
-    const userMsg: Message = { id: crypto.randomUUID(), role: 'user', content: text, image_url: imagePreview ?? undefined, timestamp: new Date().toISOString() }
+    setImageData(null)
+    setImagePreview(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+
+    const userMsg: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: text,
+      image_url: currentImagePreview ?? undefined,
+      timestamp: new Date().toISOString()
+    }
     setMessages(prev => [...prev, userMsg])
-    clearImage()
     setStreaming(true)
     setStreamingText('')
+
+    let full = ''
     try {
       const res = await fetch(`/api/interviews/${interview.id}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, image: imageData }),
+        body: JSON.stringify({ message: text, image: currentImageData }),
       })
       if (!res.ok) throw new Error('Failed to send message')
       const reader = res.body?.getReader()
       if (!reader) throw new Error('No response stream')
       const decoder = new TextDecoder()
-      let full = ''
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -89,13 +102,24 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6))
-              if (data.type === 'text') { full += data.content; setStreamingText(full) }
+              if (data.type === 'text') {
+                full += data.content
+                setStreamingText(full)
+              }
             } catch {}
           }
         }
       }
-      const assistantMsg: Message = { id: crypto.randomUUID(), role: 'persona' as const, content: full, timestamp: new Date().toISOString() }
-      setMessages(prev => [...prev, assistantMsg])
+
+      if (full) {
+        const assistantMsg: Message = {
+          id: crypto.randomUUID(),
+          role: 'persona' as const,
+          content: full,
+          timestamp: new Date().toISOString()
+        }
+        setMessages(prev => [...prev, assistantMsg])
+      }
     } catch (e: any) {
       setError(e.message ?? 'Something went wrong')
     } finally {

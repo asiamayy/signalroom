@@ -33,7 +33,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const active = personas.filter(p => !p.archived)
   const archived = personas.filter(p => p.archived)
   const atLimit = limit !== Infinity && active.length >= limit
-  const selectedPersona = personas.find(p => p.id === selectedId)
+  // Only show inspector panel for active personas
+  const selectedPersona = personas.find(p => p.id === selectedId && !p.archived)
 
   const handleDelete = async (e: React.MouseEvent, personaId: string) => {
     e.preventDefault()
@@ -69,8 +70,15 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         body: JSON.stringify({ id: personaId, action: 'archive' }),
       })
       if (res.ok) {
-        setPersonas(prev => prev.map(p => p.id === personaId ? { ...p, archived: true } : p))
-        setSelectedId(prev => prev === personaId ? (personas.find(p => p.id !== personaId && !p.archived)?.id ?? null) : prev)
+        // Mark as archived and select next active persona if this was selected
+        setPersonas(prev => {
+          const updated = prev.map(p => p.id === personaId ? { ...p, archived: true } : p)
+          if (selectedId === personaId) {
+            const nextActive = updated.find(p => !p.archived && p.id !== personaId)
+            setSelectedId(nextActive?.id ?? null)
+          }
+          return updated
+        })
       }
     } finally {
       setArchiving(null)
@@ -90,16 +98,24 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
     } catch {}
   }
 
-  const baseFiltered = filterTab === 'All Personas'
-    ? personas.filter(p => !p.archived)
-    : filterTab === 'Active'
-    ? personas.filter(p => !p.archived)
-    : personas.filter(p => p.archived)
+  const SORT_OPTIONS = ['Recently updated', 'Recently created', 'Alphabetical']
+  const [showSortMenu, setShowSortMenu] = useState(false)
 
-  const filtered = baseFiltered.filter(p =>
+  const sortPersonas = (list: Persona[]) => {
+    if (sortBy === 'Recently updated') return [...list].sort((a, b) => new Date(b.updated_at ?? b.created_at).getTime() - new Date(a.updated_at ?? a.created_at).getTime())
+    if (sortBy === 'Recently created') return [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    if (sortBy === 'Alphabetical') return [...list].sort((a, b) => a.name.localeCompare(b.name))
+    return list
+  }
+
+  const baseFiltered = filterTab === 'Archived'
+    ? personas.filter(p => p.archived)
+    : personas.filter(p => !p.archived)
+
+  const filtered = sortPersonas(baseFiltered.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     (p.traits?.job_title ?? '').toLowerCase().includes(search.toLowerCase())
-  )
+  ))
 
   return (
     <>
@@ -158,13 +174,31 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
 
           {/* Sort + view toggle */}
           <div className="flex items-center gap-3 py-2">
-            <button
-              className="flex items-center gap-1.5 text-sm text-neutral-600 font-medium"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              Sort by: {sortBy}
-              <ChevronDown size={13} className="text-neutral-400" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowSortMenu(o => !o)}
+                className="flex items-center gap-1.5 text-sm text-neutral-600 font-medium"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Sort by: {sortBy}
+                <ChevronDown size={13} className="text-neutral-400" />
+              </button>
+              {showSortMenu && (
+                <div className="absolute top-full left-0 mt-1 rounded-xl overflow-hidden z-20" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '180px' }}>
+                  {SORT_OPTIONS.map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => { setSortBy(opt); setShowSortMenu(false) }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
+                      style={{ background: sortBy === opt ? '#E8F5F1' : 'white', color: sortBy === opt ? '#0D5C45' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      {opt}
+                      {sortBy === opt && <Check size={13} style={{ color: '#1A8C6A' }} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.1)' }}>
               <button
                 onClick={() => setViewMode('grid')}

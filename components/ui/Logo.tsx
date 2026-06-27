@@ -8,7 +8,7 @@ interface LogoProps {
   className?: string
 }
 
-const HEIGHTS = { sm: 28, md: 36, lg: 44, xl: 56 }
+const HEIGHTS = { sm: 36, md: 48, lg: 56, xl: 68 }
 
 export function Logo({ size = 'md', href, className }: LogoProps) {
   const h = HEIGHTS[size]
