@@ -34,10 +34,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const archived = personas.filter(p => p.archived)
   // Total personas (active + archived) counts toward limit
   const atLimit = limit !== Infinity && personas.length >= limit
-  // Only show inspector panel for non-archived personas
-  const selectedPersonaRaw = personas.find(p => p.id === selectedId)
-  const selectedPersona = selectedPersonaRaw?.archived ? null : selectedPersonaRaw
-
+  // Show inspector panel for any selected persona regardless of archived status
+  const selectedPersona = personas.find(p => p.id === selectedId)
   const handleDelete = async (e: React.MouseEvent, personaId: string) => {
     e.preventDefault()
     e.stopPropagation()
@@ -401,54 +399,120 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             </div>
           )}
 
-          {/* ── Archived view ── */}
+          {/* ── Archived view — same cards layout with trash icon ── */}
           {filterTab === 'Archived' && (
-            <div>
+            <>
               {archived.length === 0 ? (
-                <div className="flex items-center justify-center rounded-2xl py-12" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)' }}>
+                <div className="flex items-center justify-center rounded-2xl py-12 mb-4" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)' }}>
                   <div className="text-center">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" className="mx-auto mb-3"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
                     <p className="text-sm font-semibold text-neutral-500">No archived personas</p>
-                    <p className="text-xs text-neutral-400 mt-1">Archived personas appear here and don't count toward your limit</p>
+                    <p className="text-xs text-neutral-400 mt-1">Archived personas appear here and count toward your limit</p>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {archived.map(persona => (
-                    <div key={persona.id} className="flex items-center gap-4 px-5 py-4 rounded-2xl" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', opacity: 0.8 }}>
-                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-neutral-700">{persona.name}</p>
-                        <p className="text-xs text-neutral-400">{persona.traits?.job_title ?? 'No role'}</p>
+                <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                  {archived.map((persona: Persona) => {
+                    const isSelected = selectedId === persona.id
+                    return (
+                      <div
+                        key={persona.id}
+                        className="relative group rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer"
+                        onClick={(e) => {
+                          const target = e.target as HTMLElement
+                          if (target.closest('[data-archive-btn]')) return
+                          setSelectedId(persona.id)
+                        }}
+                        style={{
+                          background: 'white',
+                          opacity: 0.85,
+                          boxShadow: isSelected ? '0 0 0 2px #1A8C6A, 0 4px 16px rgba(26,140,106,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
+                          border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
+                        }}
+                      >
+                        {/* Checkmark when selected */}
+                        {isSelected && (
+                          <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#1A8C6A' }}>
+                            <Check size={12} color="white" strokeWidth={3} />
+                          </div>
+                        )}
+
+                        {/* Trash icon for permanent delete */}
+                        {!isSelected && (
+                          <div
+                            data-archive-btn="true"
+                            className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <button
+                              onClick={(e) => handleDelete(e, persona.id)}
+                              disabled={deleting === persona.id}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-red-500 transition-colors"
+                              style={{ background: 'white', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+                              title="Delete permanently"
+                            >
+                              {deleting === persona.id
+                                ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                              }
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="pt-6 px-5 pb-0 flex flex-col items-center text-center">
+                          <PersonaAvatar
+                            avatarUrl={persona.avatar_url}
+                            avatarInitials={persona.avatar_initials}
+                            avatarColor={persona.avatar_color}
+                            name={persona.name}
+                            size="lg"
+                            className="mb-3 shadow-md"
+                          />
+                          <h3 className="text-base font-bold text-neutral-700 mb-0.5 flex items-center gap-1.5">
+                            {persona.name}
+                            {isSelected && <Check size={13} style={{ color: '#1A8C6A' }} strokeWidth={3} />}
+                          </h3>
+                          <p className="text-xs text-neutral-400 mb-3">
+                            {persona.traits?.job_title ?? 'No role'}{persona.traits?.location ? ` · ${persona.traits.location}` : ''}
+                          </p>
+                          {persona.tags && persona.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 justify-center mb-3">
+                              {persona.tags.slice(0, 2).map((tag: string, i: number) => (
+                                <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                                  style={i === 0 ? { background: '#E8F5F1', color: '#0D5C45' } : { background: '#F3F4F6', color: '#6B7280' }}>
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-neutral-400 leading-relaxed mb-4 line-clamp-2 text-center px-1">
+                            {persona.traits?.additional_context ?? `${persona.traits?.job_title ?? 'A persona'} with defined goals and behaviors.`}
+                          </p>
+                          <span className="text-xs px-2.5 py-1 rounded-full font-medium mb-3" style={{ background: '#F3F4F6', color: '#9CA3AF' }}>Archived</span>
+                        </div>
+
+                        {/* Footer with restore button */}
+                        <div className="px-4 pb-4 flex gap-2" style={{ borderTop: '1px solid #F3F4F6', paddingTop: '12px' }}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleRestore(persona.id) }}
+                            className="flex-1 text-center text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1"
+                            style={{ background: '#E8F5F1', color: '#0D5C45', border: '1px solid #A7D9C8' }}
+                          >
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.54"/></svg>
+                            Restore
+                          </button>
+                        </div>
                       </div>
-                      <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#F3F4F6', color: '#9CA3AF' }}>Archived</span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleRestore(persona.id)}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                          style={{ background: '#E8F5F1', color: '#0D5C45', border: '1px solid #A7D9C8' }}
-                        >
-                          Restore
-                        </button>
-                        <button
-                          onClick={(e) => handleDelete(e, persona.id)}
-                          disabled={deleting === persona.id}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors text-red-600"
-                          style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
-                        >
-                          {deleting === persona.id ? 'Deleting...' : 'Delete permanently'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
-            </div>
-          )}
-          {selectedPersona && filterTab !== 'Archived' && filtered.length > 0 && (
-            <>
-              <InspectorPanel persona={selectedPersona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />
             </>
+          )}
+
+          {/* ── Inspector panel — shows for all tabs ── */}
+          {selectedPersona && (
+            <InspectorPanel persona={selectedPersona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />
           )}
 
         </div>
