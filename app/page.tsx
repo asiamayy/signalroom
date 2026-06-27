@@ -57,22 +57,22 @@ function ROICalculator() {
               </div>
             </div>
           </div>
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-2">SignalRoom</p>
-            <p className="text-lg font-serif font-semibold text-emerald-800">$99</p>
-            <p className="text-[11px] text-emerald-600 mb-2">unlimited/month</p>
-            <div className="border-t border-emerald-200 pt-2 space-y-1.5">
+          <div className="bg-[#E8F5F1] border border-[#A7D9C8] rounded-xl p-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1A9B76] mb-2">SignalRoom</p>
+            <p className="text-lg font-serif font-semibold text-[#0D5C45]">$99</p>
+            <p className="text-[11px] text-[#1A9B76] mb-2">unlimited/month</p>
+            <div className="border-t border-[#A7D9C8] pt-2 space-y-1.5">
               <div className="flex justify-between text-[11px]">
-                <span className="text-emerald-700">Time</span>
-                <span className="font-medium text-emerald-800">Minutes</span>
+                <span className="text-[#1A7A5E]">Time</span>
+                <span className="font-medium text-[#0D5C45]">Minutes</span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-emerald-700">Per interview</span>
-                <span className="font-medium text-emerald-800">~$0</span>
+                <span className="text-[#1A7A5E]">Per interview</span>
+                <span className="font-medium text-[#0D5C45]">~$0</span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-emerald-700">Hours</span>
-                <span className="font-medium text-emerald-800">&lt; 1h</span>
+                <span className="text-[#1A7A5E]">Hours</span>
+                <span className="font-medium text-[#0D5C45]">&lt; 1h</span>
               </div>
             </div>
           </div>
@@ -151,12 +151,12 @@ export default function LandingPage() {
       {/* ── Hero ── */}
       <section className="max-w-5xl mx-auto px-5 pt-14 pb-12 text-center">
         <div className="inline-flex items-center gap-2 bg-white border border-neutral-200 rounded-full px-4 py-1.5 text-xs text-neutral-500 mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E8F5F1]0 flex-shrink-0" />
           AI-powered market research for founders &amp; marketers
         </div>
         <h1 className="font-serif text-4xl sm:text-5xl lg:text-7xl tracking-tight text-neutral-900 leading-[1.05] mb-5">
           Your market has<br />
-          <em className="text-emerald-600 not-italic">opinions.</em><br />
+          <em className="text-[#1A9B76] not-italic">opinions.</em><br />
           Now you can ask.
         </h1>
         <p className="text-base sm:text-lg text-neutral-500 max-w-xl mx-auto mb-7 leading-relaxed font-light">
@@ -188,7 +188,7 @@ export default function LandingPage() {
       <section id="how-it-works" className="max-w-5xl mx-auto px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">How it works</p>
         <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-8">
-          Three steps to <em className="text-emerald-600 not-italic">real insight</em>
+          Three steps to <em className="text-[#1A9B76] not-italic">real insight</em>
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 rounded-2xl border border-neutral-200 overflow-hidden bg-neutral-200">
           {[
@@ -209,7 +209,7 @@ export default function LandingPage() {
       <section className="max-w-5xl mx-auto px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Who it's for</p>
         <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-8">
-          Built for people who <em className="text-emerald-600 not-italic">already do the work</em>
+          Built for people who <em className="text-[#1A9B76] not-italic">already do the work</em>
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
@@ -240,19 +240,19 @@ export default function LandingPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">ROI calculator</p>
             <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-4">
-              See what you're <em className="text-emerald-600 not-italic">actually spending</em>
+              See what you're <em className="text-[#1A9B76] not-italic">actually spending</em>
             </h2>
             <p className="text-sm text-neutral-500 leading-relaxed mb-5 font-light">
               Traditional market research tools cost $8,000 or more for a 6-month subscription — before you factor in recruiting, moderation, and analysis. SignalRoom replaces all of that for a flat monthly fee with no contracts.
             </p>
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-5">
-              <p className="text-xs font-semibold text-emerald-800 mb-1">Fully customizable to your market</p>
-              <p className="text-xs text-emerald-700 leading-relaxed">Every persona is built around your exact target customer — their age, job, income, frustrations, buying behavior, and emotional context. The more specific you are, the more precise the insight.</p>
+            <div className="bg-[#E8F5F1] border border-[#C5EAE0] rounded-xl p-4 mb-5">
+              <p className="text-xs font-semibold text-[#0D5C45] mb-1">Fully customizable to your market</p>
+              <p className="text-xs text-[#1A7A5E] leading-relaxed">Every persona is built around your exact target customer — their age, job, income, frustrations, buying behavior, and emotional context. The more specific you are, the more precise the insight.</p>
             </div>
             <div className="space-y-3">
               {['No recruiting fees', 'No scheduling overhead', 'No 6-month contracts', 'Results in minutes, not weeks'].map(item => (
                 <div key={item} className="flex items-center gap-2.5">
-                  <Check size={14} className="text-emerald-500 flex-shrink-0" strokeWidth={2.5} />
+                  <Check size={14} className="text-[#1A9B76] flex-shrink-0" strokeWidth={2.5} />
                   <span className="text-sm text-neutral-700">{item}</span>
                 </div>
               ))}
@@ -266,7 +266,7 @@ export default function LandingPage() {
       <section id="pricing" className="max-w-5xl mx-auto px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Pricing</p>
         <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-2">
-          Simple pricing. <em className="text-emerald-600 not-italic">No surprises.</em>
+          Simple pricing. <em className="text-[#1A9B76] not-italic">No surprises.</em>
         </h2>
         <p className="text-sm text-neutral-500 mb-8 font-light">Start free. Upgrade when it's earning its keep.</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -275,7 +275,7 @@ export default function LandingPage() {
             return (
               <div key={plan.name} className={cn('bg-white rounded-2xl p-5 flex flex-col', plan.highlight ? 'border-2 border-emerald-400' : 'border border-neutral-200')}>
                 {plan.highlight && (
-                  <span className="self-start text-[11px] font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full mb-3">Most popular</span>
+                  <span className="self-start text-[11px] font-medium bg-[#E8F5F1] text-[#1A7A5E] px-2 py-0.5 rounded-full mb-3">Most popular</span>
                 )}
                 <div className="flex items-center gap-2 mb-1">
                   <Icon size={14} className="text-neutral-400" />
@@ -288,7 +288,7 @@ export default function LandingPage() {
                 <ul className="space-y-2 flex-1 mb-5">
                   {plan.features.map(f => (
                     <li key={f} className="flex items-start gap-2 text-xs text-neutral-600">
-                      <Check size={11} className="text-emerald-500 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
+                      <Check size={11} className="text-[#1A9B76] mt-0.5 flex-shrink-0" strokeWidth={2.5} />
                       {f}
                     </li>
                   ))}
@@ -310,7 +310,7 @@ export default function LandingPage() {
         </h2>
         <p className="text-sm text-neutral-400 mb-7 font-light">Start with a real active project. First interview free. No credit card required.</p>
         <Link href="/signup" className="inline-flex items-center gap-2 bg-white text-neutral-900 text-sm font-medium px-6 py-3 rounded-lg hover:bg-neutral-100 transition-colors">
-          Open the Signal<span className="text-emerald-500 font-serif not-italic">room</span>
+          Open the Signal<span className="text-[#1A9B76] font-serif not-italic">room</span>
           <ArrowRight size={15} />
         </Link>
       </section>

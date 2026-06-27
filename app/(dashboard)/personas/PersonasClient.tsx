@@ -152,7 +152,11 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             {FILTER_TABS.map(tab => (
               <button
                 key={tab}
-                onClick={() => setFilterTab(tab)}
+                onClick={() => {
+                  setFilterTab(tab)
+                  // Reset selection when switching tabs so no panel carries over
+                  setSelectedId(null)
+                }}
                 className="px-4 py-3.5 text-sm transition-all"
                 style={{
                   color: filterTab === tab ? '#0D5C45' : '#9CA3AF',
@@ -437,28 +441,6 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           </div>
                         )}
 
-                        {/* Trash icon for permanent delete */}
-                        {!isSelected && (
-                          <div
-                            data-archive-btn="true"
-                            className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={e => e.stopPropagation()}
-                          >
-                            <button
-                              onClick={(e) => handleDelete(e, persona.id)}
-                              disabled={deleting === persona.id}
-                              className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-red-500 transition-colors"
-                              style={{ background: 'white', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
-                              title="Delete permanently"
-                            >
-                              {deleting === persona.id
-                                ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                                : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                              }
-                            </button>
-                          </div>
-                        )}
-
                         <div className="pt-6 px-5 pb-0 flex flex-col items-center text-center">
                           <PersonaAvatar
                             avatarUrl={persona.avatar_url}
@@ -491,7 +473,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           <span className="text-xs px-2.5 py-1 rounded-full font-medium mb-3" style={{ background: '#F3F4F6', color: '#9CA3AF' }}>Archived</span>
                         </div>
 
-                        {/* Footer with restore button */}
+                        {/* Footer with restore + delete buttons */}
                         <div className="px-4 pb-4 flex gap-2" style={{ borderTop: '1px solid #F3F4F6', paddingTop: '12px' }}>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleRestore(persona.id) }}
@@ -500,6 +482,18 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           >
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.54"/></svg>
                             Restore
+                          </button>
+                          <button
+                            onClick={(e) => handleDelete(e, persona.id)}
+                            disabled={deleting === persona.id}
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-red-500 transition-colors flex-shrink-0"
+                            style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)' }}
+                            title="Delete permanently"
+                          >
+                            {deleting === persona.id
+                              ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                              : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                            }
                           </button>
                         </div>
                       </div>
