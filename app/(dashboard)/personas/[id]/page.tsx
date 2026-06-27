@@ -63,7 +63,12 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           {/* Floating stat cards + Start interview — top right */}
           <div className="absolute top-4 right-5 z-20 flex flex-col items-end gap-2">
             <Link href={`/interviews/new?persona_id=${persona.id}`}>
-              <button className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.95)', color: '#0D5C45', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+              <button
+                className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all duration-150"
+                style={{ background: 'rgba(255,255,255,0.95)', color: '#0D5C45', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)' }}
+              >
                 <MessageSquare size={13} />
                 Start interview
               </button>
