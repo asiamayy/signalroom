@@ -16,7 +16,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await createCheckoutSession(user.id, user.email!, plan)
     return NextResponse.json({ url: session.url })
-  } catch (e) {
-    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
+  } catch (e: any) {
+    console.error('Stripe checkout error:', e?.message ?? e)
+    return NextResponse.json({ error: e?.message ?? 'Failed to create checkout session' }, { status: 500 })
   }
 }
