@@ -33,8 +33,9 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const active = personas.filter(p => !p.archived)
   const archived = personas.filter(p => p.archived)
   const atLimit = limit !== Infinity && active.length >= limit
-  // Only show inspector panel for active personas
-  const selectedPersona = personas.find(p => p.id === selectedId && !p.archived)
+  // Only show inspector panel for non-archived personas
+  const selectedPersonaRaw = personas.find(p => p.id === selectedId)
+  const selectedPersona = selectedPersonaRaw?.archived ? null : selectedPersonaRaw
 
   const handleDelete = async (e: React.MouseEvent, personaId: string) => {
     e.preventDefault()
@@ -63,11 +64,6 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
     e.preventDefault()
     e.stopPropagation()
     setArchiving(personaId)
-    // Immediately clear selection if this persona is selected
-    if (selectedId === personaId) {
-      const nextActive = personas.find(p => p.id !== personaId && !p.archived)
-      setSelectedId(nextActive?.id ?? null)
-    }
     try {
       const res = await fetch('/api/personas', {
         method: 'PATCH',
@@ -75,7 +71,17 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         body: JSON.stringify({ id: personaId, action: 'archive' }),
       })
       if (res.ok) {
-        setPersonas(prev => prev.map(p => p.id === personaId ? { ...p, archived: true } : p))
+        // Update personas state with archived flag
+        setPersonas(prev => {
+          const updated = prev.map(p => p.id === personaId ? { ...p, archived: true } : p)
+          // If the archived persona was selected, pick next active immediately
+          if (selectedId === personaId) {
+            const nextActive = updated.find(p => !p.archived && p.id !== personaId)
+            // Use setTimeout 0 to ensure this runs after state update
+            setTimeout(() => setSelectedId(nextActive?.id ?? null), 0)
+          }
+          return updated
+        })
       }
     } finally {
       setArchiving(null)
@@ -234,7 +240,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
           )}
 
           {/* ── Grid view ── */}
-          {filtered.length > 0 && viewMode === 'grid' && (
+          {filtered.length > 0 && viewMode === 'grid' && filterTab !== 'Archived' && (
             <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
               {filtered.map((persona: Persona) => {
                 const isSelected = selectedId === persona.id
@@ -349,7 +355,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
           )}
 
           {/* ── List view ── */}
-          {filtered.length > 0 && viewMode === 'list' && (
+          {filtered.length > 0 && viewMode === 'list' && filterTab !== 'Archived' && (
             <div className="space-y-2 mb-4">
               {filtered.map((persona: Persona) => {
                 const isSelected = selectedId === persona.id
@@ -435,7 +441,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               )}
             </div>
           )}
-          {selectedPersona && filtered.length > 0 && (
+          {selectedPersona && filterTab !== 'Archived' && filtered.length > 0 && (
             <>
               <InspectorPanel persona={selectedPersona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />
             </>
