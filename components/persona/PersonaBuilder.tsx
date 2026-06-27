@@ -142,7 +142,28 @@ export default function PersonaBuilder() {
     }
   }
 
-  // ─── Save ────────────────────────────────────────────────────────────────────
+  // ─── Step validation ─────────────────────────────────────────────────────────
+
+  const validateStep = (s: number): string | null => {
+    if (s === 0) {
+      if (!name.trim()) return 'Please enter a name for this persona'
+      if (!traits.location?.trim()) return 'Please enter a location'
+    }
+    if (s === 1) {
+      if (!traits.job_title?.trim()) return 'Please enter a job title'
+      if (!traits.industry?.trim()) return 'Please enter an industry'
+    }
+    return null
+  }
+
+  const handleNext = () => {
+    const err = validateStep(step)
+    if (err) { setError(err); return }
+    setError('')
+    setStep(s => s + 1)
+  }
+
+
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -435,7 +456,7 @@ export default function PersonaBuilder() {
         </Button>
 
         {step < STEPS.length - 1 ? (
-          <Button onClick={() => setStep(s => s + 1)}>
+          <Button onClick={step < STEPS.length - 1 ? handleNext : handleSave}>
             Continue
             <ChevronRight size={14} />
           </Button>

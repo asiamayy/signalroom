@@ -96,10 +96,16 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/personas/new" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl" style={{ background: 'white', color: '#374151', border: '1px solid rgba(0,0,0,0.12)' }}>
-              <Plus size={13} />
-              Create
-            </Link>
+            {atLimit ? (
+              <Link href="/settings" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl" style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+                Limit reached — Upgrade
+              </Link>
+            ) : (
+              <Link href="/personas/new" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl" style={{ background: 'white', color: '#374151', border: '1px solid rgba(0,0,0,0.12)' }}>
+                <Plus size={13} />
+                Create
+              </Link>
+            )}
           </div>
         </div>
 
@@ -258,27 +264,113 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             </div>
           )}
 
-          {/* Section cards — from selected persona */}
-          {sectionCards.length > 0 && (
-            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-              {sectionCards.map((section, i) => (
-                <div key={i} className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
-                  <h3 className="text-sm font-bold text-neutral-900 mb-3">{section.title}</h3>
-                  <ul className="space-y-2">
-                    {section.items.map((item, j) => (
-                      <li key={j} className="flex items-start gap-2 text-xs text-neutral-600 leading-relaxed">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1A8C6A" strokeWidth="2.5" className="flex-shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+          {/* Inspector panel — shows selected persona details */}
+          {selectedPersona && (
+            <InspectorPanel persona={selectedPersona} />
           )}
 
         </div>
       </div>
     </>
+  )
+}
+
+// ─── Inspector Panel ──────────────────────────────────────────────────────────
+
+const INSPECTOR_TABS = ['Overview', 'Goals', 'Frustrations', 'Buying', 'Notes'] as const
+type InspectorTab = typeof INSPECTOR_TABS[number]
+
+function InspectorPanel({ persona }: { persona: Persona }) {
+  const [activeTab, setActiveTab] = useState<InspectorTab>('Overview')
+  const t = persona.traits
+
+  const incomeMap: Record<string, string> = {
+    under_50k: 'Under $50k', '50k_100k': '$50k–$100k',
+    '100k_200k': '$100k–$200k', over_200k: 'Over $200k',
+  }
+  const educationMap: Record<string, string> = {
+    high_school: 'High School', bachelors: "Bachelor's",
+    masters: "Master's", phd: 'PhD',
+  }
+
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
+      {/* Tab bar */}
+      <div className="flex items-center px-4 pt-2" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        <span className="text-xs font-semibold text-neutral-500 mr-4 pb-2.5">{persona.name}</span>
+        {INSPECTOR_TABS.map(tb => (
+          <button
+            key={tb}
+            onClick={() => setActiveTab(tb)}
+            className="px-3 pb-2.5 text-xs font-medium transition-all"
+            style={{
+              color: activeTab === tb ? '#0D5C45' : '#9CA3AF',
+              borderTop: 'none', borderLeft: 'none', borderRight: 'none',
+              borderBottom: activeTab === tb ? '2px solid #1A8C6A' : '2px solid transparent',
+              background: 'none', cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            {tb}
+          </button>
+        ))}
+      </div>
+
+      {/* Panel content */}
+      <div className="p-4 min-h-[80px]">
+        {activeTab === 'Overview' && (
+          <div className="grid grid-cols-4 gap-x-6 gap-y-2.5">
+            {[
+              { label: 'Age', value: t?.age },
+              { label: 'Gender', value: t?.gender },
+              { label: 'Location', value: t?.location },
+              { label: 'Industry', value: t?.industry },
+              { label: 'Job title', value: t?.job_title },
+              { label: 'Income', value: t?.income ? incomeMap[t.income] : null },
+              { label: 'Education', value: t?.education ? educationMap[t.education] : null },
+              { label: 'Tech savviness', value: t?.tech_savviness ? `${t.tech_savviness}/5` : null },
+            ].filter(r => r.value).map(({ label, value }) => (
+              <div key={label}>
+                <dt className="text-[11px] text-neutral-400 mb-0.5">{label}</dt>
+                <dd className="text-xs font-semibold text-neutral-800">{value}</dd>
+              </div>
+            ))}
+          </div>
+        )}
+        {activeTab === 'Goals' && (
+          <ul className="space-y-1.5">
+            {(t?.goals ?? []).filter(Boolean).length > 0
+              ? (t?.goals ?? []).filter(Boolean).map((g: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-neutral-700">
+                    <span style={{ color: '#1A8C6A', flexShrink: 0 }}>→</span>{g}
+                  </li>
+                ))
+              : <p className="text-xs text-neutral-400">No goals defined</p>
+            }
+          </ul>
+        )}
+        {activeTab === 'Frustrations' && (
+          <ul className="space-y-1.5">
+            {(t?.frustrations ?? []).filter(Boolean).length > 0
+              ? (t?.frustrations ?? []).filter(Boolean).map((f: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-neutral-700">
+                    <span style={{ color: '#EF4444', flexShrink: 0 }}>→</span>{f}
+                  </li>
+                ))
+              : <p className="text-xs text-neutral-400">No frustrations defined</p>
+            }
+          </ul>
+        )}
+        {activeTab === 'Buying' && (
+          <p className="text-xs text-neutral-700 leading-relaxed">
+            {t?.buying_behavior || <span className="text-neutral-400">No buying behavior defined</span>}
+          </p>
+        )}
+        {activeTab === 'Notes' && (
+          <p className="text-xs text-neutral-700 leading-relaxed">
+            {t?.additional_context || <span className="text-neutral-400">No additional context</span>}
+          </p>
+        )}
+      </div>
+    </div>
   )
 }
