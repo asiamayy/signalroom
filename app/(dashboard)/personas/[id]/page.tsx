@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { INTERVIEW_TYPE_LABELS } from '@/lib/utils'
-import { MessageSquare, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Interview } from '@/types'
 
@@ -60,18 +60,15 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
             <path d="M0,130 C150,60 350,190 550,110 C700,50 800,140 800,100 L800,220 L0,220Z" fill="white" opacity="0.5"/>
           </svg>
 
-          {/* Floating stat cards + Start interview — top right */}
-          <div className="absolute top-4 right-5 z-20 flex flex-col items-end gap-2">
-            <Link href={`/interviews/new?persona_id=${persona.id}`}>
-              <button
-                className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all duration-150"
-                style={{ background: 'rgba(255,255,255,0.95)', color: '#0D5C45', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)' }}
-              >
-                <MessageSquare size={13} />
-                Start interview
-              </button>
+          {/* Top right: Start interview + stat cards */}
+          <div className="absolute top-5 right-6 z-20 flex flex-col items-end gap-3">
+            <Link
+              href={`/interviews/new?persona_id=${persona.id}`}
+              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              style={{ background: 'rgba(255,255,255,0.95)', color: '#0D5C45', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Start interview
             </Link>
             <div className="flex gap-2">
               <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
@@ -86,7 +83,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {/* Main hero content */}
-          <div className="relative z-10 flex items-center gap-6 px-8 pt-8 pb-7" style={{ paddingRight: '240px' }}>
+          <div className="relative z-10 flex items-center gap-6 px-8 pt-8 pb-7" style={{ paddingRight: '260px' }}>
             <div className="flex-shrink-0" style={{ border: '3px solid rgba(255,255,255,0.4)', borderRadius: '50%', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' }}>
               <PersonaAvatar
                 avatarUrl={persona.avatar_url}
@@ -140,7 +137,6 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
       {/* ── Card grid ── */}
       <div className="p-6 grid grid-cols-3 gap-4">
 
-        {/* Demographics */}
         <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
           <h2 className="text-sm font-bold text-neutral-900 mb-4">Demographics</h2>
           <div className="grid grid-cols-2 gap-3">
@@ -160,7 +156,6 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        {/* Goals */}
         {t?.goals?.filter(Boolean).length > 0 && (
           <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
             <h2 className="text-sm font-bold text-neutral-900 mb-4">Goals</h2>
@@ -175,7 +170,6 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           </div>
         )}
 
-        {/* Frustrations */}
         {t?.frustrations?.filter(Boolean).length > 0 && (
           <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
             <h2 className="text-sm font-bold text-neutral-900 mb-4">Frustrations</h2>
@@ -190,7 +184,6 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           </div>
         )}
 
-        {/* Buying behavior */}
         {t?.buying_behavior && (
           <div className="col-span-2 rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
             <h2 className="text-sm font-bold text-neutral-900 mb-3">Buying Behavior</h2>
@@ -198,7 +191,6 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           </div>
         )}
 
-        {/* Interviews */}
         <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-neutral-900">Interviews</h2>
@@ -216,11 +208,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           ) : (
             <div className="space-y-0.5">
               {interviews.map((iv: Interview) => (
-                <Link
-                  key={iv.id}
-                  href={`/interviews/${iv.id}`}
-                  className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-neutral-50 transition-colors group"
-                >
+                <Link key={iv.id} href={`/interviews/${iv.id}`} className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-neutral-50 transition-colors group">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-neutral-800 truncate">{iv.title}</p>
                     <p className="text-xs text-neutral-400">{INTERVIEW_TYPE_LABELS[iv.type]}</p>
@@ -232,7 +220,6 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           )}
         </div>
 
-        {/* Additional context */}
         {t?.additional_context && (
           <div className="col-span-2 rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
             <h2 className="text-sm font-bold text-neutral-900 mb-3">Additional Context</h2>

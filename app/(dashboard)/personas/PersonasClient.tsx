@@ -104,7 +104,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         </div>
 
         {/* Horizontal tabs */}
-        <div className="flex px-6" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        <div className="flex px-6" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)', marginTop: '-1px' }}>
           {tabs.map(tab => (
             <button
               key={tab}

@@ -172,7 +172,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
             <button
               onClick={handleGenerateReport}
               disabled={!canReport || generatingReport}
-              className={cn('flex items-center gap-1.5 text-sm px-4 py-2 rounded-xl font-semibold transition-colors',
+              className={cn('flex items-center gap-1.5 text-sm px-5 py-2 rounded-lg font-semibold transition-colors',
                 canReport && !generatingReport ? 'text-white' : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
               )}
               style={canReport && !generatingReport ? { background: '#1A8C6A' } : {}}
