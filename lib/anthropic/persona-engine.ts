@@ -249,6 +249,9 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
 // ─── Generate persona suggestions ────────────────────────────────────────────
 
 export async function suggestPersonaTraits(description: string) {
+  // Rotate through name pools to avoid repetition
+  const nameContext = `Choose a name that reflects realistic demographic diversity — vary across ethnicities, backgrounds, and regions. Examples of diverse name pools to draw from: Latino/Hispanic (Sofia Ramirez, Miguel Torres, Lucia Herrera), East Asian (Jenny Park, David Kim, Mei Chen), South Asian (Priya Patel, Arjun Sharma, Ananya Singh), Black/African American (Marcus Johnson, Jasmine Williams, DeShawn Carter), Middle Eastern (Layla Hassan, Omar Khalil, Nadia Aoun), European (Anna Kowalski, James O'Brien, Elena Rossi), and others. Do NOT default to generic American names like Marcus Chen, Tyler Brooks, or similar. Pick something specific and varied based on the persona's location and background.`
+
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 800,
@@ -259,7 +262,7 @@ export async function suggestPersonaTraits(description: string) {
 
 Generate realistic, specific persona traits as JSON with this shape:
 {
-  "name": "Full name",
+  "name": "Full name — ${nameContext}",
   "age": number,
   "gender": "male" | "female" | "non-binary",
   "location": "City, State",
