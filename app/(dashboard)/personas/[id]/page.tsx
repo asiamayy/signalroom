@@ -60,26 +60,24 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
             <path d="M0,130 C150,60 350,190 550,110 C700,50 800,140 800,100 L800,220 L0,220Z" fill="white" opacity="0.5"/>
           </svg>
 
-          {/* Floating stat cards — top right, above the main content */}
-          <div className="absolute top-4 right-5 flex gap-2 z-10">
-            <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <div className="text-lg font-bold text-white leading-none">{interviews?.length ?? 0}</div>
-              <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Interviews</div>
-            </div>
-            <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <div className="text-lg font-bold text-white leading-none">Today</div>
-              <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Last active</div>
-            </div>
-          </div>
-
-          {/* Start interview button — below stat cards on right */}
-          <div className="absolute right-5 z-10" style={{ top: '88px' }}>
+          {/* Floating stat cards + Start interview — top right */}
+          <div className="absolute top-4 right-5 z-20 flex flex-col items-end gap-2">
             <Link href={`/interviews/new?persona_id=${persona.id}`}>
               <button className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.95)', color: '#0D5C45', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
                 <MessageSquare size={13} />
                 Start interview
               </button>
             </Link>
+            <div className="flex gap-2">
+              <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                <div className="text-lg font-bold text-white leading-none">{interviews?.length ?? 0}</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Interviews</div>
+              </div>
+              <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                <div className="text-lg font-bold text-white leading-none">Today</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Last active</div>
+              </div>
+            </div>
           </div>
 
           {/* Main hero content */}
