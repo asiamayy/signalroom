@@ -8,20 +8,21 @@ export default async function PersonasPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const [{ data: personas }, { data: profile }] = await Promise.all([
-    supabase.from('personas').select('*').order('created_at', { ascending: false }),
+    supabase.from('personas').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
     supabase.from('profiles').select('plan').eq('id', user!.id).single(),
   ])
 
   const plan = (profile?.plan ?? 'starter') as Plan
   const limit = PLAN_LIMITS[plan].personas
-  const count = personas?.length ?? 0
+  // Only count non-archived toward limit
+  const activeCount = (personas ?? []).filter((p: Persona) => !p.archived).length
 
   return (
     <PersonasClient
       initialPersonas={personas ?? []}
       plan={plan}
       limit={limit}
-      count={count}
+      count={activeCount}
     />
   )
 }

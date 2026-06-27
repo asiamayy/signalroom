@@ -96,6 +96,40 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ data }, { status: 201 })
 }
 
+export async function PATCH(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { id, action } = await request.json()
+  if (!id || !action) return NextResponse.json({ error: 'ID and action required' }, { status: 400 })
+
+  if (action === 'archive') {
+    const { error } = await supabase
+      .from('personas')
+      .update({ archived: true, archived_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', user.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
+
+  if (action === 'restore') {
+    const { error } = await supabase
+      .from('personas')
+      .update({ archived: false, archived_at: null })
+      .eq('id', id)
+      .eq('user_id', user.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
+
+  return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
+}
+
 export async function DELETE(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

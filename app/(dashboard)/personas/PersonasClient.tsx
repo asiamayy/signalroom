@@ -20,20 +20,25 @@ type FilterTab = typeof FILTER_TABS[number]
 export default function PersonasClient({ initialPersonas, plan, limit, count }: PersonasClientProps) {
   const [personas, setPersonas] = useState<Persona[]>(initialPersonas)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [archiving, setArchiving] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [filterTab, setFilterTab] = useState<FilterTab>('All Personas')
-  const [selectedId, setSelectedId] = useState<string | null>(initialPersonas[0]?.id ?? null)
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialPersonas.find(p => !p.archived)?.id ?? null
+  )
   const [sortBy, setSortBy] = useState('Recently updated')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [previewOpen, setPreviewOpen] = useState(true)
 
-  const atLimit = limit !== Infinity && personas.length >= limit
+  const active = personas.filter(p => !p.archived)
+  const archived = personas.filter(p => p.archived)
+  const atLimit = limit !== Infinity && active.length >= limit
   const selectedPersona = personas.find(p => p.id === selectedId)
 
   const handleDelete = async (e: React.MouseEvent, personaId: string) => {
     e.preventDefault()
     e.stopPropagation()
-    if (!confirm('Delete this persona? This cannot be undone.')) return
+    if (!confirm('Permanently delete this persona? This cannot be undone.')) return
     setDeleting(personaId)
     try {
       const res = await fetch('/api/personas', {
@@ -44,7 +49,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
       if (res.ok) {
         setPersonas(prev => {
           const next = prev.filter(p => p.id !== personaId)
-          setSelectedId(next[0]?.id ?? null)
+          setSelectedId(next.find(p => !p.archived)?.id ?? null)
           return next
         })
       }
@@ -53,7 +58,45 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
     }
   }
 
-  const filtered = personas.filter(p =>
+  const handleArchive = async (e: React.MouseEvent, personaId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setArchiving(personaId)
+    try {
+      const res = await fetch('/api/personas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: personaId, action: 'archive' }),
+      })
+      if (res.ok) {
+        setPersonas(prev => prev.map(p => p.id === personaId ? { ...p, archived: true } : p))
+        setSelectedId(prev => prev === personaId ? (personas.find(p => p.id !== personaId && !p.archived)?.id ?? null) : prev)
+      }
+    } finally {
+      setArchiving(null)
+    }
+  }
+
+  const handleRestore = async (personaId: string) => {
+    try {
+      const res = await fetch('/api/personas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: personaId, action: 'restore' }),
+      })
+      if (res.ok) {
+        setPersonas(prev => prev.map(p => p.id === personaId ? { ...p, archived: false } : p))
+      }
+    } catch {}
+  }
+
+  const baseFiltered = filterTab === 'All Personas'
+    ? personas.filter(p => !p.archived)
+    : filterTab === 'Active'
+    ? personas.filter(p => !p.archived)
+    : personas.filter(p => p.archived)
+
+  const filtered = baseFiltered.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     (p.traits?.job_title ?? '').toLowerCase().includes(search.toLowerCase())
   )
@@ -108,7 +151,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   background: 'none',
                 }}
               >
-                {tab} {tab === 'All Personas' ? `(${personas.length})` : tab === 'Active' ? `(${personas.length})` : '(0)'}
+                {tab} {tab === 'All Personas' ? `(${active.length})` : tab === 'Active' ? `(${active.length})` : `(${archived.length})`}
               </button>
             ))}
           </div>
@@ -186,19 +229,19 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       </div>
                     )}
 
-                    {/* Delete button — only on hover when not selected */}
+                    {/* Archive button — only on hover when not selected */}
                     {!isSelected && (
                       <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          onClick={(e) => handleDelete(e, persona.id)}
-                          disabled={deleting === persona.id}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-red-500 transition-colors"
+                          onClick={(e) => handleArchive(e, persona.id)}
+                          disabled={archiving === persona.id}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-amber-500 transition-colors"
                           style={{ background: 'white', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
-                          title="Delete"
+                          title="Archive persona"
                         >
-                          {deleting === persona.id
+                          {archiving === persona.id
                             ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                            : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                            : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
                           }
                         </button>
                       </div>
@@ -307,8 +350,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     <div className="flex gap-2 flex-shrink-0">
                       <Link href={`/personas/${persona.id}`} onClick={e => e.stopPropagation()} className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}>View</Link>
                       <Link href={`/interviews/new?persona_id=${persona.id}`} onClick={e => e.stopPropagation()} className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' }}>Interview</Link>
-                      <button onClick={e => handleDelete(e, persona.id)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-500" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                      <button onClick={e => handleArchive(e, persona.id)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-amber-500" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Archive">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
                       </button>
                     </div>
                   </div>
@@ -317,7 +360,50 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             </div>
           )}
 
-          {/* ── Inspector panel ── */}
+          {/* ── Archived view ── */}
+          {filterTab === 'Archived' && (
+            <div>
+              {archived.length === 0 ? (
+                <div className="flex items-center justify-center rounded-2xl py-12" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)' }}>
+                  <div className="text-center">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" className="mx-auto mb-3"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                    <p className="text-sm font-semibold text-neutral-500">No archived personas</p>
+                    <p className="text-xs text-neutral-400 mt-1">Archived personas appear here and don't count toward your limit</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {archived.map(persona => (
+                    <div key={persona.id} className="flex items-center gap-4 px-5 py-4 rounded-2xl" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', opacity: 0.8 }}>
+                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-neutral-700">{persona.name}</p>
+                        <p className="text-xs text-neutral-400">{persona.traits?.job_title ?? 'No role'}</p>
+                      </div>
+                      <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#F3F4F6', color: '#9CA3AF' }}>Archived</span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleRestore(persona.id)}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                          style={{ background: '#E8F5F1', color: '#0D5C45', border: '1px solid #A7D9C8' }}
+                        >
+                          Restore
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(e, persona.id)}
+                          disabled={deleting === persona.id}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors text-red-600"
+                          style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
+                        >
+                          {deleting === persona.id ? 'Deleting...' : 'Delete permanently'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {selectedPersona && filtered.length > 0 && (
             <>
               <InspectorPanel persona={selectedPersona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />

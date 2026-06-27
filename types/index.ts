@@ -47,6 +47,8 @@ export interface Persona {
   avatar_url: string | null
   traits: PersonaTraits
   tags: string[]
+  archived?: boolean
+  archived_at?: string | null
   created_at: string
   updated_at: string
 }
