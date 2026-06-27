@@ -14,15 +14,15 @@ export default async function PersonasPage() {
 
   const plan = (profile?.plan ?? 'starter') as Plan
   const limit = PLAN_LIMITS[plan].personas
-  // Only count non-archived toward limit
-  const activeCount = (personas ?? []).filter((p: Persona) => !p.archived).length
+  // All personas (active + archived) count toward limit
+  const totalCount = (personas ?? []).length
 
   return (
     <PersonasClient
       initialPersonas={personas ?? []}
       plan={plan}
       limit={limit}
-      count={activeCount}
+      count={totalCount}
     />
   )
 }

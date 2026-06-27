@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       .from('personas')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
+    // All personas (active + archived) count toward limit
 
     if ((count ?? 0) >= limit) {
       return NextResponse.json({

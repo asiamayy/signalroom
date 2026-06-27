@@ -32,7 +32,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
 
   const active = personas.filter(p => !p.archived)
   const archived = personas.filter(p => p.archived)
-  const atLimit = limit !== Infinity && active.length >= limit
+  // Total personas (active + archived) counts toward limit
+  const atLimit = limit !== Infinity && personas.length >= limit
   // Only show inspector panel for non-archived personas
   const selectedPersonaRaw = personas.find(p => p.id === selectedId)
   const selectedPersona = selectedPersonaRaw?.archived ? null : selectedPersonaRaw
@@ -268,7 +269,10 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
 
                     {/* Archive button — only on hover when not selected */}
                     {!isSelected && (
-                      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div
+                        className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={e => e.stopPropagation()}
+                      >
                         <button
                           onClick={(e) => handleArchive(e, persona.id)}
                           disabled={archiving === persona.id}
