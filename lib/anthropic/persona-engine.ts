@@ -78,7 +78,8 @@ export async function streamPersonaResponse(
   messages: Message[],
   onChunk: (text: string) => void,
   imageBase64: string | null = null,
-  devilsAdvocate: boolean = false
+  devilsAdvocate: boolean = false,
+  imageMediaType: string = 'image/jpeg'
 ): Promise<string> {
   const systemPrompt = buildPersonaSystemPrompt(persona, interviewType, context, devilsAdvocate)
 
@@ -88,6 +89,9 @@ export async function streamPersonaResponse(
 
     // Add image to the last user message if provided
     if (isLast && isUser && imageBase64) {
+      // Validate media type — only Claude-supported types
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+      const safeMediaType = validTypes.includes(imageMediaType) ? imageMediaType : 'image/jpeg'
       return {
         role: 'user' as const,
         content: [
@@ -95,7 +99,7 @@ export async function streamPersonaResponse(
             type: 'image' as const,
             source: {
               type: 'base64' as const,
-              media_type: 'image/jpeg' as const,
+              media_type: safeMediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
               data: imageBase64,
             },
           },

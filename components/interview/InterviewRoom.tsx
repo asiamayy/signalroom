@@ -17,6 +17,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
   const [input, setInput] = useState('')
   const [imageData, setImageData] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageMediaType, setImageMediaType] = useState<string>('image/jpeg')
   const [streaming, setStreaming] = useState(false)
   const [streamingText, setStreamingText] = useState('')
   const [generatingReport, setGeneratingReport] = useState(false)
@@ -47,6 +48,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) { setError('Please upload an image file'); return }
+    setImageMediaType(file.type || 'image/jpeg')
     const reader = new FileReader()
     reader.onload = (ev) => {
       const result = ev.target?.result as string
@@ -68,6 +70,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
     setError('')
     setImageData(null)
     setImagePreview(null)
+    setImageMediaType('image/jpeg')
     if (fileInputRef.current) fileInputRef.current.value = ''
 
     const userMsg: Message = {
@@ -86,7 +89,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
       const res = await fetch(`/api/interviews/${interview.id}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, image: currentImageData }),
+        body: JSON.stringify({ message: text, image: currentImageData, imageMediaType }),
       })
       if (!res.ok) throw new Error('Failed to send message')
       const reader = res.body?.getReader()

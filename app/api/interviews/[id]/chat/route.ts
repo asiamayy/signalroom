@@ -15,7 +15,7 @@ export async function POST(
   }
 
   const { id } = await params
-  const { message, image } = await request.json()
+  const { message, image, imageMediaType } = await request.json()
 
   const { data: interview, error: interviewError } = await supabase
     .from('interviews')
@@ -53,7 +53,8 @@ export async function POST(
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`))
           },
           image ?? null,
-          interview.devils_advocate ?? false
+          interview.devils_advocate ?? false,
+          imageMediaType ?? 'image/jpeg'
         )
 
         const personaMessage: Message = {
