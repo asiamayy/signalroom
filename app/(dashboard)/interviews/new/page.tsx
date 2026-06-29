@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronRight, MessageSquare, Swords } from 'lucide-react'
 import { Button, Input, Textarea, Select, Card } from '@/components/ui'
 import { cn, INTERVIEW_TYPE_LABELS, getAvatarColor } from '@/lib/utils'
+import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Persona, InterviewType } from '@/types'
 
 const INTERVIEW_TYPES: { value: InterviewType; label: string; description: string }[] = [
@@ -96,9 +97,6 @@ function NewInterviewForm() {
           {!loading && personas.length > 0 && (
             <div className="grid grid-cols-2 gap-2">
               {personas.map(persona => {
-                const color = typeof persona.avatar_color === 'string'
-                  ? JSON.parse(persona.avatar_color)
-                  : persona.avatar_color
                 const selected = persona.id === personaId
 
                 return (
@@ -113,15 +111,14 @@ function NewInterviewForm() {
                         : 'border-neutral-200 bg-white hover:border-neutral-300'
                     )}
                   >
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
-                      style={{
-                        background: selected ? 'rgba(255,255,255,0.15)' : color?.bg,
-                        color: selected ? 'white' : color?.text,
-                      }}
-                    >
-                      {persona.avatar_initials}
-                    </div>
+                  <PersonaAvatar
+                      avatarUrl={persona.avatar_url}
+                      avatarInitials={persona.avatar_initials}
+                      avatarColor={persona.avatar_color}
+                      name={persona.name}
+                      size="sm"
+                      className="flex-shrink-0"
+                    />
                     <div className="min-w-0">
                       <p className={cn('text-sm font-medium truncate', selected ? 'text-white' : 'text-neutral-900')}>
                         {persona.name}
