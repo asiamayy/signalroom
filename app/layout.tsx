@@ -5,11 +5,25 @@ export const metadata: Metadata = {
   title: 'SignalRoom — AI market research for founders and marketers',
   description: 'Build AI personas that represent your target customer. Interview them. Get structured research insights in minutes — not weeks, not $8,000.',
   openGraph: {
-    title: 'SignalRoom',
-    description: 'AI-powered market research for founders and marketers.',
-    url: 'https://signalroom.io',
+    title: 'SignalRoom — AI market research for founders and marketers',
+    description: 'Build AI personas that represent your target customer. Interview them. Get structured research insights in minutes — not weeks, not $8,000.',
+    url: 'https://www.getsignalroom.com',
     siteName: 'SignalRoom',
     type: 'website',
+    images: [
+      {
+        url: 'https://www.getsignalroom.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'SignalRoom — AI market research',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SignalRoom — AI market research for founders and marketers',
+    description: 'Build AI personas that represent your target customer. Interview them. Get structured research insights in minutes — not weeks, not $8,000.',
+    images: ['https://www.getsignalroom.com/og-image.png'],
   },
 }
 
