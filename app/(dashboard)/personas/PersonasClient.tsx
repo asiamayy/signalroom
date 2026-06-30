@@ -274,7 +274,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                       transform: 'translateY(0)',
                       transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
-                      order: cardIndex,
+                      order: cardIndex * 10,
                     }}
                   >
                     {/* Green checkmark when selected */}
@@ -363,7 +363,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               })}
 
               {!atLimit && (
-                <Link href="/personas/new" className="flex items-center justify-center rounded-2xl transition-all duration-200 min-h-[300px]" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)', order: filtered.length }}>
+                <Link href="/personas/new" className="flex items-center justify-center rounded-2xl transition-all duration-200 min-h-[300px]" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)', order: filtered.length * 10 }}>
                   <div className="text-center">
                     <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: '#F3F4F6' }}>
                       <Plus size={20} className="text-neutral-400" />
@@ -381,9 +381,11 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                 const totalCards = filtered.length + (atLimit ? 0 : 1) // include "new persona" card
                 const row = Math.floor(idx / columns)
                 const lastRow = Math.floor((totalCards - 1) / columns)
-                // If selected persona is in the last row, panel goes after everything
-                // Otherwise it goes right after that row's last card
-                const panelOrder = row === lastRow ? totalCards + 1 : (row + 1) * columns
+                // Last card's order in that row, using the x10 scale; +5 sits strictly between rows
+                const lastCardIndexInRow = Math.min((row + 1) * columns, totalCards) - 1
+                const panelOrder = row === lastRow
+                  ? (totalCards - 1) * 10 + 5  // after the very last card
+                  : lastCardIndexInRow * 10 + 5 // right after this row, before the next row starts
                 return (
                   <div style={{ gridColumn: '1 / -1', order: panelOrder }}>
                     <InspectorPanel persona={selectedPersona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />
