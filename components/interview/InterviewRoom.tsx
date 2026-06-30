@@ -165,31 +165,32 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
       <div className="flex flex-col flex-1 overflow-hidden">
 
         {/* Top bar */}
-        <header className="flex items-center justify-between px-5 py-3.5 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between gap-2 px-3 sm:px-5 py-3 sm:py-3.5 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <PersonaAvatar
               avatarUrl={interview.persona?.avatar_url}
               avatarInitials={interview.persona?.avatar_initials}
               avatarColor={interview.persona?.avatar_color}
               name={interview.persona?.name}
               size="sm"
+              className="flex-shrink-0"
             />
-            <div>
-              <h1 className="text-sm font-semibold text-neutral-900">{interview.title}</h1>
-              <p className="text-xs text-neutral-400">
+            <div className="min-w-0">
+              <h1 className="text-sm font-semibold text-neutral-900 truncate">{interview.title}</h1>
+              <p className="text-xs text-neutral-400 truncate">
                 {interview.persona?.name ?? 'Unknown'} · {INTERVIEW_TYPE_LABELS[interview.type]}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-neutral-400">{messages.length} messages</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            <span className="hidden sm:inline text-xs text-neutral-400">{messages.length} messages</span>
 
             {/* Persona panel toggle */}
             <button
               onClick={() => setPanelOpen(o => !o)}
               title="View persona"
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
               style={panelOpen
                 ? { background: '#E8F5F1', border: '1px solid #1A8C6A', color: '#0D5C45' }
                 : { background: 'white', border: '1px solid rgba(0,0,0,0.1)', color: '#9CA3AF' }
@@ -201,33 +202,33 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
             <button
               onClick={handleGenerateReport}
               disabled={!canReport || generatingReport}
-              className={cn('flex items-center gap-1.5 text-sm px-5 py-2 rounded-lg font-semibold transition-colors',
+              className={cn('flex items-center gap-1.5 text-sm px-3 sm:px-5 py-2 rounded-lg font-semibold transition-colors flex-shrink-0',
                 canReport && !generatingReport ? 'text-white' : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
               )}
               style={canReport && !generatingReport ? { background: '#1A8C6A' } : {}}
             >
               {generatingReport ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
-              {generatingReport ? 'Generating...' : 'Get report'}
+              <span className="hidden sm:inline">{generatingReport ? 'Generating...' : 'Get report'}</span>
             </button>
           </div>
         </header>
 
         {/* Devil's Advocate banner */}
         {(interview as any).devils_advocate && (
-          <div className="px-5 py-2.5 flex-shrink-0" style={{ background: '#FEF2F2', borderBottom: '1px solid #FECACA' }}>
+          <div className="px-3 sm:px-5 py-2.5 flex-shrink-0" style={{ background: '#FEF2F2', borderBottom: '1px solid #FECACA' }}>
             <span className="text-xs font-medium text-red-700">⚠ Devil's Advocate mode — persona leads with skepticism first</span>
           </div>
         )}
 
         {/* Context banner */}
         {interview.context && (
-          <div className="px-5 py-2.5 flex-shrink-0" style={{ background: '#FFFBEB', borderBottom: '1px solid #FDE68A' }}>
+          <div className="px-3 sm:px-5 py-2.5 flex-shrink-0" style={{ background: '#FFFBEB', borderBottom: '1px solid #FDE68A' }}>
             <span className="text-xs text-amber-800"><span className="font-medium">Context: </span>{interview.context}</span>
           </div>
         )}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+        <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
           {messages.length === 0 && !streaming && (
             <div className="flex flex-col items-center justify-center h-full text-center max-w-sm mx-auto">
               <PersonaAvatar
@@ -266,7 +267,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               />
               <div className="flex-1">
                 <p className="text-xs text-neutral-400 mb-1 font-medium">{interview.persona?.name}</p>
-                <div className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                <div className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[88%] sm:max-w-[85%]" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                   {streamingText
                     ? <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">{streamingText}<span className="inline-block w-0.5 h-4 bg-neutral-400 ml-0.5 animate-pulse align-middle" /></p>
                     : <div className="flex gap-1 py-1"><span className="w-1.5 h-1.5 bg-neutral-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} /><span className="w-1.5 h-1.5 bg-neutral-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><span className="w-1.5 h-1.5 bg-neutral-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>
@@ -283,7 +284,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         {error && <div className="px-5 py-2 flex-shrink-0" style={{ background: '#FEF2F2', borderTop: '1px solid #FECACA' }}><p className="text-xs text-red-700">{error}</p></div>}
 
         {/* Input bar */}
-        <div className="flex-shrink-0 px-5 py-4" style={{ background: 'white', borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+        <div className="flex-shrink-0 px-3 sm:px-5 py-3 sm:py-4" style={{ background: 'white', borderTop: '1px solid rgba(0,0,0,0.07)' }}>
           {imagePreview && (
             <div className="relative inline-block mb-3">
               <img src={imagePreview} alt="Upload preview" className="h-20 w-auto rounded-xl object-cover" style={{ border: '1px solid rgba(0,0,0,0.1)' }} />
@@ -292,12 +293,12 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               </button>
             </div>
           )}
-          <div className="flex gap-3 items-end">
+          <div className="flex gap-2 sm:gap-3 items-end">
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={streaming}
-              className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all"
+              className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all"
               style={imagePreview
                 ? { background: '#E8F5F1', border: '1.5px solid #1A8C6A', color: '#1A8C6A' }
                 : { background: 'white', border: '1.5px solid rgba(0,0,0,0.12)', color: '#9CA3AF' }
@@ -317,14 +318,14 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
                 onKeyDown={handleKeyDown}
                 placeholder={imagePreview ? `Ask ${interview.persona?.name ?? 'your persona'} about this image...` : `Ask ${interview.persona?.name ?? 'your persona'} something...`}
                 rows={1}
-                className="w-full px-4 py-3 text-sm bg-transparent text-neutral-900 placeholder:text-neutral-400 resize-none focus:outline-none"
+                className="w-full px-3 sm:px-4 py-3 text-sm bg-transparent text-neutral-900 placeholder:text-neutral-400 resize-none focus:outline-none"
                 style={{ minHeight: '44px', maxHeight: '160px' }}
               />
             </div>
             <button
               onClick={handleSend}
               disabled={(!input.trim() && !imageData) || streaming}
-              className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-colors"
+              className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-colors"
               style={(input.trim() || imageData) && !streaming
                 ? { background: '#1A8C6A', color: 'white' }
                 : { background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' }
@@ -333,17 +334,26 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               <Send size={15} />
             </button>
           </div>
-          <p className="text-center text-xs text-neutral-400 mt-2">
+          <p className="hidden sm:block text-center text-xs text-neutral-400 mt-2">
             Enter to send · Shift+Enter for new line · <ImagePlus size={10} className="inline mb-0.5" /> to share an image
           </p>
         </div>
       </div>
 
-      {/* ── Collapsible persona panel ── */}
+      {/* ── Collapsible persona panel — desktop: inline sidebar, mobile: overlay drawer ── */}
+      {panelOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-50"
+          style={{ background: 'rgba(0,0,0,0.4)' }}
+          onClick={() => setPanelOpen(false)}
+        />
+      )}
       <div
-        className="flex-shrink-0 overflow-hidden flex flex-col"
+        className={cn(
+          'flex-shrink-0 overflow-hidden flex flex-col',
+          panelOpen ? 'fixed md:relative inset-y-0 right-0 z-50 md:z-auto w-[85vw] max-w-[320px] md:w-[270px]' : 'w-0'
+        )}
         style={{
-          width: panelOpen ? '270px' : '0px',
           transition: 'width 0.25s ease',
           background: 'white',
           borderLeft: panelOpen ? '1px solid rgba(0,0,0,0.07)' : 'none',
@@ -434,7 +444,7 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[70%]">
+        <div className="max-w-[88%] sm:max-w-[70%]">
           {message.image_url && (
             <div className="mb-2 flex justify-end">
               <img src={message.image_url} alt="Shared image" className="max-h-48 w-auto rounded-xl object-cover" style={{ border: '1px solid rgba(0,0,0,0.1)' }} />
@@ -463,7 +473,7 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
       />
       <div className="flex-1">
         <p className="text-xs text-neutral-400 mb-1 font-medium">{persona?.name}</p>
-        <div className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[88%] sm:max-w-[85%]" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">{message.content}</p>
         </div>
         <p className="text-xs text-neutral-400 mt-1">{formatRelativeTime(message.timestamp)}</p>

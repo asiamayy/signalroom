@@ -51,7 +51,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
     <div style={{ background: '#F4F6F8', minHeight: '100%' }}>
 
       {/* ── Hero banner ── */}
-      <div className="p-6 pb-0">
+      <div className="p-4 sm:p-6 pb-0">
         <div className="rounded-2xl overflow-hidden relative" style={{ background: 'linear-gradient(115deg, #0A4F3A 0%, #147A5C 40%, #2BAE86 75%, #7DE0C0 100%)' }}>
 
           {/* Wave SVG */}
@@ -60,8 +60,8 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
             <path d="M0,130 C150,60 350,190 550,110 C700,50 800,140 800,100 L800,220 L0,220Z" fill="white" opacity="0.5"/>
           </svg>
 
-          {/* Top right: Start interview + stat cards */}
-          <div className="absolute top-5 right-6 z-20 flex flex-col items-end gap-3">
+          {/* Top right: Start interview + stat cards — desktop only, absolute positioned */}
+          <div className="hidden md:flex absolute top-5 right-6 z-20 flex-col items-end gap-3">
             <Link
               href={`/interviews/new?persona_id=${persona.id}`}
               className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg"
@@ -83,7 +83,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {/* Main hero content */}
-          <div className="relative z-10 flex items-center gap-6 px-8 pt-8 pb-7" style={{ paddingRight: '260px' }}>
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-7 md:pr-[260px]">
             <div className="flex-shrink-0" style={{ border: '3px solid rgba(255,255,255,0.4)', borderRadius: '50%', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' }}>
               <PersonaAvatar
                 avatarUrl={persona.avatar_url}
@@ -93,8 +93,8 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
                 size="xl"
               />
             </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="font-serif text-3xl text-white tracking-tight mb-1" style={{ letterSpacing: '-0.5px' }}>
+            <div className="flex-1 min-w-0 w-full">
+              <h1 className="font-serif text-2xl sm:text-3xl text-white tracking-tight mb-1" style={{ letterSpacing: '-0.5px' }}>
                 {persona.name}
               </h1>
               <p className="text-sm mb-3" style={{ color: 'rgba(255,255,255,0.8)' }}>
@@ -110,8 +110,30 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
 
+          {/* Mobile: Start interview + stat cards inline below content */}
+          <div className="md:hidden relative z-10 flex flex-col gap-3 px-5 pb-5">
+            <Link
+              href={`/interviews/new?persona_id=${persona.id}`}
+              className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl w-full"
+              style={{ background: 'rgba(255,255,255,0.95)', color: '#0D5C45', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Start interview
+            </Link>
+            <div className="flex gap-2">
+              <div className="flex-1 text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                <div className="text-lg font-bold text-white leading-none">{interviews?.length ?? 0}</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Interviews</div>
+              </div>
+              <div className="flex-1 text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                <div className="text-lg font-bold text-white leading-none">Today</div>
+                <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Last active</div>
+              </div>
+            </div>
+          </div>
+
           {/* Score bars */}
-          <div className="relative z-10 flex gap-10 px-8 py-5" style={{ background: 'rgba(0,0,0,0.15)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="relative z-10 flex flex-wrap gap-6 sm:gap-10 px-5 sm:px-8 py-4 sm:py-5" style={{ background: 'rgba(0,0,0,0.15)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
             <div>
               <p className="text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Tech savviness</p>
               <div className="flex items-center gap-1">
@@ -135,7 +157,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
       </div>
 
       {/* ── Card grid ── */}
-      <div className="p-6 grid grid-cols-3 gap-4">
+      <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
         <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
           <h2 className="text-sm font-bold text-neutral-900 mb-4">Demographics</h2>
@@ -185,7 +207,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
         )}
 
         {t?.buying_behavior && (
-          <div className="col-span-2 rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
+          <div className="md:col-span-2 rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
             <h2 className="text-sm font-bold text-neutral-900 mb-3">Buying Behavior</h2>
             <p className="text-sm text-neutral-700 leading-relaxed">{t.buying_behavior}</p>
           </div>
@@ -221,7 +243,7 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {t?.additional_context && (
-          <div className="col-span-2 rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
+          <div className="md:col-span-2 rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)' }}>
             <h2 className="text-sm font-bold text-neutral-900 mb-3">Additional Context</h2>
             <p className="text-sm text-neutral-700 leading-relaxed">{t.additional_context}</p>
           </div>

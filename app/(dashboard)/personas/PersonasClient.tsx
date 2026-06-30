@@ -119,9 +119,9 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
       <div style={{ background: '#F4F6F8', minHeight: '100%' }}>
 
         {/* ── Topbar ── */}
-        <div className="flex items-center justify-between px-6 py-3.5" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-3.5" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
           <div className="flex items-center gap-3 flex-1">
-            <div className="flex items-center gap-2 rounded-xl px-3 py-2 max-w-xs flex-1" style={{ background: '#F3F4F6' }}>
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2 w-full sm:max-w-xs flex-1" style={{ background: '#F3F4F6' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input
                 type="text"
@@ -132,13 +132,13 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               />
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {atLimit ? (
-              <Link href="/settings" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl" style={{ background: '#E8F5F1', color: '#0D5C45', border: '1px solid #A7D9C8' }}>
+              <Link href="/settings" className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl flex-1 sm:flex-none" style={{ background: '#E8F5F1', color: '#0D5C45', border: '1px solid #A7D9C8' }}>
                 Upgrade plan
               </Link>
             ) : (
-              <Link href="/personas/new" className="flex items-center gap-1.5 text-sm font-semibold px-5 py-2.5 rounded-xl text-white" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 8px rgba(26,140,106,0.3)' }}>
+              <Link href="/personas/new" className="flex items-center justify-center gap-1.5 text-sm font-semibold px-5 py-2.5 rounded-xl text-white flex-1 sm:flex-none" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 8px rgba(26,140,106,0.3)' }}>
                 <Plus size={14} />
                 Create Persona
               </Link>
@@ -147,7 +147,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         </div>
 
         {/* ── Filter tabs + sort/view controls ── */}
-        <div className="flex items-center justify-between px-6" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 px-4 sm:px-6 overflow-x-auto" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
           <div className="flex">
             {FILTER_TABS.map(tab => (
               <button
@@ -238,7 +238,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
 
           {/* ── Grid view ── */}
           {filtered.length > 0 && viewMode === 'grid' && filterTab !== 'Archived' && (
-            <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
               {filtered.map((persona: Persona) => {
                 const isSelected = selectedId === persona.id
                 return (
@@ -415,7 +415,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   </div>
                 </div>
               ) : (
-                <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
                   {archived.map((persona: Persona) => {
                     const isSelected = selectedId === persona.id
                     return (
@@ -538,32 +538,34 @@ function InspectorPanel({ persona, open, onToggle }: { persona: Persona; open: b
 
       {/* Panel header with persona snapshot */}
       {open && (
-        <div className="flex items-start gap-5 px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-          {/* Avatar */}
-          <PersonaAvatar
-            avatarUrl={persona.avatar_url}
-            avatarInitials={persona.avatar_initials}
-            avatarColor={persona.avatar_color}
-            name={persona.name}
-            size="md"
-            className="flex-shrink-0"
-          />
+        <div className="flex flex-col md:flex-row items-start md:items-start gap-4 md:gap-5 px-4 sm:px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+          {/* Avatar + name row */}
+          <div className="flex items-start gap-4 w-full md:w-auto">
+            <PersonaAvatar
+              avatarUrl={persona.avatar_url}
+              avatarInitials={persona.avatar_initials}
+              avatarColor={persona.avatar_color}
+              name={persona.name}
+              size="md"
+              className="flex-shrink-0"
+            />
 
-          {/* Name + meta */}
-          <div className="flex-shrink-0 w-44">
-            <h3 className="text-sm font-bold text-neutral-900 mb-0.5 flex items-center gap-1.5">
-              {persona.name}
-              <Check size={12} style={{ color: '#1A8C6A' }} strokeWidth={3} />
-            </h3>
-            <p className="text-xs text-neutral-500 mb-2">{t?.job_title}{t?.location ? ` · ${t.location}` : ''}</p>
-            {t?.industry && <p className="text-xs text-neutral-400 flex items-center gap-1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>{t.industry}</p>}
+            {/* Name + meta */}
+            <div className="flex-shrink-0 w-44">
+              <h3 className="text-sm font-bold text-neutral-900 mb-0.5 flex items-center gap-1.5">
+                {persona.name}
+                <Check size={12} style={{ color: '#1A8C6A' }} strokeWidth={3} />
+              </h3>
+              <p className="text-xs text-neutral-500 mb-2">{t?.job_title}{t?.location ? ` · ${t.location}` : ''}</p>
+              {t?.industry && <p className="text-xs text-neutral-400 flex items-center gap-1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>{t.industry}</p>}
+            </div>
           </div>
 
-          {/* Divider */}
-          <div className="self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
+          {/* Divider - hidden on mobile */}
+          <div className="hidden md:block self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
 
           {/* Goal */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full md:w-auto">
             <div className="flex items-center gap-1.5 mb-1.5">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A8C6A" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               <span className="text-xs font-semibold text-neutral-600">Goal</span>
@@ -571,11 +573,11 @@ function InspectorPanel({ persona, open, onToggle }: { persona: Persona; open: b
             <p className="text-xs text-neutral-700 leading-relaxed">{(t?.goals ?? []).filter(Boolean)[0] ?? '—'}</p>
           </div>
 
-          {/* Divider */}
-          <div className="self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
+          {/* Divider - hidden on mobile */}
+          <div className="hidden md:block self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
 
           {/* Pain point */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full md:w-auto">
             <div className="flex items-center gap-1.5 mb-1.5">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               <span className="text-xs font-semibold text-neutral-600">Pain Point</span>
@@ -583,11 +585,11 @@ function InspectorPanel({ persona, open, onToggle }: { persona: Persona; open: b
             <p className="text-xs text-neutral-700 leading-relaxed">{(t?.frustrations ?? []).filter(Boolean)[0] ?? '—'}</p>
           </div>
 
-          {/* Divider */}
-          <div className="self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
+          {/* Divider - hidden on mobile */}
+          <div className="hidden md:block self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
 
           {/* Buying trigger */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full md:w-auto">
             <div className="flex items-center gap-1.5 mb-1.5">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A8C6A" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
               <span className="text-xs font-semibold text-neutral-600">Buying Trigger</span>
@@ -596,8 +598,8 @@ function InspectorPanel({ persona, open, onToggle }: { persona: Persona; open: b
           </div>
 
           {/* View full persona link */}
-          <div className="flex-shrink-0 self-end">
-            <Link href={`/personas/${persona.id}`} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-colors" style={{ background: '#F3F4F6', color: '#374151', border: '1px solid rgba(0,0,0,0.1)' }}>
+          <div className="flex-shrink-0 w-full md:w-auto md:self-end">
+            <Link href={`/personas/${persona.id}`} className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-colors w-full md:w-auto" style={{ background: '#F3F4F6', color: '#374151', border: '1px solid rgba(0,0,0,0.1)' }}>
               View full persona
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
             </Link>

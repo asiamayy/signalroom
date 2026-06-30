@@ -51,7 +51,7 @@ export default function InterviewsPage() {
 
   return (
     <div style={{ background: '#F4F6F8', minHeight: '100%' }}>
-      <div className="flex items-center justify-between px-7 py-5" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-7 py-4 sm:py-5" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
         <div>
           <h1 className="font-serif text-2xl tracking-tight text-neutral-900">Interviews</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Conversations with your personas</p>
@@ -62,7 +62,7 @@ export default function InterviewsPage() {
         </Link>
       </div>
 
-      <div className="px-7 py-6">
+      <div className="px-4 sm:px-7 py-6">
         {loading && (
           <div className="space-y-3">
             {[1,2,3].map(i => <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: 'white' }} />)}
@@ -90,7 +90,7 @@ export default function InterviewsPage() {
                 <div key={interview.id} className="relative group">
                   <Link
                     href={`/interviews/${interview.id}`}
-                    className="flex items-center gap-4 px-5 py-4 rounded-2xl transition-all block"
+                    className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 rounded-2xl transition-all block"
                     style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.05)' }}
                   >
                     <PersonaAvatar
@@ -102,15 +102,15 @@ export default function InterviewsPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-semibold text-neutral-900 truncate">{interview.title}</h3>
-                      <p className="text-xs text-neutral-400 mt-0.5">
+                      <p className="text-xs text-neutral-400 mt-0.5 truncate">
                         {interview.persona?.name ?? 'Unknown'} · {INTERVIEW_TYPE_LABELS[interview.type]}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0 pr-8">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 pr-7 sm:pr-8">
                       <span className="text-xs px-2.5 py-1 rounded-full font-semibold" style={statusStyle}>
                         {interview.status}
                       </span>
-                      <span className="text-xs text-neutral-400">{formatRelativeTime(interview.updated_at)}</span>
+                      <span className="hidden sm:inline text-xs text-neutral-400">{formatRelativeTime(interview.updated_at)}</span>
                     </div>
                   </Link>
 

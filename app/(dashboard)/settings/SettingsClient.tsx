@@ -226,7 +226,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
       {/* ── Plans ────────────────────────────────────────────────────────── */}
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Plans</h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {PLANS.map(plan => {
             const isCurrent = plan.id === currentPlan
             const isUpgrade = PLANS.findIndex(p => p.id === plan.id) > PLANS.findIndex(p => p.id === currentPlan)
