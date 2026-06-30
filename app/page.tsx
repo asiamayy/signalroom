@@ -185,7 +185,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── How it works ── */}
-      <section id="how-it-works" className="max-w-5xl mx-auto px-5 py-12">
+      <section id="how-it-works" className="max-w-5xl mx-auto px-5 py-12 scroll-mt-20">
         <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">How it works</p>
         <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-8">
           Three steps to <em className="text-[#1A9B76] not-italic">real insight</em>
@@ -235,7 +235,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── ROI Calculator ── */}
-      <section id="roi" className="max-w-5xl mx-auto px-5 py-12">
+      <section id="roi" className="max-w-5xl mx-auto px-5 py-12 scroll-mt-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">ROI calculator</p>
@@ -263,7 +263,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="max-w-5xl mx-auto px-5 py-12">
+      <section id="pricing" className="max-w-5xl mx-auto px-5 py-12 scroll-mt-20">
         <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Pricing</p>
         <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-2">
           Simple pricing. <em className="text-[#1A9B76] not-italic">No surprises.</em>
