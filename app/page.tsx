@@ -112,6 +112,16 @@ const PLANS = [
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const scrollToSection = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    const el = document.getElementById(id)
+    if (!el) return
+    const navHeight = 80 // matches nav bar height with buffer
+    const top = el.getBoundingClientRect().top + window.scrollY - navHeight
+    window.scrollTo({ top, behavior: 'smooth' })
+    setMenuOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-900">
 
@@ -121,9 +131,9 @@ export default function LandingPage() {
           <Logo href="/" size="md" />
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-6">
-            <a href="#how-it-works" className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">How it works</a>
-            <a href="#pricing" className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">Pricing</a>
-            <a href="#roi" className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">ROI</a>
+            <a href="#how-it-works" onClick={scrollToSection('how-it-works')} className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">How it works</a>
+            <a href="#pricing" onClick={scrollToSection('pricing')} className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">Pricing</a>
+            <a href="#roi" onClick={scrollToSection('roi')} className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">ROI</a>
             <Link href="/login" className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">Sign in</Link>
             <Link href="/signup" className="bg-neutral-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-neutral-700 transition-colors">
               Start free
@@ -137,9 +147,9 @@ export default function LandingPage() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden border-t border-neutral-100 bg-white px-5 py-4 space-y-3">
-            <a href="#how-it-works" onClick={() => setMenuOpen(false)} className="block text-sm text-neutral-600 py-1">How it works</a>
-            <a href="#pricing" onClick={() => setMenuOpen(false)} className="block text-sm text-neutral-600 py-1">Pricing</a>
-            <a href="#roi" onClick={() => setMenuOpen(false)} className="block text-sm text-neutral-600 py-1">ROI</a>
+            <a href="#how-it-works" onClick={scrollToSection('how-it-works')} className="block text-sm text-neutral-600 py-1">How it works</a>
+            <a href="#pricing" onClick={scrollToSection('pricing')} className="block text-sm text-neutral-600 py-1">Pricing</a>
+            <a href="#roi" onClick={scrollToSection('roi')} className="block text-sm text-neutral-600 py-1">ROI</a>
             <Link href="/login" className="block text-sm text-neutral-600 py-1">Sign in</Link>
             <Link href="/signup" className="block text-center bg-neutral-900 text-white text-sm px-4 py-2.5 rounded-lg mt-2">
               Start free
@@ -166,7 +176,7 @@ export default function LandingPage() {
           <Link href="/signup" className="w-full sm:w-auto bg-neutral-900 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-neutral-700 transition-colors inline-flex items-center justify-center gap-2">
             Start free trial <ArrowRight size={15} />
           </Link>
-          <a href="#roi" className="w-full sm:w-auto border border-neutral-200 bg-white text-neutral-700 px-6 py-3 rounded-lg text-sm font-medium hover:border-neutral-300 transition-colors text-center">
+          <a href="#roi" onClick={scrollToSection('roi')} className="w-full sm:w-auto border border-neutral-200 bg-white text-neutral-700 px-6 py-3 rounded-lg text-sm font-medium hover:border-neutral-300 transition-colors text-center">
             Calculate your savings
           </a>
         </div>
