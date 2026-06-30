@@ -114,12 +114,24 @@ export default function LandingPage() {
 
   const scrollToSection = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault()
-    const el = document.getElementById(id)
-    if (!el) return
     const navHeight = 80 // matches nav bar height with buffer
-    const top = el.getBoundingClientRect().top + window.scrollY - navHeight
-    window.scrollTo({ top, behavior: 'smooth' })
-    setMenuOpen(false)
+
+    const doScroll = () => {
+      const el = document.getElementById(id)
+      if (!el) return
+      const top = el.getBoundingClientRect().top + window.scrollY - navHeight
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+
+    if (menuOpen) {
+      // Close mobile menu first, then wait for DOM reflow before measuring position
+      setMenuOpen(false)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(doScroll)
+      })
+    } else {
+      doScroll()
+    }
   }
 
   return (
