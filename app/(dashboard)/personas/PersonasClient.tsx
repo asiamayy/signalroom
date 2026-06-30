@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Plus, Check, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
@@ -23,9 +23,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const [archiving, setArchiving] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [filterTab, setFilterTab] = useState<FilterTab>('All Personas')
-  const [selectedId, setSelectedId] = useState<string | null>(
-    initialPersonas.find(p => !p.archived)?.id ?? null
-  )
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState('Recently updated')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [previewOpen, setPreviewOpen] = useState(true)
@@ -111,6 +109,19 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
 
   const SORT_OPTIONS = ['Recently updated', 'Recently created', 'Alphabetical']
   const [showSortMenu, setShowSortMenu] = useState(false)
+  const sortMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    if (!showSortMenu) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target as Node)) {
+        setShowSortMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showSortMenu])
 
   const sortPersonas = (list: Persona[]) => {
     if (sortBy === 'Recently updated') return [...list].sort((a, b) => new Date(b.updated_at ?? b.created_at).getTime() - new Date(a.updated_at ?? a.created_at).getTime())
@@ -127,6 +138,14 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     (p.traits?.job_title ?? '').toLowerCase().includes(search.toLowerCase())
   ))
+
+  // Select the first persona in the actual displayed (sorted) order, only on initial load
+  useEffect(() => {
+    if (selectedId === null && filtered.length > 0) {
+      setSelectedId(filtered[0].id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered.length])
 
   return (
     <>
@@ -162,8 +181,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         </div>
 
         {/* ── Filter tabs + sort/view controls ── */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 px-4 sm:px-6 overflow-x-auto" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
-          <div className="flex">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 px-4 sm:px-6" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+          <div className="flex overflow-x-auto">
             {FILTER_TABS.map(tab => (
               <button
                 key={tab}
@@ -172,7 +191,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   // Reset selection when switching tabs so no panel carries over
                   setSelectedId(null)
                 }}
-                className="px-4 py-3.5 text-sm transition-all"
+                className="px-4 py-3.5 text-sm transition-all flex-shrink-0"
                 style={{
                   color: filterTab === tab ? '#0D5C45' : '#9CA3AF',
                   borderTop: 'none', borderLeft: 'none', borderRight: 'none',
@@ -188,8 +207,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
           </div>
 
           {/* Sort + view toggle */}
-          <div className="flex items-center gap-3 py-2">
-            <div className="relative">
+          <div className="flex items-center gap-3 py-2 flex-shrink-0">
+            <div className="relative" ref={sortMenuRef}>
               <button
                 onClick={() => setShowSortMenu(o => !o)}
                 className="flex items-center gap-1.5 text-sm text-neutral-600 font-medium"
@@ -199,7 +218,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                 <ChevronDown size={13} className="text-neutral-400" />
               </button>
               {showSortMenu && (
-                <div className="absolute top-full left-0 mt-1 rounded-xl overflow-hidden z-20" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '180px' }}>
+                <div className="absolute top-full left-0 mt-1 rounded-xl overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '180px' }}>
                   {SORT_OPTIONS.map(opt => (
                     <button
                       key={opt}
