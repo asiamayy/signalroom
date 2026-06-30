@@ -57,7 +57,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const messageCount = interview?.messages?.length ?? 0
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 sm:p-8 max-w-4xl">
 
       {/* Back */}
       <Link
@@ -69,8 +69,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       </Link>
 
       {/* ── Report header ─────────────────────────────────────────────────── */}
-      <div className="bg-white border border-neutral-200 rounded-xl p-6 mb-6">
-        <div className="flex items-start justify-between gap-6">
+      <div className="bg-white border border-neutral-200 rounded-xl p-4 sm:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4 sm:gap-6">
           <div className="flex items-start gap-4">
             <PersonaAvatar
               avatarUrl={persona?.avatar_url}
@@ -79,8 +79,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               name={persona?.name}
               size="lg"
             />
-            <div>
-              <h1 className="text-xl font-serif tracking-tight text-neutral-900 mb-0.5">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-serif tracking-tight text-neutral-900 mb-0.5">
                 {interview?.title ?? 'Untitled interview'}
               </h1>
               <p className="text-sm text-neutral-500">
@@ -96,14 +96,14 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
 
           {/* Confidence score badge */}
-          <div className={`flex-shrink-0 text-center border rounded-xl px-5 py-3 ${scoreBg}`}>
+          <div className={`flex-shrink-0 text-center border rounded-xl px-5 py-3 self-start sm:self-auto ${scoreBg}`}>
             <p className={`text-3xl font-serif font-semibold ${scoreColor}`}>{score}</p>
             <p className={`text-[11px] font-medium mt-0.5 ${scoreColor}`}>{scoreLabel}</p>
           </div>
         </div>
 
         {/* Stats row */}
-        <div className="flex gap-6 mt-5 pt-5 border-t border-neutral-100">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-5 pt-5 border-t border-neutral-100">
           <div>
             <p className="text-lg font-semibold text-neutral-900">{themes.length}</p>
             <p className="text-xs text-neutral-500">Key themes</p>
@@ -116,7 +116,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             <p className="text-lg font-semibold text-neutral-900">{messageCount}</p>
             <p className="text-xs text-neutral-500">Messages</p>
           </div>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="flex items-center gap-3 sm:ml-auto w-full sm:w-auto">
             <DownloadReportButton />
             <Link
               href={`/interviews/${interview?.id}`}
@@ -129,8 +129,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-5">
 
           {/* ── Executive summary ──────────────────────────────────────────── */}
           <div className="bg-white border border-neutral-200 rounded-xl p-5">

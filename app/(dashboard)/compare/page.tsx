@@ -92,16 +92,16 @@ export default function ComparePage() {
   const activeResult = results.find(r => r.persona_id === activeTab)
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 sm:p-8 max-w-5xl">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl font-serif tracking-tight text-neutral-900">Compare</h1>
         <p className="text-sm text-neutral-500 mt-0.5">Ask the same question to multiple personas and compare responses</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ── Left: Setup ── */}
-        <div className="col-span-1 space-y-5">
+        <div className="lg:col-span-1 space-y-5">
 
           {/* Persona selection */}
           <div>
@@ -225,7 +225,7 @@ export default function ComparePage() {
         </div>
 
         {/* ── Right: Results ── */}
-        <div className="col-span-2">
+        <div className="lg:col-span-2 min-w-0">
           {results.length === 0 && !loading && (
             <div className="h-full flex items-center justify-center border border-dashed border-neutral-200 rounded-xl">
               <div className="text-center p-12">

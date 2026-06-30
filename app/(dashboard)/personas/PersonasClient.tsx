@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Plus, Check, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
@@ -29,6 +29,21 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const [sortBy, setSortBy] = useState('Recently updated')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [previewOpen, setPreviewOpen] = useState(true)
+  const [columns, setColumns] = useState(4)
+
+  // Track grid column count to know where to insert the inspector panel
+  useEffect(() => {
+    const updateColumns = () => {
+      const w = window.innerWidth
+      if (w < 640) setColumns(1)
+      else if (w < 1024) setColumns(2)
+      else if (w < 1280) setColumns(3)
+      else setColumns(4)
+    }
+    updateColumns()
+    window.addEventListener('resize', updateColumns)
+    return () => window.removeEventListener('resize', updateColumns)
+  }, [])
 
   const active = personas.filter(p => !p.archived)
   const archived = personas.filter(p => p.archived)
@@ -239,7 +254,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
           {/* ── Grid view ── */}
           {filtered.length > 0 && viewMode === 'grid' && filterTab !== 'Archived' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
-              {filtered.map((persona: Persona) => {
+              {filtered.map((persona: Persona, cardIndex: number) => {
                 const isSelected = selectedId === persona.id
                 return (
                   <div
@@ -259,6 +274,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                       transform: 'translateY(0)',
                       transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+                      order: cardIndex,
                     }}
                   >
                     {/* Green checkmark when selected */}
@@ -268,11 +284,11 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       </div>
                     )}
 
-                    {/* Archive button — only on hover when not selected */}
+                    {/* Archive button — always visible on mobile, hover-only on desktop */}
                     {!isSelected && (
                       <div
                         data-archive-btn="true"
-                        className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-3 right-3 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                         onClick={e => e.stopPropagation()}
                       >
                         <button
@@ -347,7 +363,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               })}
 
               {!atLimit && (
-                <Link href="/personas/new" className="flex items-center justify-center rounded-2xl transition-all duration-200 min-h-[300px]" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)' }}>
+                <Link href="/personas/new" className="flex items-center justify-center rounded-2xl transition-all duration-200 min-h-[300px]" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)', order: filtered.length }}>
                   <div className="text-center">
                     <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: '#F3F4F6' }}>
                       <Plus size={20} className="text-neutral-400" />
@@ -357,6 +373,23 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   </div>
                 </Link>
               )}
+
+              {/* Inspector panel — positioned via CSS order to appear right after the selected persona's row */}
+              {selectedPersona && (() => {
+                const idx = filtered.findIndex(p => p.id === selectedPersona.id)
+                if (idx === -1) return null
+                const totalCards = filtered.length + (atLimit ? 0 : 1) // include "new persona" card
+                const row = Math.floor(idx / columns)
+                const lastRow = Math.floor((totalCards - 1) / columns)
+                // If selected persona is in the last row, panel goes after everything
+                // Otherwise it goes right after that row's last card
+                const panelOrder = row === lastRow ? totalCards + 1 : (row + 1) * columns
+                return (
+                  <div style={{ gridColumn: '1 / -1', order: panelOrder }}>
+                    <InspectorPanel persona={selectedPersona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />
+                  </div>
+                )
+              })()}
             </div>
           )}
 

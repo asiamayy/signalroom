@@ -16,11 +16,19 @@
   --font-serif: 'Instrument Serif', Georgia, serif;
 }
 
+html {
+  background: var(--background);
+  overscroll-behavior-y: none;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'DM Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 @media print {
