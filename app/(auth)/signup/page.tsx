@@ -41,15 +41,15 @@ export default function SignupPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      // Fire welcome email — non-blocking, don't await
+      // Fire welcome email — non-blocking
       fetch('/api/send-welcome-email', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email }),
       }).catch(err => console.error('Welcome email failed:', err))
 
-      setConfirmed(true)
-      setLoading(false)
+      // Redirect straight to dashboard — no email confirmation needed
+      router.push('/personas')
     }
   }
 
