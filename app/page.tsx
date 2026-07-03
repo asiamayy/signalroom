@@ -309,22 +309,23 @@ export default function LandingPage() {
       {/* ── Who it's for ── */}
       <section className="max-w-5xl mx-auto px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Who it's for</p>
-        <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-8">
+        <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-2">
           Built for people who <em className="text-[#1A9B76] not-italic">already do the work</em>
         </h2>
+        <p className="text-sm text-neutral-500 mb-8 font-light">Fast like an AI tool. Structured like a research firm.</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             {
               title: 'Founders pre-launch',
-              body: 'You\'re validating an idea before writing code or raising money. You need signal, not a $15,000 research engagement.',
+              body: 'You\'re validating pricing and messaging before writing code. You need structured customer evidence — not gut feel and not a $15,000 research engagement.',
             },
             {
-              title: 'Marketers with a brief',
-              body: 'You\'re already lurking Reddit threads and caregiver forums trying to find the right language. SignalRoom structures what you\'re already doing.',
+              title: 'Product managers moving fast',
+              body: 'Your next sprint locks in 48 hours. SignalRoom gives you themes, quotes, and recommendations you can paste directly into your PRD — in under an hour.',
             },
             {
-              title: 'Product teams moving fast',
-              body: 'You need customer reaction in hours, not weeks. Test your messaging, pricing, or concept before your next sprint.',
+              title: 'Teams who need to align',
+              body: 'Bring customer evidence to your next meeting. Download a PDF report with confidence scores your stakeholders can act on — no synthesis required.',
             },
           ].map(item => (
             <div key={item.title} className="bg-white border border-neutral-200 rounded-2xl p-5">
@@ -333,6 +334,9 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
+        <p className="text-center text-sm text-neutral-400 mt-6 font-light">
+          SignalRoom doesn't replace customer conversations — it accelerates them. Use it to decide which questions are worth asking real customers.
+        </p>
       </section>
 
       {/* ── ROI Calculator ── */}
@@ -369,7 +373,8 @@ export default function LandingPage() {
         <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-2">
           Simple pricing. <em className="text-[#1A9B76] not-italic">No surprises.</em>
         </h2>
-        <p className="text-sm text-neutral-500 mb-8 font-light">Start free. Upgrade when it's earning its keep.</p>
+        <p className="text-sm text-neutral-500 mb-2 font-light">Start free. Upgrade when it's earning its keep.</p>
+        <p className="text-sm text-neutral-400 mb-8 font-light">One wrong product decision costs more than a year of SignalRoom.</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {PLANS.map(plan => {
             const Icon = plan.icon

@@ -17,6 +17,15 @@ const INTERVIEW_TYPES: { value: InterviewType; label: string; description: strin
   { value: 'custom', label: 'Custom interview', description: 'Open-ended — ask whatever you need' },
 ]
 
+const CONTEXT_TEMPLATES: Record<InterviewType, string> = {
+  concept_testing: "I'm building [describe your product or feature in one sentence]. It's designed for [target customer] who struggle with [pain point]. I want to understand whether this idea resonates and what concerns they might have.",
+  pricing_discovery: "I'm validating pricing for [product/feature]. It currently costs [price] per month and includes [key features]. I want to understand whether this feels fair, what they'd compare it to, and what would make them say yes or no.",
+  message_testing: "I want to test this positioning for [product]: '[your headline or value prop]'. I need to understand whether this resonates, what it means to them, and what would make them click through or scroll past.",
+  competitive_positioning: "I'm trying to understand how [target customer] thinks about solving [problem] today. I want to know what tools they use, what frustrates them, and what it would take to switch to something new.",
+  feature_prioritization: "I'm deciding what to build next for [product]. The options are: [list 2-3 features]. I want to understand which of these would be most valuable to them and why.",
+  custom: "",
+}
+
 function NewInterviewForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -26,7 +35,16 @@ function NewInterviewForm() {
   const [personaId, setPersonaId] = useState(preselectedPersonaId)
   const [type, setType] = useState<InterviewType>('concept_testing')
   const [title, setTitle] = useState('')
-  const [context, setContext] = useState('')
+  const [context, setContext] = useState(CONTEXT_TEMPLATES['concept_testing'])
+
+  const handleTypeChange = (newType: InterviewType) => {
+    setType(newType)
+    // Only auto-populate if context is empty or still matches a template
+    const isTemplate = Object.values(CONTEXT_TEMPLATES).includes(context)
+    if (!context.trim() || isTemplate) {
+      setContext(CONTEXT_TEMPLATES[newType])
+    }
+  }
   const [devilsAdvocate, setDevilsAdvocate] = useState(false)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -144,7 +162,7 @@ function NewInterviewForm() {
               <button
                 key={t.value}
                 type="button"
-                onClick={() => setType(t.value)}
+                onClick={() => handleTypeChange(t.value)}
                 className={cn(
                   'w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all',
                   type === t.value
