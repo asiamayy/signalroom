@@ -174,15 +174,18 @@ export default function LandingPage() {
       <section className="max-w-5xl mx-auto px-5 pt-14 pb-12 text-center">
         <div className="inline-flex items-center gap-2 bg-white border border-neutral-200 rounded-full px-4 py-1.5 text-xs text-neutral-500 mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-[#E8F5F1]0 flex-shrink-0" />
-          AI-powered market research for founders &amp; marketers
+          AI-powered market research for founders &amp; product teams
         </div>
         <h1 className="font-serif text-4xl sm:text-5xl lg:text-7xl tracking-tight text-neutral-900 leading-[1.05] mb-5">
           Your market has<br />
           <em className="text-[#1A9B76] not-italic">opinions.</em><br />
           Now you can ask.
         </h1>
-        <p className="text-base sm:text-lg text-neutral-500 max-w-xl mx-auto mb-7 leading-relaxed font-light">
+        <p className="text-base sm:text-lg text-neutral-500 max-w-xl mx-auto mb-3 leading-relaxed font-light">
           Build AI personas that represent your exact target customer — fully defined by you. Interview them. Get structured research insights in minutes, not weeks.
+        </p>
+        <p className="text-sm text-neutral-400 max-w-md mx-auto mb-7">
+          Built for seed-stage teams who can't afford to ship the wrong thing.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
           <Link href="/signup" className="w-full sm:w-auto bg-neutral-900 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-neutral-700 transition-colors inline-flex items-center justify-center gap-2">
@@ -194,7 +197,7 @@ export default function LandingPage() {
         </div>
         <div className="flex items-center justify-center gap-6 sm:gap-10 border-t border-neutral-200 pt-8 flex-wrap">
           {[
-            ['~90%', 'Parity with real research'],
+            ['< 1 hour', 'From idea to structured report'],
             ['< 10 min', 'First insight'],
             ['$8,000+', 'What competitors charge for 6 months'],
           ].map(([num, label]) => (
@@ -224,6 +227,82 @@ export default function LandingPage() {
               <p className="text-sm text-neutral-500 leading-relaxed font-light">{step.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Example report preview ── */}
+      <section className="max-w-5xl mx-auto px-5 py-12">
+        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">What you get</p>
+        <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-neutral-900 mb-8">
+          A report your team can <em className="text-[#1A9B76] not-italic">actually use</em>
+        </h2>
+        <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+          {/* Report header */}
+          <div className="px-6 py-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-neutral-900 mb-0.5">Pricing Validation — Sarah K. · Head of Marketing</h3>
+              <p className="text-xs text-neutral-400">Concept testing · 8 messages · Generated in 4 minutes</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-center px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl">
+                <p className="font-serif text-xl text-neutral-900 leading-none">74</p>
+                <p className="text-[10px] text-neutral-400 mt-0.5">Confidence</p>
+              </div>
+              <div className="text-center px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl">
+                <p className="font-serif text-xl text-neutral-900 leading-none">5</p>
+                <p className="text-[10px] text-neutral-400 mt-0.5">Key themes</p>
+              </div>
+              <div className="text-center px-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl">
+                <p className="font-serif text-xl text-neutral-900 leading-none">4</p>
+                <p className="text-[10px] text-neutral-400 mt-0.5">Recommendations</p>
+              </div>
+            </div>
+          </div>
+          {/* Report body */}
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Key themes</p>
+              <div className="space-y-3">
+                {[
+                  { label: 'Price anchoring needed', sentiment: 'negative', quote: '"$99/month feels abstract without knowing what I\'m comparing it to."' },
+                  { label: 'Speed is the core value prop', sentiment: 'positive', quote: '"If this genuinely takes 10 minutes, that alone justifies the price."' },
+                  { label: 'Free trial reduces risk', sentiment: 'positive', quote: '"The first interview being free is what made me actually try it."' },
+                ].map(theme => (
+                  <div key={theme.label} className="bg-neutral-50 rounded-xl p-3">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', theme.sentiment === 'positive' ? 'bg-[#1A9B76]' : 'bg-red-400')} />
+                      <p className="text-xs font-semibold text-neutral-800">{theme.label}</p>
+                    </div>
+                    <p className="text-xs text-neutral-500 italic leading-relaxed">{theme.quote}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Top recommendations</p>
+              <div className="space-y-3">
+                {[
+                  { priority: 'High', text: 'Lead with time savings in pricing page headline — $99/month lands better when anchored against $8,000 alternatives.' },
+                  { priority: 'High', text: 'Surface the free first interview earlier — it\'s the primary conversion trigger for skeptical buyers.' },
+                  { priority: 'Medium', text: 'Add a sample report download to the landing page so buyers can see output quality before signing up.' },
+                ].map(rec => (
+                  <div key={rec.text} className="flex items-start gap-3">
+                    <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5', rec.priority === 'High' ? 'bg-[#E8F5F1] text-[#0D5C45]' : 'bg-neutral-100 text-neutral-500')}>
+                      {rec.priority}
+                    </span>
+                    <p className="text-xs text-neutral-600 leading-relaxed">{rec.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* CTA */}
+          <div className="px-6 py-4 border-t border-neutral-100 bg-neutral-50 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-neutral-500">Your first interview generates a report like this — free, no credit card required.</p>
+            <Link href="/signup" className="flex-shrink-0 bg-neutral-900 text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-neutral-700 transition-colors">
+              Get your free report →
+            </Link>
+          </div>
         </div>
       </section>
 

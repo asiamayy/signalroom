@@ -74,6 +74,7 @@ export async function POST(
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`))
         controller.close()
       } catch (error) {
+        console.error('Chat stream error:', error instanceof Error ? error.message : error)
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: 'Stream failed' })}\n\n`))
         controller.close()
       }
