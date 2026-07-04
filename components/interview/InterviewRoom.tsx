@@ -281,7 +281,8 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           {messages.length === 2 && !streaming && (
             <div className="mx-auto max-w-lg rounded-xl px-4 py-3 text-center" style={{ background: '#E8F5F1', border: '1px solid #A7D9C8' }}>
               <p className="text-xs font-medium" style={{ color: '#0D5C45' }}>
-                💡 <strong>Pro tip:</strong> Start with one specific question — pricing, messaging, or persona fit. The narrower the question, the stronger the signal.
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: 'inline', marginRight: '6px', marginBottom: '1px' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <strong>Pro tip:</strong> Start with one specific question — pricing, messaging, or persona fit. The narrower the question, the stronger the signal.
               </p>
             </div>
           )}
