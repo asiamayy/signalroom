@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
+import { CopyLinkButton } from '@/components/ui/CopyLinkButton'
 import type { ReportTheme, ReportRecommendation } from '@/types'
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
@@ -96,9 +97,10 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
 
           {/* Confidence score badge */}
-          <div className={`flex-shrink-0 text-center border rounded-xl px-5 py-3 self-start sm:self-auto ${scoreBg}`}>
-            <p className={`text-3xl font-serif font-semibold ${scoreColor}`}>{score}</p>
-            <p className={`text-[11px] font-medium mt-0.5 ${scoreColor}`}>{scoreLabel}</p>
+          <div className={`flex-shrink-0 text-center border-2 rounded-2xl px-6 py-4 self-start sm:self-auto ${scoreBg}`}>
+            <p className={`text-5xl font-serif font-semibold leading-none ${scoreColor}`}>{score}</p>
+            <p className={`text-xs font-semibold mt-1.5 uppercase tracking-wider ${scoreColor}`}>{scoreLabel}</p>
+            <p className="text-[10px] text-neutral-400 mt-1">Confidence score</p>
           </div>
         </div>
 
@@ -118,6 +120,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           </div>
           <div className="flex items-center gap-3 sm:ml-auto w-full sm:w-auto">
             <DownloadReportButton />
+            <CopyLinkButton />
             <Link
               href={`/interviews/${interview?.id}`}
               className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
