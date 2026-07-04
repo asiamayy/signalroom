@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import {
   formatDate,
   getSentimentColor,
@@ -21,7 +21,12 @@ import type { ReportTheme, ReportRecommendation } from '@/types'
 
 export default async function PublicReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
+
+  // Use anon client — no auth session required for public reports
+  const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   const { data: report, error } = await supabase
     .from('reports')
