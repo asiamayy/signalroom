@@ -61,8 +61,8 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
 
         {/* Public header */}
         <div className="flex items-center justify-between mb-6">
-          <Link href="https://getsignalroom.com" className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors">
-            <span className="font-bold text-neutral-900">Signal</span><span className="font-bold" style={{ color: '#1A9B76' }}>room</span>
+          <Link href="https://getsignalroom.com" className="flex items-center transition-opacity hover:opacity-80">
+            <img src="/signalroom-logo.png" alt="SignalRoom" style={{ height: '36px', width: 'auto' }} />
           </Link>
           <Link href="/signup" className="text-xs font-semibold px-4 py-2 rounded-lg text-white" style={{ background: '#1A9B76' }}>
             Try SignalRoom free →
