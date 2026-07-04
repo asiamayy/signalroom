@@ -20,13 +20,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [fullName, setFullName] = useState<string | null>(null)
   const [showSignOut, setShowSignOut] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       setUserEmail(data.user?.email ?? null)
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', data.user.id)
+          .single()
+        setFullName(profile?.full_name ?? null)
+      }
     })
   }, [])
 
@@ -35,7 +44,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setMobileNavOpen(false)
   }, [pathname])
 
-  const initials = userEmail
+  const nameParts = fullName?.trim().split(/\s+/) ?? []
+  const initials = nameParts.length >= 2
+    ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+    : nameParts.length === 1 && nameParts[0]
+    ? nameParts[0].slice(0, 2).toUpperCase()
+    : userEmail
     ? userEmail.split('@')[0].slice(0, 2).toUpperCase()
     : 'AS'
 
@@ -93,7 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {initials}
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <div className="text-xs font-semibold text-neutral-800 truncate">{userEmail?.split('@')[0] ?? 'Account'}</div>
+              <div className="text-xs font-semibold text-neutral-800 truncate">{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</div>
               <div className="text-[11px] text-neutral-400 truncate">{userEmail ?? ''}</div>
             </div>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>

@@ -123,7 +123,7 @@ export default function ReportsPage() {
                 <button
                   onClick={(e) => handleDelete(e, report.id)}
                   disabled={deleting === report.id}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-neutral-400 hover:text-red-500"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all text-neutral-400 hover:text-red-500"
                   style={{ background: 'white', border: '1px solid rgba(0,0,0,0.1)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
                   title="Delete report"
                 >
