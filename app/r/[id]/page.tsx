@@ -62,7 +62,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
         {/* Public header */}
         <div className="flex items-center justify-between mb-6">
           <Link href="https://getsignalroom.com" className="flex items-center transition-opacity hover:opacity-80">
-            <img src="/signalroom-logo.png" alt="SignalRoom" style={{ height: '36px', width: 'auto' }} />
+            <img src="/signalroom-logo.png" alt="SignalRoom" style={{ height: '64px', width: 'auto' }} />
           </Link>
           <Link href="/signup" className="text-xs font-semibold px-4 py-2 rounded-lg text-white" style={{ background: '#1A9B76' }}>
             Try SignalRoom free →
@@ -181,14 +181,6 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
             </div>
             <p className="text-xs text-neutral-400 mt-3 leading-relaxed">
               Higher scores reflect longer sessions with a well-defined persona. Validate key findings with real users.
-            </p>
-          </div>
-
-          {/* Methodology note */}
-          <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Methodology</h3>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              SignalRoom personas are built from defined demographic, psychographic, and behavioral inputs. Outputs represent simulated customer responses grounded in those inputs. For high-stakes decisions, we recommend validating key findings with a subset of real customer interviews.
             </p>
           </div>
 
