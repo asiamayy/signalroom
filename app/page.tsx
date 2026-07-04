@@ -334,9 +334,6 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
-        <p className="text-center text-sm text-neutral-400 mt-6 font-light">
-          SignalRoom doesn't replace customer conversations — it accelerates them. Use it to decide which questions are worth asking real customers.
-        </p>
       </section>
 
       {/* ── ROI Calculator ── */}
