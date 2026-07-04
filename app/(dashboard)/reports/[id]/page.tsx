@@ -192,14 +192,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             </p>
           </div>
 
-          {/* Methodology note */}
-          <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Methodology</h3>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              SignalRoom personas are built from defined demographic, psychographic, and behavioral inputs. Outputs represent simulated customer responses grounded in those inputs. For high-stakes decisions, we recommend validating key findings with a subset of real customer interviews.
-            </p>
-          </div>
-
           {/* Sentiment breakdown */}
           {themes.length > 0 && (
             <div className="bg-white border border-neutral-200 rounded-xl p-4">
