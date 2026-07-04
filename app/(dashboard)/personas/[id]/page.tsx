@@ -76,7 +76,11 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
                 <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Interviews</div>
               </div>
               <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                <div className="text-lg font-bold text-white leading-none">Today</div>
+                <div className="text-lg font-bold text-white leading-none">
+                  {interviews && interviews.length > 0
+                    ? new Date(interviews[0].created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : 'Never'}
+                </div>
                 <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Last active</div>
               </div>
             </div>
@@ -126,7 +130,11 @@ export default async function PersonaDetailPage({ params }: { params: Promise<{ 
                 <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Interviews</div>
               </div>
               <div className="flex-1 text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                <div className="text-lg font-bold text-white leading-none">Today</div>
+                <div className="text-lg font-bold text-white leading-none">
+                  {interviews && interviews.length > 0
+                    ? new Date(interviews[0].created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : 'Never'}
+                </div>
                 <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Last active</div>
               </div>
             </div>
