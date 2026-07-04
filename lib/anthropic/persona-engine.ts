@@ -191,7 +191,16 @@ Produce a structured research report as a JSON object with this exact shape:
       "priority": "high" | "medium" | "low"
     }
   ],
-  "confidence_score": 0-100
+  "confidence_score": a number from 0-100 calculated using these exact criteria:
+    - Start at 50 (base)
+    - Add 5 for each exchange (user + persona message pair), up to +25 max (5 exchanges)
+    - Add 10 if the persona gave specific, detailed responses with concrete examples
+    - Add 10 if the persona expressed clear opinions (positive or negative) rather than neutral hedging
+    - Add 5 if 3 or more distinct themes emerged
+    - Subtract 10 if the transcript has fewer than 3 exchanges
+    - Subtract 10 if the persona's responses were vague or generic
+    - Subtract 5 if the context/concept being tested was unclear or undefined
+    Final score must be between 20 and 95.
 }
 
 Return ONLY the JSON. No preamble, no markdown fences.`,
