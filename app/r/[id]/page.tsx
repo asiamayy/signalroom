@@ -8,8 +8,6 @@ import {
   INTERVIEW_TYPE_LABELS,
 } from '@/lib/utils'
 import {
-  ArrowLeft,
-  MessageSquare,
   TrendingUp,
   Quote,
   Lightbulb,
@@ -18,11 +16,10 @@ import {
   Info,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
-import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
 import { CopyLinkButton } from '@/components/ui/CopyLinkButton'
 import type { ReportTheme, ReportRecommendation } from '@/types'
 
-export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PublicReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
@@ -42,11 +39,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
   const interview = report.interview
   const persona = interview?.persona
-  const color = persona?.avatar_color
-    ? (typeof persona.avatar_color === 'string'
-        ? JSON.parse(persona.avatar_color)
-        : persona.avatar_color)
-    : { bg: '#E1F5EE', text: '#0F6E56' }
 
   const score = report.confidence_score
   const scoreColor = score >= 75 ? 'text-emerald-600' : score >= 50 ? 'text-amber-600' : 'text-red-500'
@@ -58,16 +50,18 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   const messageCount = interview?.messages?.length ?? 0
 
   return (
-    <div className="p-4 sm:p-8 max-w-4xl">
+    <div style={{ background: '#F4F6F8', minHeight: '100vh' }}>
+      <div className="p-4 sm:p-8 max-w-4xl mx-auto">
 
-      {/* Back */}
-      <Link
-        href="/reports"
-        className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-900 mb-6 transition-colors w-fit"
-      >
-        <ArrowLeft size={14} />
-        All reports
-      </Link>
+        {/* Public header */}
+        <div className="flex items-center justify-between mb-6">
+          <Link href="https://getsignalroom.com" className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors">
+            <span className="font-bold text-neutral-900">Signal</span><span className="font-bold" style={{ color: '#1A9B76' }}>room</span>
+          </Link>
+          <Link href="/signup" className="text-xs font-semibold px-4 py-2 rounded-lg text-white" style={{ background: '#1A9B76' }}>
+            Try SignalRoom free →
+          </Link>
+        </div>
 
       {/* ── Report header ─────────────────────────────────────────────────── */}
       <div className="bg-white border border-neutral-200 rounded-xl p-4 sm:p-6 mb-6">
@@ -119,15 +113,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
             <p className="text-xs text-neutral-500">Messages</p>
           </div>
           <div className="flex items-center gap-3 sm:ml-auto w-full sm:w-auto">
-            <DownloadReportButton />
             <CopyLinkButton />
-            <Link
-              href={`/interviews/${interview?.id}`}
-              className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
-            >
-              <MessageSquare size={13} />
-              View full transcript
-            </Link>
           </div>
         </div>
       </div>
@@ -252,6 +238,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
     </div>
+  </div>
   )
 }
 

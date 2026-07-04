@@ -7,7 +7,12 @@ export function CopyLinkButton() {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href)
+      // Generate public share URL from current path
+      // Current path: /reports/[id] → public path: /r/[id]
+      const currentPath = window.location.pathname
+      const id = currentPath.split('/').pop()
+      const publicUrl = `${window.location.origin}/r/${id}`
+      await navigator.clipboard.writeText(publicUrl)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {

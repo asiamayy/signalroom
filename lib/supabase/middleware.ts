@@ -1,14 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/auth', '/privacy', '/terms', '/contact', '/forgot-password', '/reset-password', '/faq']
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/auth', '/privacy', '/terms', '/contact', '/forgot-password', '/reset-password', '/faq', '/r']
 
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // Skip middleware entirely for public routes
   const isPublic = PUBLIC_ROUTES.some(route =>
-    pathname === route || pathname.startsWith('/auth/')
+    pathname === route || pathname.startsWith('/auth/') || pathname.startsWith('/r/')
   )
 
   const isDashboardRoute =
