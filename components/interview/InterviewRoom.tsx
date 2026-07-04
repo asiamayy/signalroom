@@ -281,8 +281,9 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           {messages.length === 2 && !streaming && (
             <div className="mx-auto max-w-lg rounded-xl px-4 py-3 text-center" style={{ background: '#E8F5F1', border: '1px solid #A7D9C8' }}>
               <p className="text-xs font-medium" style={{ color: '#0D5C45' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="#1A9B76" style={{ display: 'inline', marginRight: '6px', marginBottom: '2px' }} xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2a7 7 0 0 0-4 12.8V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.2A7 7 0 0 0 12 2zm-1 18h2v1h-2v-1z"/>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A9B76" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', marginRight: '6px', marginBottom: '2px' }}>
+                  <path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.9 10.2 19 8.7 19 7a7 7 0 1 0-13.4 2.8c.7 1.2 1.8 2 2.4 2.7.6.7 1 1.5 1 2.5"/>
+                  <path d="M9 18h6"/><path d="M10 22h4"/>
                 </svg>
                 <strong>Pro tip:</strong> Start with one specific question — pricing, messaging, or persona fit. The narrower the question, the stronger the signal.
               </p>
