@@ -290,6 +290,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       boxShadow: isSelected ? '0 0 0 2px #1A8C6A, 0 4px 16px rgba(26,140,106,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
                       border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                       transition: 'box-shadow 0.18s ease, border-color 0.18s ease',
+                      borderRadius: 16,
                     }}
                   >
                     {/* Green checkmark when selected */}
@@ -418,6 +419,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       background: 'white',
                       border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                       boxShadow: isSelected ? '0 0 0 2px rgba(26,140,106,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
+                      borderRadius: 16,
                     }}
                   >
                     <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
@@ -481,6 +483,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           opacity: 0.85,
                           boxShadow: isSelected ? '0 0 0 2px #1A8C6A, 0 4px 16px rgba(26,140,106,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
                           border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
+                          borderRadius: 16,
                         }}
                       >
                         {/* Checkmark when selected */}

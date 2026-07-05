@@ -243,7 +243,7 @@ function ResponseCard({ result, onOpen }: { result: PanelResponse; onOpen: () =>
     <motion.div
       layoutId={`ap-response-${result.persona_id}`}
       className="rounded-2xl p-4 flex flex-col h-full transition-all"
-      style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+      style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderRadius: 16 }}
     >
       <ResponseCardBody result={result} onReadMore={onOpen} />
     </motion.div>

@@ -80,6 +80,7 @@ function ThemeCard({ theme, index, onClick }: { theme: ReportTheme; index: numbe
       layoutId={`report-theme-${index}`}
       onClick={onClick}
       className="bg-white border border-neutral-200 rounded-xl p-5 cursor-pointer transition-all hover:border-neutral-300 hover:shadow-sm"
+      style={{ borderRadius: 16 }}
     >
       <ThemeCardBody theme={theme} index={index} />
     </motion.div>

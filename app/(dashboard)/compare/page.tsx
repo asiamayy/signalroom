@@ -352,6 +352,7 @@ export default function ComparePage() {
                     layoutId={`compare-response-${activeResult.persona_id}`}
                     onClick={() => setOpenResponseId(activeResult.persona_id)}
                     className="-m-2 p-2 rounded-xl cursor-pointer transition-colors hover:bg-neutral-50"
+                    style={{ borderRadius: 16 }}
                   >
                     <CompareResponseCardBody result={activeResult} />
                   </motion.div>
