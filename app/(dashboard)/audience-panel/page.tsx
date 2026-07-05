@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock } from 'lucide-react'
+import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -104,6 +104,31 @@ function SentimentBar({ distribution, total }: { distribution: Record<string, nu
             <span className="text-xs font-semibold text-neutral-700">{e.count}</span>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Unanimous sentiment callout — shown when every persona lands on the same side ──
+
+function UnanimousSentiment({ sentiment, total }: { sentiment: string; total: number }) {
+  const c = SENTIMENT_COLORS[sentiment as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
+  const label = sentiment.charAt(0).toUpperCase() + sentiment.slice(1)
+
+  return (
+    <div className="flex flex-col items-center text-center py-3">
+      <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3" style={{ background: c.bg }}>
+        <Waves size={24} style={{ color: c.bar }} />
+      </div>
+      <p className="text-lg font-serif font-bold text-neutral-900 mb-1">All {label}</p>
+      <p className="text-xs text-neutral-500 leading-relaxed max-w-[220px] mb-3">
+        Every persona expressed {sentiment} sentiment about this question.
+      </p>
+      <div className="flex items-center gap-1.5">
+        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: c.bar }} />
+        <span className="text-xs font-medium" style={{ color: c.text }}>{label}</span>
+        <span className="text-xs font-semibold text-neutral-700">{total}/{total}</span>
+        <span className="text-xs text-neutral-400">· All personas</span>
       </div>
     </div>
   )
@@ -397,10 +422,45 @@ export default function AudiencePanelPage() {
               fontFamily: 'inherit',
               boxShadow: canRun ? '0 4px 14px rgba(26,140,106,0.35)' : 'none',
             }}>
-            {loading ? <><Loader2 size={15} className="animate-spin" />Analyzing panel...</> : <><BarChart3 size={15} />Run Panel</>}
+            {loading ? <><Loader2 size={15} className="animate-spin" />Analyzing panel...</> : <><BarChart3 size={15} />Run Audience Panel</>}
           </button>
           {loading && (
             <p className="text-xs text-neutral-400 text-center">Interviewing {selectedIds.length} personas simultaneously...</p>
+          )}
+
+          {/* ── Quote highlights — filled in under the setup panel so this column isn't left empty ── */}
+          {result && (
+            <div className="space-y-3 pt-1">
+              {result.summary.most_representative_quote && (
+                <QuoteCard
+                  label="Most Representative Quote"
+                  quote={result.summary.most_representative_quote}
+                  source={result.summary.most_representative_quote_persona}
+                  accent={SENTIMENT_COLORS.positive}
+                />
+              )}
+              {result.summary.biggest_objection_quote && (
+                <QuoteCard
+                  label="Biggest Objection"
+                  quote={result.summary.biggest_objection_quote}
+                  source={result.summary.biggest_objection_quote_persona}
+                  accent={SENTIMENT_COLORS.negative}
+                />
+              )}
+              {(() => {
+                const takeaway = result.summary.recommended_actions?.length > 1
+                  ? result.summary.recommended_actions[result.summary.recommended_actions.length - 1]
+                  : result.summary.recommended_actions?.[0] ?? result.summary.overall_recommendation
+                return takeaway ? (
+                  <QuoteCard
+                    label="Key Takeaway"
+                    quote={takeaway}
+                    source="Recommended next step"
+                    accent={SENTIMENT_COLORS.neutral}
+                  />
+                ) : null
+              })()}
+            </div>
           )}
         </div>
         <div className="lg:col-span-2 space-y-5 min-w-0">
@@ -496,23 +556,32 @@ export default function AudiencePanelPage() {
                 <div className="rounded-2xl p-5"
                   style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
                   <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Sentiment Overall</p>
-                  <SentimentBar distribution={result.sentiment_distribution} total={result.total_personas} />
-                  {(() => {
-                    const dominant = Object.entries(result.sentiment_distribution).reduce(
-                      (max, cur) => (cur[1] > max[1] ? cur : max)
-                    )
-                    const [dominantKey, dominantCount] = dominant
-                    const c = SENTIMENT_COLORS[dominantKey as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
-                    return (
-                      <div className="rounded-xl p-3.5 mt-4 flex items-start gap-2.5" style={{ background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
-                        <Sparkles size={14} className="flex-shrink-0 mt-0.5" style={{ color: c.bar }} />
-                        <p className="text-xs text-neutral-600 leading-relaxed">
-                          <span className="font-semibold text-neutral-900 capitalize">Overall Sentiment: {dominantKey}</span>
-                          {' — '}{dominantCount}/{result.total_personas} personas leaned {dominantKey}.
-                        </p>
-                      </div>
-                    )
-                  })()}
+                  {Object.keys(result.sentiment_distribution).length === 1 ? (
+                    <UnanimousSentiment
+                      sentiment={Object.keys(result.sentiment_distribution)[0]}
+                      total={result.total_personas}
+                    />
+                  ) : (
+                    <>
+                      <SentimentBar distribution={result.sentiment_distribution} total={result.total_personas} />
+                      {(() => {
+                        const dominant = Object.entries(result.sentiment_distribution).reduce(
+                          (max, cur) => (cur[1] > max[1] ? cur : max)
+                        )
+                        const [dominantKey, dominantCount] = dominant
+                        const c = SENTIMENT_COLORS[dominantKey as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
+                        return (
+                          <div className="rounded-xl p-3.5 mt-4 flex items-start gap-2.5" style={{ background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                            <Sparkles size={14} className="flex-shrink-0 mt-0.5" style={{ color: c.bar }} />
+                            <p className="text-xs text-neutral-600 leading-relaxed">
+                              <span className="font-semibold text-neutral-900 capitalize">Overall Sentiment: {dominantKey}</span>
+                              {' — '}{dominantCount}/{result.total_personas} personas leaned {dominantKey}.
+                            </p>
+                          </div>
+                        )
+                      })()}
+                    </>
+                  )}
                 </div>
                 <div className="rounded-2xl p-5"
                   style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
@@ -532,39 +601,6 @@ export default function AudiencePanelPage() {
                     {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
                   </div>
                 </div>
-              </div>
-
-              {/* ── Quote highlights ── */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {result.summary.most_representative_quote && (
-                  <QuoteCard
-                    label="Most Representative Quote"
-                    quote={result.summary.most_representative_quote}
-                    source={result.summary.most_representative_quote_persona}
-                    accent={SENTIMENT_COLORS.positive}
-                  />
-                )}
-                {result.summary.biggest_objection_quote && (
-                  <QuoteCard
-                    label="Biggest Objection"
-                    quote={result.summary.biggest_objection_quote}
-                    source={result.summary.biggest_objection_quote_persona}
-                    accent={SENTIMENT_COLORS.negative}
-                  />
-                )}
-                {(() => {
-                  const takeaway = result.summary.recommended_actions?.length > 1
-                    ? result.summary.recommended_actions[result.summary.recommended_actions.length - 1]
-                    : result.summary.recommended_actions?.[0] ?? result.summary.overall_recommendation
-                  return takeaway ? (
-                    <QuoteCard
-                      label="Key Takeaway"
-                      quote={takeaway}
-                      source="Recommended next step"
-                      accent={SENTIMENT_COLORS.neutral}
-                    />
-                  ) : null
-                })()}
               </div>
             </>
           )}
