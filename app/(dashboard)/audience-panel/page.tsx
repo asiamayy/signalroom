@@ -593,19 +593,22 @@ export default function AudiencePanelPage() {
                 </div>
               </div>
 
-              {/* ── Individual responses ── */}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Individual Responses</p>
-                <div className="overflow-x-auto -mx-1 px-1 pb-1">
-                  <div className="grid gap-3" style={{ gridAutoFlow: 'column', gridAutoColumns: 'minmax(200px, 1fr)' }}>
-                    {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
-                  </div>
-                </div>
-              </div>
             </>
           )}
         </div>
       </div>
+
+      {/* ── Individual responses — full page width, not confined to the results column ── */}
+      {result && (
+        <div className="mt-5">
+          <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Individual Responses</p>
+          <div className="overflow-x-auto -mx-1 px-1 pb-1">
+            <div className="grid gap-3" style={{ gridAutoFlow: 'column', gridAutoColumns: 'minmax(200px, 1fr)' }}>
+              {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
