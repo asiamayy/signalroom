@@ -412,7 +412,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   <motion.div
                     key={persona.id}
                     layoutId={`persona-card-${persona.id}`}
-                    className="flex items-center gap-4 px-5 py-3.5 rounded-2xl cursor-pointer group"
+                    className="flex items-center gap-2 sm:gap-4 px-3 py-3 sm:px-5 sm:py-3.5 rounded-2xl cursor-pointer group"
                     onClick={() => setSelectedId(persona.id)}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     style={{
@@ -422,27 +422,27 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       borderRadius: 16,
                     }}
                   >
-                    <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
+                    <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" className="flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-semibold text-neutral-900">{persona.name}</span>
-                        {isSelected && <Check size={12} style={{ color: '#1A8C6A' }} strokeWidth={3} />}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-sm font-semibold text-neutral-900 truncate">{persona.name}</span>
+                        {isSelected && <Check size={12} className="flex-shrink-0" style={{ color: '#1A8C6A' }} strokeWidth={3} />}
                       </div>
-                      <p className="text-xs text-neutral-400">{persona.traits?.job_title ?? 'No role'}{persona.traits?.location ? ` · ${persona.traits.location}` : ''}</p>
+                      <p className="text-xs text-neutral-400 truncate">{persona.traits?.job_title ?? 'No role'}{persona.traits?.location ? ` · ${persona.traits.location}` : ''}</p>
                     </div>
                     {persona.tags?.slice(0, 2).map((tag: string, i: number) => (
-                      <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium hidden sm:block"
+                      <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium hidden sm:block flex-shrink-0"
                         style={i === 0 ? { background: '#E8F5F1', color: '#0D5C45' } : { background: '#F3F4F6', color: '#6B7280' }}>
                         {tag}
                       </span>
                     ))}
-                    <div className="flex gap-2 flex-shrink-0">
-                      <button onClick={e => { e.stopPropagation(); showPersonaPreview(persona) }} className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 transition-colors" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Show preview">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                      <button onClick={e => { e.stopPropagation(); showPersonaPreview(persona) }} className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-neutral-400 hover:text-neutral-700 transition-colors" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Show preview">
                         <Eye size={13} />
                       </button>
-                      <Link href={`/personas/${persona.id}`} onClick={e => e.stopPropagation()} className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}>View</Link>
-                      <Link href={`/interviews/new?persona_id=${persona.id}`} onClick={e => e.stopPropagation()} className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' }}>Interview</Link>
-                      <button onClick={e => handleArchive(e, persona.id)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-amber-500" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Archive">
+                      <Link href={`/personas/${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}>View</Link>
+                      <Link href={`/interviews/new?persona_id=${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg text-white flex-shrink-0" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' }}>Interview</Link>
+                      <button onClick={e => handleArchive(e, persona.id)} className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-amber-500" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Archive">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
                       </button>
                     </div>
