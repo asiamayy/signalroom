@@ -653,8 +653,8 @@ function PersonaModalBody({ persona }: { persona: Persona }) {
               ['Income', t?.income ? incomeMap[t.income] : null],
               ['Education', t?.education ? educationMap[t.education] : null],
             ] as [string, string | number | null | undefined][]).filter(([, v]) => v).map(([label, value]) => (
-              <div key={label} className="flex justify-between text-sm">
-                <span className="text-neutral-400">{label}</span>
+              <div key={label} className="text-sm">
+                <span className="text-neutral-400">{label}: </span>
                 <span className="text-neutral-700 font-medium">{value}</span>
               </div>
             ))}
