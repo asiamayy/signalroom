@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { GitCompare, Loader2, Plus, X, ChevronDown } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
+import { withViewTransition } from '@/lib/viewTransition'
 import { cn, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import type { Persona, InterviewType } from '@/types'
 
@@ -285,8 +286,13 @@ export default function ComparePage() {
               {activeResult && (
                 <div className="flex-1 p-5">
                   <div
-                    onClick={() => setOpenResponseId(activeResult.persona_id)}
+                    onClick={() => withViewTransition(() => setOpenResponseId(activeResult.persona_id), 'open')}
                     className="-m-2 p-2 rounded-xl cursor-pointer transition-colors hover:bg-neutral-50"
+                    style={{
+                      viewTransitionName: openResponseId === activeResult.persona_id
+                        ? undefined
+                        : `compare-response-${activeResult.persona_id}`,
+                    } as React.CSSProperties}
                   >
                     <div className="flex items-center gap-3 mb-4">
                       <PersonaAvatar
@@ -348,7 +354,12 @@ export default function ComparePage() {
         </div>
       </div>
 
-      <Modal isOpen={!!openResponseId} onClose={() => setOpenResponseId(null)} maxWidth={540}>
+      <Modal
+        isOpen={!!openResponseId}
+        onClose={() => withViewTransition(() => setOpenResponseId(null), 'close')}
+        maxWidth={540}
+        viewTransitionName={openResponseId ? `compare-response-${openResponseId}` : undefined}
+      >
         {(() => {
           const response = results.find(r => r.persona_id === openResponseId)
           if (!response) return null

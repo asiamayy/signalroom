@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Quote, AlertCircle, CheckCircle2, Info } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
+import { withViewTransition } from '@/lib/viewTransition'
 import { getSentimentColor } from '@/lib/utils'
 import type { ReportTheme } from '@/types'
 
@@ -14,11 +15,21 @@ export function ThemesClient({ themes, confidenceScore }: { themes: ReportTheme[
     <>
       <div className="space-y-3">
         {themes.map((theme, i) => (
-          <ThemeCard key={i} theme={theme} index={i} onClick={() => setOpenIndex(i)} />
+          <ThemeCard
+            key={i}
+            theme={theme}
+            index={i}
+            isModalOpen={openIndex === i}
+            onClick={() => withViewTransition(() => setOpenIndex(i), 'open')}
+          />
         ))}
       </div>
 
-      <Modal isOpen={openIndex !== null} onClose={() => setOpenIndex(null)}>
+      <Modal
+        isOpen={openIndex !== null}
+        onClose={() => withViewTransition(() => setOpenIndex(null), 'close')}
+        viewTransitionName={openIndex !== null ? `report-theme-${openIndex}` : undefined}
+      >
         {openTheme && <ThemeModalContent theme={openTheme} confidenceScore={confidenceScore} />}
       </Modal>
     </>
@@ -27,16 +38,19 @@ export function ThemesClient({ themes, confidenceScore }: { themes: ReportTheme[
 
 // ─── Theme card ────────────────────────────────────────────────────────────────
 
-function ThemeCard({ theme, index, onClick }: { theme: ReportTheme; index: number; onClick: () => void }) {
+function ThemeCard({ theme, index, isModalOpen, onClick }: { theme: ReportTheme; index: number; isModalOpen: boolean; onClick: () => void }) {
   const sentimentClass = getSentimentColor(theme.sentiment)
   const SentimentIcon = theme.sentiment === 'positive' ? CheckCircle2
     : theme.sentiment === 'negative' ? AlertCircle
     : Info
+  // Cleared while this card's modal is open — the modal takes over the name.
+  const viewTransitionName = isModalOpen ? undefined : `report-theme-${index}`
 
   return (
     <div
       onClick={onClick}
       className="bg-white border border-neutral-200 rounded-xl p-5 cursor-pointer transition-all hover:border-neutral-300 hover:shadow-sm"
+      style={{ viewTransitionName } as React.CSSProperties}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3">

@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Plus, Check, LayoutGrid, List, ChevronDown } from 'lucide-react'
+import { Plus, Check, LayoutGrid, List, ChevronDown, Eye } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { OnboardingModal } from '@/components/ui/OnboardingModal'
 import { Modal } from '@/components/ui/Modal'
+import { withViewTransition } from '@/lib/viewTransition'
 import type { Persona, Plan } from '@/types'
 
 interface PersonasClientProps {
@@ -35,9 +36,13 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const atLimit = limit !== Infinity && personas.length >= limit
   const modalPersona = personas.find(p => p.id === modalPersonaId) ?? null
 
-  const openPersonaModal = (personaId: string) => {
-    setSelectedId(personaId)
-    setModalPersonaId(personaId)
+  // "Show preview" always selects the card too (harmless if already selected)
+  // so the modal's shared-element morph always starts from a selected card.
+  const showPersonaPreview = (personaId: string) => {
+    withViewTransition(() => {
+      setSelectedId(personaId)
+      setModalPersonaId(personaId)
+    }, 'open')
   }
   const handleDelete = async (e: React.MouseEvent, personaId: string) => {
     e.preventDefault()
@@ -273,7 +278,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       // Don't change selection if clicking archive button area
                       const target = e.target as HTMLElement
                       if (target.closest('[data-archive-btn]')) return
-                      openPersonaModal(persona.id)
+                      setSelectedId(persona.id)
                     }}
                     onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)' }}
                     onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
@@ -283,7 +288,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                       transform: 'translateY(0)',
                       transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
-                    }}
+                      viewTransitionName: modalPersonaId === persona.id ? undefined : `persona-card-${persona.id}`,
+                    } as React.CSSProperties}
                   >
                     {/* Green checkmark when selected */}
                     {isSelected && (
@@ -346,26 +352,47 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       </p>
                     </div>
 
-                    <div className="px-4 pb-4 flex gap-2" style={{ borderTop: '1px solid #F3F4F6', paddingTop: '12px' }}>
-                      <Link
-                        href={`/personas/${persona.id}`}
-                        onClick={e => e.stopPropagation()}
-                        className="flex-1 text-center text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1"
-                        style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}
-                      >
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        View details
-                      </Link>
-                      <Link
-                        href={`/interviews/new?persona_id=${persona.id}`}
-                        onClick={e => e.stopPropagation()}
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl text-white"
-                        style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 6px rgba(26,140,106,0.3)' }}
-                      >
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        Interview
-                      </Link>
-                    </div>
+                    {isSelected ? (
+                      <div className="px-4 pb-4 flex gap-1.5" style={{ borderTop: '1px solid #F3F4F6', paddingTop: '12px' }}>
+                        <Link
+                          href={`/personas/${persona.id}`}
+                          onClick={e => e.stopPropagation()}
+                          className="flex-1 text-center text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1"
+                          style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                          View details
+                        </Link>
+                        <Link
+                          href={`/interviews/new?persona_id=${persona.id}`}
+                          onClick={e => e.stopPropagation()}
+                          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl text-white"
+                          style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 6px rgba(26,140,106,0.3)' }}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                          Interview
+                        </Link>
+                        <button
+                          onClick={e => { e.stopPropagation(); showPersonaPreview(persona.id) }}
+                          className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold py-2 rounded-xl transition-colors"
+                          style={{ background: '#F3F4F6', border: '1px solid rgba(0,0,0,0.08)', color: '#374151' }}
+                        >
+                          <Eye size={11} />
+                          Preview
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="px-4 pb-3 opacity-0 group-hover:opacity-100 transition-opacity" style={{ paddingTop: '2px' }}>
+                        <button
+                          onClick={e => { e.stopPropagation(); showPersonaPreview(persona.id) }}
+                          className="w-full flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-xl transition-colors"
+                          style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)', color: '#6B7280' }}
+                        >
+                          <Eye size={12} />
+                          Show preview
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -393,12 +420,13 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   <div key={persona.id}>
                     <div
                       className="flex items-center gap-4 px-5 py-3.5 rounded-2xl cursor-pointer transition-all group"
-                      onClick={() => openPersonaModal(persona.id)}
+                      onClick={() => setSelectedId(persona.id)}
                       style={{
                         background: 'white',
                         border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                         boxShadow: isSelected ? '0 0 0 2px rgba(26,140,106,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
-                      }}
+                        viewTransitionName: modalPersonaId === persona.id ? undefined : `persona-card-${persona.id}`,
+                      } as React.CSSProperties}
                     >
                       <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
                       <div className="flex-1 min-w-0">
@@ -415,6 +443,9 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         </span>
                       ))}
                       <div className="flex gap-2 flex-shrink-0">
+                        <button onClick={e => { e.stopPropagation(); showPersonaPreview(persona.id) }} className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 transition-colors" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Show preview">
+                          <Eye size={13} />
+                        </button>
                         <Link href={`/personas/${persona.id}`} onClick={e => e.stopPropagation()} className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}>View</Link>
                         <Link href={`/interviews/new?persona_id=${persona.id}`} onClick={e => e.stopPropagation()} className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' }}>Interview</Link>
                         <button onClick={e => handleArchive(e, persona.id)} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-amber-500" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Archive">
@@ -450,14 +481,15 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         onClick={(e) => {
                           const target = e.target as HTMLElement
                           if (target.closest('[data-archive-btn]')) return
-                          openPersonaModal(persona.id)
+                          setSelectedId(persona.id)
                         }}
                         style={{
                           background: 'white',
                           opacity: 0.85,
                           boxShadow: isSelected ? '0 0 0 2px #1A8C6A, 0 4px 16px rgba(26,140,106,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
                           border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
-                        }}
+                          viewTransitionName: modalPersonaId === persona.id ? undefined : `persona-card-${persona.id}`,
+                        } as React.CSSProperties}
                       >
                         {/* Checkmark when selected */}
                         {isSelected && (
@@ -498,8 +530,16 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           <span className="text-xs px-2.5 py-1 rounded-full font-medium mb-3" style={{ background: '#F3F4F6', color: '#9CA3AF' }}>Archived</span>
                         </div>
 
-                        {/* Footer with restore + delete buttons */}
+                        {/* Footer with preview + restore + delete buttons */}
                         <div className="px-4 pb-4 flex gap-2" style={{ borderTop: '1px solid #F3F4F6', paddingTop: '12px' }}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); showPersonaPreview(persona.id) }}
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-neutral-700 transition-colors flex-shrink-0"
+                            style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)' }}
+                            title="Show preview"
+                          >
+                            <Eye size={13} />
+                          </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleRestore(persona.id) }}
                             className="flex-1 text-center text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1"
@@ -532,7 +572,12 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         </div>
       </div>
 
-      <Modal isOpen={!!modalPersonaId} onClose={() => setModalPersonaId(null)} maxWidth={560}>
+      <Modal
+        isOpen={!!modalPersonaId}
+        onClose={() => withViewTransition(() => setModalPersonaId(null), 'close')}
+        maxWidth={560}
+        viewTransitionName={modalPersonaId ? `persona-card-${modalPersonaId}` : undefined}
+      >
         {modalPersona && <PersonaModalBody key={modalPersona.id} persona={modalPersona} />}
       </Modal>
     </>
