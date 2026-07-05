@@ -352,47 +352,37 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       </p>
                     </div>
 
-                    {isSelected ? (
-                      <div className="px-4 pb-4 flex gap-1.5" style={{ borderTop: '1px solid #F3F4F6', paddingTop: '12px' }}>
-                        <Link
-                          href={`/personas/${persona.id}`}
-                          onClick={e => e.stopPropagation()}
-                          className="flex-1 text-center text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1"
-                          style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}
-                        >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                          View details
-                        </Link>
-                        <Link
-                          href={`/interviews/new?persona_id=${persona.id}`}
-                          onClick={e => e.stopPropagation()}
-                          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl text-white"
-                          style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 6px rgba(26,140,106,0.3)' }}
-                        >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                          Interview
-                        </Link>
-                        <button
-                          onClick={e => { e.stopPropagation(); showPersonaPreview(persona.id) }}
-                          className="flex-1 flex items-center justify-center gap-1 text-xs font-semibold py-2 rounded-xl transition-colors"
-                          style={{ background: '#F3F4F6', border: '1px solid rgba(0,0,0,0.08)', color: '#374151' }}
-                        >
-                          <Eye size={11} />
-                          Preview
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="px-4 pb-3 opacity-0 group-hover:opacity-100 transition-opacity" style={{ paddingTop: '2px' }}>
-                        <button
-                          onClick={e => { e.stopPropagation(); showPersonaPreview(persona.id) }}
-                          className="w-full flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-xl transition-colors"
-                          style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)', color: '#6B7280' }}
-                        >
-                          <Eye size={12} />
-                          Show preview
-                        </button>
-                      </div>
-                    )}
+                    <div className="px-4 pb-4 flex gap-2" style={{ borderTop: '1px solid #F3F4F6', paddingTop: '12px' }}>
+                      <Link
+                        href={`/personas/${persona.id}`}
+                        onClick={e => e.stopPropagation()}
+                        className="flex-1 text-center text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1"
+                        style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        View details
+                      </Link>
+                      <Link
+                        href={`/interviews/new?persona_id=${persona.id}`}
+                        onClick={e => e.stopPropagation()}
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl text-white"
+                        style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 6px rgba(26,140,106,0.3)' }}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Interview
+                      </Link>
+                    </div>
+
+                    {/* Subtle "Show preview" link — always visible when selected, hover-reveal otherwise */}
+                    <div className={isSelected ? 'px-4 pb-3 -mt-2 text-center' : 'px-4 pb-3 -mt-2 text-center opacity-0 group-hover:opacity-100 transition-opacity'}>
+                      <button
+                        onClick={e => { e.stopPropagation(); showPersonaPreview(persona.id) }}
+                        className="text-xs transition-colors text-[#9CA3AF] hover:text-[#4B5563]"
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        Show preview →
+                      </button>
+                    </div>
                   </div>
                 )
               })}
