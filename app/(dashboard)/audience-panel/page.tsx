@@ -425,15 +425,15 @@ export default function AudiencePanelPage() {
               {/* ── Stat cards ── */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {([
-                  { Icon: Users, value: result.total_personas, label: 'Personas Interviewed' },
-                  { Icon: Sparkles, value: result.themes.length, label: 'Key Themes Identified' },
-                  { Icon: Target, value: `${result.consensus_score}%`, label: 'Consensus Score' },
-                  { Icon: Clock, value: `${result.summary.completed_in_seconds}s`, label: 'Time to Complete', sublabel: "That's 3–4 weeks saved" },
-                ] as { Icon: typeof Users; value: string | number; label: string; sublabel?: string }[]).map((s, i) => (
+                  { Icon: Users, value: result.total_personas, label: 'Personas Interviewed', iconBg: '#E8F5F1', iconColor: '#1A9B76' },
+                  { Icon: Sparkles, value: result.themes.length, label: 'Key Themes Identified', iconBg: '#FFFBEB', iconColor: '#D97706' },
+                  { Icon: Target, value: `${result.consensus_score}%`, label: 'Consensus Score', iconBg: '#EEF2FF', iconColor: '#6366F1' },
+                  { Icon: Clock, value: `${result.summary.completed_in_seconds}s`, label: 'Time to Complete', sublabel: "That's 3–4 weeks saved", iconBg: '#EFF6FF', iconColor: '#3B82F6' },
+                ] as { Icon: typeof Users; value: string | number; label: string; sublabel?: string; iconBg: string; iconColor: string }[]).map((s, i) => (
                   <div key={i} className="rounded-2xl p-4"
                     style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: '#E8F5F1' }}>
-                      <s.Icon size={16} style={{ color: '#1A9B76' }} />
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: s.iconBg }}>
+                      <s.Icon size={16} style={{ color: s.iconColor }} />
                     </div>
                     <p className="text-2xl font-serif font-bold text-neutral-900 leading-none">{s.value}</p>
                     <p className="text-[11px] text-neutral-500 mt-1.5 font-medium">{s.label}</p>
@@ -472,27 +472,65 @@ export default function AudiencePanelPage() {
                   </div>
                 </div>
 
+                {result.summary.recommended_actions?.length > 0 && (
+                  <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Recommended Actions</p>
+                    <div className="space-y-1.5">
+                      {result.summary.recommended_actions.map((action, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="text-xs font-bold mt-0.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
+                          <p className="text-xs text-white leading-relaxed">{action}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-[10px] mt-5" style={{ color: 'rgba(255,255,255,0.4)' }}>
                   Completed in ~{result.summary.completed_in_seconds}s · {result.total_personas} personas interviewed
                 </p>
               </div>
 
-              {/* ── Question / Sentiment / Themes ── */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* ── Sentiment / Themes ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="rounded-2xl p-5"
                   style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Your Question</p>
-                  <p className="text-sm text-neutral-700 leading-relaxed italic">"{result.question}"</p>
-                </div>
-                <div className="rounded-2xl p-5"
-                  style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Sentiment Distribution</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Sentiment Overall</p>
                   <SentimentBar distribution={result.sentiment_distribution} total={result.total_personas} />
+                  {(() => {
+                    const dominant = Object.entries(result.sentiment_distribution).reduce(
+                      (max, cur) => (cur[1] > max[1] ? cur : max)
+                    )
+                    const [dominantKey, dominantCount] = dominant
+                    const c = SENTIMENT_COLORS[dominantKey as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
+                    return (
+                      <div className="rounded-xl p-3.5 mt-4 flex items-start gap-2.5" style={{ background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+                        <Sparkles size={14} className="flex-shrink-0 mt-0.5" style={{ color: c.bar }} />
+                        <p className="text-xs text-neutral-600 leading-relaxed">
+                          <span className="font-semibold text-neutral-900 capitalize">Overall Sentiment: {dominantKey}</span>
+                          {' — '}{dominantCount}/{result.total_personas} personas leaned {dominantKey}.
+                        </p>
+                      </div>
+                    )
+                  })()}
                 </div>
                 <div className="rounded-2xl p-5"
                   style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Top Themes</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">Theme Frequency</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-300">Mentioned by · Confidence</p>
+                  </div>
                   <ThemeList themes={result.themes} total={result.total_personas} />
+                </div>
+              </div>
+
+              {/* ── Individual responses ── */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Individual Responses</p>
+                <div className="overflow-x-auto -mx-1 px-1 pb-1">
+                  <div className="grid gap-3" style={{ gridAutoFlow: 'column', gridAutoColumns: 'minmax(200px, 1fr)' }}>
+                    {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
+                  </div>
                 </div>
               </div>
 
@@ -514,24 +552,19 @@ export default function AudiencePanelPage() {
                     accent={SENTIMENT_COLORS.negative}
                   />
                 )}
-                {(result.summary.recommended_actions?.[0] || result.summary.overall_recommendation) && (
-                  <QuoteCard
-                    label="Key Takeaway"
-                    quote={result.summary.recommended_actions?.[0] ?? result.summary.overall_recommendation}
-                    source="Recommended next step"
-                    accent={SENTIMENT_COLORS.neutral}
-                  />
-                )}
-              </div>
-
-              {/* ── Individual responses ── */}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Individual Responses</p>
-                <div className="overflow-x-auto -mx-1 px-1 pb-1">
-                  <div className="grid gap-3" style={{ gridAutoFlow: 'column', gridAutoColumns: 'minmax(200px, 1fr)' }}>
-                    {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
-                  </div>
-                </div>
+                {(() => {
+                  const takeaway = result.summary.recommended_actions?.length > 1
+                    ? result.summary.recommended_actions[result.summary.recommended_actions.length - 1]
+                    : result.summary.recommended_actions?.[0] ?? result.summary.overall_recommendation
+                  return takeaway ? (
+                    <QuoteCard
+                      label="Key Takeaway"
+                      quote={takeaway}
+                      source="Recommended next step"
+                      accent={SENTIMENT_COLORS.neutral}
+                    />
+                  ) : null
+                })()}
               </div>
             </>
           )}
