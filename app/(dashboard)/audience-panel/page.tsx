@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves } from 'lucide-react'
+import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves, X } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { createClient } from '@/lib/supabase/client'
-import { cn } from '@/lib/utils'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan } from '@/types'
 
@@ -187,8 +186,7 @@ function PurchaseGauge({ value }: { value: number }) {
   )
 }
 
-function ResponseCard({ result }: { result: PanelResponse }) {
-  const [expanded, setExpanded] = useState(false)
+function ResponseCard({ result, onReadMore }: { result: PanelResponse; onReadMore: () => void }) {
   const c = SENTIMENT_COLORS[result.sentiment] ?? SENTIMENT_COLORS.neutral
 
   return (
@@ -221,13 +219,13 @@ function ResponseCard({ result }: { result: PanelResponse }) {
         <p className="text-xs text-red-500">{result.error}</p>
       ) : (
         <>
-          <p className={cn('text-xs text-neutral-600 leading-relaxed flex-1', !expanded && 'line-clamp-2')}>
+          <p className="text-xs text-neutral-600 leading-relaxed flex-1 line-clamp-2">
             {result.response}
           </p>
-          <button onClick={() => setExpanded(o => !o)}
+          <button onClick={onReadMore}
             className="text-[11px] font-semibold mt-2 self-start transition-colors"
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1A9B76', padding: 0, fontFamily: 'inherit' }}>
-            {expanded ? 'Show less ↑' : 'Read more ↓'}
+            Read more →
           </button>
         </>
       )}
@@ -251,6 +249,66 @@ function QuoteCard({ label, quote, source, accent }: { label: string; quote: str
   )
 }
 
+// ─── Full response modal ───────────────────────────────────────────────────────
+
+function ResponseModal({ response, visible, onClose }: { response: PanelResponse; visible: boolean; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-200 ease-out"
+      style={{ background: 'rgba(0,0,0,0.5)', opacity: visible ? 1 : 0 }}
+      onClick={onClose}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="relative bg-white rounded-2xl w-full transition-all duration-200 ease-out"
+        style={{
+          maxWidth: '520px',
+          padding: '28px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'scale(1)' : 'scale(0.95)',
+        }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:bg-neutral-100 transition-colors"
+          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          <X size={18} />
+        </button>
+
+        <div className="flex items-center gap-3 mb-5 pr-8">
+          <PersonaAvatar
+            avatarUrl={response.avatar_url}
+            avatarInitials={response.avatar_initials}
+            avatarColor={response.avatar_color}
+            name={response.persona_name}
+            size="lg"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-base font-semibold text-neutral-900 truncate">{response.persona_name}</p>
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              {response.job_title && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                  style={{ background: '#E8F5F1', color: '#0D5C45' }}>
+                  {response.job_title}
+                </span>
+              )}
+              <SentimentBadge sentiment={response.sentiment} />
+            </div>
+          </div>
+        </div>
+
+        {response.error ? (
+          <p className="text-sm text-red-500">{response.error}</p>
+        ) : (
+          <p className="text-sm text-neutral-700 leading-relaxed">{response.response}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function AudiencePanelPage() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -260,6 +318,8 @@ export default function AudiencePanelPage() {
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [plan, setPlan] = useState<Plan>('starter')
+  const [openResponseId, setOpenResponseId] = useState<string | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
   const maxPersonas = PLAN_LIMITS[plan].audience_panel_max
   const hasAccess = PLAN_LIMITS[plan].audience_panel
@@ -275,6 +335,18 @@ export default function AudiencePanelPage() {
       setLoadingPersonas(false)
     })
   }, [])
+
+  useEffect(() => {
+    if (openResponseId) {
+      const raf = requestAnimationFrame(() => setModalVisible(true))
+      return () => cancelAnimationFrame(raf)
+    }
+  }, [openResponseId])
+
+  const closeResponseModal = () => {
+    setModalVisible(false)
+    setTimeout(() => setOpenResponseId(null), 200)
+  }
 
   const togglePersona = (id: string) => {
     setSelectedIds(prev =>
@@ -604,11 +676,20 @@ export default function AudiencePanelPage() {
           <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Individual Responses</p>
           <div className="overflow-x-auto -mx-1 px-1 pb-1">
             <div className="grid gap-3" style={{ gridAutoFlow: 'column', gridAutoColumns: 'minmax(200px, 1fr)' }}>
-              {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
+              {result.responses.map(r => (
+                <ResponseCard key={r.persona_id} result={r} onReadMore={() => setOpenResponseId(r.persona_id)} />
+              ))}
             </div>
           </div>
         </div>
       )}
+
+      {result && openResponseId && (() => {
+        const response = result.responses.find(r => r.persona_id === openResponseId)
+        return response ? (
+          <ResponseModal response={response} visible={modalVisible} onClose={closeResponseModal} />
+        ) : null
+      })()}
     </div>
   )
 }
