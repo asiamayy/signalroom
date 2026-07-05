@@ -144,6 +144,8 @@ export interface PlanLimits {
   reports: boolean
   templates: boolean
   multi_persona: boolean
+  audience_panel: boolean
+  audience_panel_max: number
   team_seats: number
   white_label: boolean
 }
@@ -155,6 +157,8 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     reports: false,
     templates: false,
     multi_persona: false,
+    audience_panel: false,
+    audience_panel_max: 0,
     team_seats: 1,
     white_label: false,
   },
@@ -164,6 +168,8 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     reports: true,
     templates: true,
     multi_persona: true,
+    audience_panel: true,
+    audience_panel_max: 5,
     team_seats: 1,
     white_label: false,
   },
@@ -173,6 +179,8 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     reports: true,
     templates: true,
     multi_persona: true,
+    audience_panel: true,
+    audience_panel_max: 10,
     team_seats: 10,
     white_label: true,
   },
