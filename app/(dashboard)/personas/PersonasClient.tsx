@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { Plus, Check, LayoutGrid, List, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Check, LayoutGrid, List, ChevronDown } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { OnboardingModal } from '@/components/ui/OnboardingModal'
+import { Modal } from '@/components/ui/Modal'
 import type { Persona, Plan } from '@/types'
 
 interface PersonasClientProps {
@@ -26,29 +27,18 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState('Recently updated')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [previewOpen, setPreviewOpen] = useState(true)
-  const [columns, setColumns] = useState(4)
-
-  // Track grid column count to know where to insert the inspector panel
-  useEffect(() => {
-    const updateColumns = () => {
-      const w = window.innerWidth
-      if (w < 640) setColumns(1)
-      else if (w < 1024) setColumns(2)
-      else if (w < 1280) setColumns(3)
-      else setColumns(4)
-    }
-    updateColumns()
-    window.addEventListener('resize', updateColumns)
-    return () => window.removeEventListener('resize', updateColumns)
-  }, [])
+  const [modalPersonaId, setModalPersonaId] = useState<string | null>(null)
 
   const active = personas.filter(p => !p.archived)
   const archived = personas.filter(p => p.archived)
   // Total personas (active + archived) counts toward limit
   const atLimit = limit !== Infinity && personas.length >= limit
-  // Show inspector panel for any selected persona regardless of archived status
-  const selectedPersona = personas.find(p => p.id === selectedId)
+  const modalPersona = personas.find(p => p.id === modalPersonaId) ?? null
+
+  const openPersonaModal = (personaId: string) => {
+    setSelectedId(personaId)
+    setModalPersonaId(personaId)
+  }
   const handleDelete = async (e: React.MouseEvent, personaId: string) => {
     e.preventDefault()
     e.stopPropagation()
@@ -273,7 +263,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
           {/* ── Grid view ── */}
           {filtered.length > 0 && viewMode === 'grid' && filterTab !== 'Archived' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
-              {filtered.map((persona: Persona, cardIndex: number) => {
+              {filtered.map((persona: Persona) => {
                 const isSelected = selectedId === persona.id
                 return (
                   <div
@@ -283,7 +273,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       // Don't change selection if clicking archive button area
                       const target = e.target as HTMLElement
                       if (target.closest('[data-archive-btn]')) return
-                      setSelectedId(persona.id)
+                      openPersonaModal(persona.id)
                     }}
                     onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)' }}
                     onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.transform = 'translateY(0)' }}
@@ -293,7 +283,6 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                       transform: 'translateY(0)',
                       transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
-                      order: cardIndex * 10,
                     }}
                   >
                     {/* Green checkmark when selected */}
@@ -382,7 +371,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               })}
 
               {!atLimit && (
-                <Link href="/personas/new" className="flex items-center justify-center rounded-2xl transition-all duration-200 min-h-[300px]" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)', order: filtered.length * 10 }}>
+                <Link href="/personas/new" className="flex items-center justify-center rounded-2xl transition-all duration-200 min-h-[300px]" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)' }}>
                   <div className="text-center">
                     <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: '#F3F4F6' }}>
                       <Plus size={20} className="text-neutral-400" />
@@ -392,25 +381,6 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   </div>
                 </Link>
               )}
-
-              {/* Inspector panel — positioned via CSS order to appear right after the selected persona's row */}
-              {selectedPersona && (() => {
-                const idx = filtered.findIndex(p => p.id === selectedPersona.id)
-                if (idx === -1) return null
-                const totalCards = filtered.length + (atLimit ? 0 : 1) // include "new persona" card
-                const row = Math.floor(idx / columns)
-                const lastRow = Math.floor((totalCards - 1) / columns)
-                // Last card's order in that row, using the x10 scale; +5 sits strictly between rows
-                const lastCardIndexInRow = Math.min((row + 1) * columns, totalCards) - 1
-                const panelOrder = row === lastRow
-                  ? (totalCards - 1) * 10 + 5  // after the very last card
-                  : lastCardIndexInRow * 10 + 5 // right after this row, before the next row starts
-                return (
-                  <div style={{ gridColumn: '1 / -1', order: panelOrder }}>
-                    <InspectorPanel persona={selectedPersona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />
-                  </div>
-                )
-              })()}
             </div>
           )}
 
@@ -423,7 +393,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   <div key={persona.id}>
                     <div
                       className="flex items-center gap-4 px-5 py-3.5 rounded-2xl cursor-pointer transition-all group"
-                      onClick={() => setSelectedId(persona.id)}
+                      onClick={() => openPersonaModal(persona.id)}
                       style={{
                         background: 'white',
                         border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
@@ -452,13 +422,6 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         </button>
                       </div>
                     </div>
-
-                    {/* Inspector panel — appears directly under the selected row in list view */}
-                    {isSelected && (
-                      <div className="mt-2">
-                        <InspectorPanel persona={persona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />
-                      </div>
-                    )}
                   </div>
                 )
               })}
@@ -487,7 +450,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         onClick={(e) => {
                           const target = e.target as HTMLElement
                           if (target.closest('[data-archive-btn]')) return
-                          setSelectedId(persona.id)
+                          openPersonaModal(persona.id)
                         }}
                         style={{
                           background: 'white',
@@ -566,24 +529,23 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             </>
           )}
 
-          {/* ── Inspector panel — only for Archived tab (grid/list views render their own inline) ── */}
-          {selectedPersona && filterTab === 'Archived' && (
-            <InspectorPanel persona={selectedPersona} open={previewOpen} onToggle={() => setPreviewOpen(o => !o)} />
-          )}
-
         </div>
       </div>
+
+      <Modal isOpen={!!modalPersonaId} onClose={() => setModalPersonaId(null)} maxWidth={560}>
+        {modalPersona && <PersonaModalBody key={modalPersona.id} persona={modalPersona} />}
+      </Modal>
     </>
   )
 }
 
-// ─── Inspector Panel ──────────────────────────────────────────────────────────
+// ─── Persona detail modal ───────────────────────────────────────────────────────
 
-const INSPECTOR_TABS = ['Overview', 'Goals', 'Frustrations', 'Buying', 'Notes'] as const
-type InspectorTab = typeof INSPECTOR_TABS[number]
+const PERSONA_MODAL_TABS = ['Overview', 'Goals', 'Frustrations', 'Buying', 'Notes'] as const
+type PersonaModalTab = typeof PERSONA_MODAL_TABS[number]
 
-function InspectorPanel({ persona, open, onToggle }: { persona: Persona; open: boolean; onToggle: () => void }) {
-  const [activeTab, setActiveTab] = useState<InspectorTab>('Overview')
+function PersonaModalBody({ persona }: { persona: Persona }) {
+  const [activeTab, setActiveTab] = useState<PersonaModalTab>('Overview')
   const t = persona.traits
 
   const incomeMap: Record<string, string> = {
@@ -596,90 +558,136 @@ function InspectorPanel({ persona, open, onToggle }: { persona: Persona; open: b
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.06)' }}>
-
-      {/* Panel header with persona snapshot */}
-      {open && (
-        <div className="flex flex-col md:flex-row items-start md:items-start gap-4 md:gap-5 px-4 sm:px-5 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-          {/* Avatar + name row */}
-          <div className="flex items-start gap-4 w-full md:w-auto">
-            <PersonaAvatar
-              avatarUrl={persona.avatar_url}
-              avatarInitials={persona.avatar_initials}
-              avatarColor={persona.avatar_color}
-              name={persona.name}
-              size="md"
-              className="flex-shrink-0"
-            />
-
-            {/* Name + meta */}
-            <div className="flex-shrink-0 w-44">
-              <h3 className="text-sm font-bold text-neutral-900 mb-0.5 flex items-center gap-1.5">
-                {persona.name}
-                <Check size={12} style={{ color: '#1A8C6A' }} strokeWidth={3} />
-              </h3>
-              <p className="text-xs text-neutral-500 mb-2">{t?.job_title}{t?.location ? ` · ${t.location}` : ''}</p>
-              {t?.industry && <p className="text-xs text-neutral-400 flex items-center gap-1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>{t.industry}</p>}
-            </div>
-          </div>
-
-          {/* Divider - hidden on mobile */}
-          <div className="hidden md:block self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
-
-          {/* Goal */}
-          <div className="flex-1 min-w-0 w-full md:w-auto">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A8C6A" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span className="text-xs font-semibold text-neutral-600">Goal</span>
-            </div>
-            <p className="text-xs text-neutral-700 leading-relaxed">{(t?.goals ?? []).filter(Boolean)[0] ?? '—'}</p>
-          </div>
-
-          {/* Divider - hidden on mobile */}
-          <div className="hidden md:block self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
-
-          {/* Pain point */}
-          <div className="flex-1 min-w-0 w-full md:w-auto">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span className="text-xs font-semibold text-neutral-600">Pain Point</span>
-            </div>
-            <p className="text-xs text-neutral-700 leading-relaxed">{(t?.frustrations ?? []).filter(Boolean)[0] ?? '—'}</p>
-          </div>
-
-          {/* Divider - hidden on mobile */}
-          <div className="hidden md:block self-stretch w-px mx-1" style={{ background: 'rgba(0,0,0,0.07)' }} />
-
-          {/* Buying trigger */}
-          <div className="flex-1 min-w-0 w-full md:w-auto">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A8C6A" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-              <span className="text-xs font-semibold text-neutral-600">Buying Trigger</span>
-            </div>
-            <p className="text-xs text-neutral-700 leading-relaxed line-clamp-2">{t?.buying_behavior ? t.buying_behavior.slice(0, 100) + (t.buying_behavior.length > 100 ? '…' : '') : '—'}</p>
-          </div>
-
-          {/* View full persona link */}
-          <div className="flex-shrink-0 w-full md:w-auto md:self-end">
-            <Link href={`/personas/${persona.id}`} className="flex items-center justify-center md:justify-start gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-colors w-full md:w-auto" style={{ background: '#F3F4F6', color: '#374151', border: '1px solid rgba(0,0,0,0.1)' }}>
-              View full persona
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </Link>
-          </div>
+    <div>
+      {/* Header */}
+      <div className="flex items-start gap-4 mb-5 pr-8">
+        <PersonaAvatar
+          avatarUrl={persona.avatar_url}
+          avatarInitials={persona.avatar_initials}
+          avatarColor={persona.avatar_color}
+          name={persona.name}
+          size="xl"
+          className="flex-shrink-0"
+        />
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-bold text-neutral-900 mb-0.5">{persona.name}</h2>
+          <p className="text-sm text-neutral-500">{t?.job_title}{t?.location ? ` · ${t.location}` : ''}</p>
+          {t?.industry && (
+            <p className="text-xs text-neutral-400 mt-1 flex items-center gap-1">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              {t.industry}
+            </p>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Hide/show preview toggle */}
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-neutral-400 hover:text-neutral-600 transition-colors"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-      >
-        {open
-          ? <><ChevronUp size={13} /> Hide preview</>
-          : <><ChevronDown size={13} /> Show preview</>
-        }
-      </button>
+      {/* Score bars */}
+      <div className="grid grid-cols-2 gap-4 mb-5">
+        <ScoreBar label="Tech Savviness" value={t?.tech_savviness ?? 0} />
+        <ScoreBar label="Risk Tolerance" value={t?.risk_tolerance ?? 0} />
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-4 overflow-x-auto" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        {PERSONA_MODAL_TABS.map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className="px-3 py-2 text-xs font-semibold transition-colors flex-shrink-0"
+            style={{
+              color: activeTab === tab ? '#0D5C45' : '#9CA3AF',
+              borderBottom: activeTab === tab ? '2px solid #1A8C6A' : '2px solid transparent',
+              background: 'none', border: 'none', borderBottomWidth: '2px', cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div className="min-h-[110px] mb-6">
+        {activeTab === 'Overview' && (
+          <div className="space-y-2">
+            {([
+              ['Age', t?.age],
+              ['Income', t?.income ? incomeMap[t.income] : null],
+              ['Education', t?.education ? educationMap[t.education] : null],
+            ] as [string, string | number | null | undefined][]).filter(([, v]) => v).map(([label, value]) => (
+              <div key={label} className="flex justify-between text-sm">
+                <span className="text-neutral-400">{label}</span>
+                <span className="text-neutral-700 font-medium">{value}</span>
+              </div>
+            ))}
+            {persona.tags && persona.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-2">
+                {persona.tags.map(tag => (
+                  <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium" style={{ background: '#F3F4F6', color: '#6B7280' }}>{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {activeTab === 'Goals' && (
+          <ul className="space-y-2">
+            {(t?.goals ?? []).filter(Boolean).map((g, i) => (
+              <li key={i} className="text-sm text-neutral-700 leading-relaxed flex gap-2">
+                <span style={{ color: '#1A8C6A' }}>•</span>{g}
+              </li>
+            ))}
+            {(t?.goals ?? []).filter(Boolean).length === 0 && <p className="text-sm text-neutral-400">No goals defined.</p>}
+          </ul>
+        )}
+        {activeTab === 'Frustrations' && (
+          <ul className="space-y-2">
+            {(t?.frustrations ?? []).filter(Boolean).map((f, i) => (
+              <li key={i} className="text-sm text-neutral-700 leading-relaxed flex gap-2">
+                <span style={{ color: '#EF4444' }}>•</span>{f}
+              </li>
+            ))}
+            {(t?.frustrations ?? []).filter(Boolean).length === 0 && <p className="text-sm text-neutral-400">No frustrations defined.</p>}
+          </ul>
+        )}
+        {activeTab === 'Buying' && (
+          <p className="text-sm text-neutral-700 leading-relaxed">{t?.buying_behavior || 'No buying behavior defined.'}</p>
+        )}
+        {activeTab === 'Notes' && (
+          <p className="text-sm text-neutral-700 leading-relaxed">{t?.additional_context || 'No additional notes.'}</p>
+        )}
+      </div>
+
+      {/* Footer actions */}
+      <div className="flex gap-2 pt-4" style={{ borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+        <Link
+          href={`/personas/${persona.id}`}
+          className="flex-1 text-center text-sm font-semibold py-2.5 rounded-xl"
+          style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}
+        >
+          View full profile
+        </Link>
+        <Link
+          href={`/interviews/new?persona_id=${persona.id}`}
+          className="flex-1 text-center text-sm font-semibold py-2.5 rounded-xl text-white"
+          style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' }}
+        >
+          Interview this persona
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function ScoreBar({ label, value }: { label: string; value: number }) {
+  const pct = (value / 5) * 100
+  return (
+    <div>
+      <div className="flex justify-between text-xs mb-1">
+        <span className="text-neutral-500">{label}</span>
+        <span className="text-neutral-700 font-medium">{value}/5</span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#F3F4F6' }}>
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#1A9B76' }} />
+      </div>
     </div>
   )
 }

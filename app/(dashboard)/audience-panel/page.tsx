@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves, X } from 'lucide-react'
+import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan } from '@/types'
@@ -249,63 +250,39 @@ function QuoteCard({ label, quote, source, accent }: { label: string; quote: str
   )
 }
 
-// ─── Full response modal ───────────────────────────────────────────────────────
+// ─── Full response modal content ─────────────────────────────────────────────
 
-function ResponseModal({ response, visible, onClose }: { response: PanelResponse; visible: boolean; onClose: () => void }) {
+function ResponseModalContent({ response }: { response: PanelResponse }) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-200 ease-out"
-      style={{ background: 'rgba(0,0,0,0.5)', opacity: visible ? 1 : 0 }}
-      onClick={onClose}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        className="relative bg-white rounded-2xl w-full transition-all duration-200 ease-out"
-        style={{
-          maxWidth: '520px',
-          padding: '28px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'scale(1)' : 'scale(0.95)',
-        }}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:bg-neutral-100 transition-colors"
-          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-        >
-          <X size={18} />
-        </button>
-
-        <div className="flex items-center gap-3 mb-5 pr-8">
-          <PersonaAvatar
-            avatarUrl={response.avatar_url}
-            avatarInitials={response.avatar_initials}
-            avatarColor={response.avatar_color}
-            name={response.persona_name}
-            size="lg"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="text-base font-semibold text-neutral-900 truncate">{response.persona_name}</p>
-            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-              {response.job_title && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
-                  style={{ background: '#E8F5F1', color: '#0D5C45' }}>
-                  {response.job_title}
-                </span>
-              )}
-              <SentimentBadge sentiment={response.sentiment} />
-            </div>
+    <>
+      <div className="flex items-center gap-3 mb-5 pr-8">
+        <PersonaAvatar
+          avatarUrl={response.avatar_url}
+          avatarInitials={response.avatar_initials}
+          avatarColor={response.avatar_color}
+          name={response.persona_name}
+          size="lg"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-semibold text-neutral-900 truncate">{response.persona_name}</p>
+          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+            {response.job_title && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                style={{ background: '#E8F5F1', color: '#0D5C45' }}>
+                {response.job_title}
+              </span>
+            )}
+            <SentimentBadge sentiment={response.sentiment} />
           </div>
         </div>
-
-        {response.error ? (
-          <p className="text-sm text-red-500">{response.error}</p>
-        ) : (
-          <p className="text-sm text-neutral-700 leading-relaxed">{response.response}</p>
-        )}
       </div>
-    </div>
+
+      {response.error ? (
+        <p className="text-sm text-red-500">{response.error}</p>
+      ) : (
+        <p className="text-sm text-neutral-700 leading-relaxed">{response.response}</p>
+      )}
+    </>
   )
 }
 
@@ -319,7 +296,6 @@ export default function AudiencePanelPage() {
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [plan, setPlan] = useState<Plan>('starter')
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
-  const [modalVisible, setModalVisible] = useState(false)
 
   const maxPersonas = PLAN_LIMITS[plan].audience_panel_max
   const hasAccess = PLAN_LIMITS[plan].audience_panel
@@ -335,18 +311,6 @@ export default function AudiencePanelPage() {
       setLoadingPersonas(false)
     })
   }, [])
-
-  useEffect(() => {
-    if (openResponseId) {
-      const raf = requestAnimationFrame(() => setModalVisible(true))
-      return () => cancelAnimationFrame(raf)
-    }
-  }, [openResponseId])
-
-  const closeResponseModal = () => {
-    setModalVisible(false)
-    setTimeout(() => setOpenResponseId(null), 200)
-  }
 
   const togglePersona = (id: string) => {
     setSelectedIds(prev =>
@@ -684,12 +648,12 @@ export default function AudiencePanelPage() {
         </div>
       )}
 
-      {result && openResponseId && (() => {
-        const response = result.responses.find(r => r.persona_id === openResponseId)
-        return response ? (
-          <ResponseModal response={response} visible={modalVisible} onClose={closeResponseModal} />
-        ) : null
-      })()}
+      <Modal isOpen={!!openResponseId} onClose={() => setOpenResponseId(null)} maxWidth={540}>
+        {(() => {
+          const response = result?.responses.find(r => r.persona_id === openResponseId)
+          return response ? <ResponseModalContent response={response} /> : null
+        })()}
+      </Modal>
     </div>
   )
 }

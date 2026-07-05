@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { GitCompare, Loader2, Plus, X, ChevronDown } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
+import { Modal } from '@/components/ui/Modal'
 import { cn, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import type { Persona, InterviewType } from '@/types'
 
@@ -38,6 +39,7 @@ export default function ComparePage() {
   const [activeTab, setActiveTab] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
+  const [openResponseId, setOpenResponseId] = useState<string | null>(null)
 
   // Load personas
   useEffect(() => {
@@ -282,31 +284,36 @@ export default function ComparePage() {
               {/* Active response */}
               {activeResult && (
                 <div className="flex-1 p-5">
-                  <div className="flex items-center gap-3 mb-4">
-                    <PersonaAvatar
-                      avatarUrl={activeResult.avatar_url}
-                      avatarInitials={activeResult.avatar_initials}
-                      avatarColor={activeResult.avatar_color}
-                      name={activeResult.persona_name}
-                      size="md"
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-neutral-900">{activeResult.persona_name}</p>
-                      <p className="text-xs text-neutral-500">
-                        {activeResult.job_title}{activeResult.location ? ` · ${activeResult.location}` : ''}
-                      </p>
+                  <div
+                    onClick={() => setOpenResponseId(activeResult.persona_id)}
+                    className="-m-2 p-2 rounded-xl cursor-pointer transition-colors hover:bg-neutral-50"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <PersonaAvatar
+                        avatarUrl={activeResult.avatar_url}
+                        avatarInitials={activeResult.avatar_initials}
+                        avatarColor={activeResult.avatar_color}
+                        name={activeResult.persona_name}
+                        size="md"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-neutral-900">{activeResult.persona_name}</p>
+                        <p className="text-xs text-neutral-500">
+                          {activeResult.job_title}{activeResult.location ? ` · ${activeResult.location}` : ''}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  {activeResult.error ? (
-                    <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{activeResult.error}</p>
-                  ) : (
-                    <div className="bg-neutral-50 rounded-xl px-5 py-4">
-                      <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">
-                        {activeResult.response}
-                      </p>
-                    </div>
-                  )}
+                    {activeResult.error ? (
+                      <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{activeResult.error}</p>
+                    ) : (
+                      <div className="bg-neutral-50 rounded-xl px-5 py-4">
+                        <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">
+                          {activeResult.response}
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Nav between tabs */}
                   <div className="flex justify-between mt-4 pt-4 border-t border-neutral-100">
@@ -340,6 +347,38 @@ export default function ComparePage() {
           )}
         </div>
       </div>
+
+      <Modal isOpen={!!openResponseId} onClose={() => setOpenResponseId(null)} maxWidth={540}>
+        {(() => {
+          const response = results.find(r => r.persona_id === openResponseId)
+          if (!response) return null
+          return (
+            <>
+              <div className="flex items-center gap-3 mb-5 pr-8">
+                <PersonaAvatar
+                  avatarUrl={response.avatar_url}
+                  avatarInitials={response.avatar_initials}
+                  avatarColor={response.avatar_color}
+                  name={response.persona_name}
+                  size="lg"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-semibold text-neutral-900 truncate">{response.persona_name}</p>
+                  <p className="text-sm text-neutral-500">
+                    {response.job_title}{response.location ? ` · ${response.location}` : ''}
+                  </p>
+                </div>
+              </div>
+
+              {response.error ? (
+                <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{response.error}</p>
+              ) : (
+                <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">{response.response}</p>
+              )}
+            </>
+          )
+        })()}
+      </Modal>
     </div>
   )
 }

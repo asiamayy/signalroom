@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import {
   formatDate,
-  getSentimentColor,
   getPriorityColor,
   INTERVIEW_TYPE_LABELS,
 } from '@/lib/utils'
@@ -11,7 +10,6 @@ import {
   ArrowLeft,
   MessageSquare,
   TrendingUp,
-  Quote,
   Lightbulb,
   AlertCircle,
   CheckCircle2,
@@ -20,6 +18,7 @@ import {
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
 import { CopyLinkButton } from '@/components/ui/CopyLinkButton'
+import { ThemesClient } from './ThemesClient'
 import type { ReportTheme, ReportRecommendation } from '@/types'
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
@@ -154,9 +153,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                   Key themes
                 </h2>
               </div>
-              {themes.map((theme, i) => (
-                <ThemeCard key={i} theme={theme} index={i} />
-              ))}
+              <ThemesClient themes={themes} confidenceScore={score} />
             </div>
           )}
 
@@ -243,48 +240,6 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           )}
         </div>
       </div>
-    </div>
-  )
-}
-
-// ─── Theme card ────────────────────────────────────────────────────────────────
-
-function ThemeCard({ theme, index }: { theme: ReportTheme; index: number }) {
-  const sentimentClass = getSentimentColor(theme.sentiment)
-  const SentimentIcon = theme.sentiment === 'positive' ? CheckCircle2
-    : theme.sentiment === 'negative' ? AlertCircle
-    : Info
-
-  return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-5">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-start gap-3">
-          <span className="text-xs text-neutral-300 font-mono mt-0.5 flex-shrink-0">
-            {String(index + 1).padStart(2, '0')}
-          </span>
-          <h3 className="text-sm font-semibold text-neutral-900">{theme.title}</h3>
-        </div>
-        <span className={`flex-shrink-0 inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full capitalize ${sentimentClass}`}>
-          <SentimentIcon size={10} />
-          {theme.sentiment}
-        </span>
-      </div>
-
-      <p className="text-sm text-neutral-600 leading-relaxed mb-4 pl-6">{theme.summary}</p>
-
-      {theme.quotes && theme.quotes.length > 0 && (
-        <div className="pl-6 space-y-2">
-          {theme.quotes.map((quote, i) => (
-            <blockquote
-              key={i}
-              className="flex gap-2.5 text-sm text-neutral-700 bg-neutral-50 border-l-2 border-neutral-200 pl-3 py-1.5 pr-3 rounded-r-md italic leading-relaxed"
-            >
-              <Quote size={12} className="text-neutral-300 flex-shrink-0 mt-1" />
-              {quote}
-            </blockquote>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
