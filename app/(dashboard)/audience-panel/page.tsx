@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Zap } from 'lucide-react'
+import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan } from '@/types'
 
@@ -108,27 +109,27 @@ function SentimentBar({ distribution, total }: { distribution: Record<string, nu
   )
 }
 
-function ThemeBars({ themes, total }: { themes: Theme[]; total: number }) {
-  const max = Math.max(...themes.map(t => t.count), 1)
+function ThemeList({ themes, total }: { themes: Theme[]; total: number }) {
   return (
     <div className="space-y-4">
       {themes.map((theme, i) => {
         const c = SENTIMENT_COLORS[theme.sentiment as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
-        const pct = (theme.count / max) * 100
+        const pct = Math.round((theme.count / total) * 100)
         return (
           <div key={i}>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-sm font-bold text-neutral-900">{theme.title}</span>
-              <span className="text-xs font-semibold flex-shrink-0 ml-3 px-2 py-0.5 rounded-full"
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: c.bar }} />
+              <span className="text-sm font-medium text-neutral-900 flex-1 truncate">{theme.title}</span>
+              <span className="text-[11px] font-semibold flex-shrink-0 px-2 py-0.5 rounded-full"
                 style={{ background: c.bg, color: c.text }}>
-                {theme.count}/{total}
+                {pct}%
               </span>
             </div>
-            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: '#F3F4F6' }}>
+            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: '#F3F4F6' }}>
               <div className="h-full rounded-full transition-all duration-700"
                 style={{ width: `${pct}%`, background: c.bar }} />
             </div>
-            <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">{theme.summary}</p>
+            <p className="text-[11px] text-neutral-400">Mentioned by {theme.count}/{total} personas</p>
           </div>
         )
       })}
@@ -136,65 +137,91 @@ function ThemeBars({ themes, total }: { themes: Theme[]; total: number }) {
   )
 }
 
+// ─── Purchase likelihood gauge ────────────────────────────────────────────────
+
+function PurchaseGauge({ value }: { value: number }) {
+  const radius = 42
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (Math.min(100, Math.max(0, value)) / 100) * circumference
+
+  return (
+    <div className="flex flex-col items-center flex-shrink-0">
+      <div className="relative w-28 h-28">
+        <svg viewBox="0 0 100 100" className="w-28 h-28 -rotate-90">
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="8" />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="white" strokeWidth="8"
+            strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-2xl font-serif font-bold text-white">{value}%</span>
+        </div>
+      </div>
+      <p className="text-[11px] mt-2 font-medium text-center" style={{ color: 'rgba(255,255,255,0.7)' }}>Likelihood of Purchase</p>
+    </div>
+  )
+}
+
 function ResponseCard({ result }: { result: PanelResponse }) {
   const [expanded, setExpanded] = useState(false)
-  const isLong = (result.response?.length ?? 0) > 220
-  const displayText = expanded || !isLong ? result.response : result.response?.slice(0, 220) + '…'
   const c = SENTIMENT_COLORS[result.sentiment] ?? SENTIMENT_COLORS.neutral
 
   return (
-    <div className="rounded-2xl p-5 transition-all"
+    <div className="rounded-2xl p-4 flex flex-col h-full transition-all"
       style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-      <div className="flex items-start gap-3 mb-4">
+      <div className="flex items-center gap-2.5 mb-2.5">
         <PersonaAvatar
           avatarUrl={result.avatar_url}
           avatarInitials={result.avatar_initials}
           avatarColor={result.avatar_color}
           name={result.persona_name}
-          size="md"
+          size="sm"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-sm font-bold text-neutral-900">{result.persona_name}</span>
-            <SentimentBadge sentiment={result.sentiment} />
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {result.job_title && (
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
-                style={{ background: '#EEF2FF', color: '#4338CA' }}>
-                {result.job_title}
-              </span>
-            )}
-            {result.industry && (
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
-                style={{ background: '#F3F4F6', color: '#6B7280' }}>
-                {result.industry}
-              </span>
-            )}
-            {result.location && (
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
-                style={{ background: '#F3F4F6', color: '#6B7280' }}>
-                {result.location}
-              </span>
-            )}
-          </div>
+          <p className="text-sm font-semibold text-neutral-900 truncate">{result.persona_name}</p>
+          {result.job_title && (
+            <span className="inline-block text-[10px] px-1.5 py-0.5 rounded-full font-medium mt-0.5"
+              style={{ background: '#E8F5F1', color: '#0D5C45' }}>
+              {result.job_title}
+            </span>
+          )}
         </div>
+      </div>
+
+      <div className="mb-2.5">
+        <SentimentBadge sentiment={result.sentiment} />
       </div>
 
       {result.error ? (
         <p className="text-xs text-red-500">{result.error}</p>
       ) : (
         <>
-          <p className="text-sm text-neutral-700 leading-relaxed">{displayText}</p>
-          {isLong && (
-            <button onClick={() => setExpanded(o => !o)}
-              className="text-xs font-semibold mt-2 transition-colors"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1A9B76', padding: 0, fontFamily: 'inherit' }}>
-              {expanded ? 'Show less ↑' : 'Read more ↓'}
-            </button>
-          )}
+          <p className={cn('text-xs text-neutral-600 leading-relaxed flex-1', !expanded && 'line-clamp-2')}>
+            {result.response}
+          </p>
+          <button onClick={() => setExpanded(o => !o)}
+            className="text-[11px] font-semibold mt-2 self-start transition-colors"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1A9B76', padding: 0, fontFamily: 'inherit' }}>
+            {expanded ? 'Show less ↑' : 'Read more ↓'}
+          </button>
         </>
       )}
+    </div>
+  )
+}
+
+// ─── Quote highlight card ──────────────────────────────────────────────────────
+
+function QuoteCard({ label, quote, source, accent }: { label: string; quote: string; source: string; accent: { text: string; bar: string } }) {
+  return (
+    <div className="rounded-2xl p-5"
+      style={{ background: 'white', border: '1px solid rgba(0,0,0,0.05)', borderLeft: `4px solid ${accent.bar}`, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+      <div className="flex items-center gap-1.5 mb-3">
+        <Quote size={13} style={{ color: accent.bar }} />
+        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent.text }}>{label}</span>
+      </div>
+      <p className="text-sm text-neutral-800 leading-relaxed italic mb-2">"{quote}"</p>
+      <p className="text-xs font-semibold" style={{ color: accent.text }}>— {source}</p>
     </div>
   )
 }
@@ -361,7 +388,7 @@ export default function AudiencePanelPage() {
           )}
           {error && <p className="text-xs text-red-500 text-center">{error}</p>}
           <button onClick={handleRun} disabled={!canRun}
-            className="w-full flex items-center justify-center gap-2 text-sm font-bold px-5 py-3.5 rounded-xl transition-all"
+            className="w-full flex items-center justify-center gap-2 text-sm font-semibold px-5 py-3 rounded-xl transition-all"
             style={{
               background: canRun ? 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' : '#E5E7EB',
               color: canRun ? 'white' : '#9CA3AF',
@@ -370,7 +397,7 @@ export default function AudiencePanelPage() {
               fontFamily: 'inherit',
               boxShadow: canRun ? '0 4px 14px rgba(26,140,106,0.35)' : 'none',
             }}>
-            {loading ? <><Loader2 size={15} className="animate-spin" />Analyzing panel...</> : <><BarChart3 size={15} />Run Audience Panel</>}
+            {loading ? <><Loader2 size={15} className="animate-spin" />Analyzing panel...</> : <><BarChart3 size={15} />Run Panel</>}
           </button>
           {loading && (
             <p className="text-xs text-neutral-400 text-center">Interviewing {selectedIds.length} personas simultaneously...</p>
@@ -395,90 +422,68 @@ export default function AudiencePanelPage() {
           )}
           {result && (
             <>
-              <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, #0A4F3A 0%, #1A8C6A 100%)', boxShadow: '0 4px 20px rgba(26,140,106,0.25)' }}>
+              {/* ── Stat cards ── */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {([
+                  { Icon: Users, value: result.total_personas, label: 'Personas Interviewed' },
+                  { Icon: Sparkles, value: result.themes.length, label: 'Key Themes Identified' },
+                  { Icon: Target, value: `${result.consensus_score}%`, label: 'Consensus Score' },
+                  { Icon: Clock, value: `${result.summary.completed_in_seconds}s`, label: 'Time to Complete', sublabel: "That's 3–4 weeks saved" },
+                ] as { Icon: typeof Users; value: string | number; label: string; sublabel?: string }[]).map((s, i) => (
+                  <div key={i} className="rounded-2xl p-4"
+                    style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: '#E8F5F1' }}>
+                      <s.Icon size={16} style={{ color: '#1A9B76' }} />
+                    </div>
+                    <p className="text-2xl font-serif font-bold text-neutral-900 leading-none">{s.value}</p>
+                    <p className="text-[11px] text-neutral-500 mt-1.5 font-medium">{s.label}</p>
+                    {s.sublabel && <p className="text-[10px] mt-1 font-semibold" style={{ color: '#1A9B76' }}>{s.sublabel}</p>}
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Executive Summary ── */}
+              <div className="rounded-2xl p-6" style={{ background: '#0A4F3A', boxShadow: '0 4px 20px rgba(10,79,58,0.25)' }}>
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles size={15} style={{ color: 'rgba(255,255,255,0.8)' }} />
                   <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.7)' }}>Executive Summary</span>
                 </div>
-                <p className="text-sm leading-relaxed text-white mb-5">{result.summary.overall_recommendation}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.12)' }}>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <TrendingUp size={11} style={{ color: 'rgba(255,255,255,0.7)' }} />
-                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Top Opportunity</span>
+                <p className="text-base font-semibold leading-relaxed text-white mb-5">{result.summary.overall_recommendation}</p>
+
+                <div className="flex flex-col lg:flex-row gap-5">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <TrendingUp size={13} style={{ color: 'rgba(255,255,255,0.8)' }} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Top Opportunity</span>
+                      </div>
+                      <p className="text-xs text-white leading-relaxed">{result.summary.top_opportunity}</p>
                     </div>
-                    <p className="text-xs text-white leading-relaxed">{result.summary.top_opportunity}</p>
-                  </div>
-                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.12)' }}>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <AlertTriangle size={11} style={{ color: 'rgba(255,255,255,0.7)' }} />
-                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Biggest Risk</span>
+                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <AlertTriangle size={13} style={{ color: 'rgba(255,255,255,0.8)' }} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Biggest Risk</span>
+                      </div>
+                      <p className="text-xs text-white leading-relaxed">{result.summary.biggest_risk}</p>
                     </div>
-                    <p className="text-xs text-white leading-relaxed">{result.summary.biggest_risk}</p>
                   </div>
-                  <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.12)' }}>
-                    <p className="text-3xl font-serif font-bold text-white leading-none">{result.summary.likelihood_of_purchase}%</p>
-                    <p className="text-[10px] mt-1 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>Likelihood of Purchase</p>
+                  <div className="flex items-center justify-center lg:pl-5 lg:border-l" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
+                    <PurchaseGauge value={result.summary.likelihood_of_purchase} />
                   </div>
                 </div>
-                {result.summary.recommended_actions?.length > 0 && (
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>Recommended Actions</p>
-                    <div className="space-y-1.5">
-                      {result.summary.recommended_actions.map((action, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="text-xs font-bold mt-0.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
-                          <p className="text-xs text-white leading-relaxed">{action}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <p className="text-[10px] mt-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
+
+                <p className="text-[10px] mt-5" style={{ color: 'rgba(255,255,255,0.4)' }}>
                   Completed in ~{result.summary.completed_in_seconds}s · {result.total_personas} personas interviewed
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { icon: '👥', value: result.total_personas, label: 'Personas Interviewed' },
-                  { icon: '🧠', value: result.themes.length, label: 'Shared Themes' },
-                  { icon: '🎯', value: `${result.consensus_score}%`, label: 'Consensus' },
-                ].map((s, i) => (
-                  <div key={i} className="rounded-2xl p-4 text-center"
-                    style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                    <div className="text-xl mb-1">{s.icon}</div>
-                    <p className="text-3xl font-serif font-bold text-neutral-900 leading-none">{s.value}</p>
-                    <p className="text-[11px] text-neutral-400 mt-1.5 font-medium">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-              {(result.summary.most_representative_quote || result.summary.biggest_objection_quote) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {result.summary.most_representative_quote && (
-                    <div className="rounded-2xl p-5"
-                      style={{ background: '#E8F5F1', border: '1px solid #A7D9C8', boxShadow: '0 2px 8px rgba(26,155,118,0.08)' }}>
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <Quote size={13} style={{ color: '#1A9B76' }} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#0D5C45' }}>Most Representative Quote</span>
-                      </div>
-                      <p className="text-sm text-neutral-800 leading-relaxed italic mb-2">"{result.summary.most_representative_quote}"</p>
-                      <p className="text-xs font-semibold" style={{ color: '#1A9B76' }}>— {result.summary.most_representative_quote_persona}</p>
-                    </div>
-                  )}
-                  {result.summary.biggest_objection_quote && (
-                    <div className="rounded-2xl p-5"
-                      style={{ background: '#FEF2F2', border: '1px solid #FECACA', boxShadow: '0 2px 8px rgba(239,68,68,0.06)' }}>
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <Quote size={13} style={{ color: '#EF4444' }} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#991B1B' }}>Biggest Objection</span>
-                      </div>
-                      <p className="text-sm text-neutral-800 leading-relaxed italic mb-2">"{result.summary.biggest_objection_quote}"</p>
-                      <p className="text-xs font-semibold" style={{ color: '#EF4444' }}>— {result.summary.biggest_objection_quote_persona}</p>
-                    </div>
-                  )}
+
+              {/* ── Question / Sentiment / Themes ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="rounded-2xl p-5"
+                  style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Your Question</p>
+                  <p className="text-sm text-neutral-700 leading-relaxed italic">"{result.question}"</p>
                 </div>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="rounded-2xl p-5"
                   style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
                   <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Sentiment Distribution</p>
@@ -487,18 +492,45 @@ export default function AudiencePanelPage() {
                 <div className="rounded-2xl p-5"
                   style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
                   <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Top Themes</p>
-                  <ThemeBars themes={result.themes} total={result.total_personas} />
+                  <ThemeList themes={result.themes} total={result.total_personas} />
                 </div>
               </div>
-              <div className="rounded-xl px-5 py-4"
-                style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">Question Asked</p>
-                <p className="text-sm text-neutral-700 leading-relaxed">"{result.question}"</p>
+
+              {/* ── Quote highlights ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {result.summary.most_representative_quote && (
+                  <QuoteCard
+                    label="Most Representative Quote"
+                    quote={result.summary.most_representative_quote}
+                    source={result.summary.most_representative_quote_persona}
+                    accent={SENTIMENT_COLORS.positive}
+                  />
+                )}
+                {result.summary.biggest_objection_quote && (
+                  <QuoteCard
+                    label="Biggest Objection"
+                    quote={result.summary.biggest_objection_quote}
+                    source={result.summary.biggest_objection_quote_persona}
+                    accent={SENTIMENT_COLORS.negative}
+                  />
+                )}
+                {(result.summary.recommended_actions?.[0] || result.summary.overall_recommendation) && (
+                  <QuoteCard
+                    label="Key Takeaway"
+                    quote={result.summary.recommended_actions?.[0] ?? result.summary.overall_recommendation}
+                    source="Recommended next step"
+                    accent={SENTIMENT_COLORS.neutral}
+                  />
+                )}
               </div>
+
+              {/* ── Individual responses ── */}
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Individual Responses</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
+                <div className="overflow-x-auto -mx-1 px-1 pb-1">
+                  <div className="grid gap-3" style={{ gridAutoFlow: 'column', gridAutoColumns: 'minmax(200px, 1fr)' }}>
+                    {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
+                  </div>
                 </div>
               </div>
             </>
