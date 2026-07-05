@@ -1,66 +1,36 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Quote, AlertCircle, CheckCircle2, Info } from 'lucide-react'
-import { Modal, modalCardStyle } from '@/components/ui/Modal'
-import { useGhostLayer, type GhostRect } from '@/components/ui/GhostLayer'
+import { Modal } from '@/components/ui/Modal'
 import { getSentimentColor } from '@/lib/utils'
 import type { ReportTheme } from '@/types'
 
 export function ThemesClient({ themes, confidenceScore }: { themes: ReportTheme[]; confidenceScore: number }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
-  const [hiddenIndex, setHiddenIndex] = useState<number | null>(null)
-  const [instantOpen, setInstantOpen] = useState(false)
-  const { startTransition, endTransition } = useGhostLayer()
   const openTheme = openIndex !== null ? themes[openIndex] : null
-
-  const handleOpen = async (index: number, rect: GhostRect | null) => {
-    const theme = themes[index]
-    setHiddenIndex(index)
-
-    if (!rect) {
-      setInstantOpen(false)
-      setOpenIndex(index)
-      return
-    }
-
-    const ok = await startTransition(
-      rect,
-      <div className="bg-white border border-neutral-200 rounded-xl p-5"><ThemeCardBody theme={theme} index={index} /></div>,
-      <div style={modalCardStyle(540)}><ThemeModalContent theme={theme} confidenceScore={confidenceScore} /></div>
-    )
-    setInstantOpen(ok)
-    setOpenIndex(index)
-  }
-
-  const handleClose = async () => {
-    setOpenIndex(null)
-    await endTransition()
-    setHiddenIndex(null)
-  }
 
   return (
     <>
       <div className="space-y-3">
         {themes.map((theme, i) => (
-          <ThemeCard
-            key={i}
-            theme={theme}
-            index={i}
-            hidden={hiddenIndex === i}
-            onOpen={rect => handleOpen(i, rect)}
-          />
+          <ThemeCard key={i} theme={theme} index={i} onClick={() => setOpenIndex(i)} />
         ))}
       </div>
 
-      <Modal isOpen={openIndex !== null} onClose={handleClose} maxWidth={540} instant={instantOpen}>
-        {openTheme && <ThemeModalContent theme={openTheme} confidenceScore={confidenceScore} />}
-      </Modal>
+      <AnimatePresence>
+        {openTheme && (
+          <Modal key="theme-modal" onClose={() => setOpenIndex(null)} maxWidth={540} layoutId={`report-theme-${openIndex}`}>
+            <ThemeModalContent theme={openTheme} confidenceScore={confidenceScore} />
+          </Modal>
+        )}
+      </AnimatePresence>
     </>
   )
 }
 
-// ─── Theme card body — shared between the real card and the GhostLayer clone ──
+// ─── Theme card body — shared between the real card and the modal ────────────
 
 function ThemeCardBody({ theme, index }: { theme: ReportTheme; index: number }) {
   const sentimentClass = getSentimentColor(theme.sentiment)
@@ -104,23 +74,15 @@ function ThemeCardBody({ theme, index }: { theme: ReportTheme; index: number }) 
 
 // ─── Theme card ────────────────────────────────────────────────────────────────
 
-function ThemeCard({ theme, index, hidden, onOpen }: { theme: ReportTheme; index: number; hidden: boolean; onOpen: (rect: GhostRect | null) => void }) {
-  const cardRef = useRef<HTMLDivElement>(null)
-
-  const handleClick = () => {
-    const box = cardRef.current?.getBoundingClientRect()
-    onOpen(box ? { top: box.top, left: box.left, width: box.width, height: box.height } : null)
-  }
-
+function ThemeCard({ theme, index, onClick }: { theme: ReportTheme; index: number; onClick: () => void }) {
   return (
-    <div
-      ref={cardRef}
-      onClick={handleClick}
+    <motion.div
+      layoutId={`report-theme-${index}`}
+      onClick={onClick}
       className="bg-white border border-neutral-200 rounded-xl p-5 cursor-pointer transition-all hover:border-neutral-300 hover:shadow-sm"
-      style={{ contain: 'layout', opacity: hidden ? 0 : 1 }}
     >
       <ThemeCardBody theme={theme} index={index} />
-    </div>
+    </motion.div>
   )
 }
 

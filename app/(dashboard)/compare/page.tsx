@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { GitCompare, Loader2, Plus, X, ChevronDown } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
-import { Modal, modalCardStyle } from '@/components/ui/Modal'
-import { useGhostLayer, type GhostRect } from '@/components/ui/GhostLayer'
+import { Modal } from '@/components/ui/Modal'
 import { cn, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import type { Persona, InterviewType } from '@/types'
 
@@ -29,7 +29,7 @@ interface CompareResult {
   error: string | null
 }
 
-// ─── Shared response content — used for the real card, the modal, and the GhostLayer clone ──
+// ─── Shared response content — used for both the real card and the modal ─────
 
 function CompareResponseCardBody({ result }: { result: CompareResult }) {
   return (
@@ -104,10 +104,6 @@ export default function ComparePage() {
   const [loadingPersonas, setLoadingPersonas] = useState(true)
 
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
-  const [hiddenResponseId, setHiddenResponseId] = useState<string | null>(null)
-  const [instantOpen, setInstantOpen] = useState(false)
-  const cardRef = useRef<HTMLDivElement>(null)
-  const { startTransition, endTransition } = useGhostLayer()
 
   // Load personas
   useEffect(() => {
@@ -160,32 +156,6 @@ export default function ComparePage() {
   }
 
   const activeResult = results.find(r => r.persona_id === activeTab)
-
-  const handleOpenResponse = async (result: CompareResult) => {
-    const box = cardRef.current?.getBoundingClientRect()
-    setHiddenResponseId(result.persona_id)
-
-    if (!box) {
-      setInstantOpen(false)
-      setOpenResponseId(result.persona_id)
-      return
-    }
-
-    const sourceRect: GhostRect = { top: box.top, left: box.left, width: box.width, height: box.height }
-    const ok = await startTransition(
-      sourceRect,
-      <div className="rounded-xl p-2 bg-white"><CompareResponseCardBody result={result} /></div>,
-      <div style={modalCardStyle(540)}><CompareResponseModalBody result={result} /></div>
-    )
-    setInstantOpen(ok)
-    setOpenResponseId(result.persona_id)
-  }
-
-  const handleCloseResponse = async () => {
-    setOpenResponseId(null)
-    await endTransition()
-    setHiddenResponseId(null)
-  }
 
   return (
     <div className="p-4 sm:p-8 max-w-5xl">
@@ -378,17 +348,13 @@ export default function ComparePage() {
               {/* Active response */}
               {activeResult && (
                 <div className="flex-1 p-5">
-                  <div
-                    ref={cardRef}
-                    onClick={() => handleOpenResponse(activeResult)}
+                  <motion.div
+                    layoutId={`compare-response-${activeResult.persona_id}`}
+                    onClick={() => setOpenResponseId(activeResult.persona_id)}
                     className="-m-2 p-2 rounded-xl cursor-pointer transition-colors hover:bg-neutral-50"
-                    style={{
-                      contain: 'layout',
-                      opacity: hiddenResponseId === activeResult.persona_id ? 0 : 1,
-                    }}
                   >
                     <CompareResponseCardBody result={activeResult} />
-                  </div>
+                  </motion.div>
 
                   {/* Nav between tabs */}
                   <div className="flex justify-between mt-4 pt-4 border-t border-neutral-100">
@@ -423,12 +389,17 @@ export default function ComparePage() {
         </div>
       </div>
 
-      <Modal isOpen={!!openResponseId} onClose={handleCloseResponse} maxWidth={540} instant={instantOpen}>
-        {(() => {
+      <AnimatePresence>
+        {openResponseId && (() => {
           const response = results.find(r => r.persona_id === openResponseId)
-          return response ? <CompareResponseModalBody result={response} /> : null
+          if (!response) return null
+          return (
+            <Modal key="compare-modal" onClose={() => setOpenResponseId(null)} maxWidth={540} layoutId={`compare-response-${openResponseId}`}>
+              <CompareResponseModalBody result={response} />
+            </Modal>
+          )
         })()}
-      </Modal>
+      </AnimatePresence>
     </div>
   )
 }

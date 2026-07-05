@@ -1,11 +1,11 @@
 ﻿'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
-import { Modal, modalCardStyle } from '@/components/ui/Modal'
-import { useGhostLayer, type GhostRect } from '@/components/ui/GhostLayer'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan } from '@/types'
@@ -236,23 +236,17 @@ function ResponseCardBody({ result, onReadMore }: { result: PanelResponse; onRea
   )
 }
 
-function ResponseCard({ result, hidden, onOpen }: { result: PanelResponse; hidden: boolean; onOpen: (rect: GhostRect | null) => void }) {
+function ResponseCard({ result, onOpen }: { result: PanelResponse; onOpen: () => void }) {
   const c = SENTIMENT_COLORS[result.sentiment] ?? SENTIMENT_COLORS.neutral
-  const cardRef = useRef<HTMLDivElement>(null)
-
-  const handleReadMore = () => {
-    const box = cardRef.current?.getBoundingClientRect()
-    onOpen(box ? { top: box.top, left: box.left, width: box.width, height: box.height } : null)
-  }
 
   return (
-    <div
-      ref={cardRef}
+    <motion.div
+      layoutId={`ap-response-${result.persona_id}`}
       className="rounded-2xl p-4 flex flex-col h-full transition-all"
-      style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', contain: 'layout', opacity: hidden ? 0 : 1 }}
+      style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
     >
-      <ResponseCardBody result={result} onReadMore={handleReadMore} />
-    </div>
+      <ResponseCardBody result={result} onReadMore={onOpen} />
+    </motion.div>
   )
 }
 
@@ -318,9 +312,6 @@ export default function AudiencePanelPage() {
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [plan, setPlan] = useState<Plan>('starter')
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
-  const [hiddenResponseId, setHiddenResponseId] = useState<string | null>(null)
-  const [instantOpen, setInstantOpen] = useState(false)
-  const { startTransition, endTransition } = useGhostLayer()
 
   const maxPersonas = PLAN_LIMITS[plan].audience_panel_max
   const hasAccess = PLAN_LIMITS[plan].audience_panel
@@ -343,32 +334,6 @@ export default function AudiencePanelPage() {
         ? prev.filter(p => p !== id)
         : prev.length < maxPersonas ? [...prev, id] : prev
     )
-  }
-
-  const handleOpenResponse = async (response: PanelResponse, rect: GhostRect | null) => {
-    setHiddenResponseId(response.persona_id)
-
-    if (!rect) {
-      setInstantOpen(false)
-      setOpenResponseId(response.persona_id)
-      return
-    }
-
-    const ok = await startTransition(
-      rect,
-      <div className="rounded-2xl p-4" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-        <ResponseCardBody result={response} />
-      </div>,
-      <div style={modalCardStyle(540)}><ResponseModalContent response={response} /></div>
-    )
-    setInstantOpen(ok)
-    setOpenResponseId(response.persona_id)
-  }
-
-  const handleCloseResponse = async () => {
-    setOpenResponseId(null)
-    await endTransition()
-    setHiddenResponseId(null)
   }
 
   const handleRun = async () => {
@@ -695,8 +660,7 @@ export default function AudiencePanelPage() {
                 <ResponseCard
                   key={r.persona_id}
                   result={r}
-                  hidden={hiddenResponseId === r.persona_id}
-                  onOpen={rect => handleOpenResponse(r, rect)}
+                  onOpen={() => setOpenResponseId(r.persona_id)}
                 />
               ))}
             </div>
@@ -704,12 +668,17 @@ export default function AudiencePanelPage() {
         </div>
       )}
 
-      <Modal isOpen={!!openResponseId} onClose={handleCloseResponse} maxWidth={540} instant={instantOpen}>
-        {(() => {
+      <AnimatePresence>
+        {openResponseId && (() => {
           const response = result?.responses.find(r => r.persona_id === openResponseId)
-          return response ? <ResponseModalContent response={response} /> : null
+          if (!response) return null
+          return (
+            <Modal key="ap-modal" onClose={() => setOpenResponseId(null)} maxWidth={540} layoutId={`ap-response-${openResponseId}`}>
+              <ResponseModalContent response={response} />
+            </Modal>
+          )
         })()}
-      </Modal>
+      </AnimatePresence>
     </div>
   )
 }
