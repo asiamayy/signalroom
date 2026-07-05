@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Users, MessageSquare, FileText, Settings, GitCompare, Menu, X, BarChart3 } from 'lucide-react'
+import { Users, MessageSquare, FileText, Settings, GitCompare, Menu, X, BarChart3, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
 import { createClient } from '@/lib/supabase/client'
@@ -21,13 +21,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname()
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [fullName, setFullName] = useState<string | null>(null)
   const [showSignOut, setShowSignOut] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       setUserEmail(data.user?.email ?? null)
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', data.user.id)
+          .single()
+        setFullName(profile?.full_name ?? null)
+      }
     })
   }, [])
 
@@ -36,7 +45,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setMobileNavOpen(false)
   }, [pathname])
 
-  const initials = userEmail
+  const nameParts = fullName?.trim().split(/\s+/) ?? []
+  const initials = nameParts.length >= 2
+    ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+    : nameParts.length === 1 && nameParts[0]
+    ? nameParts[0].slice(0, 2).toUpperCase()
+    : userEmail
     ? userEmail.split('@')[0].slice(0, 2).toUpperCase()
     : 'AS'
 
@@ -84,34 +98,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Footer */}
       <div className="px-3 pb-4 pt-2" style={{ borderTop: '1px solid rgba(0,0,0,0.07)' }}>
-        <div className="relative">
+        <div className="group rounded-xl transition-colors hover:bg-neutral-50">
+          {/* Inline sign out — revealed on hover (desktop) or tap (mobile) */}
+          <div
+            className={cn(
+              'overflow-hidden transition-all duration-200 ease-out',
+              showSignOut ? 'max-h-12 opacity-100' : 'max-h-0 opacity-0 md:group-hover:max-h-12 md:group-hover:opacity-100'
+            )}
+          >
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 mt-1 mx-1 rounded-lg text-xs font-semibold transition-colors hover:brightness-95"
+              style={{ background: '#E8F5F1', color: '#0D5C45', border: 'none', cursor: 'pointer', fontFamily: 'inherit', width: 'calc(100% - 8px)' }}
+            >
+              <LogOut size={13} strokeWidth={2} />
+              Sign out
+            </button>
+          </div>
+
           <button
             onClick={() => setShowSignOut(o => !o)}
-            className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-neutral-50 transition-colors"
+            className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl transition-colors"
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
           >
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: 'linear-gradient(135deg, #1A8C6A, #2BAE86)' }}>
               {initials}
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <div className="text-xs font-semibold text-neutral-800 truncate">{userEmail?.split('@')[0] ?? 'Account'}</div>
+              <div className="text-xs font-semibold text-neutral-800 truncate">{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</div>
               <div className="text-[11px] text-neutral-400 truncate">{userEmail ?? ''}</div>
             </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+            <svg
+              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"
+              className={cn('transition-transform duration-200', showSignOut ? 'rotate-180' : 'md:group-hover:rotate-180')}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </button>
-
-          {showSignOut && (
-            <div className="absolute bottom-full left-0 right-0 mb-1 rounded-xl overflow-hidden" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)' }}>
-              <button
-                onClick={handleSignOut}
-                className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Sign out
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </>
