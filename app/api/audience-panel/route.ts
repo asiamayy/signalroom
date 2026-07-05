@@ -120,18 +120,20 @@ export async function POST(request: NextRequest) {
     })
   )
 
-  // Aggregate themes across all responses
+  // Aggregate themes, executive summary, recommendations and quotes across all responses
   const allText = responses
     .filter(r => r.response)
-    .map(r => `${r.persona_name}: ${r.response}`)
+    .map(r => `${r.persona_name} (${r.job_title}): ${r.response}`)
     .join('\n\n')
 
-  const themeResponse = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 800,
-    messages: [{
-      role: 'user',
-      content: `You are analyzing responses from ${responses.length} different customer personas who were asked: "${question}"
+  // Run theme extraction and executive summary in parallel
+  const [themeResponse, summaryResponse] = await Promise.all([
+    client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      messages: [{
+        role: 'user',
+        content: `You are analyzing responses from ${responses.length} different customer personas who were asked: "${question}"
 
 Here are their responses:
 ${allText}
@@ -144,8 +146,36 @@ Extract 3-5 key themes across all responses. For each theme return:
 
 Return ONLY a JSON array, no preamble, no markdown:
 [{"title":"...","count":0,"sentiment":"...","summary":"..."}]`
-    }]
-  })
+      }]
+    }),
+    client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: `You are a senior market researcher analyzing responses from ${responses.length} customer personas who were asked: "${question}"
+
+Responses:
+${allText}
+
+Return a JSON object with these exact fields:
+{
+  "overall_recommendation": "2-3 sentence executive summary of what decision to make based on these responses",
+  "top_opportunity": "The single biggest opportunity revealed by these responses in one sentence",
+  "biggest_risk": "The single biggest concern or objection revealed in one sentence",
+  "likelihood_of_purchase": 0-100,
+  "recommended_actions": ["action 1", "action 2", "action 3", "action 4"],
+  "most_representative_quote": "the single most representative quote from all responses verbatim",
+  "most_representative_quote_persona": "name of persona who said it",
+  "biggest_objection_quote": "the single biggest objection raised verbatim",
+  "biggest_objection_quote_persona": "name of persona who said it",
+  "completed_in_seconds": ${responses.length * 3}
+}
+
+Return ONLY the JSON, no preamble, no markdown.`
+      }]
+    })
+  ])
 
   let themes: { title: string; count: number; sentiment: string; summary: string }[] = []
   try {
@@ -154,6 +184,26 @@ Return ONLY a JSON array, no preamble, no markdown:
     themes = JSON.parse(cleaned)
   } catch {
     themes = []
+  }
+
+  let summary = {
+    overall_recommendation: '',
+    top_opportunity: '',
+    biggest_risk: '',
+    likelihood_of_purchase: 0,
+    recommended_actions: [] as string[],
+    most_representative_quote: '',
+    most_representative_quote_persona: '',
+    biggest_objection_quote: '',
+    biggest_objection_quote_persona: '',
+    completed_in_seconds: responses.length * 3,
+  }
+  try {
+    const raw = summaryResponse.content[0].type === 'text' ? summaryResponse.content[0].text : '{}'
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    summary = { ...summary, ...JSON.parse(cleaned) }
+  } catch {
+    // keep defaults
   }
 
   // Compute sentiment distribution
@@ -174,6 +224,7 @@ Return ONLY a JSON array, no preamble, no markdown:
       consensus_score: consensusScore,
       total_personas: responses.length,
       question,
+      summary,
     }
   })
 }

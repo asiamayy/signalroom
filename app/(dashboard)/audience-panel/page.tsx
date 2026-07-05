@@ -1,8 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Users, Loader2, ChevronDown, BarChart3, Lock } from 'lucide-react'
+import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Zap } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
@@ -32,6 +32,19 @@ interface Theme {
   summary: string
 }
 
+interface PanelSummary {
+  overall_recommendation: string
+  top_opportunity: string
+  biggest_risk: string
+  likelihood_of_purchase: number
+  recommended_actions: string[]
+  most_representative_quote: string
+  most_representative_quote_persona: string
+  biggest_objection_quote: string
+  biggest_objection_quote_persona: string
+  completed_in_seconds: number
+}
+
 interface PanelResult {
   responses: PanelResponse[]
   themes: Theme[]
@@ -39,67 +52,55 @@ interface PanelResult {
   consensus_score: number
   total_personas: number
   question: string
+  summary: PanelSummary
 }
 
-// ─── Sentiment helpers ────────────────────────────────────────────────────────
+// ─── Color system ─────────────────────────────────────────────────────────────
 
 const SENTIMENT_COLORS = {
-  positive: { bg: '#E8F5F1', text: '#0D5C45', bar: '#1A9B76' },
-  neutral: { bg: '#F3F4F6', text: '#6B7280', bar: '#9CA3AF' },
-  negative: { bg: '#FEF2F2', text: '#991B1B', bar: '#EF4444' },
-  mixed: { bg: '#FFFBEB', text: '#92400E', bar: '#F59E0B' },
+  positive: { bg: '#E8F5F1', text: '#0D5C45', bar: '#1A9B76', border: '#A7D9C8' },
+  neutral:  { bg: '#F3F4F6', text: '#4B5563', bar: '#9CA3AF', border: '#D1D5DB' },
+  negative: { bg: '#FEF2F2', text: '#991B1B', bar: '#EF4444', border: '#FECACA' },
+  mixed:    { bg: '#FFFBEB', text: '#92400E', bar: '#F59E0B', border: '#FDE68A' },
 }
 
 function SentimentBadge({ sentiment }: { sentiment: string }) {
-  const colors = SENTIMENT_COLORS[sentiment as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
+  const c = SENTIMENT_COLORS[sentiment as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
   return (
-    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider"
-      style={{ background: colors.bg, color: colors.text }}>
+    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0"
+      style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}` }}>
       {sentiment}
     </span>
   )
 }
 
-// ─── Sentiment donut chart (pure SVG) ────────────────────────────────────────
-
-function SentimentDonut({ distribution, total }: { distribution: Record<string, number>; total: number }) {
-  const order = ['positive', 'neutral', 'negative', 'mixed']
+function SentimentBar({ distribution, total }: { distribution: Record<string, number>; total: number }) {
+  const order = ['positive', 'neutral', 'mixed', 'negative']
   const entries = order.filter(k => distribution[k] > 0).map(k => ({
     key: k,
     count: distribution[k],
-    pct: distribution[k] / total,
+    pct: (distribution[k] / total) * 100,
     color: SENTIMENT_COLORS[k as keyof typeof SENTIMENT_COLORS]?.bar ?? '#9CA3AF',
+    bg: SENTIMENT_COLORS[k as keyof typeof SENTIMENT_COLORS]?.bg ?? '#F3F4F6',
+    text: SENTIMENT_COLORS[k as keyof typeof SENTIMENT_COLORS]?.text ?? '#4B5563',
   }))
 
-  let offset = 0
-  const r = 40
-  const circumference = 2 * Math.PI * r
-  const slices = entries.map(e => {
-    const dash = e.pct * circumference
-    const slice = { ...e, offset, dash }
-    offset += dash
-    return slice
-  })
-
   return (
-    <div className="flex items-center gap-6">
-      <svg width="100" height="100" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#F3F4F6" strokeWidth="18" />
-        {slices.map(s => (
-          <circle key={s.key} cx="50" cy="50" r={r} fill="none"
-            stroke={s.color} strokeWidth="18"
-            strokeDasharray={`${s.dash} ${circumference - s.dash}`}
-            strokeDashoffset={-s.offset}
-            transform="rotate(-90 50 50)"
-          />
-        ))}
-      </svg>
-      <div className="space-y-2">
+    <div>
+      <div className="flex h-8 rounded-xl overflow-hidden gap-0.5 mb-4">
         {entries.map(e => (
-          <div key={e.key} className="flex items-center gap-2">
+          <div key={e.key} className="flex items-center justify-center transition-all duration-700"
+            style={{ width: `${e.pct}%`, background: e.color, minWidth: e.pct > 5 ? undefined : '0' }}>
+            {e.pct >= 15 && <span className="text-[10px] font-bold text-white">{Math.round(e.pct)}%</span>}
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-3">
+        {entries.map(e => (
+          <div key={e.key} className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: e.color }} />
-            <span className="text-xs text-neutral-600 capitalize">{e.key}</span>
-            <span className="text-xs font-semibold text-neutral-900 ml-auto">{e.count}</span>
+            <span className="text-xs capitalize" style={{ color: e.text }}>{e.key}</span>
+            <span className="text-xs font-semibold text-neutral-700">{e.count}</span>
           </div>
         ))}
       </div>
@@ -107,26 +108,27 @@ function SentimentDonut({ distribution, total }: { distribution: Record<string, 
   )
 }
 
-// ─── Theme bar chart (pure SVG) ──────────────────────────────────────────────
-
-function ThemeBarChart({ themes, total }: { themes: Theme[]; total: number }) {
+function ThemeBars({ themes, total }: { themes: Theme[]; total: number }) {
   const max = Math.max(...themes.map(t => t.count), 1)
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {themes.map((theme, i) => {
-        const colors = SENTIMENT_COLORS[theme.sentiment as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
+        const c = SENTIMENT_COLORS[theme.sentiment as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
         const pct = (theme.count / max) * 100
         return (
           <div key={i}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold text-neutral-800 truncate max-w-[200px]">{theme.title}</span>
-              <span className="text-xs text-neutral-500 flex-shrink-0 ml-2">{theme.count} of {total}</span>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-sm font-bold text-neutral-900">{theme.title}</span>
+              <span className="text-xs font-semibold flex-shrink-0 ml-3 px-2 py-0.5 rounded-full"
+                style={{ background: c.bg, color: c.text }}>
+                {theme.count}/{total}
+              </span>
             </div>
-            <div className="h-2 rounded-full bg-neutral-100 overflow-hidden">
+            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: '#F3F4F6' }}>
               <div className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${pct}%`, background: colors.bar }} />
+                style={{ width: `${pct}%`, background: c.bar }} />
             </div>
-            <p className="text-[11px] text-neutral-400 mt-1 leading-relaxed">{theme.summary}</p>
+            <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">{theme.summary}</p>
           </div>
         )
       })}
@@ -134,32 +136,48 @@ function ThemeBarChart({ themes, total }: { themes: Theme[]; total: number }) {
   )
 }
 
-// ─── Response grid ────────────────────────────────────────────────────────────
-
 function ResponseCard({ result }: { result: PanelResponse }) {
   const [expanded, setExpanded] = useState(false)
-  const isLong = (result.response?.length ?? 0) > 200
-  const displayText = expanded || !isLong
-    ? result.response
-    : result.response?.slice(0, 200) + '...'
+  const isLong = (result.response?.length ?? 0) > 220
+  const displayText = expanded || !isLong ? result.response : result.response?.slice(0, 220) + '…'
+  const c = SENTIMENT_COLORS[result.sentiment] ?? SENTIMENT_COLORS.neutral
 
   return (
-    <div className="bg-white border border-neutral-100 rounded-2xl p-4"
-      style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-      <div className="flex items-start gap-3 mb-3">
+    <div className="rounded-2xl p-5 transition-all"
+      style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div className="flex items-start gap-3 mb-4">
         <PersonaAvatar
           avatarUrl={result.avatar_url}
           avatarInitials={result.avatar_initials}
           avatarColor={result.avatar_color}
           name={result.persona_name}
-          size="sm"
+          size="md"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-neutral-900">{result.persona_name}</span>
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <span className="text-sm font-bold text-neutral-900">{result.persona_name}</span>
             <SentimentBadge sentiment={result.sentiment} />
           </div>
-          <p className="text-xs text-neutral-400 truncate">{result.job_title}{result.location ? ` · ${result.location}` : ''}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {result.job_title && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                style={{ background: '#EEF2FF', color: '#4338CA' }}>
+                {result.job_title}
+              </span>
+            )}
+            {result.industry && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                style={{ background: '#F3F4F6', color: '#6B7280' }}>
+                {result.industry}
+              </span>
+            )}
+            {result.location && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                style={{ background: '#F3F4F6', color: '#6B7280' }}>
+                {result.location}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -170,9 +188,9 @@ function ResponseCard({ result }: { result: PanelResponse }) {
           <p className="text-sm text-neutral-700 leading-relaxed">{displayText}</p>
           {isLong && (
             <button onClick={() => setExpanded(o => !o)}
-              className="text-xs font-medium mt-2 transition-colors"
+              className="text-xs font-semibold mt-2 transition-colors"
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1A9B76', padding: 0, fontFamily: 'inherit' }}>
-              {expanded ? 'Show less' : 'Read more'}
+              {expanded ? 'Show less ↑' : 'Read more ↓'}
             </button>
           )}
         </>
@@ -180,8 +198,6 @@ function ResponseCard({ result }: { result: PanelResponse }) {
     </div>
   )
 }
-
-// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AudiencePanelPage() {
   const [personas, setPersonas] = useState<Persona[]>([])
@@ -192,7 +208,6 @@ export default function AudiencePanelPage() {
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [plan, setPlan] = useState<Plan>('starter')
-  const [showPersonaPicker, setShowPersonaPicker] = useState(false)
 
   const maxPersonas = PLAN_LIMITS[plan].audience_panel_max
   const hasAccess = PLAN_LIMITS[plan].audience_panel
@@ -213,9 +228,7 @@ export default function AudiencePanelPage() {
     setSelectedIds(prev =>
       prev.includes(id)
         ? prev.filter(p => p !== id)
-        : prev.length < maxPersonas
-          ? [...prev, id]
-          : prev
+        : prev.length < maxPersonas ? [...prev, id] : prev
     )
   }
 
@@ -225,7 +238,6 @@ export default function AudiencePanelPage() {
     setError('')
     setLoading(true)
     setResult(null)
-
     try {
       const res = await fetch('/api/audience-panel', {
         method: 'POST',
@@ -242,31 +254,31 @@ export default function AudiencePanelPage() {
     }
   }
 
-  // ── Upgrade gate ──────────────────────────────────────────────────────────
+  const canRun = !loading && selectedIds.length >= 5 && question.trim()
 
   if (!loadingPersonas && !hasAccess) {
     return (
       <div className="p-4 sm:p-8 max-w-2xl">
         <div className="mb-8">
           <h1 className="text-2xl font-serif tracking-tight text-neutral-900 flex items-center gap-2">
-            <Users size={22} className="text-neutral-400" />
+            <BarChart3 size={22} className="text-neutral-400" />
             Audience Panel
           </h1>
-          <p className="text-sm text-neutral-500 mt-1">Ask one question to 5-10 personas simultaneously and visualize the results</p>
+          <p className="text-sm text-neutral-500 mt-1">Ask one question to 5–10 personas simultaneously and visualize the results</p>
         </div>
-        <div className="bg-white border border-neutral-200 rounded-2xl p-8 text-center"
-          style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-          <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center"
+        <div className="bg-white rounded-2xl p-10 text-center"
+          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.06)' }}>
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center"
             style={{ background: '#F3F4F6' }}>
-            <Lock size={20} className="text-neutral-400" />
+            <Lock size={22} className="text-neutral-400" />
           </div>
-          <h2 className="text-lg font-semibold text-neutral-900 mb-2">Signal or Broadcast plan required</h2>
-          <p className="text-sm text-neutral-500 mb-6 max-w-sm mx-auto">
-            Audience Panel lets you run batch research across 5-10 personas simultaneously with sentiment analysis, theme extraction, and visualizations.
+          <h2 className="text-lg font-bold text-neutral-900 mb-2">Signal or Broadcast plan required</h2>
+          <p className="text-sm text-neutral-500 mb-6 max-w-sm mx-auto leading-relaxed">
+            Run batch research across 5–10 personas simultaneously. Get sentiment analysis, theme extraction, AI recommendations, and decision-ready visualizations — all in one panel.
           </p>
           <Link href="/settings"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-2.5 rounded-xl text-white"
-            style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' }}>
+            className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-xl text-white"
+            style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 10px rgba(26,140,106,0.3)' }}>
             Upgrade plan →
           </Link>
         </div>
@@ -275,65 +287,49 @@ export default function AudiencePanelPage() {
   }
 
   return (
-    <div className="p-4 sm:p-8 max-w-5xl">
-
-      {/* Header */}
-      <div className="mb-6 sm:mb-8">
+    <div className="p-4 sm:p-6 max-w-6xl" style={{ background: '#F7F8FA', minHeight: '100%' }}>
+      <div className="mb-6">
         <h1 className="text-2xl font-serif tracking-tight text-neutral-900 flex items-center gap-2">
-          <BarChart3 size={22} className="text-neutral-400" />
+          <BarChart3 size={22} style={{ color: '#1A9B76' }} />
           Audience Panel
         </h1>
-        <p className="text-sm text-neutral-500 mt-1">Ask one question to multiple personas simultaneously — see sentiment, themes, and patterns instantly</p>
+        <p className="text-sm text-neutral-500 mt-1">Ask one question — see how your entire audience responds, analyzed and visualized instantly</p>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* ── Setup panel ── */}
-        <div className="lg:col-span-1 space-y-5">
-
-          {/* Question input */}
-          <div className="bg-white border border-neutral-200 rounded-2xl p-5"
-            style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-            <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2 block">
-              Your question
-            </label>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-1 space-y-4">
+          <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-2 block">Your question</label>
             <textarea
               value={question}
               onChange={e => setQuestion(e.target.value)}
               placeholder="e.g. Would you pay $49/month for an AI tool that runs customer interviews in minutes?"
-              rows={4}
+              rows={5}
               className="w-full text-sm text-neutral-800 placeholder:text-neutral-400 resize-none focus:outline-none leading-relaxed"
               style={{ background: 'none', border: 'none', fontFamily: 'inherit' }}
             />
           </div>
-
-          {/* Persona selector */}
-          <div className="bg-white border border-neutral-200 rounded-2xl p-5"
-            style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
+          <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Personas
-              </label>
-              <span className="text-xs text-neutral-400">{selectedIds.length} / {maxPersonas} selected</span>
+              <label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Personas</label>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{ background: selectedIds.length >= 5 ? '#E8F5F1' : '#F3F4F6', color: selectedIds.length >= 5 ? '#0D5C45' : '#6B7280' }}>
+                {selectedIds.length} / {maxPersonas}
+              </span>
             </div>
-
             {loadingPersonas ? (
-              <div className="space-y-2">
-                {[1,2,3].map(i => <div key={i} className="h-10 rounded-xl animate-pulse bg-neutral-100" />)}
-              </div>
+              <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-10 rounded-xl animate-pulse" style={{ background: '#F3F4F6' }} />)}</div>
             ) : personas.length === 0 ? (
-              <div className="text-center py-4">
+              <div className="text-center py-6">
                 <p className="text-sm text-neutral-500 mb-2">No personas yet</p>
                 <Link href="/personas/new" className="text-xs font-semibold" style={{ color: '#1A9B76' }}>Create your first persona →</Link>
               </div>
             ) : (
-              <div className="space-y-2 max-h-80 overflow-y-auto">
+              <div className="space-y-1.5 max-h-80 overflow-y-auto">
                 {personas.map(persona => {
                   const isSelected = selectedIds.includes(persona.id)
                   const atLimit = selectedIds.length >= maxPersonas && !isSelected
                   return (
-                    <button
-                      key={persona.id}
+                    <button key={persona.id}
                       onClick={() => !atLimit && togglePersona(persona.id)}
                       disabled={atLimit}
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left"
@@ -341,25 +337,16 @@ export default function AudiencePanelPage() {
                         background: isSelected ? '#E8F5F1' : '#F9FAFB',
                         border: isSelected ? '1.5px solid #1A9B76' : '1.5px solid transparent',
                         cursor: atLimit ? 'not-allowed' : 'pointer',
-                        opacity: atLimit ? 0.5 : 1,
+                        opacity: atLimit ? 0.45 : 1,
                         fontFamily: 'inherit',
-                      }}
-                    >
-                      <PersonaAvatar
-                        avatarUrl={persona.avatar_url}
-                        avatarInitials={persona.avatar_initials}
-                        avatarColor={persona.avatar_color}
-                        name={persona.name}
-                        size="sm"
-                      />
+                      }}>
+                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-neutral-900 truncate">{persona.name}</p>
                         <p className="text-[11px] text-neutral-400 truncate">{persona.traits?.job_title ?? 'No role'}</p>
                       </div>
                       {isSelected && (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A9B76" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A9B76" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                       )}
                     </button>
                   )
@@ -367,126 +354,151 @@ export default function AudiencePanelPage() {
               </div>
             )}
           </div>
-
-          {/* Minimum personas note */}
           {selectedIds.length > 0 && selectedIds.length < 5 && (
-            <p className="text-xs text-amber-600 text-center">
-              Select at least {5 - selectedIds.length} more persona{5 - selectedIds.length !== 1 ? 's' : ''} to run the panel
+            <p className="text-xs text-amber-600 text-center font-medium">
+              Select {5 - selectedIds.length} more to run the panel
             </p>
           )}
-
           {error && <p className="text-xs text-red-500 text-center">{error}</p>}
-
-          {/* Run button */}
-          <button
-            onClick={handleRun}
-            disabled={loading || selectedIds.length < 5 || !question.trim()}
-            className="w-full flex items-center justify-center gap-2 text-sm font-semibold px-5 py-3 rounded-xl text-white transition-all"
+          <button onClick={handleRun} disabled={!canRun}
+            className="w-full flex items-center justify-center gap-2 text-sm font-bold px-5 py-3.5 rounded-xl transition-all"
             style={{
-              background: loading || selectedIds.length < 5 || !question.trim()
-                ? '#E5E7EB'
-                : 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)',
-              color: loading || selectedIds.length < 5 || !question.trim() ? '#9CA3AF' : 'white',
-              cursor: loading || selectedIds.length < 5 || !question.trim() ? 'not-allowed' : 'pointer',
+              background: canRun ? 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' : '#E5E7EB',
+              color: canRun ? 'white' : '#9CA3AF',
+              cursor: canRun ? 'pointer' : 'not-allowed',
               border: 'none',
               fontFamily: 'inherit',
-              boxShadow: loading || selectedIds.length < 5 || !question.trim() ? 'none' : '0 2px 8px rgba(26,140,106,0.3)',
-            }}
-          >
-            {loading ? (
-              <>
-                <Loader2 size={14} className="animate-spin" />
-                Running panel...
-              </>
-            ) : (
-              <>
-                <BarChart3 size={14} />
-                Run Audience Panel
-              </>
-            )}
+              boxShadow: canRun ? '0 4px 14px rgba(26,140,106,0.35)' : 'none',
+            }}>
+            {loading ? <><Loader2 size={15} className="animate-spin" />Analyzing panel...</> : <><BarChart3 size={15} />Run Audience Panel</>}
           </button>
-
           {loading && (
-            <p className="text-xs text-neutral-400 text-center">
-              Interviewing {selectedIds.length} personas simultaneously...
-            </p>
+            <p className="text-xs text-neutral-400 text-center">Interviewing {selectedIds.length} personas simultaneously...</p>
           )}
         </div>
-
-        {/* ── Results panel ── */}
-        <div className="lg:col-span-2 space-y-5">
-
+        <div className="lg:col-span-2 space-y-5 min-w-0">
           {!result && !loading && (
-            <div className="bg-white border border-dashed border-neutral-200 rounded-2xl p-12 text-center">
-              <BarChart3 size={28} className="text-neutral-300 mx-auto mb-3" />
-              <h3 className="text-sm font-medium text-neutral-900 mb-1">Results appear here</h3>
-              <p className="text-xs text-neutral-400 max-w-xs mx-auto">
-                Select 5-{maxPersonas} personas, type your question, and run the panel to see responses, themes, and sentiment visualized instantly.
+            <div className="rounded-2xl p-14 text-center" style={{ background: 'white', border: '1.5px dashed #E5E7EB', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+              <BarChart3 size={32} className="mx-auto mb-3" style={{ color: '#D1D5DB' }} />
+              <h3 className="text-sm font-semibold text-neutral-700 mb-1">Results appear here</h3>
+              <p className="text-xs text-neutral-400 max-w-xs mx-auto leading-relaxed">
+                Select 5–{maxPersonas} personas, type your question, and run the panel to see responses, themes, and an AI recommendation.
               </p>
             </div>
           )}
-
           {loading && (
-            <div className="bg-white border border-neutral-200 rounded-2xl p-12 text-center"
-              style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-              <Loader2 size={28} className="text-neutral-300 mx-auto mb-3 animate-spin" />
-              <h3 className="text-sm font-medium text-neutral-900 mb-1">Running panel</h3>
-              <p className="text-xs text-neutral-400">Interviewing all {selectedIds.length} personas simultaneously...</p>
+            <div className="rounded-2xl p-14 text-center" style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <Loader2 size={32} className="mx-auto mb-3 animate-spin" style={{ color: '#1A9B76' }} />
+              <h3 className="text-sm font-semibold text-neutral-900 mb-1">Running panel</h3>
+              <p className="text-xs text-neutral-400">Interviewing all {selectedIds.length} personas in parallel...</p>
             </div>
           )}
-
           {result && (
             <>
-              {/* Summary stats */}
+              <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, #0A4F3A 0%, #1A8C6A 100%)', boxShadow: '0 4px 20px rgba(26,140,106,0.25)' }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles size={15} style={{ color: 'rgba(255,255,255,0.8)' }} />
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.7)' }}>Executive Summary</span>
+                </div>
+                <p className="text-sm leading-relaxed text-white mb-5">{result.summary.overall_recommendation}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <TrendingUp size={11} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Top Opportunity</span>
+                    </div>
+                    <p className="text-xs text-white leading-relaxed">{result.summary.top_opportunity}</p>
+                  </div>
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <AlertTriangle size={11} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                      <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Biggest Risk</span>
+                    </div>
+                    <p className="text-xs text-white leading-relaxed">{result.summary.biggest_risk}</p>
+                  </div>
+                  <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                    <p className="text-3xl font-serif font-bold text-white leading-none">{result.summary.likelihood_of_purchase}%</p>
+                    <p className="text-[10px] mt-1 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>Likelihood of Purchase</p>
+                  </div>
+                </div>
+                {result.summary.recommended_actions?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>Recommended Actions</p>
+                    <div className="space-y-1.5">
+                      {result.summary.recommended_actions.map((action, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="text-xs font-bold mt-0.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
+                          <p className="text-xs text-white leading-relaxed">{action}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="text-[10px] mt-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  Completed in ~{result.summary.completed_in_seconds}s · {result.total_personas} personas interviewed
+                </p>
+              </div>
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white border border-neutral-200 rounded-2xl p-4 text-center"
-                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-                  <p className="text-2xl font-serif font-semibold text-neutral-900">{result.total_personas}</p>
-                  <p className="text-xs text-neutral-400 mt-0.5">Personas</p>
-                </div>
-                <div className="bg-white border border-neutral-200 rounded-2xl p-4 text-center"
-                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-                  <p className="text-2xl font-serif font-semibold text-neutral-900">{result.themes.length}</p>
-                  <p className="text-xs text-neutral-400 mt-0.5">Key themes</p>
-                </div>
-                <div className="bg-white border border-neutral-200 rounded-2xl p-4 text-center"
-                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-                  <p className="text-2xl font-serif font-semibold text-neutral-900">{result.consensus_score}%</p>
-                  <p className="text-xs text-neutral-400 mt-0.5">Consensus</p>
-                </div>
+                {[
+                  { icon: '👥', value: result.total_personas, label: 'Personas Interviewed' },
+                  { icon: '🧠', value: result.themes.length, label: 'Shared Themes' },
+                  { icon: '🎯', value: `${result.consensus_score}%`, label: 'Consensus' },
+                ].map((s, i) => (
+                  <div key={i} className="rounded-2xl p-4 text-center"
+                    style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <div className="text-xl mb-1">{s.icon}</div>
+                    <p className="text-3xl font-serif font-bold text-neutral-900 leading-none">{s.value}</p>
+                    <p className="text-[11px] text-neutral-400 mt-1.5 font-medium">{s.label}</p>
+                  </div>
+                ))}
               </div>
-
-              {/* Question asked */}
-              <div className="bg-neutral-50 border border-neutral-200 rounded-2xl px-5 py-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">Question asked</p>
-                <p className="text-sm text-neutral-800 leading-relaxed">"{result.question}"</p>
-              </div>
-
-              {/* Visualizations row */}
+              {(result.summary.most_representative_quote || result.summary.biggest_objection_quote) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {result.summary.most_representative_quote && (
+                    <div className="rounded-2xl p-5"
+                      style={{ background: '#E8F5F1', border: '1px solid #A7D9C8', boxShadow: '0 2px 8px rgba(26,155,118,0.08)' }}>
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <Quote size={13} style={{ color: '#1A9B76' }} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#0D5C45' }}>Most Representative Quote</span>
+                      </div>
+                      <p className="text-sm text-neutral-800 leading-relaxed italic mb-2">"{result.summary.most_representative_quote}"</p>
+                      <p className="text-xs font-semibold" style={{ color: '#1A9B76' }}>— {result.summary.most_representative_quote_persona}</p>
+                    </div>
+                  )}
+                  {result.summary.biggest_objection_quote && (
+                    <div className="rounded-2xl p-5"
+                      style={{ background: '#FEF2F2', border: '1px solid #FECACA', boxShadow: '0 2px 8px rgba(239,68,68,0.06)' }}>
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <Quote size={13} style={{ color: '#EF4444' }} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#991B1B' }}>Biggest Objection</span>
+                      </div>
+                      <p className="text-sm text-neutral-800 leading-relaxed italic mb-2">"{result.summary.biggest_objection_quote}"</p>
+                      <p className="text-xs font-semibold" style={{ color: '#EF4444' }}>— {result.summary.biggest_objection_quote_persona}</p>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                {/* Sentiment distribution */}
-                <div className="bg-white border border-neutral-200 rounded-2xl p-5"
-                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-4">Sentiment distribution</p>
-                  <SentimentDonut distribution={result.sentiment_distribution} total={result.total_personas} />
+                <div className="rounded-2xl p-5"
+                  style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Sentiment Distribution</p>
+                  <SentimentBar distribution={result.sentiment_distribution} total={result.total_personas} />
                 </div>
-
-                {/* Theme frequency */}
-                <div className="bg-white border border-neutral-200 rounded-2xl p-5"
-                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-4">Theme frequency</p>
-                  <ThemeBarChart themes={result.themes} total={result.total_personas} />
+                <div className="rounded-2xl p-5"
+                  style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Top Themes</p>
+                  <ThemeBars themes={result.themes} total={result.total_personas} />
                 </div>
               </div>
-
-              {/* Individual responses */}
+              <div className="rounded-xl px-5 py-4"
+                style={{ background: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">Question Asked</p>
+                <p className="text-sm text-neutral-700 leading-relaxed">"{result.question}"</p>
+              </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Individual responses</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Individual Responses</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {result.responses.map(r => (
-                    <ResponseCard key={r.persona_id} result={r} />
-                  ))}
+                  {result.responses.map(r => <ResponseCard key={r.persona_id} result={r} />)}
                 </div>
               </div>
             </>
