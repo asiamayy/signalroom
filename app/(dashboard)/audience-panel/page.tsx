@@ -1,12 +1,12 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
-import { Modal } from '@/components/ui/Modal'
+import { Modal, modalCardStyle } from '@/components/ui/Modal'
+import { useGhostLayer, type GhostRect } from '@/components/ui/GhostLayer'
 import { createClient } from '@/lib/supabase/client'
-import { withViewTransition } from '@/lib/viewTransition'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan } from '@/types'
 
@@ -188,15 +188,9 @@ function PurchaseGauge({ value }: { value: number }) {
   )
 }
 
-function ResponseCard({ result, isModalOpen, onReadMore }: { result: PanelResponse; isModalOpen: boolean; onReadMore: () => void }) {
-  const c = SENTIMENT_COLORS[result.sentiment] ?? SENTIMENT_COLORS.neutral
-  // Cleared while this card's modal is open so the modal exclusively owns
-  // the shared view-transition-name during the morph (see Modal usage below).
-  const viewTransitionName = isModalOpen ? undefined : `ap-response-${result.persona_id}`
-
+function ResponseCardBody({ result, onReadMore }: { result: PanelResponse; onReadMore?: () => void }) {
   return (
-    <div className="rounded-2xl p-4 flex flex-col h-full transition-all"
-      style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', viewTransitionName } as React.CSSProperties}>
+    <>
       <div className="flex items-center gap-2.5 mb-2.5">
         <PersonaAvatar
           avatarUrl={result.avatar_url}
@@ -227,13 +221,37 @@ function ResponseCard({ result, isModalOpen, onReadMore }: { result: PanelRespon
           <p className="text-xs text-neutral-600 leading-relaxed flex-1 line-clamp-2">
             {result.response}
           </p>
-          <button onClick={onReadMore}
-            className="text-[11px] font-semibold mt-2 self-start transition-colors"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1A9B76', padding: 0, fontFamily: 'inherit' }}>
-            Read more →
-          </button>
+          {onReadMore ? (
+            <button onClick={onReadMore}
+              className="text-[11px] font-semibold mt-2 self-start transition-colors"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1A9B76', padding: 0, fontFamily: 'inherit' }}>
+              Read more →
+            </button>
+          ) : (
+            <span className="text-[11px] font-semibold mt-2" style={{ color: '#1A9B76' }}>Read more →</span>
+          )}
         </>
       )}
+    </>
+  )
+}
+
+function ResponseCard({ result, hidden, onOpen }: { result: PanelResponse; hidden: boolean; onOpen: (rect: GhostRect | null) => void }) {
+  const c = SENTIMENT_COLORS[result.sentiment] ?? SENTIMENT_COLORS.neutral
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const handleReadMore = () => {
+    const box = cardRef.current?.getBoundingClientRect()
+    onOpen(box ? { top: box.top, left: box.left, width: box.width, height: box.height } : null)
+  }
+
+  return (
+    <div
+      ref={cardRef}
+      className="rounded-2xl p-4 flex flex-col h-full transition-all"
+      style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', contain: 'layout', opacity: hidden ? 0 : 1 }}
+    >
+      <ResponseCardBody result={result} onReadMore={handleReadMore} />
     </div>
   )
 }
@@ -300,6 +318,9 @@ export default function AudiencePanelPage() {
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [plan, setPlan] = useState<Plan>('starter')
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
+  const [hiddenResponseId, setHiddenResponseId] = useState<string | null>(null)
+  const [instantOpen, setInstantOpen] = useState(false)
+  const { startTransition, endTransition } = useGhostLayer()
 
   const maxPersonas = PLAN_LIMITS[plan].audience_panel_max
   const hasAccess = PLAN_LIMITS[plan].audience_panel
@@ -322,6 +343,32 @@ export default function AudiencePanelPage() {
         ? prev.filter(p => p !== id)
         : prev.length < maxPersonas ? [...prev, id] : prev
     )
+  }
+
+  const handleOpenResponse = async (response: PanelResponse, rect: GhostRect | null) => {
+    setHiddenResponseId(response.persona_id)
+
+    if (!rect) {
+      setInstantOpen(false)
+      setOpenResponseId(response.persona_id)
+      return
+    }
+
+    const ok = await startTransition(
+      rect,
+      <div className="rounded-2xl p-4" style={{ background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+        <ResponseCardBody result={response} />
+      </div>,
+      <div style={modalCardStyle(540)}><ResponseModalContent response={response} /></div>
+    )
+    setInstantOpen(ok)
+    setOpenResponseId(response.persona_id)
+  }
+
+  const handleCloseResponse = async () => {
+    setOpenResponseId(null)
+    await endTransition()
+    setHiddenResponseId(null)
   }
 
   const handleRun = async () => {
@@ -648,8 +695,8 @@ export default function AudiencePanelPage() {
                 <ResponseCard
                   key={r.persona_id}
                   result={r}
-                  isModalOpen={openResponseId === r.persona_id}
-                  onReadMore={() => withViewTransition(() => setOpenResponseId(r.persona_id), 'open')}
+                  hidden={hiddenResponseId === r.persona_id}
+                  onOpen={rect => handleOpenResponse(r, rect)}
                 />
               ))}
             </div>
@@ -657,12 +704,7 @@ export default function AudiencePanelPage() {
         </div>
       )}
 
-      <Modal
-        isOpen={!!openResponseId}
-        onClose={() => withViewTransition(() => setOpenResponseId(null), 'close')}
-        maxWidth={540}
-        viewTransitionName={openResponseId ? `ap-response-${openResponseId}` : undefined}
-      >
+      <Modal isOpen={!!openResponseId} onClose={handleCloseResponse} maxWidth={540} instant={instantOpen}>
         {(() => {
           const response = result?.responses.find(r => r.persona_id === openResponseId)
           return response ? <ResponseModalContent response={response} /> : null

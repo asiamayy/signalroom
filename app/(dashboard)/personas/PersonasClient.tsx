@@ -5,9 +5,32 @@ import Link from 'next/link'
 import { Plus, Check, LayoutGrid, List, ChevronDown, Eye } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { OnboardingModal } from '@/components/ui/OnboardingModal'
-import { Modal } from '@/components/ui/Modal'
-import { withViewTransition } from '@/lib/viewTransition'
+import { Modal, modalCardStyle } from '@/components/ui/Modal'
+import { useGhostLayer, type GhostRect } from '@/components/ui/GhostLayer'
 import type { Persona, Plan } from '@/types'
+
+// ─── Ghost clone visuals — lightweight snapshots of a card shown while GhostLayer morphs it into the modal ──
+
+function PersonaGhostVisual({ persona, layout }: { persona: Persona; layout: 'card' | 'row' }) {
+  if (layout === 'row') {
+    return (
+      <div className="flex items-center gap-4 px-5 py-3.5 rounded-2xl h-full" style={{ background: 'white' }}>
+        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-semibold text-neutral-900">{persona.name}</span>
+          <p className="text-xs text-neutral-400">{persona.traits?.job_title ?? 'No role'}{persona.traits?.location ? ` · ${persona.traits.location}` : ''}</p>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className="rounded-2xl h-full pt-6 px-5 flex flex-col items-center text-center" style={{ background: 'white' }}>
+      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg" className="mb-3 shadow-md" />
+      <h3 className="text-base font-bold text-neutral-900 mb-0.5">{persona.name}</h3>
+      <p className="text-xs text-neutral-400 mb-3">{persona.traits?.job_title ?? 'No role'}{persona.traits?.location ? ` · ${persona.traits.location}` : ''}</p>
+    </div>
+  )
+}
 
 interface PersonasClientProps {
   initialPersonas: Persona[]
@@ -29,6 +52,10 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const [sortBy, setSortBy] = useState('Recently updated')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [modalPersonaId, setModalPersonaId] = useState<string | null>(null)
+  const [hiddenPersonaId, setHiddenPersonaId] = useState<string | null>(null)
+  const [instantOpen, setInstantOpen] = useState(false)
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const { startTransition, endTransition } = useGhostLayer()
 
   const active = personas.filter(p => !p.archived)
   const archived = personas.filter(p => p.archived)
@@ -37,12 +64,31 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const modalPersona = personas.find(p => p.id === modalPersonaId) ?? null
 
   // "Show preview" always selects the card too (harmless if already selected)
-  // so the modal's shared-element morph always starts from a selected card.
-  const showPersonaPreview = (personaId: string) => {
-    withViewTransition(() => {
-      setSelectedId(personaId)
-      setModalPersonaId(personaId)
-    }, 'open')
+  // so the green border is showing under the modal's shared-element morph.
+  const showPersonaPreview = async (persona: Persona, layout: 'card' | 'row') => {
+    setSelectedId(persona.id)
+    setHiddenPersonaId(persona.id)
+
+    const box = cardRefs.current[persona.id]?.getBoundingClientRect()
+    if (!box) {
+      setInstantOpen(false)
+      setModalPersonaId(persona.id)
+      return
+    }
+
+    const ok = await startTransition(
+      { top: box.top, left: box.left, width: box.width, height: box.height },
+      <PersonaGhostVisual persona={persona} layout={layout} />,
+      <div style={modalCardStyle(560)}><PersonaModalBody persona={persona} /></div>
+    )
+    setInstantOpen(ok)
+    setModalPersonaId(persona.id)
+  }
+
+  const closePersonaModal = async () => {
+    setModalPersonaId(null)
+    await endTransition()
+    setHiddenPersonaId(null)
   }
   const handleDelete = async (e: React.MouseEvent, personaId: string) => {
     e.preventDefault()
@@ -273,6 +319,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                 return (
                   <div
                     key={persona.id}
+                    ref={el => { cardRefs.current[persona.id] = el }}
                     className="relative group rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer"
                     onClick={(e) => {
                       // Don't change selection if clicking archive button area
@@ -288,8 +335,9 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                       transform: 'translateY(0)',
                       transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
-                      viewTransitionName: modalPersonaId === persona.id ? undefined : `persona-card-${persona.id}`,
-                    } as React.CSSProperties}
+                      contain: 'layout',
+                      opacity: hiddenPersonaId === persona.id ? 0 : 1,
+                    }}
                   >
                     {/* Green checkmark when selected */}
                     {isSelected && (
@@ -376,7 +424,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     {/* Subtle "Show preview" link — always visible when selected, hover-reveal otherwise */}
                     <div className={isSelected ? 'px-4 pb-3 -mt-2 text-center' : 'px-4 pb-3 -mt-2 text-center opacity-0 group-hover:opacity-100 transition-opacity'}>
                       <button
-                        onClick={e => { e.stopPropagation(); showPersonaPreview(persona.id) }}
+                        onClick={e => { e.stopPropagation(); showPersonaPreview(persona, 'card') }}
                         className="text-xs transition-colors text-[#9CA3AF] hover:text-[#4B5563]"
                         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
                       >
@@ -409,14 +457,16 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                 return (
                   <div key={persona.id}>
                     <div
+                      ref={el => { cardRefs.current[persona.id] = el }}
                       className="flex items-center gap-4 px-5 py-3.5 rounded-2xl cursor-pointer transition-all group"
                       onClick={() => setSelectedId(persona.id)}
                       style={{
                         background: 'white',
                         border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
                         boxShadow: isSelected ? '0 0 0 2px rgba(26,140,106,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
-                        viewTransitionName: modalPersonaId === persona.id ? undefined : `persona-card-${persona.id}`,
-                      } as React.CSSProperties}
+                        contain: 'layout',
+                        opacity: hiddenPersonaId === persona.id ? 0 : 1,
+                      }}
                     >
                       <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
                       <div className="flex-1 min-w-0">
@@ -433,7 +483,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         </span>
                       ))}
                       <div className="flex gap-2 flex-shrink-0">
-                        <button onClick={e => { e.stopPropagation(); showPersonaPreview(persona.id) }} className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 transition-colors" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Show preview">
+                        <button onClick={e => { e.stopPropagation(); showPersonaPreview(persona, 'row') }} className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 transition-colors" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Show preview">
                           <Eye size={13} />
                         </button>
                         <Link href={`/personas/${persona.id}`} onClick={e => e.stopPropagation()} className="text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}>View</Link>
@@ -467,6 +517,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     return (
                       <div
                         key={persona.id}
+                        ref={el => { cardRefs.current[persona.id] = el }}
                         className="relative group rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer"
                         onClick={(e) => {
                           const target = e.target as HTMLElement
@@ -475,11 +526,11 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         }}
                         style={{
                           background: 'white',
-                          opacity: 0.85,
+                          opacity: hiddenPersonaId === persona.id ? 0 : 0.85,
                           boxShadow: isSelected ? '0 0 0 2px #1A8C6A, 0 4px 16px rgba(26,140,106,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
                           border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
-                          viewTransitionName: modalPersonaId === persona.id ? undefined : `persona-card-${persona.id}`,
-                        } as React.CSSProperties}
+                          contain: 'layout',
+                        }}
                       >
                         {/* Checkmark when selected */}
                         {isSelected && (
@@ -523,7 +574,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         {/* Footer with preview + restore + delete buttons */}
                         <div className="px-4 pb-4 flex gap-2" style={{ borderTop: '1px solid #F3F4F6', paddingTop: '12px' }}>
                           <button
-                            onClick={(e) => { e.stopPropagation(); showPersonaPreview(persona.id) }}
+                            onClick={(e) => { e.stopPropagation(); showPersonaPreview(persona, 'card') }}
                             className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-neutral-700 transition-colors flex-shrink-0"
                             style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)' }}
                             title="Show preview"
@@ -562,12 +613,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         </div>
       </div>
 
-      <Modal
-        isOpen={!!modalPersonaId}
-        onClose={() => withViewTransition(() => setModalPersonaId(null), 'close')}
-        maxWidth={560}
-        viewTransitionName={modalPersonaId ? `persona-card-${modalPersonaId}` : undefined}
-      >
+      <Modal isOpen={!!modalPersonaId} onClose={closePersonaModal} maxWidth={560} instant={instantOpen}>
         {modalPersona && <PersonaModalBody key={modalPersona.id} persona={modalPersona} />}
       </Modal>
     </>

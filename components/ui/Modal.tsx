@@ -2,70 +2,67 @@
 
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import { supportsViewTransitions } from '@/lib/viewTransition'
 
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
   maxWidth?: number
-  // Shared view-transition-name for the card <-> modal morph. Pass the same
-  // name on the source card element (cleared while its modal is open) and
-  // here so the browser treats them as one element expanding/collapsing.
-  viewTransitionName?: string
+  // Set when a GhostLayer transition already animated the card into this
+  // exact position/size — the modal then just appears at its final state
+  // instantly instead of re-running its own scale/opacity animation.
+  instant?: boolean
   children: React.ReactNode
 }
 
-// Shared modal shell — dark backdrop, centered white card. When the browser
-// supports the View Transition API, the parent's state update is expected to
-// run inside withViewTransition() (lib/viewTransition.ts), and the browser
-// handles the shared-element morph natively — this component just mounts
-// instantly and lets the native transition do the visual work. Otherwise it
-// falls back to its own balloon/spring open animation (scale 0.5 → 1.0,
+const SPRING = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+
+// Shared visual shell for the modal card — also used by each page to build
+// the "modalContent" clone handed to GhostLayer, so the ghost's measured
+// size/appearance matches what this component actually renders.
+export function modalCardStyle(maxWidth: number): React.CSSProperties {
+  return {
+    maxWidth: `${maxWidth}px`,
+    width: '100%',
+    maxHeight: '85vh',
+    overflowY: 'auto',
+    padding: '28px',
+    borderRadius: '16px',
+    background: 'white',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+  }
+}
+
+// Shared modal shell — dark backdrop (200ms fade), centered white card. By
+// default it plays its own balloon/spring open animation (scale 0.5 → 1.0,
 // cubic-bezier(0.34, 1.56, 0.64, 1), 300ms) and a quick 150ms scale-down
-// fade-out on close. The backdrop always fades independently at 200ms.
-// Modal content fades in with a 150ms delay after the expansion completes
-// (progressive disclosure), in both the native and fallback paths.
-export function Modal({ isOpen, onClose, maxWidth = 540, viewTransitionName, children }: ModalProps) {
-  const [mounted, setMounted] = useState(supportsViewTransitions ? isOpen : false)
-  const [visible, setVisible] = useState(supportsViewTransitions ? isOpen : false)
+// fade-out on close — this is the safe fallback used whenever a GhostLayer
+// transition isn't in play. Modal content fades in with a 150ms delay after
+// the expansion completes (progressive disclosure).
+export function Modal({ isOpen, onClose, maxWidth = 540, instant = false, children }: ModalProps) {
+  const [mounted, setMounted] = useState(false)
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    if (supportsViewTransitions) {
-      // No manual delay needed — the native transition already holds the
-      // "old" visual in place while the DOM updates underneath it.
-      setMounted(isOpen)
-      setVisible(isOpen)
-      return
-    }
     if (isOpen) {
       setMounted(true)
+      if (instant) {
+        setVisible(true)
+        return
+      }
       const raf = requestAnimationFrame(() => setVisible(true))
       return () => cancelAnimationFrame(raf)
+    }
+    if (instant) {
+      setVisible(false)
+      setMounted(false)
+      return
     }
     setVisible(false)
     const timeout = setTimeout(() => setMounted(false), 150)
     return () => clearTimeout(timeout)
-  }, [isOpen])
+  }, [isOpen, instant])
 
   if (!mounted) return null
-
-  const cardStyle = {
-    maxWidth: `${maxWidth}px`,
-    maxHeight: '85vh',
-    overflowY: 'auto',
-    padding: '28px',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-    viewTransitionName,
-    ...(supportsViewTransitions
-      ? { opacity: 1, transform: 'none' }
-      : {
-          opacity: visible ? 1 : 0,
-          transform: visible ? 'scale(1)' : 'scale(0.5)',
-          transition: visible
-            ? 'opacity 300ms ease, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)'
-            : 'opacity 150ms ease, transform 150ms ease',
-        }),
-  } as React.CSSProperties
 
   return (
     <div
@@ -75,8 +72,17 @@ export function Modal({ isOpen, onClose, maxWidth = 540, viewTransitionName, chi
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="relative bg-white rounded-2xl w-full"
-        style={cardStyle}
+        className="relative"
+        style={{
+          ...modalCardStyle(maxWidth),
+          opacity: instant ? 1 : (visible ? 1 : 0),
+          transform: instant ? 'none' : (visible ? 'scale(1)' : 'scale(0.5)'),
+          transition: instant
+            ? 'none'
+            : visible
+              ? `opacity 300ms ease, transform 300ms ${SPRING}`
+              : 'opacity 150ms ease, transform 150ms ease',
+        }}
       >
         <button
           onClick={onClose}
@@ -90,7 +96,7 @@ export function Modal({ isOpen, onClose, maxWidth = 540, viewTransitionName, chi
         <div
           style={{
             opacity: visible ? 1 : 0,
-            transition: visible ? 'opacity 200ms ease 450ms' : 'opacity 100ms ease',
+            transition: visible ? `opacity 200ms ease ${instant ? 150 : 450}ms` : 'opacity 100ms ease',
           }}
         >
           {children}

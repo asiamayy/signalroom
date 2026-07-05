@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { GitCompare, Loader2, Plus, X, ChevronDown } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
-import { Modal } from '@/components/ui/Modal'
-import { withViewTransition } from '@/lib/viewTransition'
+import { Modal, modalCardStyle } from '@/components/ui/Modal'
+import { useGhostLayer, type GhostRect } from '@/components/ui/GhostLayer'
 import { cn, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import type { Persona, InterviewType } from '@/types'
 
@@ -29,6 +29,68 @@ interface CompareResult {
   error: string | null
 }
 
+// ─── Shared response content — used for the real card, the modal, and the GhostLayer clone ──
+
+function CompareResponseCardBody({ result }: { result: CompareResult }) {
+  return (
+    <>
+      <div className="flex items-center gap-3 mb-4">
+        <PersonaAvatar
+          avatarUrl={result.avatar_url}
+          avatarInitials={result.avatar_initials}
+          avatarColor={result.avatar_color}
+          name={result.persona_name}
+          size="md"
+        />
+        <div>
+          <p className="text-sm font-medium text-neutral-900">{result.persona_name}</p>
+          <p className="text-xs text-neutral-500">
+            {result.job_title}{result.location ? ` · ${result.location}` : ''}
+          </p>
+        </div>
+      </div>
+
+      {result.error ? (
+        <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{result.error}</p>
+      ) : (
+        <div className="bg-neutral-50 rounded-xl px-5 py-4">
+          <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">
+            {result.response}
+          </p>
+        </div>
+      )}
+    </>
+  )
+}
+
+function CompareResponseModalBody({ result }: { result: CompareResult }) {
+  return (
+    <>
+      <div className="flex items-center gap-3 mb-5 pr-8">
+        <PersonaAvatar
+          avatarUrl={result.avatar_url}
+          avatarInitials={result.avatar_initials}
+          avatarColor={result.avatar_color}
+          name={result.persona_name}
+          size="lg"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-semibold text-neutral-900 truncate">{result.persona_name}</p>
+          <p className="text-sm text-neutral-500">
+            {result.job_title}{result.location ? ` · ${result.location}` : ''}
+          </p>
+        </div>
+      </div>
+
+      {result.error ? (
+        <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{result.error}</p>
+      ) : (
+        <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">{result.response}</p>
+      )}
+    </>
+  )
+}
+
 export default function ComparePage() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -40,7 +102,12 @@ export default function ComparePage() {
   const [activeTab, setActiveTab] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
+
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
+  const [hiddenResponseId, setHiddenResponseId] = useState<string | null>(null)
+  const [instantOpen, setInstantOpen] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const { startTransition, endTransition } = useGhostLayer()
 
   // Load personas
   useEffect(() => {
@@ -93,6 +160,32 @@ export default function ComparePage() {
   }
 
   const activeResult = results.find(r => r.persona_id === activeTab)
+
+  const handleOpenResponse = async (result: CompareResult) => {
+    const box = cardRef.current?.getBoundingClientRect()
+    setHiddenResponseId(result.persona_id)
+
+    if (!box) {
+      setInstantOpen(false)
+      setOpenResponseId(result.persona_id)
+      return
+    }
+
+    const sourceRect: GhostRect = { top: box.top, left: box.left, width: box.width, height: box.height }
+    const ok = await startTransition(
+      sourceRect,
+      <div className="rounded-xl p-2 bg-white"><CompareResponseCardBody result={result} /></div>,
+      <div style={modalCardStyle(540)}><CompareResponseModalBody result={result} /></div>
+    )
+    setInstantOpen(ok)
+    setOpenResponseId(result.persona_id)
+  }
+
+  const handleCloseResponse = async () => {
+    setOpenResponseId(null)
+    await endTransition()
+    setHiddenResponseId(null)
+  }
 
   return (
     <div className="p-4 sm:p-8 max-w-5xl">
@@ -286,39 +379,15 @@ export default function ComparePage() {
               {activeResult && (
                 <div className="flex-1 p-5">
                   <div
-                    onClick={() => withViewTransition(() => setOpenResponseId(activeResult.persona_id), 'open')}
+                    ref={cardRef}
+                    onClick={() => handleOpenResponse(activeResult)}
                     className="-m-2 p-2 rounded-xl cursor-pointer transition-colors hover:bg-neutral-50"
                     style={{
-                      viewTransitionName: openResponseId === activeResult.persona_id
-                        ? undefined
-                        : `compare-response-${activeResult.persona_id}`,
-                    } as React.CSSProperties}
+                      contain: 'layout',
+                      opacity: hiddenResponseId === activeResult.persona_id ? 0 : 1,
+                    }}
                   >
-                    <div className="flex items-center gap-3 mb-4">
-                      <PersonaAvatar
-                        avatarUrl={activeResult.avatar_url}
-                        avatarInitials={activeResult.avatar_initials}
-                        avatarColor={activeResult.avatar_color}
-                        name={activeResult.persona_name}
-                        size="md"
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-neutral-900">{activeResult.persona_name}</p>
-                        <p className="text-xs text-neutral-500">
-                          {activeResult.job_title}{activeResult.location ? ` · ${activeResult.location}` : ''}
-                        </p>
-                      </div>
-                    </div>
-
-                    {activeResult.error ? (
-                      <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{activeResult.error}</p>
-                    ) : (
-                      <div className="bg-neutral-50 rounded-xl px-5 py-4">
-                        <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">
-                          {activeResult.response}
-                        </p>
-                      </div>
-                    )}
+                    <CompareResponseCardBody result={activeResult} />
                   </div>
 
                   {/* Nav between tabs */}
@@ -354,40 +423,10 @@ export default function ComparePage() {
         </div>
       </div>
 
-      <Modal
-        isOpen={!!openResponseId}
-        onClose={() => withViewTransition(() => setOpenResponseId(null), 'close')}
-        maxWidth={540}
-        viewTransitionName={openResponseId ? `compare-response-${openResponseId}` : undefined}
-      >
+      <Modal isOpen={!!openResponseId} onClose={handleCloseResponse} maxWidth={540} instant={instantOpen}>
         {(() => {
           const response = results.find(r => r.persona_id === openResponseId)
-          if (!response) return null
-          return (
-            <>
-              <div className="flex items-center gap-3 mb-5 pr-8">
-                <PersonaAvatar
-                  avatarUrl={response.avatar_url}
-                  avatarInitials={response.avatar_initials}
-                  avatarColor={response.avatar_color}
-                  name={response.persona_name}
-                  size="lg"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-base font-semibold text-neutral-900 truncate">{response.persona_name}</p>
-                  <p className="text-sm text-neutral-500">
-                    {response.job_title}{response.location ? ` · ${response.location}` : ''}
-                  </p>
-                </div>
-              </div>
-
-              {response.error ? (
-                <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{response.error}</p>
-              ) : (
-                <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">{response.response}</p>
-              )}
-            </>
-          )
+          return response ? <CompareResponseModalBody result={response} /> : null
         })()}
       </Modal>
     </div>

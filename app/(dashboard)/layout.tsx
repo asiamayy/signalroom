@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Users, MessageSquare, FileText, Settings, GitCompare, Menu, X, BarChart3, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
+import { GhostLayerProvider } from '@/components/ui/GhostLayer'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 
@@ -141,49 +142,51 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#F4F6F8' }}>
+    <GhostLayerProvider>
+      <div className="flex h-screen overflow-hidden" style={{ background: '#F4F6F8' }}>
 
-      {/* Desktop sidebar — always visible at md+ */}
-      <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
-        {SidebarContent}
-      </aside>
+        {/* Desktop sidebar — always visible at md+ */}
+        <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
+          {SidebarContent}
+        </aside>
 
-      {/* Mobile sidebar — slide-out drawer */}
-      {mobileNavOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="md:hidden fixed inset-0 z-40"
-            style={{ background: 'rgba(0,0,0,0.4)' }}
-            onClick={() => setMobileNavOpen(false)}
-          />
-          {/* Drawer */}
-          <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col" style={{ background: 'white' }}>
-            {SidebarContent}
-          </aside>
-        </>
-      )}
+        {/* Mobile sidebar — slide-out drawer */}
+        {mobileNavOpen && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="md:hidden fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.4)' }}
+              onClick={() => setMobileNavOpen(false)}
+            />
+            {/* Drawer */}
+            <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col" style={{ background: 'white' }}>
+              {SidebarContent}
+            </aside>
+          </>
+        )}
 
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-        {/* Mobile top bar — hamburger + logo */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
-          <button
-            onClick={() => setMobileNavOpen(true)}
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-neutral-600 flex-shrink-0"
-            style={{ background: '#F3F4F6', border: 'none', cursor: 'pointer' }}
-          >
-            <Menu size={18} />
-          </button>
-          <Logo href="/personas" size="sm" />
+          {/* Mobile top bar — hamburger + logo */}
+          <div className="md:hidden flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+            <button
+              onClick={() => setMobileNavOpen(true)}
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-neutral-600 flex-shrink-0"
+              style={{ background: '#F3F4F6', border: 'none', cursor: 'pointer' }}
+            >
+              <Menu size={18} />
+            </button>
+            <Logo href="/personas" size="sm" />
+          </div>
+
+          {/* Page content */}
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
         </div>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
       </div>
-    </div>
+    </GhostLayerProvider>
   )
 }
