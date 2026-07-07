@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { Persona, InterviewType, Message } from '@/types'
+import type { Persona, InterviewType, Message, JourneyStep } from '@/types'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -305,4 +305,82 @@ Make it specific and believable. Return ONLY the JSON.`,
   } catch {
     throw new Error('Failed to parse persona suggestion JSON')
   }
+}
+
+// ─── Generate a persona user-journey map ─────────────────────────────────────
+
+export async function generatePersonaJourney(persona: Persona, journeyTitle: string): Promise<{ title: string; steps: JourneyStep[] }> {
+  const { traits } = persona
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 2000,
+    messages: [
+      {
+        role: 'user',
+        content: `You are a senior UX researcher mapping a customer journey for "${journeyTitle}".
+
+Persona: ${persona.name}, ${traits.age}, ${traits.job_title} in ${traits.industry}
+Goals: ${traits.goals.filter(Boolean).join('; ') || 'not specified'}
+Frustrations: ${traits.frustrations.filter(Boolean).join('; ') || 'not specified'}
+Tech savviness: ${traits.tech_savviness}/5, Risk tolerance: ${traits.risk_tolerance}/5
+Additional context: ${traits.additional_context || 'none'}
+
+Generate a realistic 5-7 step user journey for this persona experiencing "${journeyTitle}". Each step must reflect this specific person's psychology and context — not a generic journey.
+
+Return ONLY a JSON object with this exact shape:
+{
+  "title": "${journeyTitle}",
+  "steps": [
+    {
+      "step_order": 0,
+      "phase_name": "Short phase name (2-4 words, e.g. 'Discovery', 'Evaluation', 'First Use')",
+      "user_action": "What the persona concretely does in this step",
+      "internal_thoughts": "What the persona is thinking/feeling internally, in first person",
+      "emotional_score": -5 to 5 (integer, -5 = very frustrated, 0 = neutral, 5 = delighted),
+      "friction_point": "A specific obstacle or pain point at this step, or null if this step is smooth"
+    }
+  ]
+}
+
+Return ONLY the JSON. No preamble, no markdown fences.`,
+      },
+    ],
+  })
+
+  const raw = response.content[0].type === 'text' ? response.content[0].text : ''
+
+  const attempts = [
+    () => {
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      return JSON.parse(cleaned)
+    },
+    () => {
+      const start = raw.indexOf('{')
+      const end = raw.lastIndexOf('}')
+      if (start === -1 || end === -1) throw new Error('No JSON object found')
+      return JSON.parse(raw.slice(start, end + 1))
+    },
+  ]
+
+  for (const attempt of attempts) {
+    try {
+      const parsed = attempt()
+      return {
+        title: parsed.title ?? journeyTitle,
+        steps: (parsed.steps ?? []).map((s: any, i: number) => ({
+          step_order: s.step_order ?? i,
+          phase_name: s.phase_name ?? `Step ${i + 1}`,
+          user_action: s.user_action ?? '',
+          internal_thoughts: s.internal_thoughts ?? '',
+          emotional_score: Math.max(-5, Math.min(5, Math.round(s.emotional_score ?? 0))),
+          friction_point: s.friction_point || null,
+        })),
+      }
+    } catch {
+      continue
+    }
+  }
+
+  throw new Error('Failed to parse journey JSON from AI response')
 }

@@ -203,20 +203,20 @@ export default function PersonaBuilder() {
   }
 
   return (
-    <div className="min-h-screen p-8 max-w-2xl">
+    <div className="min-h-screen p-8 max-w-2xl" style={{ background: '#F9F9F9' }}>
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-serif tracking-tight text-neutral-900">New persona</h1>
-        <p className="text-sm text-neutral-500 mt-0.5">Define who you want to interview</p>
+        <h1 className="text-3xl font-serif tracking-tight" style={{ color: '#202124' }}>New persona</h1>
+        <p className="text-sm mt-0.5" style={{ color: '#5F6368' }}>Define who you want to interview</p>
       </div>
 
       {/* AI quick-start */}
-      <Card className="p-4 mb-6 border-emerald-100 bg-emerald-50/40">
+      <Card className="p-4 mb-6" style={{ background: '#FDFDFD', borderColor: '#E0E2E4' }}>
         <div className="flex items-start gap-3">
-          <Sparkles size={16} className="text-emerald-600 mt-0.5 flex-shrink-0" />
+          <Sparkles size={16} className="mt-0.5 flex-shrink-0" style={{ color: '#1C3D2E' }} />
           <div className="flex-1">
-            <p className="text-sm font-medium text-emerald-900 mb-2">Generate with AI</p>
+            <p className="text-sm font-medium mb-2" style={{ color: '#202124' }}>Generate with AI</p>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -224,19 +224,20 @@ export default function PersonaBuilder() {
                 onChange={e => setAiPrompt(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleGenerate()}
                 placeholder="e.g. 35-year-old startup founder in NYC, bootstrapped, technical"
-                className="flex-1 text-sm px-3 py-2 bg-white border border-emerald-200 rounded-md placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="flex-1 text-sm px-3 py-2 bg-white rounded-lg placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:border-transparent"
+                style={{ border: '1px solid #E0E2E4' }}
               />
               <Button
                 variant="primary"
                 size="sm"
                 onClick={handleGenerate}
                 loading={generating}
-                className="bg-emerald-700 hover:bg-emerald-800 whitespace-nowrap"
+                className="whitespace-nowrap"
               >
                 Generate
               </Button>
             </div>
-            <p className="text-xs text-emerald-700 mt-1.5">Describe your target customer and AI will fill in the details</p>
+            <p className="text-xs mt-1.5" style={{ color: '#5F6368' }}>Describe your target customer and AI will fill in the details</p>
           </div>
         </div>
       </Card>
@@ -252,20 +253,21 @@ export default function PersonaBuilder() {
               <button
                 onClick={() => i <= step && setStep(i)}
                 className={cn(
-                  'flex items-center gap-2 text-sm px-3 py-1.5 rounded-md transition-colors',
-                  active ? 'text-neutral-900 font-medium' : done ? 'text-neutral-500 hover:text-neutral-700 cursor-pointer' : 'text-neutral-400 cursor-default'
+                  'flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg transition-colors',
+                  active ? 'font-medium' : done ? 'cursor-pointer' : 'cursor-default'
                 )}
+                style={{ color: active ? '#202124' : '#757575' }}
               >
-                <span className={cn(
-                  'w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0',
-                  active ? 'bg-neutral-900 text-white' : done ? 'bg-emerald-100 text-emerald-700' : 'bg-neutral-100 text-neutral-400'
-                )}>
+                <span
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0"
+                  style={active ? { background: '#1C3D2E', color: 'white' } : done ? { background: '#E8F3EF', color: '#1C3D2E' } : { background: '#F1F1F1', color: '#757575' }}
+                >
                   {done ? <Check size={10} /> : i + 1}
                 </span>
                 {s.label}
               </button>
               {i < STEPS.length - 1 && (
-                <ChevronRight size={14} className="text-neutral-300 mx-1" />
+                <ChevronRight size={14} className="mx-1" style={{ color: '#DADCE0' }} />
               )}
             </div>
           )
@@ -273,7 +275,7 @@ export default function PersonaBuilder() {
       </div>
 
       {/* Preview avatar */}
-      <div className="flex items-center gap-3 mb-6 p-3 bg-neutral-50 border border-neutral-100 rounded-lg">
+      <div className="flex items-center gap-3 mb-6 p-3 rounded-lg" style={{ background: '#FDFDFD', border: '1px solid #E0E2E4' }}>
         <div className="relative flex-shrink-0">
           {avatarUrl ? (
             <img
@@ -296,8 +298,8 @@ export default function PersonaBuilder() {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-neutral-900">{name || 'Unnamed persona'}</p>
-          <p className="text-xs text-neutral-500">
+          <p className="text-sm font-medium" style={{ color: '#202124' }}>{name || 'Unnamed persona'}</p>
+          <p className="text-xs" style={{ color: '#5F6368' }}>
             {traits.job_title ? `${traits.job_title}${traits.location ? ` · ${traits.location}` : ''}` : 'Fill in details below'}
           </p>
         </div>
@@ -305,12 +307,10 @@ export default function PersonaBuilder() {
           type="button"
           onClick={handleGenerateAvatar}
           disabled={generatingAvatar || !name}
-          className={cn(
-            'flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border transition-colors flex-shrink-0',
-            name && !generatingAvatar
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-              : 'border-neutral-200 text-neutral-400 cursor-not-allowed'
-          )}
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+          style={name && !generatingAvatar
+            ? { border: '1px solid #DADCE0', background: '#E8F3EF', color: '#1C3D2E' }
+            : { border: '1px solid #E0E2E4', color: '#9CA3AF', cursor: 'not-allowed' }}
         >
           <Camera size={12} />
           {generatingAvatar ? 'Generating...' : avatarUrl ? 'Regenerate' : 'Generate avatar'}
@@ -440,13 +440,13 @@ export default function PersonaBuilder() {
 
       {/* Error */}
       {error && (
-        <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
+        <p className="mt-4 text-sm rounded-lg px-3 py-2" style={{ color: '#DB4437', background: '#FEF2F1', border: '1px solid #F8D7D3' }}>
           {error}
         </p>
       )}
 
       {/* Nav buttons */}
-      <div className="flex justify-between mt-8 pt-6 border-t border-neutral-100">
+      <div className="flex justify-between mt-8 pt-6" style={{ borderTop: '1px solid #E0E2E4' }}>
         <Button
           variant="secondary"
           onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}

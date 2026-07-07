@@ -5,7 +5,7 @@ import { getInitials, getAvatarColor } from '@/lib/utils'
 import { PLAN_LIMITS } from '@/types'
 import type { PersonaFormData, Plan } from '@/types'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -13,11 +13,19 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data, error } = await supabase
+  const funnelStage = request.nextUrl.searchParams.get('funnel_stage')
+
+  let query = supabase
     .from('personas')
     .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
+
+  if (funnelStage) {
+    query = query.eq('funnel_stage', funnelStage)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

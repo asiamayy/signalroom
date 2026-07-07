@@ -21,6 +21,14 @@ export interface UserProfile {
 export type PersonaGender = 'male' | 'female' | 'non-binary' | 'prefer not to say'
 export type PersonaIncome = 'under_50k' | '50k_100k' | '100k_200k' | 'over_200k'
 export type PersonaEducation = 'high_school' | 'bachelors' | 'masters' | 'phd'
+export type FunnelStage = 'awareness' | 'consideration' | 'purchase' | 'loyalty'
+
+export const FUNNEL_STAGE_LABELS: Record<FunnelStage, string> = {
+  awareness: 'Awareness',
+  consideration: 'Consideration',
+  purchase: 'Purchase',
+  loyalty: 'Loyalty',
+}
 
 export interface PersonaTraits {
   age: number
@@ -47,10 +55,42 @@ export interface Persona {
   avatar_url: string | null
   traits: PersonaTraits
   tags: string[]
+  funnel_stage?: FunnelStage
   archived?: boolean
   archived_at?: string | null
   created_at: string
   updated_at: string
+}
+
+// ─── Project ──────────────────────────────────────────────────────────────────
+
+export interface Project {
+  id: string
+  user_id: string
+  name: string
+  created_at: string
+  updated_at: string
+}
+
+// ─── Journey ──────────────────────────────────────────────────────────────────
+
+export interface JourneyStep {
+  id?: string
+  step_order: number
+  phase_name: string
+  user_action: string
+  internal_thoughts: string
+  emotional_score: number // -5 to +5
+  friction_point: string | null
+}
+
+export interface Journey {
+  id: string
+  user_id: string
+  persona_id: string
+  title: string
+  created_at: string
+  steps: JourneyStep[]
 }
 
 export type PersonaFormData = Omit<Persona, 'id' | 'user_id' | 'created_at' | 'updated_at'>

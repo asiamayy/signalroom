@@ -2,19 +2,26 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Users, MessageSquare, FileText, Settings, GitCompare, Menu, X, BarChart3, LogOut } from 'lucide-react'
+import {
+  Home, Briefcase, Users, MessageSquare, FileText, Settings, GitCompare, Menu, X,
+  BarChart3, Activity, Lightbulb, LogOut, Search, HelpCircle, ChevronDown, Plus,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
 import { createClient } from '@/lib/supabase/client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import type { Project } from '@/types'
 
 const NAV_ITEMS = [
+  { href: '/home', label: 'Home', icon: Home },
+  { href: '/projects', label: 'Projects', icon: Briefcase },
   { href: '/personas', label: 'Personas', icon: Users },
   { href: '/interviews', label: 'Interviews', icon: MessageSquare },
   { href: '/compare', label: 'Compare', icon: GitCompare },
   { href: '/audience-panel', label: 'Audience Panel', icon: BarChart3 },
+  { href: '/signals', label: 'Signals', icon: Activity },
+  { href: '/insights', label: 'Insights', icon: Lightbulb },
   { href: '/reports', label: 'Reports', icon: FileText },
-  { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -22,8 +29,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [fullName, setFullName] = useState<string | null>(null)
-  const [showSignOut, setShowSignOut] = useState(false)
+  const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [recentProjects, setRecentProjects] = useState<Project[]>([])
+  const [search, setSearch] = useState('')
+  const accountMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -40,10 +50,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     })
   }, [])
 
+  // Recent projects for the sidebar
+  useEffect(() => {
+    fetch('/api/projects?limit=5')
+      .then(r => r.json())
+      .then(json => setRecentProjects(json.data ?? []))
+      .catch(() => {})
+  }, [])
+
   // Close mobile nav on route change
   useEffect(() => {
     setMobileNavOpen(false)
   }, [pathname])
+
+  // Close account dropdown on outside click
+  useEffect(() => {
+    if (!showAccountMenu) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setShowAccountMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showAccountMenu])
 
   const nameParts = fullName?.trim().split(/\s+/) ?? []
   const initials = nameParts.length >= 2
@@ -76,7 +106,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-3 space-y-0.5">
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
           return (
@@ -87,61 +117,55 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 'flex items-center gap-2.5 px-3 py-2.5 md:py-2 rounded-lg text-sm font-semibold transition-all',
                 active ? '' : 'text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50'
               )}
-              style={active ? { background: '#E3EFE6', color: '#123B2C' } : {}}
+              style={active ? { background: '#DCE5E1', color: '#1C3D2E' } : {}}
             >
               <Icon size={15} strokeWidth={1.75} />
               {label}
             </Link>
           )
         })}
+
+        {/* Recent projects */}
+        <div className="pt-4 mt-2" style={{ borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#757575' }}>
+            Recent Projects
+          </p>
+          {recentProjects.length === 0 ? (
+            <p className="px-3 text-xs" style={{ color: '#9CA3AF' }}>No projects yet</p>
+          ) : (
+            <div className="space-y-0.5">
+              {recentProjects.map((project, i) => (
+                <Link
+                  key={project.id}
+                  href="/projects"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors hover:bg-neutral-50"
+                  style={{ color: i === 0 ? '#202124' : '#757575' }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: i === 0 ? '#1C3D2E' : '#DADCE0' }} />
+                  <span className="truncate">{project.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
 
-      {/* Footer */}
+      {/* Footer — New Project */}
       <div className="px-3 pb-4 pt-2" style={{ borderTop: '1px solid rgba(0,0,0,0.07)' }}>
-        <div className="group rounded-xl transition-colors hover:bg-neutral-50">
-          {/* Inline sign out — revealed on hover (desktop) or tap (mobile) */}
-          <div
-            className={cn(
-              'overflow-hidden transition-all duration-200 ease-out',
-              showSignOut ? 'max-h-12 opacity-100' : 'max-h-0 opacity-0 md:group-hover:max-h-12 md:group-hover:opacity-100'
-            )}
-          >
-            <button
-              onClick={handleSignOut}
-              className="w-full flex items-center gap-2.5 px-2.5 py-2 mt-1 mx-1 rounded-lg text-xs font-semibold transition-colors hover:brightness-95"
-              style={{ background: '#E3EFE6', color: '#123B2C', border: 'none', cursor: 'pointer', fontFamily: 'inherit', width: 'calc(100% - 8px)' }}
-            >
-              <LogOut size={13} strokeWidth={2} />
-              Sign out
-            </button>
-          </div>
-
-          <button
-            onClick={() => setShowSignOut(o => !o)}
-            className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl transition-colors"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: '#123B2C' }}>
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0 text-left">
-              <div className="text-xs font-semibold text-neutral-800 truncate">{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</div>
-              <div className="text-[11px] text-neutral-400 truncate">{userEmail ?? ''}</div>
-            </div>
-            <svg
-              width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"
-              className={cn('transition-transform duration-200', showSignOut ? 'rotate-180' : 'md:group-hover:rotate-180')}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-        </div>
+        <Link
+          href="/projects"
+          className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold px-3 py-2.5 rounded-lg transition-colors"
+          style={{ background: '#FFFFFF', border: '1px solid #DADCE0', color: '#202124' }}
+        >
+          <Plus size={14} />
+          New Project
+        </Link>
       </div>
     </>
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#F7F8F7' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: '#F9F9F9' }}>
 
       {/* Desktop sidebar — always visible at md+ */}
       <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
@@ -167,16 +191,96 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-        {/* Mobile top bar — hamburger + logo */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        {/* Top bar — search, help, settings, profile (desktop + mobile) */}
+        <div className="flex items-center gap-3 px-4 sm:px-6 py-3 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+          {/* Mobile hamburger + logo */}
           <button
             onClick={() => setMobileNavOpen(true)}
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-neutral-600 flex-shrink-0"
+            className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center text-neutral-600 flex-shrink-0"
             style={{ background: '#F3F4F6', border: 'none', cursor: 'pointer' }}
           >
             <Menu size={18} />
           </button>
-          <Logo href="/personas" size="sm" />
+          <div className="md:hidden">
+            <Logo href="/personas" size="sm" />
+          </div>
+
+          {/* Search */}
+          <div className="hidden md:flex items-center gap-2 rounded-xl px-3 py-2 flex-1 max-w-xl" style={{ background: '#F9F9F9', border: '1px solid #E0E2E4' }}>
+            <Search size={15} style={{ color: '#9CA3AF' }} />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search personas, projects, insights, and more..."
+              className="text-sm bg-transparent outline-none w-full placeholder:text-neutral-400"
+              style={{ color: '#202124' }}
+            />
+          </div>
+
+          <div className="flex-1 md:hidden" />
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link
+              href="/help"
+              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center transition-colors hover:bg-neutral-50"
+              style={{ border: '1px solid #E0E2E4', color: '#5F6368' }}
+              title="Help"
+            >
+              <HelpCircle size={16} />
+            </Link>
+            <Link
+              href="/settings"
+              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center transition-colors hover:bg-neutral-50"
+              style={{ border: '1px solid #E0E2E4', color: '#5F6368' }}
+              title="Settings"
+            >
+              <Settings size={16} />
+            </Link>
+
+            {/* Profile dropdown */}
+            <div className="relative" ref={accountMenuRef}>
+              <button
+                onClick={() => setShowAccountMenu(o => !o)}
+                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full transition-colors hover:bg-neutral-50"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: '#1C3D2E' }}>
+                  {initials}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <div className="text-xs font-semibold truncate max-w-[120px]" style={{ color: '#202124' }}>{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</div>
+                </div>
+                <ChevronDown size={13} style={{ color: '#9CA3AF' }} className={cn('transition-transform duration-200 hidden sm:block', showAccountMenu ? 'rotate-180' : '')} />
+              </button>
+
+              {showAccountMenu && (
+                <div className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '200px' }}>
+                  <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                    <p className="text-sm font-semibold" style={{ color: '#202124' }}>{fullName ?? 'Account'}</p>
+                    <p className="text-xs truncate" style={{ color: '#5F6368' }}>{userEmail ?? ''}</p>
+                  </div>
+                  <Link href="/settings" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50" style={{ color: '#202124' }}>
+                    <Settings size={14} />
+                    Settings
+                  </Link>
+                  <Link href="/help" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50" style={{ color: '#202124' }}>
+                    <HelpCircle size={14} />
+                    Help
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: '#DB4437' }}
+                  >
+                    <LogOut size={14} />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Page content */}

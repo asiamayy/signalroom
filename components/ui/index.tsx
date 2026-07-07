@@ -13,12 +13,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
-    const base = 'inline-flex items-center justify-center gap-2 font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+    const base = 'inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
     const variants = {
-      primary: 'bg-neutral-900 text-white hover:bg-neutral-700 focus:ring-neutral-900',
-      secondary: 'bg-white text-neutral-900 border border-neutral-200 hover:bg-neutral-50 focus:ring-neutral-300',
-      ghost: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 focus:ring-neutral-300',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+      primary: 'bg-[#1C3D2E] text-white hover:bg-[#163024] focus:ring-[#1C3D2E]',
+      secondary: 'bg-white text-[#202124] border border-[#DADCE0] hover:bg-neutral-50 focus:ring-neutral-300',
+      ghost: 'text-[#5F6368] hover:bg-neutral-100 hover:text-[#202124] focus:ring-neutral-300',
+      danger: 'bg-[#DB4437] text-white hover:bg-[#c53727] focus:ring-red-500',
     }
     const sizes = {
       sm: 'text-xs px-3 py-1.5',
@@ -59,7 +59,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-neutral-700">
+          <label htmlFor={inputId} className="block text-sm font-medium text-[#202124]">
             {label}
           </label>
         )}
@@ -67,15 +67,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full px-3 py-2 text-sm bg-white border rounded-md text-neutral-900 placeholder:text-neutral-400',
-            'focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent',
+            'w-full px-3 py-2 text-sm bg-white border rounded-lg text-[#202124] placeholder:text-neutral-400',
+            'focus:outline-none focus:ring-2 focus:ring-[#1C3D2E] focus:border-transparent',
             'disabled:bg-neutral-50 disabled:text-neutral-500',
-            error ? 'border-red-400 focus:ring-red-500' : 'border-neutral-200',
+            error ? 'border-red-400 focus:ring-red-500' : 'border-[#E0E2E4]',
             className
           )}
           {...props}
         />
-        {hint && !error && <p className="text-xs text-neutral-500">{hint}</p>}
+        {hint && !error && <p className="text-xs text-[#5F6368]">{hint}</p>}
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     )
@@ -97,7 +97,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-neutral-700">
+          <label htmlFor={inputId} className="block text-sm font-medium text-[#202124]">
             {label}
           </label>
         )}
@@ -105,14 +105,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full px-3 py-2 text-sm bg-white border rounded-md text-neutral-900 placeholder:text-neutral-400 resize-none',
-            'focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent',
-            error ? 'border-red-400' : 'border-neutral-200',
+            'w-full px-3 py-2 text-sm bg-white border rounded-lg text-[#202124] placeholder:text-neutral-400 resize-none',
+            'focus:outline-none focus:ring-2 focus:ring-[#1C3D2E] focus:border-transparent',
+            error ? 'border-red-400' : 'border-[#E0E2E4]',
             className
           )}
           {...props}
         />
-        {hint && !error && <p className="text-xs text-neutral-500">{hint}</p>}
+        {hint && !error && <p className="text-xs text-[#5F6368]">{hint}</p>}
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     )
@@ -135,7 +135,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="space-y-1.5">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-neutral-700">
+          <label htmlFor={inputId} className="block text-sm font-medium text-[#202124]">
             {label}
           </label>
         )}
@@ -143,9 +143,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full px-3 py-2 text-sm bg-white border rounded-md text-neutral-900',
-            'focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent',
-            error ? 'border-red-400' : 'border-neutral-200',
+            'w-full px-3 py-2 text-sm bg-white border rounded-lg text-[#202124]',
+            'focus:outline-none focus:ring-2 focus:ring-[#1C3D2E] focus:border-transparent',
+            error ? 'border-red-400' : 'border-[#E0E2E4]',
             className
           )}
           {...props}
@@ -154,7 +154,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
-        {hint && !error && <p className="text-xs text-neutral-500">{hint}</p>}
+        {hint && !error && <p className="text-xs text-[#5F6368]">{hint}</p>}
         {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     )
@@ -172,10 +172,10 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', className }: BadgeProps) {
   const variants = {
-    default: 'bg-neutral-100 text-neutral-700',
+    default: 'bg-[#E8F3EF] text-[#1C3D2E]',
     success: 'bg-emerald-50 text-emerald-700',
     warning: 'bg-amber-50 text-amber-700',
-    danger: 'bg-red-50 text-red-700',
+    danger: 'bg-red-50 text-[#DB4437]',
     info: 'bg-blue-50 text-blue-700',
   }
   return (
@@ -187,9 +187,9 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
+export function Card({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={cn('bg-white border border-neutral-200 rounded-xl', className)}>
+    <div className={cn('bg-white border border-[#E0E2E4] rounded-2xl', className)} style={style}>
       {children}
     </div>
   )
@@ -211,8 +211,8 @@ export function Slider({ label, value, onChange, min = 1, max = 5, leftLabel, ri
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <label className="text-sm font-medium text-neutral-700">{label}</label>
-        <span className="text-sm font-semibold text-neutral-900 w-5 text-center">{value}</span>
+        <label className="text-sm font-medium text-[#202124]">{label}</label>
+        <span className="text-sm font-semibold text-[#1C3D2E] w-5 text-center">{value}</span>
       </div>
       <input
         type="range"
@@ -221,10 +221,10 @@ export function Slider({ label, value, onChange, min = 1, max = 5, leftLabel, ri
         step={1}
         value={value}
         onChange={e => onChange(Number(e.target.value))}
-        className="w-full accent-neutral-900"
+        className="w-full accent-[#1C3D2E]"
       />
       {(leftLabel || rightLabel) && (
-        <div className="flex justify-between text-xs text-neutral-400">
+        <div className="flex justify-between text-xs text-[#757575]">
           <span>{leftLabel}</span>
           <span>{rightLabel}</span>
         </div>
@@ -260,15 +260,15 @@ export function TagInput({ label, hint, tags, onChange, placeholder = 'Add tag..
 
   return (
     <div className="space-y-1.5">
-      {label && <label className="block text-sm font-medium text-neutral-700">{label}</label>}
-      <div className="flex flex-wrap gap-1.5 p-2 border border-neutral-200 rounded-md bg-white min-h-[42px] focus-within:ring-2 focus-within:ring-neutral-900 focus-within:border-transparent">
+      {label && <label className="block text-sm font-medium text-[#202124]">{label}</label>}
+      <div className="flex flex-wrap gap-1.5 p-2 border border-[#E0E2E4] rounded-lg bg-white min-h-[42px] focus-within:ring-2 focus-within:ring-[#1C3D2E] focus-within:border-transparent">
         {tags.map(tag => (
-          <span key={tag} className="inline-flex items-center gap-1 text-xs bg-neutral-100 text-neutral-700 px-2 py-1 rounded">
+          <span key={tag} className="inline-flex items-center gap-1 text-xs bg-[#E8F3EF] text-[#1C3D2E] px-2 py-1 rounded-full">
             {tag}
             <button
               type="button"
               onClick={() => onChange(tags.filter(t => t !== tag))}
-              className="text-neutral-400 hover:text-neutral-700"
+              className="text-[#1C3D2E]/60 hover:text-[#1C3D2E]"
             >
               ×
             </button>
@@ -276,12 +276,12 @@ export function TagInput({ label, hint, tags, onChange, placeholder = 'Add tag..
         ))}
         <input
           type="text"
-          className="flex-1 min-w-[120px] text-sm outline-none bg-transparent text-neutral-900 placeholder:text-neutral-400"
+          className="flex-1 min-w-[120px] text-sm outline-none bg-transparent text-[#202124] placeholder:text-neutral-400"
           placeholder={tags.length === 0 ? placeholder : ''}
           onKeyDown={handleKeyDown}
         />
       </div>
-      {hint && <p className="text-xs text-neutral-500">{hint}</p>}
+      {hint && <p className="text-xs text-[#5F6368]">{hint}</p>}
     </div>
   )
 }
@@ -314,7 +314,7 @@ export function ListInput({ label, hint, items, onChange, placeholder, max = 5 }
 
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-neutral-700">{label}</label>
+      <label className="block text-sm font-medium text-[#202124]">{label}</label>
       <div className="space-y-2">
         {items.map((item, i) => (
           <div key={i} className="flex gap-2">
@@ -323,12 +323,12 @@ export function ListInput({ label, hint, items, onChange, placeholder, max = 5 }
               value={item}
               onChange={e => handleChange(i, e.target.value)}
               placeholder={placeholder}
-              className="flex-1 px-3 py-2 text-sm bg-white border border-neutral-200 rounded-md text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+              className="flex-1 px-3 py-2 text-sm bg-white border border-[#E0E2E4] rounded-lg text-[#202124] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#1C3D2E] focus:border-transparent"
             />
             <button
               type="button"
               onClick={() => handleRemove(i)}
-              className="text-neutral-400 hover:text-red-500 transition-colors px-1"
+              className="text-neutral-400 hover:text-[#DB4437] transition-colors px-1"
             >
               ×
             </button>
@@ -339,12 +339,12 @@ export function ListInput({ label, hint, items, onChange, placeholder, max = 5 }
         <button
           type="button"
           onClick={handleAdd}
-          className="text-xs text-neutral-500 hover:text-neutral-900 transition-colors"
+          className="text-xs text-[#5F6368] hover:text-[#1C3D2E] transition-colors"
         >
           + Add another
         </button>
       )}
-      {hint && <p className="text-xs text-neutral-500">{hint}</p>}
+      {hint && <p className="text-xs text-[#5F6368]">{hint}</p>}
     </div>
   )
 }

@@ -7,7 +7,8 @@ import { Plus, Check, LayoutGrid, List, ChevronDown, Eye } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { OnboardingModal } from '@/components/ui/OnboardingModal'
 import { Modal } from '@/components/ui/Modal'
-import type { Persona, Plan } from '@/types'
+import type { Persona, Plan, FunnelStage } from '@/types'
+import { FUNNEL_STAGE_LABELS } from '@/types'
 
 interface PersonasClientProps {
   initialPersonas: Persona[]
@@ -19,12 +20,16 @@ interface PersonasClientProps {
 const FILTER_TABS = ['All Personas', 'Active', 'Archived'] as const
 type FilterTab = typeof FILTER_TABS[number]
 
+const FUNNEL_TABS = ['All Personas', 'awareness', 'consideration', 'purchase', 'loyalty'] as const
+type FunnelTab = typeof FUNNEL_TABS[number]
+
 export default function PersonasClient({ initialPersonas, plan, limit, count }: PersonasClientProps) {
   const [personas, setPersonas] = useState<Persona[]>(initialPersonas)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [archiving, setArchiving] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [filterTab, setFilterTab] = useState<FilterTab>('All Personas')
+  const [funnelTab, setFunnelTab] = useState<FunnelTab>('All Personas')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState('Recently updated')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -131,7 +136,11 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
     ? personas.filter(p => p.archived)
     : personas.filter(p => !p.archived)
 
-  const filtered = sortPersonas(baseFiltered.filter(p =>
+  const funnelFiltered = funnelTab === 'All Personas'
+    ? baseFiltered
+    : baseFiltered.filter(p => (p.funnel_stage ?? 'awareness') === funnelTab)
+
+  const filtered = sortPersonas(funnelFiltered.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     (p.traits?.job_title ?? '').toLowerCase().includes(search.toLowerCase())
   ))
@@ -147,7 +156,13 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   return (
     <>
       <OnboardingModal />
-      <div style={{ background: '#F4F6F8', minHeight: '100%' }}>
+      <div style={{ background: '#F9F9F9', minHeight: '100%' }}>
+
+        {/* ── Page heading ── */}
+        <div className="px-4 sm:px-6 pt-6 pb-1" style={{ background: 'white' }}>
+          <h1 className="font-serif text-3xl tracking-tight" style={{ color: '#202124' }}>Personas</h1>
+          <p className="text-sm mt-1" style={{ color: '#5F6368' }}>Manage the AI personas you interview for research.</p>
+        </div>
 
         {/* ── Topbar ── */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-3.5" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
@@ -165,11 +180,11 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {atLimit ? (
-              <Link href="/settings" className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl flex-1 sm:flex-none" style={{ background: '#E8F5F1', color: '#0D5C45', border: '1px solid #A7D9C8' }}>
+              <Link href="/settings" className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl flex-1 sm:flex-none" style={{ background: '#E8F3EF', color: '#1C3D2E', border: '1px solid #BFD6CB' }}>
                 Upgrade plan
               </Link>
             ) : (
-              <Link href="/personas/new" className="flex items-center justify-center gap-1.5 text-sm font-semibold px-5 py-2.5 rounded-xl text-white flex-1 sm:flex-none" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 8px rgba(26,140,106,0.3)' }}>
+              <Link href="/personas/new" className="flex items-center justify-center gap-1.5 text-sm font-semibold px-5 py-2.5 rounded-xl text-white flex-1 sm:flex-none" style={{ background: '#1C3D2E', boxShadow: '0 2px 8px rgba(28,61,46,0.25)' }}>
                 <Plus size={14} />
                 Create Persona
               </Link>
@@ -190,9 +205,9 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                 }}
                 className="px-4 py-3.5 text-sm transition-all flex-shrink-0"
                 style={{
-                  color: filterTab === tab ? '#0D5C45' : '#9CA3AF',
+                  color: filterTab === tab ? '#1C3D2E' : '#9CA3AF',
                   borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-                  borderBottom: filterTab === tab ? '2px solid #1A8C6A' : '2px solid transparent',
+                  borderBottom: filterTab === tab ? '2px solid #1C3D2E' : '2px solid transparent',
                   cursor: 'pointer', fontFamily: 'inherit',
                   fontWeight: filterTab === tab ? 600 : 500,
                   background: 'none',
@@ -221,10 +236,10 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       key={opt}
                       onClick={() => { setSortBy(opt); setShowSortMenu(false) }}
                       className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
-                      style={{ background: sortBy === opt ? '#E8F5F1' : 'white', color: sortBy === opt ? '#0D5C45' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                      style={{ background: sortBy === opt ? '#E8F3EF' : 'white', color: sortBy === opt ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
                       {opt}
-                      {sortBy === opt && <Check size={13} style={{ color: '#1A8C6A' }} />}
+                      {sortBy === opt && <Check size={13} style={{ color: '#1C3D2E' }} />}
                     </button>
                   ))}
                 </div>
@@ -234,19 +249,46 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               <button
                 onClick={() => setViewMode('grid')}
                 className="px-2.5 py-1.5 transition-colors"
-                style={{ background: viewMode === 'grid' ? '#F3F4F6' : 'white', border: 'none', cursor: 'pointer', color: viewMode === 'grid' ? '#1A8C6A' : '#9CA3AF' }}
+                style={{ background: viewMode === 'grid' ? '#F3F4F6' : 'white', border: 'none', cursor: 'pointer', color: viewMode === 'grid' ? '#1C3D2E' : '#9CA3AF' }}
               >
                 <LayoutGrid size={15} />
               </button>
               <button
                 onClick={() => setViewMode('list')}
                 className="px-2.5 py-1.5 transition-colors"
-                style={{ background: viewMode === 'list' ? '#F3F4F6' : 'white', border: 'none', cursor: 'pointer', color: viewMode === 'list' ? '#1A8C6A' : '#9CA3AF', borderLeft: '1px solid rgba(0,0,0,0.1)' }}
+                style={{ background: viewMode === 'list' ? '#F3F4F6' : 'white', border: 'none', cursor: 'pointer', color: viewMode === 'list' ? '#1C3D2E' : '#9CA3AF', borderLeft: '1px solid rgba(0,0,0,0.1)' }}
               >
                 <List size={15} />
               </button>
             </div>
           </div>
+        </div>
+
+        {/* ── Funnel stage filter pills ── */}
+        <div className="flex items-center gap-2 px-4 sm:px-6 py-3 overflow-x-auto" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+          {FUNNEL_TABS.map(tab => {
+            const isActive = funnelTab === tab
+            const label = tab === 'All Personas' ? 'All Personas' : FUNNEL_STAGE_LABELS[tab as FunnelStage]
+            const tabCount = tab === 'All Personas' ? baseFiltered.length : baseFiltered.filter(p => (p.funnel_stage ?? 'awareness') === tab).length
+            return (
+              <button
+                key={tab}
+                onClick={() => { setFunnelTab(tab); setSelectedId(null) }}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors flex-shrink-0"
+                style={isActive
+                  ? { background: '#1C3D2E', color: 'white', border: '1px solid #1C3D2E' }
+                  : { background: 'white', color: '#5F6368', border: '1px solid #E0E2E4' }}
+              >
+                {label}
+                <span
+                  className="inline-flex items-center justify-center rounded-full text-[10px] font-bold min-w-[18px] h-[18px] px-1"
+                  style={isActive ? { background: 'rgba(255,255,255,0.25)', color: 'white' } : { background: '#E8F3EF', color: '#1C3D2E' }}
+                >
+                  {tabCount}
+                </span>
+              </button>
+            )
+          })}
         </div>
 
         <div className="px-6 py-5">
@@ -260,7 +302,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                 </div>
                 <h3 className="text-sm font-semibold text-neutral-800 mb-1">No personas yet</h3>
                 <p className="text-sm text-neutral-400 mb-5">Create your first persona to start interviewing.</p>
-                <Link href="/personas/new" className="inline-flex items-center gap-1.5 text-white text-sm font-semibold px-5 py-2.5 rounded-xl" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 8px rgba(26,140,106,0.3)' }}>
+                <Link href="/personas/new" className="inline-flex items-center gap-1.5 text-white text-sm font-semibold px-5 py-2.5 rounded-xl" style={{ background: '#1C3D2E', boxShadow: '0 2px 8px rgba(28,61,46,0.25)' }}>
                   <Plus size={14} /> Create Persona
                 </Link>
               </div>
@@ -286,16 +328,16 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     whileHover={!isSelected ? { y: -3 } : undefined}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     style={{
-                      background: 'white',
-                      boxShadow: isSelected ? '0 0 0 2px #1A8C6A, 0 4px 16px rgba(26,140,106,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
-                      border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
+                      background: isSelected ? '#EBEFEF' : 'white',
+                      boxShadow: isSelected ? '0 0 0 2px #1C3D2E, 0 4px 16px rgba(28,61,46,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
+                      border: isSelected ? '1.5px solid #1C3D2E' : '1.5px solid rgba(0,0,0,0.05)',
                       transition: 'box-shadow 0.18s ease, border-color 0.18s ease',
                       borderRadius: 16,
                     }}
                   >
                     {/* Green checkmark when selected */}
                     {isSelected && (
-                      <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#1A8C6A' }}>
+                      <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#1C3D2E' }}>
                         <Check size={12} color="white" strokeWidth={3} />
                       </div>
                     )}
@@ -333,7 +375,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       />
                       <h3 className="text-base font-bold text-neutral-900 mb-0.5 flex items-center gap-1.5">
                         {persona.name}
-                        {isSelected && <Check size={13} style={{ color: '#1A8C6A' }} strokeWidth={3} />}
+                        {isSelected && <Check size={13} style={{ color: '#1C3D2E' }} strokeWidth={3} />}
                       </h3>
                       <p className="text-xs text-neutral-400 mb-3">
                         {persona.traits?.job_title ?? 'No role'}{persona.traits?.location ? ` · ${persona.traits.location}` : ''}
@@ -342,7 +384,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         <div className="flex flex-wrap gap-1.5 justify-center mb-3">
                           {persona.tags.slice(0, 2).map((tag: string, i: number) => (
                             <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1"
-                              style={i === 0 ? { background: '#E8F5F1', color: '#0D5C45' } : { background: '#F3F4F6', color: '#6B7280' }}>
+                              style={i === 0 ? { background: '#E8F3EF', color: '#1C3D2E' } : { background: '#F3F4F6', color: '#6B7280' }}>
                               {i === 0 && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>}
                               {tag}
                             </span>
@@ -359,7 +401,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         href={`/personas/${persona.id}`}
                         onClick={e => e.stopPropagation()}
                         className="flex-1 text-center text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1"
-                        style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}
+                        style={{ background: 'white', border: '1px solid #DADCE0', color: '#202124' }}
                       >
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         View details
@@ -368,10 +410,10 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         href={`/interviews/new?persona_id=${persona.id}`}
                         onClick={e => e.stopPropagation()}
                         className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl text-white"
-                        style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)', boxShadow: '0 2px 6px rgba(26,140,106,0.3)' }}
+                        style={{ background: '#1C3D2E', boxShadow: '0 2px 6px rgba(28,61,46,0.25)' }}
                       >
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        Interview
+                        Start Interview
                       </Link>
                     </div>
 
@@ -417,8 +459,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     style={{
                       background: 'white',
-                      border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
-                      boxShadow: isSelected ? '0 0 0 2px rgba(26,140,106,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
+                      border: isSelected ? '1.5px solid #1C3D2E' : '1.5px solid rgba(0,0,0,0.05)',
+                      boxShadow: isSelected ? '0 0 0 2px rgba(28,61,46,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
                       borderRadius: 16,
                     }}
                   >
@@ -426,13 +468,13 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="text-sm font-semibold text-neutral-900 truncate">{persona.name}</span>
-                        {isSelected && <Check size={12} className="flex-shrink-0" style={{ color: '#1A8C6A' }} strokeWidth={3} />}
+                        {isSelected && <Check size={12} className="flex-shrink-0" style={{ color: '#1C3D2E' }} strokeWidth={3} />}
                       </div>
                       <p className="text-xs text-neutral-400 truncate">{persona.traits?.job_title ?? 'No role'}{persona.traits?.location ? ` · ${persona.traits.location}` : ''}</p>
                     </div>
                     {persona.tags?.slice(0, 2).map((tag: string, i: number) => (
                       <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium hidden sm:block flex-shrink-0"
-                        style={i === 0 ? { background: '#E8F5F1', color: '#0D5C45' } : { background: '#F3F4F6', color: '#6B7280' }}>
+                        style={i === 0 ? { background: '#E8F3EF', color: '#1C3D2E' } : { background: '#F3F4F6', color: '#6B7280' }}>
                         {tag}
                       </span>
                     ))}
@@ -440,8 +482,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       <button onClick={e => { e.stopPropagation(); showPersonaPreview(persona) }} className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-neutral-400 hover:text-neutral-700 transition-colors" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Show preview">
                         <Eye size={13} />
                       </button>
-                      <Link href={`/personas/${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}>View</Link>
-                      <Link href={`/interviews/new?persona_id=${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg text-white flex-shrink-0" style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' }}>Interview</Link>
+                      <Link href={`/personas/${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0" style={{ background: 'white', border: '1px solid #DADCE0', color: '#202124' }}>View</Link>
+                      <Link href={`/interviews/new?persona_id=${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg text-white flex-shrink-0" style={{ background: '#1C3D2E' }}>Start Interview</Link>
                       <button onClick={e => handleArchive(e, persona.id)} className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-amber-500" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Archive">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
                       </button>
@@ -481,14 +523,14 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         style={{
                           background: 'white',
                           opacity: 0.85,
-                          boxShadow: isSelected ? '0 0 0 2px #1A8C6A, 0 4px 16px rgba(26,140,106,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
-                          border: isSelected ? '1.5px solid #1A8C6A' : '1.5px solid rgba(0,0,0,0.05)',
+                          boxShadow: isSelected ? '0 0 0 2px #1C3D2E, 0 4px 16px rgba(28,61,46,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
+                          border: isSelected ? '1.5px solid #1C3D2E' : '1.5px solid rgba(0,0,0,0.05)',
                           borderRadius: 16,
                         }}
                       >
                         {/* Checkmark when selected */}
                         {isSelected && (
-                          <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#1A8C6A' }}>
+                          <div className="absolute top-3 right-3 z-10 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#1C3D2E' }}>
                             <Check size={12} color="white" strokeWidth={3} />
                           </div>
                         )}
@@ -504,7 +546,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           />
                           <h3 className="text-base font-bold text-neutral-700 mb-0.5 flex items-center gap-1.5">
                             {persona.name}
-                            {isSelected && <Check size={13} style={{ color: '#1A8C6A' }} strokeWidth={3} />}
+                            {isSelected && <Check size={13} style={{ color: '#1C3D2E' }} strokeWidth={3} />}
                           </h3>
                           <p className="text-xs text-neutral-400 mb-3">
                             {persona.traits?.job_title ?? 'No role'}{persona.traits?.location ? ` · ${persona.traits.location}` : ''}
@@ -513,7 +555,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                             <div className="flex flex-wrap gap-1.5 justify-center mb-3">
                               {persona.tags.slice(0, 2).map((tag: string, i: number) => (
                                 <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium"
-                                  style={i === 0 ? { background: '#E8F5F1', color: '#0D5C45' } : { background: '#F3F4F6', color: '#6B7280' }}>
+                                  style={i === 0 ? { background: '#E8F3EF', color: '#1C3D2E' } : { background: '#F3F4F6', color: '#6B7280' }}>
                                   {tag}
                                 </span>
                               ))}
@@ -530,7 +572,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           <button
                             onClick={(e) => { e.stopPropagation(); showPersonaPreview(persona) }}
                             className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-neutral-700 transition-colors flex-shrink-0"
-                            style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)' }}
+                            style={{ background: 'white', border: '1px solid #DADCE0' }}
                             title="Show preview"
                           >
                             <Eye size={13} />
@@ -538,7 +580,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           <button
                             onClick={(e) => { e.stopPropagation(); handleRestore(persona.id) }}
                             className="flex-1 text-center text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-1"
-                            style={{ background: '#E8F5F1', color: '#0D5C45', border: '1px solid #A7D9C8' }}
+                            style={{ background: '#E8F3EF', color: '#1C3D2E', border: '1px solid #BFD6CB' }}
                           >
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.54"/></svg>
                             Restore
@@ -547,7 +589,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                             onClick={(e) => handleDelete(e, persona.id)}
                             disabled={deleting === persona.id}
                             className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-red-500 transition-colors flex-shrink-0"
-                            style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)' }}
+                            style={{ background: 'white', border: '1px solid #DADCE0' }}
                             title="Delete permanently"
                           >
                             {deleting === persona.id
@@ -634,8 +676,8 @@ function PersonaModalBody({ persona }: { persona: Persona }) {
             onClick={() => setActiveTab(tab)}
             className="px-3 py-2 text-xs font-semibold transition-colors flex-shrink-0"
             style={{
-              color: activeTab === tab ? '#0D5C45' : '#9CA3AF',
-              borderBottom: activeTab === tab ? '2px solid #1A8C6A' : '2px solid transparent',
+              color: activeTab === tab ? '#1C3D2E' : '#9CA3AF',
+              borderBottom: activeTab === tab ? '2px solid #1C3D2E' : '2px solid transparent',
               background: 'none', border: 'none', borderBottomWidth: '2px', cursor: 'pointer', fontFamily: 'inherit',
             }}
           >
@@ -671,7 +713,7 @@ function PersonaModalBody({ persona }: { persona: Persona }) {
           <ul className="space-y-2">
             {(t?.goals ?? []).filter(Boolean).map((g, i) => (
               <li key={i} className="text-sm text-neutral-700 leading-relaxed flex gap-2">
-                <span style={{ color: '#1A8C6A' }}>•</span>{g}
+                <span style={{ color: '#1C3D2E' }}>•</span>{g}
               </li>
             ))}
             {(t?.goals ?? []).filter(Boolean).length === 0 && <p className="text-sm text-neutral-400">No goals defined.</p>}
@@ -681,7 +723,7 @@ function PersonaModalBody({ persona }: { persona: Persona }) {
           <ul className="space-y-2">
             {(t?.frustrations ?? []).filter(Boolean).map((f, i) => (
               <li key={i} className="text-sm text-neutral-700 leading-relaxed flex gap-2">
-                <span style={{ color: '#EF4444' }}>•</span>{f}
+                <span style={{ color: '#DB4437' }}>•</span>{f}
               </li>
             ))}
             {(t?.frustrations ?? []).filter(Boolean).length === 0 && <p className="text-sm text-neutral-400">No frustrations defined.</p>}
@@ -700,16 +742,16 @@ function PersonaModalBody({ persona }: { persona: Persona }) {
         <Link
           href={`/personas/${persona.id}`}
           className="flex-1 text-center text-sm font-semibold py-2.5 rounded-xl"
-          style={{ background: 'white', border: '1px solid rgba(0,0,0,0.12)', color: '#374151' }}
+          style={{ background: 'white', border: '1px solid #DADCE0', color: '#202124' }}
         >
           View full profile
         </Link>
         <Link
           href={`/interviews/new?persona_id=${persona.id}`}
           className="flex-1 text-center text-sm font-semibold py-2.5 rounded-xl text-white"
-          style={{ background: 'linear-gradient(135deg, #1A8C6A 0%, #2BAE86 100%)' }}
+          style={{ background: '#1C3D2E' }}
         >
-          Interview this persona
+          Start Interview
         </Link>
       </div>
     </div>
@@ -725,7 +767,7 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
         <span className="text-neutral-700 font-medium">{value}/5</span>
       </div>
       <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#F3F4F6' }}>
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#1A9B76' }} />
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#1C3D2E' }} />
       </div>
     </div>
   )
