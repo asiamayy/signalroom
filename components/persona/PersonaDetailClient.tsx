@@ -1,13 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronRight, Sparkles, Loader2, Quote, Database, Activity } from 'lucide-react'
+import {
+  ChevronRight, Sparkles, Loader2, Quote, Database, Activity, Share2, MoreHorizontal,
+  BadgeCheck, Briefcase, MapPin, User, Target, AlertTriangle, ShoppingCart, Tag as TagIcon,
+  Bookmark, Archive, Trash2, Check,
+} from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import type { Persona, Interview, Journey } from '@/types'
 
-const TABS = ['Overview', 'Journeys', 'Insights', 'Quotes', 'Data', 'Activity'] as const
+const TABS = ['Overview', 'Insights', 'Journeys', 'Quotes', 'Data', 'Activity'] as const
 type Tab = typeof TABS[number]
 
 const incomeMap: Record<string, string> = {
@@ -30,154 +35,246 @@ interface PersonaDetailClientProps {
 }
 
 export function PersonaDetailClient({ persona, interviews }: PersonaDetailClientProps) {
+  const router = useRouter()
   const [tab, setTab] = useState<Tab>('Overview')
+  const [journeys, setJourneys] = useState<Journey[] | null>(null)
+  const [saved, setSaved] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [archiving, setArchiving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
   const t = persona.traits
 
-  const pills = [
-    t?.location,
-    t?.age ? `Age ${t.age}` : null,
-    t?.income ? incomeMap[t.income] : null,
-    t?.education ? educationMap[t.education] : null,
-  ].filter(Boolean) as string[]
+  useEffect(() => {
+    fetch(`/api/personas/${persona.id}/journeys`)
+      .then(r => r.json())
+      .then(json => setJourneys(json.data ?? []))
+      .catch(() => setJourneys([]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persona.id])
+
+  useEffect(() => {
+    if (!showMoreMenu) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) setShowMoreMenu(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showMoreMenu])
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {}
+  }
+
+  const handleArchive = async () => {
+    setArchiving(true)
+    try {
+      const res = await fetch('/api/personas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: persona.id, action: 'archive' }),
+      })
+      if (res.ok) { router.push('/personas'); router.refresh() }
+    } finally {
+      setArchiving(false)
+      setShowMoreMenu(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Permanently delete this persona? This cannot be undone.')) return
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/personas', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: persona.id }),
+      })
+      if (res.ok) { router.push('/personas'); router.refresh() }
+    } finally {
+      setDeleting(false)
+      setShowMoreMenu(false)
+    }
+  }
+
+  const pills = persona.tags ?? []
 
   return (
     <div style={{ background: '#F9F9F9', minHeight: '100%' }}>
 
-      {/* ── Hero banner ── */}
-      <div className="p-4 sm:p-6 pb-0">
-        <div className="rounded-2xl overflow-hidden relative" style={{ background: 'linear-gradient(115deg, #1C3D2E 0%, #6E8A7D 55%, #D1E2DB 100%)' }}>
+      {/* ── Breadcrumb + top actions ── */}
+      <div className="flex items-center justify-between gap-3 flex-wrap px-4 sm:px-6 pt-5 pb-3">
+        <div className="flex items-center gap-1.5 text-sm min-w-0" style={{ color: '#9CA3AF' }}>
+          <Link href="/personas" className="hover:underline" style={{ color: '#9CA3AF' }}>Personas</Link>
+          <ChevronRight size={13} />
+          <Link href="/personas" className="hover:underline" style={{ color: '#9CA3AF' }}>All personas</Link>
+          <ChevronRight size={13} />
+          <span className="truncate" style={{ color: '#202124' }}>{persona.name}</span>
+        </div>
 
-          {/* Wave SVG */}
-          <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 800 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0,80 C200,160 400,0 600,100 C750,170 850,60 800,80 L800,220 L0,220Z" fill="white"/>
-            <path d="M0,130 C150,60 350,190 550,110 C700,50 800,140 800,100 L800,220 L0,220Z" fill="white" opacity="0.5"/>
-          </svg>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={handleShare}
+            className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+            style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            {copied ? 'Copied!' : 'Share'}
+          </button>
 
-          {/* Top right: Start interview + stat cards — desktop only, absolute positioned */}
-          <div className="hidden md:flex absolute top-5 right-6 z-20 flex-col items-end gap-3">
-            <Link
-              href={`/interviews/new?persona_id=${persona.id}`}
-              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg"
-              style={{ background: 'rgba(255,255,255,0.95)', color: '#1C3D2E', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              onClick={() => setShowMoreMenu(o => !o)}
+              className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
+              style={{ background: 'white', border: '1px solid #E0E2E4', color: '#5F6368', cursor: 'pointer' }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              Start Interview
-            </Link>
-            <div className="flex gap-2">
-              <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                <div className="text-lg font-bold text-white leading-none">{interviews?.length ?? 0}</div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Interviews</div>
+              <MoreHorizontal size={16} />
+            </button>
+            {showMoreMenu && (
+              <div className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '180px' }}>
+                <button
+                  onClick={handleArchive}
+                  disabled={archiving}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: '#202124' }}
+                >
+                  <Archive size={14} />
+                  {archiving ? 'Archiving…' : 'Archive persona'}
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: '#DB4437' }}
+                >
+                  <Trash2 size={14} />
+                  {deleting ? 'Deleting…' : 'Delete persona'}
+                </button>
               </div>
-              <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                <div className="text-lg font-bold text-white leading-none">
-                  {interviews && interviews.length > 0
-                    ? new Date(interviews[0].created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                    : 'Never'}
-                </div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Last active</div>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Main hero content */}
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 px-5 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-7 md:pr-[260px]">
-            <div className="flex-shrink-0" style={{ border: '3px solid rgba(255,255,255,0.4)', borderRadius: '50%', boxShadow: '0 6px 20px rgba(0,0,0,0.2)' }}>
+          <Link
+            href={`/interviews/new?persona_id=${persona.id}`}
+            className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg text-white"
+            style={{ background: '#1C3D2E' }}
+          >
+            Start Interview
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Hero ── */}
+      <div className="px-4 sm:px-6 pb-2">
+        <div className="rounded-2xl overflow-hidden relative p-5 sm:p-7" style={{ background: 'linear-gradient(135deg, #F3F5F1 0%, #EAEFE9 100%)', border: '1px solid #E5E9E4' }}>
+
+          {/* Soft abstract blobs */}
+          <div className="absolute rounded-full pointer-events-none" style={{ width: 260, height: 260, right: -60, top: -80, background: 'radial-gradient(circle, rgba(110,138,125,0.18) 0%, rgba(110,138,125,0) 70%)' }} />
+          <div className="absolute rounded-full pointer-events-none" style={{ width: 200, height: 200, right: 120, bottom: -80, background: 'radial-gradient(circle, rgba(28,61,46,0.10) 0%, rgba(28,61,46,0) 70%)' }} />
+
+          <div className="relative z-10 flex flex-col sm:flex-row items-start gap-5 sm:gap-6 md:pr-64">
+            <div className="relative flex-shrink-0">
               <PersonaAvatar
                 avatarUrl={persona.avatar_url}
                 avatarInitials={persona.avatar_initials}
                 avatarColor={persona.avatar_color}
                 name={persona.name}
                 size="xl"
+                className="shadow-md"
               />
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#1C3D2E', border: '2px solid #F3F5F1' }}>
+                <Check size={11} color="white" strokeWidth={3} />
+              </div>
             </div>
+
             <div className="flex-1 min-w-0 w-full">
-              <h1 className="font-serif text-2xl sm:text-3xl text-white tracking-tight mb-1" style={{ letterSpacing: '-0.5px' }}>
-                {persona.name}
-              </h1>
-              <p className="text-sm mb-3" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                {t?.job_title}{t?.industry ? ` · ${t.industry}` : ''}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {pills.map((val, i) => (
-                  <span key={i} className="text-xs px-3 py-1 rounded-full font-medium text-white" style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                    {val}
-                  </span>
-                ))}
+              <div className="flex items-center gap-2 mb-1.5">
+                <h1 className="font-serif text-2xl sm:text-3xl tracking-tight" style={{ color: '#202124' }}>{persona.name}</h1>
+                <BadgeCheck size={20} style={{ color: '#1C3D2E' }} />
               </div>
-            </div>
-          </div>
-
-          {/* Mobile: Start interview + stat cards inline below content */}
-          <div className="md:hidden relative z-10 flex flex-col gap-3 px-5 pb-5">
-            <Link
-              href={`/interviews/new?persona_id=${persona.id}`}
-              className="flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl w-full"
-              style={{ background: 'rgba(255,255,255,0.95)', color: '#1C3D2E', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              Start Interview
-            </Link>
-            <div className="flex gap-2">
-              <div className="flex-1 text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                <div className="text-lg font-bold text-white leading-none">{interviews?.length ?? 0}</div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Interviews</div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm mb-3" style={{ color: '#5F6368' }}>
+                {t?.job_title && <span className="flex items-center gap-1.5"><Briefcase size={13} />{t.job_title}</span>}
+                {t?.location && <span className="flex items-center gap-1.5"><MapPin size={13} />{t.location}</span>}
+                {t?.age && <span className="flex items-center gap-1.5"><User size={13} />{t.age} years</span>}
               </div>
-              <div className="flex-1 text-center px-4 py-2.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
-                <div className="text-lg font-bold text-white leading-none">
-                  {interviews && interviews.length > 0
-                    ? new Date(interviews[0].created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                    : 'Never'}
+              {pills.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {pills.map(tag => (
+                    <span key={tag} className="text-xs px-3 py-1 rounded-full font-medium" style={{ background: 'white', color: '#4B5563', border: '1px solid #E0E2E4' }}>
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.65)' }}>Last active</div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Score bars */}
-          <div className="relative z-10 flex flex-wrap gap-6 sm:gap-10 px-5 sm:px-8 py-4 sm:py-5" style={{ background: 'rgba(0,0,0,0.15)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <div>
-              <p className="text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Tech savviness</p>
-              <div className="flex items-center gap-1">
-                {[1,2,3,4,5].map(n => (
-                  <div key={n} className="w-5 h-1 rounded-full" style={{ background: n <= (t?.tech_savviness ?? 0) ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)' }} />
-                ))}
-                <span className="text-xs font-semibold ml-2" style={{ color: 'rgba(255,255,255,0.8)' }}>{t?.tech_savviness ?? 0}/5</span>
+          {/* Stat box — desktop, top-right */}
+          <div className="hidden md:block absolute top-6 right-6 z-20 rounded-2xl p-4" style={{ background: 'white', border: '1px solid #E0E2E4', minWidth: '220px' }}>
+            <div className="grid grid-cols-2 gap-4 mb-3">
+              <div>
+                <div className="text-xl font-bold leading-none" style={{ color: '#202124' }}>{interviews?.length ?? 0}</div>
+                <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Interviews</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold leading-none" style={{ color: '#202124' }}>{journeys?.length ?? 0}</div>
+                <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Journeys</div>
               </div>
             </div>
-            <div>
-              <p className="text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Risk tolerance</p>
-              <div className="flex items-center gap-1">
-                {[1,2,3,4,5].map(n => (
-                  <div key={n} className="w-5 h-1 rounded-full" style={{ background: n <= (t?.risk_tolerance ?? 0) ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.2)' }} />
-                ))}
-                <span className="text-xs font-semibold ml-2" style={{ color: 'rgba(255,255,255,0.8)' }}>{t?.risk_tolerance ?? 0}/5</span>
-              </div>
+            <p className="text-[11px] pt-3" style={{ color: '#9CA3AF', borderTop: '1px solid #F1F1F1' }}>
+              Last updated {new Date(persona.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            </p>
+          </div>
+
+          {/* Stat row — mobile */}
+          <div className="md:hidden relative z-10 flex gap-3 mt-5">
+            <div className="flex-1 text-center rounded-xl p-3" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
+              <div className="text-lg font-bold leading-none" style={{ color: '#202124' }}>{interviews?.length ?? 0}</div>
+              <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Interviews</div>
+            </div>
+            <div className="flex-1 text-center rounded-xl p-3" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
+              <div className="text-lg font-bold leading-none" style={{ color: '#202124' }}>{journeys?.length ?? 0}</div>
+              <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Journeys</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Tabs ── */}
-      <div className="flex gap-1 px-4 sm:px-6 mt-5 overflow-x-auto" style={{ borderBottom: '1px solid #E0E2E4' }}>
-        {TABS.map(tabName => (
-          <button
-            key={tabName}
-            onClick={() => setTab(tabName)}
-            className="px-4 py-2.5 text-sm font-semibold transition-colors flex-shrink-0"
-            style={{
-              color: tab === tabName ? '#1C3D2E' : '#757575',
-              borderBottom: tab === tabName ? '2px solid #1C3D2E' : '2px solid transparent',
-              background: 'none', border: 'none', borderBottomWidth: '2px', cursor: 'pointer', fontFamily: 'inherit',
-            }}
-          >
-            {tabName}
-          </button>
-        ))}
+      {/* ── Tabs + Save persona ── */}
+      <div className="flex items-center justify-between gap-3 px-4 sm:px-6 overflow-x-auto" style={{ borderBottom: '1px solid #E0E2E4' }}>
+        <div className="flex gap-1">
+          {TABS.map(tabName => (
+            <button
+              key={tabName}
+              onClick={() => setTab(tabName)}
+              className="px-4 py-2.5 text-sm font-semibold transition-colors flex-shrink-0"
+              style={{
+                color: tab === tabName ? '#1C3D2E' : '#757575',
+                borderBottom: tab === tabName ? '2px solid #1C3D2E' : '2px solid transparent',
+                background: 'none', border: 'none', borderBottomWidth: '2px', cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              {tabName}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => setSaved(s => !s)}
+          className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-lg transition-colors flex-shrink-0 my-2"
+          style={{ background: 'white', border: '1px solid #E0E2E4', color: saved ? '#1C3D2E' : '#5F6368', cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          <Bookmark size={13} fill={saved ? '#1C3D2E' : 'none'} />
+          {saved ? 'Saved' : 'Save persona'}
+        </button>
       </div>
 
       {/* ── Tab content ── */}
       {tab === 'Overview' && <OverviewTab persona={persona} interviews={interviews} />}
-      {tab === 'Journeys' && <JourneysTab persona={persona} />}
+      {tab === 'Journeys' && <JourneysTab persona={persona} journeys={journeys} setJourneys={setJourneys} />}
       {tab === 'Insights' && <PlaceholderTab icon={Sparkles} title="Insights" description="Cross-interview insights for this persona will appear here once available." />}
       {tab === 'Quotes' && <PlaceholderTab icon={Quote} title="Quotes" description="Notable quotes pulled from this persona's interviews will appear here." />}
       {tab === 'Data' && <PlaceholderTab icon={Database} title="Data" description="Structured data exports for this persona will appear here." />}
@@ -188,38 +285,35 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
 
 // ─── Overview tab (existing real data, unchanged content) ───────────────────
 
+function CardHeader({ icon: Icon, title }: { icon: typeof User; title: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <Icon size={15} style={{ color: '#1C3D2E' }} />
+      <h2 className="text-sm font-bold" style={{ color: '#3C4043' }}>{title}</h2>
+    </div>
+  )
+}
+
 function OverviewTab({ persona, interviews }: { persona: Persona; interviews: Interview[] }) {
   const t = persona.traits
 
   return (
     <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-      <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-        <h2 className="text-sm font-bold mb-4" style={{ color: '#3C4043' }}>Demographics</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: 'Age', value: t?.age },
-            { label: 'Gender', value: t?.gender },
-            { label: 'Location', value: t?.location },
-            { label: 'Education', value: t?.education ? educationMap[t.education] : null },
-            { label: 'Income', value: t?.income ? incomeMap[t.income] : null },
-            { label: 'Industry', value: t?.industry },
-          ].filter(item => item.value).map(({ label, value }) => (
-            <div key={label}>
-              <dt className="text-xs mb-0.5 font-medium" style={{ color: '#9CA3AF' }}>{label}</dt>
-              <dd className="text-sm font-medium" style={{ color: '#202124' }}>{value}</dd>
-            </div>
-          ))}
+      {t?.additional_context && (
+        <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
+          <CardHeader icon={User} title="About" />
+          <p className="text-sm leading-relaxed" style={{ color: '#5F6368' }}>{t.additional_context}</p>
         </div>
-      </div>
+      )}
 
       {t?.goals?.filter(Boolean).length > 0 && (
         <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-          <h2 className="text-sm font-bold mb-4" style={{ color: '#3C4043' }}>Goals</h2>
+          <CardHeader icon={Target} title="Goals" />
           <ul className="space-y-2.5">
             {t.goals.filter(Boolean).map((g: string, i: number) => (
               <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#5F6368' }}>
-                <span className="flex-shrink-0 mt-0.5" style={{ color: '#1C3D2E' }}>→</span>
+                <span className="flex-shrink-0 mt-0.5" style={{ color: '#1C3D2E' }}>✓</span>
                 {g}
               </li>
             ))}
@@ -229,11 +323,11 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
 
       {t?.frustrations?.filter(Boolean).length > 0 && (
         <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-          <h2 className="text-sm font-bold mb-4" style={{ color: '#3C4043' }}>Frustrations</h2>
+          <CardHeader icon={AlertTriangle} title="Frustrations" />
           <ul className="space-y-2.5">
             {t.frustrations.filter(Boolean).map((f: string, i: number) => (
               <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#5F6368' }}>
-                <span className="flex-shrink-0 mt-0.5" style={{ color: '#DB4437' }}>→</span>
+                <span className="flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{ background: '#DB4437' }} />
                 {f}
               </li>
             ))}
@@ -241,16 +335,40 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
         </div>
       )}
 
+      <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
+        <CardHeader icon={MapPin} title="Demographics" />
+        <div className="space-y-2.5">
+          {[
+            { label: 'Age', value: t?.age },
+            { label: 'Location', value: t?.location },
+            { label: 'Gender', value: t?.gender },
+            { label: 'Education', value: t?.education ? educationMap[t.education] : null },
+            { label: 'Income', value: t?.income ? incomeMap[t.income] : null },
+            { label: 'Industry', value: t?.industry },
+            { label: 'Tech savviness', value: t?.tech_savviness ? `${t.tech_savviness}/5` : null },
+            { label: 'Risk tolerance', value: t?.risk_tolerance ? `${t.risk_tolerance}/5` : null },
+          ].filter(item => item.value).map(({ label, value }) => (
+            <div key={label} className="flex items-center justify-between text-sm">
+              <dt style={{ color: '#9CA3AF' }}>{label}</dt>
+              <dd className="font-medium" style={{ color: '#202124' }}>{value}</dd>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {t?.buying_behavior && (
-        <div className="md:col-span-2 rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-          <h2 className="text-sm font-bold mb-3" style={{ color: '#3C4043' }}>Buying Behavior</h2>
+        <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
+          <CardHeader icon={ShoppingCart} title="Buying Behavior" />
           <p className="text-sm leading-relaxed" style={{ color: '#5F6368' }}>{t.buying_behavior}</p>
         </div>
       )}
 
       <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold" style={{ color: '#3C4043' }}>Interviews</h2>
+          <div className="flex items-center gap-2">
+            <Briefcase size={15} style={{ color: '#1C3D2E' }} />
+            <h2 className="text-sm font-bold" style={{ color: '#3C4043' }}>Interviews</h2>
+          </div>
           <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#E8F3EF', color: '#1C3D2E' }}>
             {interviews?.length ?? 0}
           </span>
@@ -277,10 +395,14 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
         )}
       </div>
 
-      {t?.additional_context && (
-        <div className="md:col-span-2 rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-          <h2 className="text-sm font-bold mb-3" style={{ color: '#3C4043' }}>Additional Context</h2>
-          <p className="text-sm leading-relaxed" style={{ color: '#5F6368' }}>{t.additional_context}</p>
+      {persona.tags && persona.tags.length > 0 && (
+        <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
+          <CardHeader icon={TagIcon} title="Tags" />
+          <div className="flex flex-wrap gap-1.5">
+            {persona.tags.map(tag => (
+              <span key={tag} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#F1F1F1', color: '#4B5563' }}>{tag}</span>
+            ))}
+          </div>
         </div>
       )}
 
@@ -290,25 +412,15 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
 
 // ─── Journeys tab ─────────────────────────────────────────────────────────────
 
-function JourneysTab({ persona }: { persona: Persona }) {
-  const [journeys, setJourneys] = useState<Journey[] | null>(null)
-  const [loading, setLoading] = useState(true)
+function JourneysTab({ persona, journeys, setJourneys }: { persona: Persona; journeys: Journey[] | null; setJourneys: (fn: (prev: Journey[] | null) => Journey[] | null) => void }) {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
   const [activeJourneyId, setActiveJourneyId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch(`/api/personas/${persona.id}/journeys`)
-      .then(r => r.json())
-      .then(json => {
-        const data: Journey[] = json.data ?? []
-        setJourneys(data)
-        setActiveJourneyId(data[0]?.id ?? null)
-      })
-      .catch(() => setJourneys([]))
-      .finally(() => setLoading(false))
+    if (journeys && journeys.length > 0 && !activeJourneyId) setActiveJourneyId(journeys[0].id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persona.id])
+  }, [journeys])
 
   const handleGenerate = async () => {
     setGenerating(true)
@@ -356,9 +468,9 @@ function JourneysTab({ persona }: { persona: Persona }) {
         </p>
       )}
 
-      {loading ? (
+      {journeys === null ? (
         <p className="text-sm" style={{ color: '#5F6368' }}>Loading…</p>
-      ) : !journeys || journeys.length === 0 ? (
+      ) : journeys.length === 0 ? (
         <div className="flex items-center justify-center rounded-2xl py-16" style={{ background: 'white', border: '1px dashed #E0E2E4' }}>
           <div className="text-center max-w-sm">
             <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: '#E8F3EF' }}>
@@ -398,7 +510,6 @@ function JourneyTimeline({ journey }: { journey: Journey }) {
     if (score <= -3) return { bg: '#FEF2F1', text: '#DB4437' }
     if (score < 0) return { bg: '#FDF6E3', text: '#B45309' }
     if (score === 0) return { bg: '#F3F4F6', text: '#5F6368' }
-    if (score < 3) return { bg: '#E8F3EF', text: '#1C3D2E' }
     return { bg: '#E8F3EF', text: '#1C3D2E' }
   }
 

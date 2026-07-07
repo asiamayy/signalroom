@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   Home, Briefcase, Users, MessageSquare, FileText, Settings, GitCompare, Menu, X,
-  BarChart3, Activity, Lightbulb, LogOut, Search, HelpCircle, ChevronDown, Plus,
+  BarChart3, Activity, Users2, LogOut, Search, HelpCircle, ChevronDown, Plus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
@@ -18,9 +18,9 @@ const NAV_ITEMS = [
   { href: '/personas', label: 'Personas', icon: Users },
   { href: '/interviews', label: 'Interviews', icon: MessageSquare },
   { href: '/compare', label: 'Compare', icon: GitCompare },
-  { href: '/audience-panel', label: 'Audience Panel', icon: BarChart3 },
-  { href: '/signals', label: 'Signals', icon: Activity },
-  { href: '/insights', label: 'Insights', icon: Lightbulb },
+  { href: '/audience-panel', label: 'Audience Panel', icon: Users2 },
+  { href: '/signals', label: 'Signals', icon: BarChart3 },
+  { href: '/insights', label: 'Insights', icon: Activity },
   { href: '/reports', label: 'Reports', icon: FileText },
 ]
 
@@ -29,6 +29,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [fullName, setFullName] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [plan, setPlan] = useState<string | null>(null)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
@@ -42,10 +44,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (data.user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name')
+          .select('full_name, avatar_url, plan')
           .eq('id', data.user.id)
           .single()
         setFullName(profile?.full_name ?? null)
+        setAvatarUrl(profile?.avatar_url ?? null)
+        setPlan(profile?.plan ?? null)
       }
     })
   }, [])
@@ -93,12 +97,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const SidebarContent = (
     <>
       {/* Logo */}
-      <div className="px-4 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
-        <Logo href="/personas" size="md" />
+      <div className="px-5 py-5 flex items-start justify-between" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        <div>
+          <Logo href="/personas" size="sm" />
+          <p className="text-[11px] font-semibold tracking-wide mt-0.5" style={{ color: '#9CA3AF' }}>AI Market Research</p>
+        </div>
         {/* Close button - mobile only */}
         <button
           onClick={() => setMobileNavOpen(false)}
-          className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:bg-neutral-100"
+          className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:bg-neutral-100 flex-shrink-0"
           style={{ background: 'none', border: 'none', cursor: 'pointer' }}
         >
           <X size={18} />
@@ -154,10 +161,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="px-3 pb-4 pt-2" style={{ borderTop: '1px solid rgba(0,0,0,0.07)' }}>
         <Link
           href="/projects"
-          className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold px-3 py-2.5 rounded-lg transition-colors"
+          className="w-full flex items-center gap-2 text-sm font-semibold px-3.5 py-2.5 rounded-lg transition-colors"
           style={{ background: '#FFFFFF', border: '1px solid #DADCE0', color: '#202124' }}
         >
-          <Plus size={14} />
+          <Plus size={15} />
           New Project
         </Link>
       </div>
@@ -165,7 +172,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#F9F9F9' }}>
+    <div className="dashboard-shell flex h-screen overflow-hidden" style={{ background: '#F9F9F9' }}>
 
       {/* Desktop sidebar — always visible at md+ */}
       <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
@@ -206,8 +213,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* Search */}
-          <div className="hidden md:flex items-center gap-2 rounded-xl px-3 py-2 flex-1 max-w-xl" style={{ background: '#F9F9F9', border: '1px solid #E0E2E4' }}>
-            <Search size={15} style={{ color: '#9CA3AF' }} />
+          <div className="hidden md:flex items-center gap-2.5 rounded-full px-4 py-2.5 flex-1 max-w-2xl" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
+            <Search size={16} style={{ color: '#9CA3AF' }} />
             <input
               type="text"
               value={search}
@@ -243,14 +250,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="relative" ref={accountMenuRef}>
               <button
                 onClick={() => setShowAccountMenu(o => !o)}
-                className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full transition-colors hover:bg-neutral-50"
+                className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-full transition-colors hover:bg-neutral-50"
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
               >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: '#1C3D2E' }}>
-                  {initials}
-                </div>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={fullName ?? 'Account'} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: '#1C3D2E' }}>
+                    {initials}
+                  </div>
+                )}
                 <div className="hidden sm:block text-left">
-                  <div className="text-xs font-semibold truncate max-w-[120px]" style={{ color: '#202124' }}>{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</div>
+                  <div className="text-sm font-semibold leading-tight truncate max-w-[140px]" style={{ color: '#202124' }}>{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</div>
+                  {plan && <div className="text-xs leading-tight truncate max-w-[140px]" style={{ color: '#9CA3AF' }}>{plan.charAt(0).toUpperCase() + plan.slice(1)} plan</div>}
                 </div>
                 <ChevronDown size={13} style={{ color: '#9CA3AF' }} className={cn('transition-transform duration-200 hidden sm:block', showAccountMenu ? 'rotate-180' : '')} />
               </button>

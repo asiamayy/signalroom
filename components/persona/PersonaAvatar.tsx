@@ -6,6 +6,7 @@ interface PersonaAvatarProps {
   avatarColor?: { bg: string; text: string } | string | null
   name?: string
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  shape?: 'circle' | 'square'
   className?: string
 }
 
@@ -23,6 +24,7 @@ export function PersonaAvatar({
   avatarColor,
   name,
   size = 'md',
+  shape = 'circle',
   className,
 }: PersonaAvatarProps) {
   const color = typeof avatarColor === 'string'
@@ -30,20 +32,21 @@ export function PersonaAvatar({
     : avatarColor ?? { bg: '#E1F5EE', text: '#0F6E56' }
 
   const sizeClass = SIZES[size]
+  const shapeClass = shape === 'square' ? 'rounded-xl' : 'rounded-full'
 
   if (avatarUrl) {
     return (
       <img
         src={avatarUrl}
         alt={name ?? 'Persona avatar'}
-        className={cn('rounded-full object-cover flex-shrink-0', sizeClass, className)}
+        className={cn(shapeClass, 'object-cover flex-shrink-0', sizeClass, className)}
       />
     )
   }
 
   return (
     <div
-      className={cn('rounded-full flex items-center justify-center font-medium flex-shrink-0', sizeClass, className)}
+      className={cn(shapeClass, 'flex items-center justify-center font-medium flex-shrink-0', sizeClass, className)}
       style={{ background: color.bg, color: color.text }}
     >
       {avatarInitials ?? '?'}

@@ -2,17 +2,28 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Sparkles, ChevronRight, ChevronLeft, User, Briefcase, Brain, Check, Camera, Loader2 } from 'lucide-react'
-import { Button, Input, Textarea, Select, Slider, TagInput, ListInput, Card } from '@/components/ui'
-import { cn, getAvatarColor, getInitials } from '@/lib/utils'
+import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Camera, Loader2, Check } from 'lucide-react'
+import { Button, Input, Textarea, Select, Slider, TagInput, ListInput } from '@/components/ui'
 import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation } from '@/types'
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
 
 const STEPS = [
-  { id: 'identity', label: 'Identity', icon: User },
-  { id: 'professional', label: 'Professional', icon: Briefcase },
-  { id: 'psychology', label: 'Psychology', icon: Brain },
+  { id: 'identity', label: 'Identity', sublabel: 'Who is this person?' },
+  { id: 'professional', label: 'Professional', sublabel: 'Work and context' },
+  { id: 'psychology', label: 'Psychology', sublabel: 'Mindset and motivators' },
+]
+
+const STEP_CARD_COPY = [
+  { title: "Let's start with the basics", subtitle: 'The identity details that make this persona feel like a real person.' },
+  { title: 'Now, the professional details', subtitle: "Their work, goals, and what's standing in the way." },
+  { title: 'Finally, their mindset', subtitle: 'How they think, decide, and approach risk.' },
+]
+
+const EXAMPLE_PROMPTS = [
+  'A busy startup product manager',
+  'A freelance developer focused on growth',
+  'A B2B marketer in a scale-up',
 ]
 
 // ─── Default state ────────────────────────────────────────────────────────────
@@ -66,18 +77,16 @@ export default function PersonaBuilder() {
   const [traits, setTraits] = useState<PersonaTraits>(DEFAULT_TRAITS)
   const [aiPrompt, setAiPrompt] = useState('')
   const [generating, setGenerating] = useState(false)
+  const [aiPanelOpen, setAiPanelOpen] = useState(true)
   const [generatingAvatar, setGeneratingAvatar] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const avatarColor = getAvatarColor(name || 'A')
-  const initials = name ? getInitials(name) : '?'
-
   // ─── AI generation ──────────────────────────────────────────────────────────
 
-  const handleGenerate = async () => {
-    if (!aiPrompt.trim()) return
+  const runGenerate = async (description: string) => {
+    if (!description.trim()) return
     setGenerating(true)
     setError('')
 
@@ -85,7 +94,7 @@ export default function PersonaBuilder() {
       const res = await fetch('/api/personas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ generate: true, description: aiPrompt }),
+        body: JSON.stringify({ generate: true, description }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
@@ -113,6 +122,13 @@ export default function PersonaBuilder() {
     } finally {
       setGenerating(false)
     }
+  }
+
+  const handleGenerate = () => runGenerate(aiPrompt)
+  const handleSurpriseMe = () => {
+    const pick = EXAMPLE_PROMPTS[Math.floor(Math.random() * EXAMPLE_PROMPTS.length)]
+    setAiPrompt(pick)
+    runGenerate(pick)
   }
 
   // ─── Avatar generation ───────────────────────────────────────────────────────
@@ -163,8 +179,6 @@ export default function PersonaBuilder() {
     setStep(s => s + 1)
   }
 
-
-
   const handleSave = async () => {
     if (!name.trim()) {
       setError('Please enter a name for this persona')
@@ -202,262 +216,314 @@ export default function PersonaBuilder() {
     setTraits(prev => ({ ...prev, [key]: value }))
   }
 
+  const cardCopy = STEP_CARD_COPY[step]
+
   return (
-    <div className="min-h-screen p-8 max-w-2xl" style={{ background: '#F9F9F9' }}>
+    <div className="min-h-screen p-6 sm:p-8 max-w-6xl mx-auto" style={{ background: '#F9F9F9' }}>
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-serif tracking-tight" style={{ color: '#202124' }}>New persona</h1>
-        <p className="text-sm mt-0.5" style={{ color: '#5F6368' }}>Define who you want to interview</p>
+        <h1 className="text-3xl sm:text-4xl font-serif tracking-tight" style={{ color: '#202124' }}>New Persona</h1>
+        <p className="text-sm mt-1" style={{ color: '#5F6368' }}>Build a realistic, research-backed persona with AI assistance.</p>
       </div>
 
-      {/* AI quick-start */}
-      <Card className="p-4 mb-6" style={{ background: '#FDFDFD', borderColor: '#E0E2E4' }}>
-        <div className="flex items-start gap-3">
-          <Sparkles size={16} className="mt-0.5 flex-shrink-0" style={{ color: '#1C3D2E' }} />
-          <div className="flex-1">
-            <p className="text-sm font-medium mb-2" style={{ color: '#202124' }}>Generate with AI</p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={aiPrompt}
-                onChange={e => setAiPrompt(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleGenerate()}
-                placeholder="e.g. 35-year-old startup founder in NYC, bootstrapped, technical"
-                className="flex-1 text-sm px-3 py-2 bg-white rounded-lg placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{ border: '1px solid #E0E2E4' }}
-              />
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleGenerate}
-                loading={generating}
-                className="whitespace-nowrap"
-              >
-                Generate
-              </Button>
-            </div>
-            <p className="text-xs mt-1.5" style={{ color: '#5F6368' }}>Describe your target customer and AI will fill in the details</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Step progress */}
-      <div className="flex items-center gap-0 mb-8">
+      {/* Step progress — circles with connecting lines */}
+      <div className="flex items-center mb-8">
         {STEPS.map((s, i) => {
-          const Icon = s.icon
           const active = i === step
           const done = i < step
           return (
-            <div key={s.id} className="flex items-center">
+            <div key={s.id} className={i < STEPS.length - 1 ? 'flex items-center flex-1' : 'flex items-center'}>
               <button
                 onClick={() => i <= step && setStep(i)}
-                className={cn(
-                  'flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg transition-colors',
-                  active ? 'font-medium' : done ? 'cursor-pointer' : 'cursor-default'
-                )}
-                style={{ color: active ? '#202124' : '#757575' }}
+                className="flex items-center gap-3 flex-shrink-0"
+                style={{ background: 'none', border: 'none', cursor: i <= step ? 'pointer' : 'default', fontFamily: 'inherit' }}
               >
                 <span
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0"
-                  style={active ? { background: '#1C3D2E', color: 'white' } : done ? { background: '#E8F3EF', color: '#1C3D2E' } : { background: '#F1F1F1', color: '#757575' }}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={active || done ? { background: '#1C3D2E', color: 'white' } : { background: '#F1F1F1', color: '#9CA3AF' }}
                 >
-                  {done ? <Check size={10} /> : i + 1}
+                  {done ? <Check size={15} strokeWidth={3} /> : i + 1}
                 </span>
-                {s.label}
+                <div className="text-left hidden sm:block">
+                  <p className="text-sm font-semibold leading-tight" style={{ color: active ? '#202124' : done ? '#202124' : '#9CA3AF' }}>{s.label}</p>
+                  <p className="text-xs leading-tight" style={{ color: '#9CA3AF' }}>{s.sublabel}</p>
+                </div>
               </button>
               {i < STEPS.length - 1 && (
-                <ChevronRight size={14} className="mx-1" style={{ color: '#DADCE0' }} />
+                <div className="flex-1 h-px mx-4" style={{ background: '#E0E2E4' }} />
               )}
             </div>
           )
         })}
       </div>
 
-      {/* Preview avatar */}
-      <div className="flex items-center gap-3 mb-6 p-3 rounded-lg" style={{ background: '#FDFDFD', border: '1px solid #E0E2E4' }}>
-        <div className="relative flex-shrink-0">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={name}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium"
-              style={{ background: avatarColor.bg, color: avatarColor.text }}
-            >
-              {initials}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+        {/* ── Main form card ── */}
+        <div className="lg:col-span-2 rounded-2xl p-6" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
+          <h2 className="font-serif text-xl mb-1" style={{ color: '#202124' }}>{cardCopy.title}</h2>
+          <p className="text-sm mb-6" style={{ color: '#5F6368' }}>{cardCopy.subtitle}</p>
+
+          {/* ── Step 0: Identity ─────────────────────────────────────────── */}
+          {step === 0 && (
+            <div className="flex flex-col sm:flex-row gap-6">
+              {/* Avatar column */}
+              <div className="flex-shrink-0 sm:w-40">
+                <label className="block text-sm font-medium mb-2" style={{ color: '#202124' }}>Avatar</label>
+                <div className="relative w-32 h-32 sm:w-full sm:h-auto sm:aspect-square rounded-full sm:rounded-2xl flex items-center justify-center mb-3" style={{ background: '#F1F1F1' }}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-full sm:rounded-2xl" />
+                  ) : (
+                    <User size={40} style={{ color: '#C4C7C9' }} />
+                  )}
+                  {generatingAvatar && (
+                    <div className="absolute inset-0 rounded-full sm:rounded-2xl bg-black/40 flex items-center justify-center">
+                      <Loader2 size={18} className="text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleGenerateAvatar}
+                  disabled={generatingAvatar || !name}
+                  className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                  style={name && !generatingAvatar
+                    ? { border: '1px solid #E0E2E4', background: 'white', color: '#202124', cursor: 'pointer' }
+                    : { border: '1px solid #E0E2E4', color: '#9CA3AF', cursor: 'not-allowed' }}
+                >
+                  <Sparkles size={12} />
+                  {generatingAvatar ? 'Generating…' : avatarUrl ? 'Regenerate' : 'Generate with AI'}
+                </button>
+              </div>
+
+              {/* Fields column */}
+              <div className="flex-1 space-y-5 min-w-0">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Full name *"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="e.g. Maya Chen"
+                  />
+                  <Input
+                    label="Age"
+                    type="number"
+                    min={18}
+                    max={80}
+                    value={traits.age}
+                    onChange={e => updateTrait('age', Number(e.target.value))}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Select
+                    label="Gender"
+                    value={traits.gender}
+                    onChange={e => updateTrait('gender', e.target.value as PersonaGender)}
+                    options={GENDER_OPTIONS}
+                  />
+                  <Select
+                    label="Education"
+                    value={traits.education}
+                    onChange={e => updateTrait('education', e.target.value as PersonaEducation)}
+                    options={EDUCATION_OPTIONS}
+                  />
+                </div>
+                <Input
+                  label="Location *"
+                  value={traits.location}
+                  onChange={e => updateTrait('location', e.target.value)}
+                  placeholder="e.g. Austin, TX"
+                />
+                <TagInput
+                  label="Tags"
+                  hint="Press Enter to add — e.g. 'bootstrapped', 'B2B', 'budget-conscious'"
+                  tags={tags}
+                  onChange={setTags}
+                />
+              </div>
             </div>
           )}
-          {generatingAvatar && (
-            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
-              <Loader2 size={14} className="text-white animate-spin" />
+
+          {/* ── Step 1: Professional ─────────────────────────────────────── */}
+          {step === 1 && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Job title *"
+                  value={traits.job_title}
+                  onChange={e => updateTrait('job_title', e.target.value)}
+                  placeholder="e.g. Founder & CEO"
+                />
+                <Input
+                  label="Industry *"
+                  value={traits.industry}
+                  onChange={e => updateTrait('industry', e.target.value)}
+                  placeholder="e.g. SaaS / B2B Software"
+                />
+              </div>
+              <Select
+                label="Annual income"
+                value={traits.income}
+                onChange={e => updateTrait('income', e.target.value as PersonaIncome)}
+                options={INCOME_OPTIONS}
+              />
+              <ListInput
+                label="Goals"
+                hint="What are they trying to achieve?"
+                items={traits.goals}
+                onChange={v => updateTrait('goals', v)}
+                placeholder="e.g. Find product-market fit before runway runs out"
+                max={5}
+              />
+              <ListInput
+                label="Frustrations"
+                hint="What keeps them up at night?"
+                items={traits.frustrations}
+                onChange={v => updateTrait('frustrations', v)}
+                placeholder="e.g. Traditional market research is too expensive and slow"
+                max={5}
+              />
+              <Textarea
+                label="Buying behavior"
+                value={traits.buying_behavior}
+                onChange={e => updateTrait('buying_behavior', e.target.value)}
+                placeholder="How do they research tools? What do they read, who do they trust, what makes them pull the trigger or walk away?"
+                rows={3}
+              />
             </div>
           )}
+
+          {/* ── Step 2: Psychology ───────────────────────────────────────── */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <Slider
+                label="Tech savviness"
+                value={traits.tech_savviness}
+                onChange={v => updateTrait('tech_savviness', v as 1 | 2 | 3 | 4 | 5)}
+                leftLabel="Not technical"
+                rightLabel="Developer-level"
+              />
+              <Slider
+                label="Risk tolerance"
+                value={traits.risk_tolerance}
+                onChange={v => updateTrait('risk_tolerance', v as 1 | 2 | 3 | 4 | 5)}
+                leftLabel="Very cautious"
+                rightLabel="Early adopter"
+              />
+              <Textarea
+                label="Additional context"
+                value={traits.additional_context}
+                onChange={e => updateTrait('additional_context', e.target.value)}
+                placeholder="Anything else that makes this person feel real — their personality, a past experience, a strong opinion, a quirk in how they work."
+                rows={5}
+                hint="The more specific and human this is, the more credible their interview responses will be."
+              />
+            </div>
+          )}
+
+          {name && (
+            <p className="text-xs mt-6 pt-5" style={{ color: '#9CA3AF', borderTop: '1px solid #F1F1F1' }}>* Required fields</p>
+          )}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium" style={{ color: '#202124' }}>{name || 'Unnamed persona'}</p>
-          <p className="text-xs" style={{ color: '#5F6368' }}>
-            {traits.job_title ? `${traits.job_title}${traits.location ? ` · ${traits.location}` : ''}` : 'Fill in details below'}
-          </p>
+
+        {/* ── AI assistant panel ── */}
+        <div className="lg:col-span-1 rounded-2xl p-5" style={{ background: '#FDFDFD', border: '1px solid #E0E2E4' }}>
+          <button
+            onClick={() => setAiPanelOpen(o => !o)}
+            className="w-full flex items-center justify-between mb-1"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            <span className="flex items-center gap-2">
+              <Sparkles size={15} style={{ color: '#1C3D2E' }} />
+              <span className="text-sm font-semibold" style={{ color: '#202124' }}>AI assistant</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: '#E8F3EF', color: '#1C3D2E' }}>Beta</span>
+            </span>
+            {aiPanelOpen ? <ChevronUp size={15} style={{ color: '#9CA3AF' }} /> : <ChevronDown size={15} style={{ color: '#9CA3AF' }} />}
+          </button>
+
+          {aiPanelOpen && (
+            <>
+              <p className="text-xs leading-relaxed mt-2 mb-4" style={{ color: '#5F6368' }}>
+                I can help you create a well-rounded persona. Start with a prompt or try an example below.
+              </p>
+
+              <label className="block text-xs font-semibold mb-1.5" style={{ color: '#202124' }}>Describe your persona</label>
+              <div className="relative mb-4">
+                <textarea
+                  value={aiPrompt}
+                  onChange={e => setAiPrompt(e.target.value.slice(0, 300))}
+                  placeholder="e.g., A 28-year-old product designer who loves clean UI, works remotely, and cares about sustainability."
+                  rows={4}
+                  maxLength={300}
+                  className="w-full text-sm px-3 py-2 rounded-lg placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#1C3D2E] focus:border-transparent resize-none"
+                  style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124' }}
+                />
+                <span className="absolute bottom-2 right-2.5 text-[10px]" style={{ color: '#9CA3AF' }}>{aiPrompt.length}/300</span>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleGenerate}
+                loading={generating}
+                disabled={!aiPrompt.trim()}
+                className="w-full mb-5"
+              >
+                Generate
+              </Button>
+
+              <label className="block text-xs font-semibold mb-2" style={{ color: '#202124' }}>Or try an example</label>
+              <div className="space-y-1.5 mb-3">
+                {EXAMPLE_PROMPTS.map(prompt => (
+                  <button
+                    key={prompt}
+                    onClick={() => { setAiPrompt(prompt); runGenerate(prompt) }}
+                    disabled={generating}
+                    className="w-full flex items-center justify-between gap-2 text-left text-xs px-3 py-2.5 rounded-lg transition-colors"
+                    style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    {prompt}
+                    <Sparkles size={12} style={{ color: '#1C3D2E' }} className="flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={handleSurpriseMe}
+                disabled={generating}
+                className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-lg transition-colors"
+                style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Surprise me
+                <Sparkles size={12} style={{ color: '#1C3D2E' }} />
+              </button>
+
+              <p className="text-[11px] italic leading-relaxed mt-4" style={{ color: '#9CA3AF' }}>
+                AI suggestions may be inaccurate. Please review.
+              </p>
+            </>
+          )}
         </div>
-        <button
-          type="button"
-          onClick={handleGenerateAvatar}
-          disabled={generatingAvatar || !name}
-          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
-          style={name && !generatingAvatar
-            ? { border: '1px solid #DADCE0', background: '#E8F3EF', color: '#1C3D2E' }
-            : { border: '1px solid #E0E2E4', color: '#9CA3AF', cursor: 'not-allowed' }}
-        >
-          <Camera size={12} />
-          {generatingAvatar ? 'Generating...' : avatarUrl ? 'Regenerate' : 'Generate avatar'}
-        </button>
       </div>
-
-      {/* ── Step 0: Identity ─────────────────────────────────────────────── */}
-      {step === 0 && (
-        <div className="space-y-5">
-          <Input
-            label="Full name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="e.g. Maya Chen"
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Age"
-              type="number"
-              min={18}
-              max={80}
-              value={traits.age}
-              onChange={e => updateTrait('age', Number(e.target.value))}
-            />
-            <Select
-              label="Gender"
-              value={traits.gender}
-              onChange={e => updateTrait('gender', e.target.value as PersonaGender)}
-              options={GENDER_OPTIONS}
-            />
-          </div>
-          <Input
-            label="Location"
-            value={traits.location}
-            onChange={e => updateTrait('location', e.target.value)}
-            placeholder="e.g. Austin, TX"
-          />
-          <Select
-            label="Education"
-            value={traits.education}
-            onChange={e => updateTrait('education', e.target.value as PersonaEducation)}
-            options={EDUCATION_OPTIONS}
-          />
-          <TagInput
-            label="Tags"
-            hint="Press Enter to add — e.g. 'bootstrapped', 'B2B', 'budget-conscious'"
-            tags={tags}
-            onChange={setTags}
-          />
-        </div>
-      )}
-
-      {/* ── Step 1: Professional ─────────────────────────────────────────── */}
-      {step === 1 && (
-        <div className="space-y-5">
-          <Input
-            label="Job title"
-            value={traits.job_title}
-            onChange={e => updateTrait('job_title', e.target.value)}
-            placeholder="e.g. Founder & CEO"
-          />
-          <Input
-            label="Industry"
-            value={traits.industry}
-            onChange={e => updateTrait('industry', e.target.value)}
-            placeholder="e.g. SaaS / B2B Software"
-          />
-          <Select
-            label="Annual income"
-            value={traits.income}
-            onChange={e => updateTrait('income', e.target.value as PersonaIncome)}
-            options={INCOME_OPTIONS}
-          />
-          <ListInput
-            label="Goals"
-            hint="What are they trying to achieve?"
-            items={traits.goals}
-            onChange={v => updateTrait('goals', v)}
-            placeholder="e.g. Find product-market fit before runway runs out"
-            max={5}
-          />
-          <ListInput
-            label="Frustrations"
-            hint="What keeps them up at night?"
-            items={traits.frustrations}
-            onChange={v => updateTrait('frustrations', v)}
-            placeholder="e.g. Traditional market research is too expensive and slow"
-            max={5}
-          />
-          <Textarea
-            label="Buying behavior"
-            value={traits.buying_behavior}
-            onChange={e => updateTrait('buying_behavior', e.target.value)}
-            placeholder="How do they research tools? What do they read, who do they trust, what makes them pull the trigger or walk away?"
-            rows={3}
-          />
-        </div>
-      )}
-
-      {/* ── Step 2: Psychology ───────────────────────────────────────────── */}
-      {step === 2 && (
-        <div className="space-y-6">
-          <Slider
-            label="Tech savviness"
-            value={traits.tech_savviness}
-            onChange={v => updateTrait('tech_savviness', v as 1 | 2 | 3 | 4 | 5)}
-            leftLabel="Not technical"
-            rightLabel="Developer-level"
-          />
-          <Slider
-            label="Risk tolerance"
-            value={traits.risk_tolerance}
-            onChange={v => updateTrait('risk_tolerance', v as 1 | 2 | 3 | 4 | 5)}
-            leftLabel="Very cautious"
-            rightLabel="Early adopter"
-          />
-          <Textarea
-            label="Additional context"
-            value={traits.additional_context}
-            onChange={e => updateTrait('additional_context', e.target.value)}
-            placeholder="Anything else that makes this person feel real — their personality, a past experience, a strong opinion, a quirk in how they work."
-            rows={5}
-            hint="The more specific and human this is, the more credible their interview responses will be."
-          />
-        </div>
-      )}
 
       {/* Error */}
       {error && (
-        <p className="mt-4 text-sm rounded-lg px-3 py-2" style={{ color: '#DB4437', background: '#FEF2F1', border: '1px solid #F8D7D3' }}>
+        <p className="mt-6 text-sm rounded-lg px-3 py-2" style={{ color: '#DB4437', background: '#FEF2F1', border: '1px solid #F8D7D3' }}>
           {error}
         </p>
       )}
 
       {/* Nav buttons */}
-      <div className="flex justify-between mt-8 pt-6" style={{ borderTop: '1px solid #E0E2E4' }}>
+      <div className="flex justify-end gap-3 mt-6">
         <Button
           variant="secondary"
           onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}
         >
-          <ChevronLeft size={14} />
           {step === 0 ? 'Cancel' : 'Back'}
         </Button>
 
         {step < STEPS.length - 1 ? (
-          <Button onClick={step < STEPS.length - 1 ? handleNext : handleSave}>
-            Continue
+          <Button onClick={handleNext}>
+            Save and continue
             <ChevronRight size={14} />
           </Button>
         ) : (
