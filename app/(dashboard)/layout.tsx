@@ -87,7 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 'flex items-center gap-2.5 px-3 py-2.5 md:py-2 rounded-lg text-sm font-semibold transition-all',
                 active ? '' : 'text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50'
               )}
-              style={active ? { background: '#E8F5F1', color: '#0D5C45' } : {}}
+              style={active ? { background: '#E3EFE6', color: '#123B2C' } : {}}
             >
               <Icon size={15} strokeWidth={1.75} />
               {label}
@@ -109,7 +109,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button
               onClick={handleSignOut}
               className="w-full flex items-center gap-2.5 px-2.5 py-2 mt-1 mx-1 rounded-lg text-xs font-semibold transition-colors hover:brightness-95"
-              style={{ background: '#E8F5F1', color: '#0D5C45', border: 'none', cursor: 'pointer', fontFamily: 'inherit', width: 'calc(100% - 8px)' }}
+              style={{ background: '#E3EFE6', color: '#123B2C', border: 'none', cursor: 'pointer', fontFamily: 'inherit', width: 'calc(100% - 8px)' }}
             >
               <LogOut size={13} strokeWidth={2} />
               Sign out
@@ -121,7 +121,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl transition-colors"
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: 'linear-gradient(135deg, #1A8C6A, #2BAE86)' }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: '#123B2C' }}>
               {initials}
             </div>
             <div className="flex-1 min-w-0 text-left">
@@ -141,7 +141,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#F4F6F8' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: '#F7F8F7' }}>
 
       {/* Desktop sidebar — always visible at md+ */}
       <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
