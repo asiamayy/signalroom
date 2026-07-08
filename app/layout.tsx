@@ -1,18 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Newsreader } from 'next/font/google'
 import './globals.css'
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--nf-inter',
-  display: 'swap',
-})
-
-const newsreader = Newsreader({
-  subsets: ['latin'],
-  variable: '--nf-newsreader',
-  display: 'swap',
-})
 
 export const metadata: Metadata = {
   title: 'SignalRoom — AI market research for founders and marketers',
@@ -42,7 +29,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${newsreader.variable}`}>
+    <html lang="en">
       <body className="bg-neutral-50 text-neutral-900 antialiased">
         {children}
       </body>

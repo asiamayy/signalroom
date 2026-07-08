@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { Inter, Newsreader } from 'next/font/google'
 import {
   Home, Briefcase, Users, MessageSquare, Settings, ArrowLeftRight, Menu, X,
   BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus,
@@ -11,6 +12,11 @@ import { Logo } from '@/components/ui/Logo'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect, useRef } from 'react'
 import type { Project } from '@/types'
+
+// Dashboard-only typography — loaded here (not the root layout) so the
+// marketing/landing page is never touched by this font.
+const inter = Inter({ subsets: ['latin'], variable: '--nf-inter', display: 'swap' })
+const newsreader = Newsreader({ subsets: ['latin'], variable: '--nf-newsreader', display: 'swap' })
 
 const NAV_ITEMS = [
   { href: '/home', label: 'Home', icon: Home },
@@ -171,7 +177,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 
   return (
-    <div className="dashboard-shell flex h-screen overflow-hidden" style={{ background: '#F9F9F9' }}>
+    <div className={cn('dashboard-shell flex h-screen overflow-hidden', inter.variable, newsreader.variable)} style={{ background: '#F9F9F9' }}>
 
       {/* Desktop sidebar — always visible at md+ */}
       <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>

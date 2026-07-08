@@ -223,7 +223,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         key={tab}
                         onClick={() => { setFilterTab(tab); setSelectedId(null) }}
                         className="w-full flex items-center justify-between text-left text-sm px-3 py-2 rounded-lg transition-colors"
-                        style={{ background: filterTab === tab ? '#E8F3EF' : 'transparent', color: filterTab === tab ? '#1C3D2E' : '#5F6368', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: filterTab === tab ? 600 : 500 }}
+                        style={{ background: filterTab === tab ? '#CACFC6' : 'transparent', color: filterTab === tab ? '#1C3D2E' : '#5F6368', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: filterTab === tab ? 600 : 500 }}
                       >
                         {tab === 'All Personas' ? 'All' : tab} {tab === 'Archived' ? `(${archived.length})` : `(${active.length})`}
                         {filterTab === tab && <Check size={13} strokeWidth={3} />}
@@ -251,7 +251,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       key={opt}
                       onClick={() => { setSortBy(opt); setShowSortMenu(false) }}
                       className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
-                      style={{ background: sortBy === opt ? '#E8F3EF' : 'white', color: sortBy === opt ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                      style={{ background: sortBy === opt ? '#CACFC6' : 'white', color: sortBy === opt ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
                       {opt}
                       {sortBy === opt && <Check size={13} style={{ color: '#1C3D2E' }} />}
@@ -392,12 +392,12 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           avatarInitials={persona.avatar_initials}
                           avatarColor={persona.avatar_color}
                           name={persona.name}
-                          size="xl"
+                          size="2xl"
                           shape="square"
                           className="flex-shrink-0"
                         />
                         <div className="min-w-0 flex-1 pt-0.5">
-                          <h3 className="font-serif text-lg leading-tight truncate" style={{ color: '#202124' }}>{persona.name}</h3>
+                          <h3 className="font-serif text-xl leading-tight truncate" style={{ color: '#202124' }}>{persona.name}</h3>
                           <p className="text-sm truncate mt-0.5" style={{ color: '#5F6368' }}>{persona.traits?.job_title ?? 'No role'}</p>
                           {persona.traits?.location && (
                             <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#9CA3AF' }}>
@@ -420,7 +420,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
 
                       <div className="my-4 h-px" style={{ background: '#E3E3DA' }} />
 
-                      <p className="text-sm leading-relaxed line-clamp-3" style={{ color: '#5F6368' }}>
+                      <p className="text-xs leading-relaxed line-clamp-3" style={{ color: '#5F6368' }}>
                         {persona.traits?.additional_context ?? `${persona.traits?.job_title ?? 'A persona'} with defined goals and behaviors.`}
                       </p>
                     </div>
@@ -429,7 +429,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       <Link
                         href={`/personas/${persona.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="flex-1 text-center text-sm font-medium py-2 rounded-lg"
+                        className="flex-1 text-center text-xs font-medium py-1.5 rounded-lg"
                         style={{ background: 'white', border: '1px solid #DADCE0', color: '#202124' }}
                       >
                         View Details
@@ -437,7 +437,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       <Link
                         href={`/interviews/new?persona_id=${persona.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="flex-1 text-center text-sm font-medium py-2 rounded-lg text-white"
+                        className="flex-1 text-center text-xs font-medium py-1.5 rounded-lg text-white"
                         style={{ background: '#243329' }}
                       >
                         Start Interview
@@ -570,12 +570,12 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                               avatarInitials={persona.avatar_initials}
                               avatarColor={persona.avatar_color}
                               name={persona.name}
-                              size="xl"
+                              size="2xl"
                               shape="square"
                               className="flex-shrink-0"
                             />
                             <div className="min-w-0 flex-1 pt-0.5">
-                              <h3 className="font-serif text-lg leading-tight truncate" style={{ color: '#5F6368' }}>{persona.name}</h3>
+                              <h3 className="font-serif text-xl leading-tight truncate" style={{ color: '#5F6368' }}>{persona.name}</h3>
                               <p className="text-sm truncate mt-0.5" style={{ color: '#9CA3AF' }}>{persona.traits?.job_title ?? 'No role'}</p>
                               {persona.traits?.location && (
                                 <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#9CA3AF' }}>
@@ -595,7 +595,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                             </div>
                           )}
                           <div className="my-4 h-px" style={{ background: '#E3E3DA' }} />
-                          <p className="text-sm leading-relaxed line-clamp-2 mb-3.5" style={{ color: '#9CA3AF' }}>
+                          <p className="text-xs leading-relaxed line-clamp-2 mb-3.5" style={{ color: '#9CA3AF' }}>
                             {persona.traits?.additional_context ?? `${persona.traits?.job_title ?? 'A persona'} with defined goals and behaviors.`}
                           </p>
                           <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#F3F4F6', color: '#9CA3AF' }}>Archived</span>
