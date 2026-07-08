@@ -330,7 +330,7 @@ export default function ComparePage() {
                       'flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap border-b-2 transition-colors flex-shrink-0',
                       activeTab === result.persona_id
                         ? 'border-neutral-900 text-neutral-900 font-medium'
-                        : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                        : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50'
                     )}
                   >
                     <PersonaAvatar

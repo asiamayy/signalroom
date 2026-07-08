@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect, useRef } from 'react'
 import type { Project } from '@/types'
+import { SearchProvider, useSearch } from '@/lib/search-context'
 
 // Dashboard-only logo lockup (icon + wordmark + "AI Market Research" tagline
 // baked in). Scoped to the dashboard so the landing page's logo is untouched.
@@ -48,6 +49,14 @@ const NAV_ITEMS = [
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SearchProvider>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </SearchProvider>
+  )
+}
+
+function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [userEmail, setUserEmail] = useState<string | null>(null)
@@ -57,8 +66,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
-  const [search, setSearch] = useState('')
+  const { query: search, setQuery: setSearch } = useSearch()
   const accountMenuRef = useRef<HTMLDivElement>(null)
+  const closeMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -266,8 +276,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Settings size={16} />
             </Link>
 
-            {/* Profile dropdown */}
-            <div className="relative" ref={accountMenuRef}>
+            {/* Profile dropdown — hover-activated */}
+            <div
+              className="relative"
+              ref={accountMenuRef}
+              onMouseEnter={() => {
+                if (closeMenuTimer.current) clearTimeout(closeMenuTimer.current)
+                setShowAccountMenu(true)
+              }}
+              onMouseLeave={() => {
+                closeMenuTimer.current = setTimeout(() => setShowAccountMenu(false), 200)
+              }}
+            >
               <button
                 onClick={() => setShowAccountMenu(o => !o)}
                 className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-full transition-colors hover:bg-neutral-50"
@@ -288,19 +308,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
 
               {showAccountMenu && (
-                <div className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', border: '1px solid #E3E3DA', minWidth: '200px' }}>
-                  <div className="px-4 py-3" style={{ borderBottom: '1px solid #F1F1F1' }}>
-                    <p className="font-serif text-base leading-tight truncate" style={{ color: '#202124' }}>{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</p>
-                    <p className="text-xs mt-0.5 truncate" style={{ color: '#9CA3AF' }}>{userEmail ?? ''}</p>
+                <div className="absolute right-0 top-full pt-2 z-50" style={{ minWidth: '180px' }}>
+                  <div className="rounded-xl overflow-hidden" style={{ background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', border: '1px solid #E3E3DA' }}>
+                    <div className="px-4 py-3" style={{ borderBottom: '1px solid #F1F1F1' }}>
+                      <p className="font-serif text-base leading-tight truncate" style={{ color: '#202124' }}>{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</p>
+                      <p className="text-xs mt-0.5 truncate" style={{ color: '#9CA3AF' }}>{userEmail ?? ''}</p>
+                    </div>
+                    <div className="px-4 py-3 text-center">
+                      <button
+                        onClick={handleSignOut}
+                        className="text-xs transition-colors text-[#9CA3AF] hover:text-[#4B5563]"
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        Sign out →
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-2.5 px-4 py-3 text-sm transition-colors hover:bg-neutral-50"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: '#202124' }}
-                  >
-                    <LogOut size={14} style={{ color: '#9CA3AF' }} />
-                    Sign out
-                  </button>
                 </div>
               )}
             </div>

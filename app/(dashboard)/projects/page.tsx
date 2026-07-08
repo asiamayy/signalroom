@@ -3,12 +3,18 @@
 import { useEffect, useState } from 'react'
 import { Briefcase, Plus, Loader2 } from 'lucide-react'
 import type { Project } from '@/types'
+import { useSearch } from '@/lib/search-context'
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [creating, setCreating] = useState(false)
+  const { query: search } = useSearch()
+
+  const filteredProjects = projects.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  )
 
   const loadProjects = () => {
     fetch('/api/projects')
@@ -61,7 +67,7 @@ export default function ProjectsPage() {
           <button
             onClick={handleCreate}
             disabled={creating || !name.trim()}
-            className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-md text-white disabled:opacity-50"
+            className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-md text-white transition-colors hover:bg-[#243329] disabled:opacity-50"
             style={{ background: '#1C3D2E', border: 'none', cursor: creating ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
           >
             {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
@@ -82,10 +88,17 @@ export default function ProjectsPage() {
             <p className="text-xs mt-1" style={{ color: '#5F6368' }}>Create your first project above.</p>
           </div>
         </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="flex items-center justify-center rounded-2xl py-16" style={{ background: '#FFFFFF', border: '1px dashed #E0E2E4' }}>
+          <div className="text-center">
+            <p className="text-sm font-semibold" style={{ color: '#202124' }}>No projects match "{search}"</p>
+            <p className="text-xs mt-1" style={{ color: '#5F6368' }}>Try a different search term.</p>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map(project => (
-            <div key={project.id} className="rounded-2xl p-5" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
+          {filteredProjects.map(project => (
+            <div key={project.id} className="rounded-2xl p-5 transition-all hover:border-neutral-300 hover:shadow-sm" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: '#E8F3EF' }}>
                 <Briefcase size={16} style={{ color: '#1C3D2E' }} />
               </div>

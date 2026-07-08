@@ -9,6 +9,7 @@ import { OnboardingModal } from '@/components/ui/OnboardingModal'
 import { Modal } from '@/components/ui/Modal'
 import type { Persona, Plan, FunnelStage } from '@/types'
 import { FUNNEL_STAGE_LABELS } from '@/types'
+import { useSearch } from '@/lib/search-context'
 
 interface PersonasClientProps {
   initialPersonas: Persona[]
@@ -29,7 +30,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
   const [personas, setPersonas] = useState<Persona[]>(initialPersonas)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [archiving, setArchiving] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
+  const { query: search, setQuery: setSearch } = useSearch()
   const [filterTab, setFilterTab] = useState<FilterTab>('All Personas')
   const [funnelTab, setFunnelTab] = useState<FunnelTab>('All Personas')
   const [selectedId, setSelectedId] = useState<string | null>(null)

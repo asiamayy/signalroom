@@ -45,11 +45,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     ? (typeof persona.avatar_color === 'string'
         ? JSON.parse(persona.avatar_color)
         : persona.avatar_color)
-    : { bg: '#E1F5EE', text: '#0F6E56' }
+    : { bg: '#E1F5EE', text: '#5A7973' }
 
   const score = report.confidence_score
-  const scoreColor = score >= 75 ? 'text-emerald-600' : score >= 50 ? 'text-amber-600' : 'text-red-500'
-  const scoreBg = score >= 75 ? 'bg-emerald-50 border-emerald-100' : score >= 50 ? 'bg-amber-50 border-amber-100' : 'bg-red-50 border-red-100'
+  const scoreColor = score >= 75 ? 'text-[#5A7973]' : score >= 50 ? 'text-amber-600' : 'text-red-500'
+  const scoreBg = score >= 75 ? 'bg-[#E8F5F1] border-[#D3DEDA]' : score >= 50 ? 'bg-amber-50 border-amber-100' : 'bg-red-50 border-red-100'
   const scoreLabel = score >= 75 ? 'High confidence' : score >= 50 ? 'Moderate confidence' : 'Low confidence'
 
   const themes: ReportTheme[] = report.key_themes ?? []
@@ -276,7 +276,7 @@ function RecommendationCard({ rec }: { rec: ReportRecommendation }) {
 
 function ConfidenceBar({ label, value }: { label: string; value: number }) {
   const capped = Math.min(100, Math.max(0, value))
-  const color = capped >= 75 ? 'bg-emerald-400' : capped >= 50 ? 'bg-amber-400' : 'bg-red-400'
+  const color = capped >= 75 ? 'bg-[#5A7973]' : capped >= 50 ? 'bg-amber-400' : 'bg-red-400'
 
   return (
     <div>
@@ -304,7 +304,7 @@ function SentimentBreakdown({ themes }: { themes: ReportTheme[] }) {
 
   const total = themes.length
   const sentiments: { key: string; label: string; color: string; bg: string }[] = [
-    { key: 'positive', label: 'Positive', color: 'bg-emerald-400', bg: 'text-emerald-700' },
+    { key: 'positive', label: 'Positive', color: 'bg-[#5A7973]', bg: 'text-[#46615C]' },
     { key: 'mixed', label: 'Mixed', color: 'bg-amber-400', bg: 'text-amber-700' },
     { key: 'neutral', label: 'Neutral', color: 'bg-neutral-300', bg: 'text-neutral-600' },
     { key: 'negative', label: 'Negative', color: 'bg-red-400', bg: 'text-red-700' },
