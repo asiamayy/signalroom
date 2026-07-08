@@ -15,7 +15,7 @@ export function Logo({ size = 'md', href, className }: LogoProps) {
   const mark = (
     <span className={cn('flex items-center select-none', className)}>
       <Image
-        src="/signalroom-logo.png"
+        src="/signalroom-logo.svg"
         alt="Signalroom"
         width={w}
         height={Math.round(w / 2.5)}
