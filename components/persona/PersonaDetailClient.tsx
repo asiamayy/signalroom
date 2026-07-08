@@ -238,7 +238,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
                 )}
 
                 {t?.key_quote && (
-                  <p className="heading-editorial mt-5 flex items-start gap-2 text-lg italic" style={{ color: '#2D4A36', fontWeight: 400 }}>
+                  <p className="mt-5 flex items-start gap-2 text-sm italic leading-relaxed" style={{ color: '#2D4A36', fontFamily: "'Playfair Display', serif", fontWeight: 400, letterSpacing: 'normal' }}>
                     <span style={{ color: '#1E3A2B' }}>&ldquo;</span>
                     {t.key_quote}
                     <span style={{ color: '#1E3A2B' }}>&rdquo;</span>
