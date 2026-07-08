@@ -200,7 +200,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
             {/* Identity */}
             <div className="min-w-0 flex-1 pt-1 lg:max-w-2xl">
               <div className="flex items-center gap-3">
-                <h1 className="font-serif font-medium text-3xl lg:text-4xl tracking-[-0.01em]" style={{ color: '#202124' }}>{persona.name}</h1>
+                <h1 className="heading-editorial text-3xl lg:text-4xl" style={{ color: '#202124' }}>{persona.name}</h1>
                 <BadgeCheck size={24} style={{ color: '#243329' }} />
               </div>
 

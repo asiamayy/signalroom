@@ -229,7 +229,7 @@ export default function PersonaBuilder() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-serif font-medium tracking-[-0.01em]" style={{ color: '#202124' }}>New Persona</h1>
+        <h1 className="heading-editorial text-3xl" style={{ color: '#202124' }}>New Persona</h1>
         <p className="text-sm mt-1" style={{ color: '#5F6368' }}>Build a realistic, research-backed persona with AI assistance.</p>
       </div>
 

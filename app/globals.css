@@ -39,6 +39,16 @@ body {
   font-family: var(--nf-inter), system-ui, sans-serif;
 }
 
+/* Locked-in heading treatment for the main dashboard titles (page heading,
+   persona names). Explicit system-serif stack — does not depend on a web
+   font finishing its load — with fixed weight/tracking so it can't drift. */
+.dashboard-shell .heading-editorial {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  font-stretch: normal !important;
+}
+
 @media print {
   /* Hide nav, sidebar, buttons */
   nav,
