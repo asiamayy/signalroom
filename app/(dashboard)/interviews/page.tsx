@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Interview } from '@/types'
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
-  active: { bg: '#E8F5F1', color: '#5A7973' },
+  active: { bg: '#E8F5F1', color: '#2A5C4E' },
   completed: { bg: '#F3F4F6', color: '#6B7280' },
   draft: { bg: '#FFFBEB', color: '#92400E' },
 }
@@ -56,7 +56,7 @@ export default function InterviewsPage() {
           <h1 className="heading-editorial text-2xl text-neutral-900">Interviews</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Conversations with your personas</p>
         </div>
-        <Link href="/interviews/new" className="flex items-center gap-1.5 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors hover:bg-[#4C665F]" style={{ background: '#5A7973' }}>
+        <Link href="/interviews/new" className="flex items-center gap-1.5 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors hover:bg-[#4C665F]" style={{ background: '#2A5C4E' }}>
           <Plus size={15} />
           New interview
         </Link>
@@ -75,7 +75,7 @@ export default function InterviewsPage() {
               <MessageSquare size={24} className="text-neutral-300 mx-auto mb-3" />
               <h3 className="text-sm font-semibold text-neutral-800 mb-1">No interviews yet</h3>
               <p className="text-sm text-neutral-400 mb-5">Create a persona, then start an interview.</p>
-              <Link href="/interviews/new" className="inline-flex items-center gap-1.5 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors hover:bg-[#4C665F]" style={{ background: '#5A7973' }}>
+              <Link href="/interviews/new" className="inline-flex items-center gap-1.5 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors hover:bg-[#4C665F]" style={{ background: '#2A5C4E' }}>
                 <Plus size={14} /> Start an interview
               </Link>
             </div>

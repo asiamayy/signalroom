@@ -187,7 +187,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                 Upgrade plan
               </Link>
             ) : (
-              <Link href="/personas/new" className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg text-white whitespace-nowrap" style={{ background: '#243329' }}>
+              <Link href="/personas/new" className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg text-white whitespace-nowrap transition-opacity hover:opacity-90" style={{ background: '#243329' }}>
                 <Plus size={13} />
                 Create Persona
               </Link>
@@ -197,8 +197,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             <div className="relative" ref={filtersMenuRef}>
               <button
                 onClick={() => setShowFiltersMenu(o => !o)}
-                className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap"
-                style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+                className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap bg-white hover:bg-neutral-50"
+                style={{ border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 <SlidersHorizontal size={13} style={{ color: '#5F6368' }} />
                 Filters
@@ -239,8 +239,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             <div className="relative" ref={sortMenuRef}>
               <button
                 onClick={() => setShowSortMenu(o => !o)}
-                className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap"
-                style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+                className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap bg-white hover:bg-neutral-50"
+                style={{ border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 <span style={{ color: '#5F6368' }}>Sort by</span> {sortBy}
                 <ChevronDown size={12} style={{ color: '#9CA3AF' }} />
@@ -266,15 +266,15 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
             <div className="flex rounded-lg overflow-hidden flex-shrink-0" style={{ border: '1px solid #E0E2E4' }}>
               <button
                 onClick={() => setViewMode('grid')}
-                className="px-2.5 py-2 transition-colors"
-                style={{ background: viewMode === 'grid' ? '#1C3D2E' : 'white', border: 'none', cursor: 'pointer', color: viewMode === 'grid' ? 'white' : '#9CA3AF' }}
+                className={`px-2.5 py-2 transition-colors ${viewMode === 'grid' ? '' : 'bg-white hover:bg-neutral-50'}`}
+                style={{ background: viewMode === 'grid' ? '#1C3D2E' : undefined, border: 'none', cursor: 'pointer', color: viewMode === 'grid' ? 'white' : '#9CA3AF' }}
               >
                 <LayoutGrid size={14} />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className="px-2.5 py-2 transition-colors"
-                style={{ background: viewMode === 'list' ? '#1C3D2E' : 'white', border: 'none', cursor: 'pointer', color: viewMode === 'list' ? 'white' : '#9CA3AF', borderLeft: '1px solid #E0E2E4' }}
+                className={`px-2.5 py-2 transition-colors ${viewMode === 'list' ? '' : 'bg-white hover:bg-neutral-50'}`}
+                style={{ background: viewMode === 'list' ? '#1C3D2E' : undefined, border: 'none', cursor: 'pointer', color: viewMode === 'list' ? 'white' : '#9CA3AF', borderLeft: '1px solid #E0E2E4' }}
               >
                 <List size={14} />
               </button>
@@ -292,10 +292,10 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               <button
                 key={tab}
                 onClick={() => { setFunnelTab(tab); setSelectedId(null) }}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex-shrink-0"
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex-shrink-0 ${isActive ? '' : 'bg-white hover:bg-neutral-50'}`}
                 style={isActive
                   ? { background: '#243329', color: 'white', border: '1px solid #243329' }
-                  : { background: 'white', color: '#202124', border: '1px solid #E3E3DA' }}
+                  : { color: '#202124', border: '1px solid #E3E3DA' }}
               >
                 {label}
                 <span

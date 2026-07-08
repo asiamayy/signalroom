@@ -192,7 +192,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               title="View persona"
               className="w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
               style={panelOpen
-                ? { background: '#E8F5F1', border: '1px solid #5A7973', color: '#5A7973' }
+                ? { background: '#E8F5F1', border: '1px solid #2A5C4E', color: '#2A5C4E' }
                 : { background: 'white', border: '1px solid rgba(0,0,0,0.1)', color: '#9CA3AF' }
               }
             >
@@ -205,7 +205,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               className={cn('flex items-center gap-1.5 text-sm px-3 sm:px-5 py-2 rounded-lg font-semibold transition-colors flex-shrink-0',
                 canReport && !generatingReport ? 'text-white' : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
               )}
-              style={canReport && !generatingReport ? { background: '#5A7973' } : {}}
+              style={canReport && !generatingReport ? { background: '#2A5C4E' } : {}}
             >
               {generatingReport ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
               <span className="hidden sm:inline">{generatingReport ? 'Generating...' : 'Get report'}</span>
@@ -280,8 +280,8 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           {/* First interview tip — shows after first response */}
           {messages.length === 2 && !streaming && (
             <div className="mx-auto max-w-lg rounded-xl px-4 py-3 text-center" style={{ background: '#E8F5F1', border: '1px solid #A7D9C8' }}>
-              <p className="text-xs font-medium" style={{ color: '#5A7973' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5A7973" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', marginRight: '6px', marginBottom: '2px' }}>
+              <p className="text-xs font-medium" style={{ color: '#2A5C4E' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A5C4E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', marginRight: '6px', marginBottom: '2px' }}>
                   <path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.9 10.2 19 8.7 19 7a7 7 0 1 0-13.4 2.8c.7 1.2 1.8 2 2.4 2.7.6.7 1 1.5 1 2.5"/>
                   <path d="M9 18h6"/><path d="M10 22h4"/>
                 </svg>
@@ -301,7 +301,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           {imagePreview && (
             <div className="relative inline-block mb-3">
               <img src={imagePreview} alt="Upload preview" className="h-20 w-auto rounded-xl object-cover" style={{ border: '1px solid rgba(0,0,0,0.1)' }} />
-              <button onClick={clearImage} className="absolute -top-2 -right-2 w-5 h-5 text-white rounded-full flex items-center justify-center" style={{ background: '#5A7973' }}>
+              <button onClick={clearImage} className="absolute -top-2 -right-2 w-5 h-5 text-white rounded-full flex items-center justify-center" style={{ background: '#2A5C4E' }}>
                 <X size={11} />
               </button>
             </div>
@@ -313,7 +313,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               disabled={streaming}
               className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all"
               style={imagePreview
-                ? { background: '#E8F5F1', border: '1.5px solid #5A7973', color: '#5A7973' }
+                ? { background: '#E8F5F1', border: '1.5px solid #2A5C4E', color: '#2A5C4E' }
                 : { background: 'white', border: '1.5px solid rgba(0,0,0,0.12)', color: '#9CA3AF' }
               }
               title="Upload an image"
@@ -321,7 +321,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               <ImagePlus size={16} />
             </button>
             <div className="flex-1 rounded-xl" style={{ background: '#F3F4F6', border: '1.5px solid transparent', transition: 'all 0.15s' }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#5A7973'; e.currentTarget.style.background = 'white' }}
+              onFocus={e => { e.currentTarget.style.borderColor = '#2A5C4E'; e.currentTarget.style.background = 'white' }}
               onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = '#F3F4F6' }}
             >
               <textarea
@@ -340,7 +340,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               disabled={(!input.trim() && !imageData) || streaming}
               className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-colors"
               style={(input.trim() || imageData) && !streaming
-                ? { background: '#5A7973', color: 'white' }
+                ? { background: '#2A5C4E', color: 'white' }
                 : { background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' }
               }
             >
@@ -421,13 +421,13 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
                     {t?.tech_savviness && (
                       <div>
                         <div className="flex justify-between text-xs mb-1"><span className="text-neutral-500">Tech savviness</span><span className="font-medium text-neutral-700">{t.tech_savviness}/5</span></div>
-                        <div className="h-1.5 rounded-full" style={{ background: '#F3F4F6' }}><div className="h-1.5 rounded-full" style={{ background: '#5A7973', width: `${(t.tech_savviness / 5) * 100}%` }} /></div>
+                        <div className="h-1.5 rounded-full" style={{ background: '#F3F4F6' }}><div className="h-1.5 rounded-full" style={{ background: '#2A5C4E', width: `${(t.tech_savviness / 5) * 100}%` }} /></div>
                       </div>
                     )}
                     {t?.risk_tolerance && (
                       <div>
                         <div className="flex justify-between text-xs mb-1"><span className="text-neutral-500">Risk tolerance</span><span className="font-medium text-neutral-700">{t.risk_tolerance}/5</span></div>
-                        <div className="h-1.5 rounded-full" style={{ background: '#F3F4F6' }}><div className="h-1.5 rounded-full" style={{ background: '#5A7973', width: `${(t.risk_tolerance / 5) * 100}%` }} /></div>
+                        <div className="h-1.5 rounded-full" style={{ background: '#F3F4F6' }}><div className="h-1.5 rounded-full" style={{ background: '#2A5C4E', width: `${(t.risk_tolerance / 5) * 100}%` }} /></div>
                       </div>
                     )}
                   </div>
@@ -464,7 +464,7 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
             </div>
           )}
           {message.content && (
-            <div className="rounded-2xl rounded-tr-sm px-4 py-3" style={{ background: '#5A7973' }}>
+            <div className="rounded-2xl rounded-tr-sm px-4 py-3" style={{ background: '#2A5C4E' }}>
               <p className="text-sm leading-relaxed whitespace-pre-wrap text-white">{message.content}</p>
             </div>
           )}

@@ -81,7 +81,7 @@ export default function ReportsPage() {
         <div className="space-y-3">
           {reports.map((report: any) => {
             const score = report.confidence_score
-            const scoreColor = score >= 75 ? 'text-[#5A7973]' : score >= 50 ? 'text-amber-600' : 'text-red-500'
+            const scoreColor = score >= 75 ? 'text-[#2A5C4E]' : score >= 50 ? 'text-amber-600' : 'text-red-500'
 
             return (
               <div key={report.id} className="relative group">

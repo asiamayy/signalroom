@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Briefcase, Plus, Loader2 } from 'lucide-react'
 import type { Project } from '@/types'
 import { useSearch } from '@/lib/search-context'
@@ -98,7 +99,12 @@ export default function ProjectsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredProjects.map(project => (
-            <div key={project.id} className="rounded-2xl p-5 transition-all hover:border-neutral-300 hover:shadow-sm" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
+            <Link
+              key={project.id}
+              href={`/projects/${project.id}`}
+              className="block rounded-2xl p-5 transition-all hover:border-neutral-300 hover:shadow-sm"
+              style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}
+            >
               <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: '#E8F3EF' }}>
                 <Briefcase size={16} style={{ color: '#1C3D2E' }} />
               </div>
@@ -106,7 +112,7 @@ export default function ProjectsPage() {
               <p className="text-xs mt-1" style={{ color: '#5F6368' }}>
                 Created {new Date(project.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       )}

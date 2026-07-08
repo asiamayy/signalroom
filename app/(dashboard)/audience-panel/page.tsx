@@ -60,7 +60,7 @@ interface PanelResult {
 // ─── Color system ─────────────────────────────────────────────────────────────
 
 const SENTIMENT_COLORS = {
-  positive: { bg: '#E8F5F1', text: '#5A7973', bar: '#5A7973', border: '#A7D9C8' },
+  positive: { bg: '#E8F5F1', text: '#2A5C4E', bar: '#2A5C4E', border: '#A7D9C8' },
   neutral:  { bg: '#F3F4F6', text: '#4B5563', bar: '#9CA3AF', border: '#D1D5DB' },
   negative: { bg: '#FEF2F2', text: '#991B1B', bar: '#EF4444', border: '#FECACA' },
   mixed:    { bg: '#FFFBEB', text: '#92400E', bar: '#F59E0B', border: '#FDE68A' },
@@ -203,7 +203,7 @@ function ResponseCardBody({ result, onReadMore }: { result: PanelResponse; onRea
           <p className="text-sm font-semibold text-neutral-900 truncate">{result.persona_name}</p>
           {result.job_title && (
             <span className="inline-block text-[10px] px-1.5 py-0.5 rounded-full font-medium mt-0.5"
-              style={{ background: '#E8F5F1', color: '#5A7973' }}>
+              style={{ background: '#E8F5F1', color: '#2A5C4E' }}>
               {result.job_title}
             </span>
           )}
@@ -224,11 +224,11 @@ function ResponseCardBody({ result, onReadMore }: { result: PanelResponse; onRea
           {onReadMore ? (
             <button onClick={onReadMore}
               className="text-[11px] font-semibold mt-2 self-start transition-colors"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5A7973', padding: 0, fontFamily: 'inherit' }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2A5C4E', padding: 0, fontFamily: 'inherit' }}>
               Read more →
             </button>
           ) : (
-            <span className="text-[11px] font-semibold mt-2" style={{ color: '#5A7973' }}>Read more →</span>
+            <span className="text-[11px] font-semibold mt-2" style={{ color: '#2A5C4E' }}>Read more →</span>
           )}
         </>
       )}
@@ -284,7 +284,7 @@ function ResponseModalContent({ response }: { response: PanelResponse }) {
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
             {response.job_title && (
               <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
-                style={{ background: '#E8F5F1', color: '#5A7973' }}>
+                style={{ background: '#E8F5F1', color: '#2A5C4E' }}>
                 {response.job_title}
               </span>
             )}
@@ -382,7 +382,7 @@ export default function AudiencePanelPage() {
           </p>
           <Link href="/settings"
             className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-xl text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #5A7973 0%, #5A7973 100%)', boxShadow: '0 2px 10px rgba(26,140,106,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #2A5C4E 0%, #2A5C4E 100%)', boxShadow: '0 2px 10px rgba(26,140,106,0.3)' }}>
             Upgrade plan →
           </Link>
         </div>
@@ -394,7 +394,7 @@ export default function AudiencePanelPage() {
     <div className="p-4 sm:p-6 max-w-6xl" style={{ background: '#F7F8FA', minHeight: '100%' }}>
       <div className="mb-6">
         <h1 className="heading-editorial text-2xl flex items-center gap-2" style={{ color: '#171717' }}>
-          <BarChart3 size={22} style={{ color: '#5A7973' }} />
+          <BarChart3 size={22} style={{ color: '#2A5C4E' }} />
           Audience Panel
         </h1>
         <p className="text-sm text-neutral-500 mt-1">Ask one question — see how your entire audience responds, analyzed and visualized instantly</p>
@@ -416,7 +416,7 @@ export default function AudiencePanelPage() {
             <div className="flex items-center justify-between mb-3">
               <label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Personas</label>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: selectedIds.length >= 5 ? '#E8F5F1' : '#F3F4F6', color: selectedIds.length >= 5 ? '#5A7973' : '#6B7280' }}>
+                style={{ background: selectedIds.length >= 5 ? '#E8F5F1' : '#F3F4F6', color: selectedIds.length >= 5 ? '#2A5C4E' : '#6B7280' }}>
                 {selectedIds.length} / {maxPersonas}
               </span>
             </div>
@@ -425,7 +425,7 @@ export default function AudiencePanelPage() {
             ) : personas.length === 0 ? (
               <div className="text-center py-6">
                 <p className="text-sm text-neutral-500 mb-2">No personas yet</p>
-                <Link href="/personas/new" className="text-xs font-semibold transition-opacity hover:opacity-70" style={{ color: '#5A7973' }}>Create your first persona →</Link>
+                <Link href="/personas/new" className="text-xs font-semibold transition-opacity hover:opacity-70" style={{ color: '#2A5C4E' }}>Create your first persona →</Link>
               </div>
             ) : (
               <div className="space-y-1.5 max-h-80 overflow-y-auto">
@@ -439,7 +439,7 @@ export default function AudiencePanelPage() {
                       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left"
                       style={{
                         background: isSelected ? '#E8F5F1' : '#F9FAFB',
-                        border: isSelected ? '1.5px solid #5A7973' : '1.5px solid transparent',
+                        border: isSelected ? '1.5px solid #2A5C4E' : '1.5px solid transparent',
                         cursor: atLimit ? 'not-allowed' : 'pointer',
                         opacity: atLimit ? 0.45 : 1,
                         fontFamily: 'inherit',
@@ -450,7 +450,7 @@ export default function AudiencePanelPage() {
                         <p className="text-[11px] text-neutral-400 truncate">{persona.traits?.job_title ?? 'No role'}</p>
                       </div>
                       {isSelected && (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5A7973" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A5C4E" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                       )}
                     </button>
                   )
@@ -467,7 +467,7 @@ export default function AudiencePanelPage() {
           <button onClick={handleRun} disabled={!canRun}
             className="w-full flex items-center justify-center gap-2 text-sm font-semibold px-5 py-3 rounded-xl transition-all hover:enabled:opacity-90"
             style={{
-              background: canRun ? 'linear-gradient(135deg, #5A7973 0%, #5A7973 100%)' : '#E5E7EB',
+              background: canRun ? 'linear-gradient(135deg, #2A5C4E 0%, #2A5C4E 100%)' : '#E5E7EB',
               color: canRun ? 'white' : '#9CA3AF',
               cursor: canRun ? 'pointer' : 'not-allowed',
               border: 'none',
@@ -527,7 +527,7 @@ export default function AudiencePanelPage() {
           )}
           {loading && (
             <div className="rounded-2xl p-14 text-center" style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-              <Loader2 size={32} className="mx-auto mb-3 animate-spin" style={{ color: '#5A7973' }} />
+              <Loader2 size={32} className="mx-auto mb-3 animate-spin" style={{ color: '#2A5C4E' }} />
               <h3 className="text-sm font-semibold text-neutral-900 mb-1">Running panel</h3>
               <p className="text-xs text-neutral-400">Interviewing all {selectedIds.length} personas in parallel...</p>
             </div>
@@ -537,7 +537,7 @@ export default function AudiencePanelPage() {
               {/* ── Stat cards ── */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {([
-                  { Icon: Users, value: result.total_personas, label: 'Personas Interviewed', iconBg: '#E8F5F1', iconColor: '#5A7973' },
+                  { Icon: Users, value: result.total_personas, label: 'Personas Interviewed', iconBg: '#E8F5F1', iconColor: '#2A5C4E' },
                   { Icon: Sparkles, value: result.themes.length, label: 'Key Themes Identified', iconBg: '#FFFBEB', iconColor: '#D97706' },
                   { Icon: Target, value: `${result.consensus_score}%`, label: 'Consensus Score', iconBg: '#EEF2FF', iconColor: '#6366F1' },
                   { Icon: Clock, value: `${result.summary.completed_in_seconds}s`, label: 'Time to Complete', sublabel: "That's 3–4 weeks saved", iconBg: '#EFF6FF', iconColor: '#3B82F6' },
@@ -549,7 +549,7 @@ export default function AudiencePanelPage() {
                     </div>
                     <p className="text-2xl font-serif font-bold text-neutral-900 leading-none">{s.value}</p>
                     <p className="text-[11px] text-neutral-500 mt-1.5 font-medium">{s.label}</p>
-                    {s.sublabel && <p className="text-[10px] mt-1 font-semibold" style={{ color: '#5A7973' }}>{s.sublabel}</p>}
+                    {s.sublabel && <p className="text-[10px] mt-1 font-semibold" style={{ color: '#2A5C4E' }}>{s.sublabel}</p>}
                   </div>
                 ))}
               </div>

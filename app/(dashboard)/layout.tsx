@@ -308,12 +308,8 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               </button>
 
               {showAccountMenu && (
-                <div className="absolute right-0 top-full pt-2 z-50" style={{ minWidth: '180px' }}>
+                <div className="absolute right-0 top-full pt-2 z-50" style={{ minWidth: '140px' }}>
                   <div className="rounded-xl overflow-hidden" style={{ background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', border: '1px solid #E3E3DA' }}>
-                    <div className="px-4 py-3" style={{ borderBottom: '1px solid #F1F1F1' }}>
-                      <p className="font-serif text-base leading-tight truncate" style={{ color: '#202124' }}>{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</p>
-                      <p className="text-xs mt-0.5 truncate" style={{ color: '#9CA3AF' }}>{userEmail ?? ''}</p>
-                    </div>
                     <div className="px-4 py-3 text-center">
                       <button
                         onClick={handleSignOut}
@@ -331,7 +327,10 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        {/* scrollbar-gutter: stable reserves the scrollbar's width whether or not
+            it's needed, so header controls don't shift horizontally when filtering
+            (e.g. search) changes content height enough to toggle the scrollbar. */}
+        <main className="flex-1 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
           {children}
         </main>
       </div>

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitCompare, Loader2, Plus, X, ChevronDown } from 'lucide-react'
+import { GitCompare, Loader2, Plus, X, ChevronDown, Check } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
 import { cn, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
@@ -102,8 +102,21 @@ export default function ComparePage() {
   const [activeTab, setActiveTab] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
+  const [showTypeMenu, setShowTypeMenu] = useState(false)
+  const typeMenuRef = useRef<HTMLDivElement>(null)
 
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!showTypeMenu) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (typeMenuRef.current && !typeMenuRef.current.contains(e.target as Node)) {
+        setShowTypeMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showTypeMenu])
 
   // Load personas
   useEffect(() => {
@@ -230,17 +243,33 @@ export default function ComparePage() {
           </div>
 
           {/* Interview type */}
-          <div>
+          <div className="relative" ref={typeMenuRef}>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5">Interview type</label>
-            <select
-              value={interviewType}
-              onChange={e => setInterviewType(e.target.value as InterviewType)}
-              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+            <button
+              type="button"
+              onClick={() => setShowTypeMenu(o => !o)}
+              className="w-full flex items-center justify-between gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors bg-white hover:bg-neutral-50"
+              style={{ border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
             >
-              {INTERVIEW_TYPES.map(t => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
+              {INTERVIEW_TYPES.find(t => t.value === interviewType)?.label}
+              <ChevronDown size={13} className={cn('transition-transform duration-200', showTypeMenu ? 'rotate-180' : '')} style={{ color: '#9CA3AF' }} />
+            </button>
+            {showTypeMenu && (
+              <div className="absolute left-0 top-full mt-2 rounded-xl overflow-hidden z-50 w-full" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)' }}>
+                {INTERVIEW_TYPES.map(t => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => { setInterviewType(t.value); setShowTypeMenu(false) }}
+                    className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
+                    style={{ background: interviewType === t.value ? '#CACFC6' : 'white', color: interviewType === t.value ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    {t.label}
+                    {interviewType === t.value && <Check size={13} style={{ color: '#1C3D2E' }} />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Context */}
