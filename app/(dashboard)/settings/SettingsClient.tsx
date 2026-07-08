@@ -161,7 +161,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
             </div>
             <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
               <div
-                className={cn('h-1.5 rounded-full transition-all', personaLimit !== Infinity && personaCount >= personaLimit ? 'bg-red-400' : 'bg-emerald-400')}
+                className={cn('h-1.5 rounded-full transition-all', personaLimit !== Infinity && personaCount >= personaLimit ? 'bg-red-400' : 'bg-[#2A5C4E]')}
                 style={{ width: personaLimit === Infinity ? '10%' : `${Math.min(100, (personaCount / personaLimit) * 100)}%` }}
               />
             </div>
@@ -177,7 +177,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
             </div>
             <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
               <div
-                className="h-1.5 bg-emerald-400 rounded-full transition-all"
+                className="h-1.5 bg-[#2A5C4E] rounded-full transition-all"
                 style={{ width: interviewLimit === Infinity ? '10%' : `${Math.min(100, (interviewCount / interviewLimit) * 100)}%` }}
               />
             </div>
@@ -198,8 +198,8 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {currentPlanData && (
-                <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
-                  <currentPlanData.icon size={16} className="text-emerald-600" />
+                <div className="w-9 h-9 rounded-lg bg-[#E8F5F1] flex items-center justify-center">
+                  <currentPlanData.icon size={16} className="text-[#2A5C4E]" />
                 </div>
               )}
               <div>
@@ -240,14 +240,14 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                 className={cn(
                   'bg-white rounded-xl p-5 flex flex-col',
                   plan.highlight && !isCurrent
-                    ? 'border-2 border-emerald-400'
+                    ? 'border-2 border-[#2A5C4E]'
                     : 'border border-neutral-200',
                   isCurrent && 'border-neutral-900'
                 )}
               >
                 {/* Badge */}
                 {plan.highlight && !isCurrent && (
-                  <span className="self-start text-[11px] font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full mb-3">
+                  <span className="self-start text-[11px] font-medium bg-[#E8F5F1] text-[#2A5C4E] px-2 py-0.5 rounded-full mb-3">
                     Most popular
                   </span>
                 )}
@@ -276,7 +276,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                 <ul className="space-y-2 flex-1 mb-5">
                   {plan.features.map(f => (
                     <li key={f} className="flex items-start gap-2 text-xs text-neutral-600">
-                      <Check size={12} className="text-emerald-500 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
+                      <Check size={12} className="text-[#2A5C4E] mt-0.5 flex-shrink-0" strokeWidth={2.5} />
                       {f}
                     </li>
                   ))}

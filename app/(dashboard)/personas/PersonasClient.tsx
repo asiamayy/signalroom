@@ -223,8 +223,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       <button
                         key={tab}
                         onClick={() => { setFilterTab(tab); setSelectedId(null) }}
-                        className="w-full flex items-center justify-between text-left text-sm px-3 py-2 rounded-lg transition-colors"
-                        style={{ background: filterTab === tab ? '#CACFC6' : 'transparent', color: filterTab === tab ? '#1C3D2E' : '#5F6368', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: filterTab === tab ? 600 : 500 }}
+                        className={`w-full flex items-center justify-between text-left text-xs px-3 py-2 rounded-lg transition-colors ${filterTab === tab ? '' : 'hover:bg-neutral-50 hover:text-neutral-800'}`}
+                        style={{ background: filterTab === tab ? '#CACFC6' : undefined, color: filterTab === tab ? '#1C3D2E' : '#5F6368', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: filterTab === tab ? 600 : 500 }}
                       >
                         {tab === 'All Personas' ? 'All' : tab} {tab === 'Archived' ? `(${archived.length})` : `(${active.length})`}
                         {filterTab === tab && <Check size={13} strokeWidth={3} />}
@@ -251,8 +251,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     <button
                       key={opt}
                       onClick={() => { setSortBy(opt); setShowSortMenu(false) }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
-                      style={{ background: sortBy === opt ? '#CACFC6' : 'white', color: sortBy === opt ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                      className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center justify-between ${sortBy === opt ? '' : 'bg-white hover:bg-neutral-50 hover:text-neutral-800'}`}
+                      style={{ background: sortBy === opt ? '#CACFC6' : undefined, color: sortBy === opt ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
                       {opt}
                       {sortBy === opt && <Check size={13} style={{ color: '#1C3D2E' }} />}

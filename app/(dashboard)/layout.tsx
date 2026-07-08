@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { Inter, Playfair_Display } from 'next/font/google'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home, Briefcase, Users, MessageSquare, Settings, ArrowLeftRight, Menu, X,
   BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus,
@@ -307,21 +308,30 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
                 <ChevronDown size={13} style={{ color: '#9CA3AF' }} className={cn('transition-transform duration-200 hidden sm:block', showAccountMenu ? 'rotate-180' : '')} />
               </button>
 
-              {showAccountMenu && (
-                <div className="absolute right-0 top-full pt-2 z-50" style={{ minWidth: '140px' }}>
-                  <div className="rounded-xl overflow-hidden" style={{ background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', border: '1px solid #E3E3DA' }}>
-                    <div className="px-4 py-3 text-center">
-                      <button
-                        onClick={handleSignOut}
-                        className="text-xs transition-colors text-[#9CA3AF] hover:text-[#4B5563]"
-                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
-                      >
-                        Sign out →
-                      </button>
+              <AnimatePresence>
+                {showAccountMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                    className="absolute right-0 top-full pt-2 z-50"
+                    style={{ minWidth: '110px' }}
+                  >
+                    <div style={{ background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', border: '1px solid #E3E3DA' }}>
+                      <div className="px-3 py-2 text-center">
+                        <button
+                          onClick={handleSignOut}
+                          className="text-xs transition-colors text-[#9CA3AF] hover:text-[#4B5563]"
+                          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
+                          Sign out →
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

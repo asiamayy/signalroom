@@ -22,16 +22,16 @@ function HeroWordCarousel() {
       setTimeout(() => {
         setIndex(i => (i + 1) % HERO_WORDS.length)
         setVisible(true)
-      }, 300)
-    }, 2500)
+      }, 600)
+    }, 4000)
     return () => clearInterval(interval)
   }, [])
 
   return (
     <em
       className={cn(
-        'inline-block font-serif not-italic text-[#2A5C4E] transition-all duration-300 ease-out',
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+        'inline-block font-serif not-italic text-[#2A5C4E] transition-all duration-[600ms] ease-in-out',
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3'
       )}
     >
       {HERO_WORDS[index]}

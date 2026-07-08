@@ -261,8 +261,8 @@ export default function ComparePage() {
                     key={t.value}
                     type="button"
                     onClick={() => { setInterviewType(t.value); setShowTypeMenu(false) }}
-                    className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex items-center justify-between"
-                    style={{ background: interviewType === t.value ? '#CACFC6' : 'white', color: interviewType === t.value ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                    className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center justify-between ${interviewType === t.value ? '' : 'bg-white hover:bg-neutral-50 hover:text-neutral-800'}`}
+                    style={{ background: interviewType === t.value ? '#CACFC6' : undefined, color: interviewType === t.value ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     {t.label}
                     {interviewType === t.value && <Check size={13} style={{ color: '#1C3D2E' }} />}
