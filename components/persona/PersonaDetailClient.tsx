@@ -189,15 +189,15 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
         <div className="rounded-3xl overflow-hidden relative" style={{ background: '#FCFBFA', border: '1px solid #E5E9E4' }}>
 
           {/* Abstract geometric overlapping-circle graphic, blended into the right side */}
-          <div className="absolute inset-y-0 right-0 w-2/3 pointer-events-none overflow-hidden" aria-hidden="true">
-            <svg viewBox="0 0 700 300" preserveAspectRatio="xMaxYMid slice" className="h-full w-full">
-              <circle cx="560" cy="60" r="180" fill="#B7D0C4" opacity="0.35" />
-              <circle cx="680" cy="190" r="150" fill="#9FC1AF" opacity="0.35" />
-              <circle cx="470" cy="220" r="120" fill="#CFE0D7" opacity="0.4" />
+          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 400, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }} aria-hidden="true">
+            <svg viewBox="0 0 400 200" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="360" cy="100" r="160" fill="#e3ebe6" opacity="0.4" />
+              <circle cx="320" cy="110" r="120" fill="#d1ded6" opacity="0.5" />
+              <circle cx="290" cy="130" r="90" fill="#b9cbbf" opacity="0.3" />
             </svg>
           </div>
 
-          <div className="relative flex flex-col gap-6 p-6 lg:flex-row lg:justify-between lg:items-center lg:gap-8 lg:p-10">
+          <div className="relative flex flex-col gap-6 p-6 lg:flex-row lg:justify-between lg:items-center lg:gap-8 lg:p-10" style={{ zIndex: 2 }}>
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start lg:items-center">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
@@ -238,7 +238,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
                 )}
 
                 {t?.key_quote && (
-                  <p className="mt-5 flex items-start gap-2 text-sm italic leading-relaxed" style={{ color: '#2D4A36', fontFamily: "'Playfair Display', serif", fontWeight: 400, letterSpacing: 'normal' }}>
+                  <p className="mt-5 flex items-start gap-2 italic leading-relaxed" style={{ color: '#2D4A36', fontFamily: "Georgia, Cambria, 'Times New Roman', Times, serif", fontWeight: 400, letterSpacing: 'normal', fontSize: '0.9rem' }}>
                     <span style={{ color: '#1E3A2B' }}>&ldquo;</span>
                     {t.key_quote}
                     <span style={{ color: '#1E3A2B' }}>&rdquo;</span>
@@ -248,8 +248,8 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
             </div>
 
             {/* Stats card */}
-            <div className="relative w-full flex-shrink-0 rounded-2xl shadow-sm lg:w-72" style={{ background: 'white', border: '1px solid #E2E2E2' }}>
-              <div className="grid grid-cols-2">
+            <div className="relative w-full flex-shrink-0 rounded-2xl shadow-sm lg:w-72" style={{ background: 'white', border: '1px solid #E2E2E2', zIndex: 10 }}>
+              <div className="grid grid-cols-2" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                 {stats.map((stat, i) => (
                   <div
                     key={stat.label}
@@ -259,13 +259,13 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
                       borderBottom: i < 2 ? '1px solid #EDEDED' : 'none',
                     }}
                   >
-                    <p className="font-serif text-2xl font-medium" style={{ color: '#1E3A2B' }}>{stat.value}</p>
+                    <p className="text-xl" style={{ color: '#1E3A2B', fontWeight: 500 }}>{stat.value}</p>
                     <p className="mt-0.5 text-xs" style={{ color: '#9CA3AF' }}>{stat.label}</p>
                   </div>
                 ))}
               </div>
               <div className="px-5 py-3" style={{ borderTop: '1px solid #EDEDED' }}>
-                <p className="text-xs" style={{ color: '#9CA3AF' }}>
+                <p className="text-xs" style={{ color: '#9CA3AF', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' }}>
                   Last updated {new Date(persona.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
