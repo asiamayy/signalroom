@@ -470,7 +470,10 @@ export default function LandingPage() {
               <Link key={l} href={`/${l.toLowerCase()}`} className="text-xs uppercase tracking-widest text-neutral-400 hover:text-neutral-700 transition-colors">{l}</Link>
             ))}
           </div>
-          <p className="text-xs text-neutral-400">© 2026 SignalRoom</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+  &copy; {new Date().getFullYear()} SignalRoom. All rights reserved. 
+  SignalRoom&trade; is a proprietary product and trademark.
+</p>
         </div>
       </footer>
     </div>
