@@ -289,6 +289,9 @@ Generate realistic, specific persona traits as JSON with this shape:
   "tech_savviness": 1-5,
   "risk_tolerance": 1-5,
   "additional_context": "2-3 sentences of rich personal context that makes this person feel real",
+  "motivations": ["motivation 1", "motivation 2", "motivation 3", "motivation 4"],
+  "preferred_tools": ["tool or product 1", "tool or product 2", "tool or product 3"],
+  "key_quote": "A single first-person sentence that captures this person's core outlook or philosophy",
   "tags": ["tag1", "tag2", "tag3"]
 }
 

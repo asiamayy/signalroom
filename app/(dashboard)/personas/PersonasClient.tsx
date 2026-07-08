@@ -176,14 +176,19 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         {/* ── Page heading + controls ── */}
         <div className="flex items-start justify-between gap-4 flex-wrap px-4 sm:px-6 pt-6 pb-4" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
           <div>
-            <h1 className="font-serif text-3xl tracking-tight" style={{ color: '#202124' }}>Personas</h1>
-            <p className="text-sm mt-1" style={{ color: '#5F6368' }}>AI-generated personas built from real research. Explore beliefs, behaviors, needs, and motivations.</p>
+            <h1 className="font-serif text-4xl font-semibold tracking-tight" style={{ color: '#202124' }}>Personas</h1>
+            <p className="text-[15px] mt-2 leading-relaxed" style={{ color: '#5F6368' }}>AI-generated personas built from real research. Explore beliefs, behaviors, needs, and motivations.</p>
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-            {atLimit && (
+            {atLimit ? (
               <Link href="/settings" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg" style={{ background: '#E8F3EF', color: '#1C3D2E', border: '1px solid #BFD6CB' }}>
                 Upgrade plan
+              </Link>
+            ) : (
+              <Link href="/personas/new" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-lg text-white" style={{ background: '#243329' }}>
+                <Plus size={14} />
+                Create Persona
               </Link>
             )}
 
@@ -286,15 +291,15 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               <button
                 key={tab}
                 onClick={() => { setFunnelTab(tab); setSelectedId(null) }}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors flex-shrink-0"
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors flex-shrink-0"
                 style={isActive
-                  ? { background: '#1C3D2E', color: 'white', border: '1px solid #1C3D2E' }
-                  : { background: 'white', color: '#5F6368', border: '1px solid #E0E2E4' }}
+                  ? { background: '#243329', color: 'white', border: '1px solid #243329' }
+                  : { background: 'white', color: '#202124', border: '1px solid #E3E3DA' }}
               >
                 {label}
                 <span
-                  className="inline-flex items-center justify-center rounded-full text-[10px] font-bold min-w-[18px] h-[18px] px-1"
-                  style={isActive ? { background: 'rgba(255,255,255,0.25)', color: 'white' } : { background: '#E8F3EF', color: '#1C3D2E' }}
+                  className="text-xs"
+                  style={isActive ? { color: 'rgba(255,255,255,0.7)' } : { color: '#9CA3AF' }}
                 >
                   {tabCount}
                 </span>
@@ -323,7 +328,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
 
           {/* ── Grid view ── */}
           {filtered.length > 0 && viewMode === 'grid' && filterTab !== 'Archived' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-4">
               {filtered.map((persona: Persona) => {
                 const isSelected = selectedId === persona.id
                 return (
@@ -340,16 +345,16 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     whileHover={!isSelected ? { y: -3 } : undefined}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     style={{
-                      background: isSelected ? '#EBEFEF' : 'white',
-                      boxShadow: isSelected ? '0 0 0 2px #1C3D2E, 0 4px 16px rgba(28,61,46,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
-                      border: isSelected ? '1.5px solid #1C3D2E' : '1.5px solid rgba(0,0,0,0.05)',
+                      background: isSelected ? '#F2F3EE' : 'white',
+                      boxShadow: isSelected ? '0 0 0 1px #AAABA6' : '0 1px 3px rgba(0,0,0,0.04)',
+                      border: isSelected ? '1.5px solid #AAABA6' : '1.5px solid #E3E3DA',
                       transition: 'box-shadow 0.18s ease, border-color 0.18s ease',
                       borderRadius: 16,
                     }}
                   >
                     {/* "Selected" pill badge */}
                     {isSelected && (
-                      <div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ background: '#1C3D2E' }}>
+                      <div className="absolute top-5 right-5 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ background: '#1C3D2E' }}>
                         <Check size={11} strokeWidth={3} />
                         Selected
                       </div>
@@ -359,7 +364,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     {!isSelected && (
                       <div
                         data-archive-btn="true"
-                        className="absolute top-3.5 right-3.5 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                        className="absolute top-5 right-5 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                         onClick={e => e.stopPropagation()}
                       >
                         <button
@@ -377,24 +382,24 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       </div>
                     )}
 
-                    <div className="p-5">
+                    <div className="p-6">
                       {/* Photo left, name/title/location right */}
-                      <div className="flex items-start gap-3 mb-3 pr-6">
+                      <div className="flex items-start gap-4 pr-6">
                         <PersonaAvatar
                           avatarUrl={persona.avatar_url}
                           avatarInitials={persona.avatar_initials}
                           avatarColor={persona.avatar_color}
                           name={persona.name}
-                          size="lg"
+                          size="2xl"
                           shape="square"
                           className="flex-shrink-0"
                         />
-                        <div className="min-w-0 flex-1 pt-0.5">
-                          <h3 className="font-serif text-lg leading-tight truncate" style={{ color: '#202124' }}>{persona.name}</h3>
-                          <p className="text-sm truncate" style={{ color: '#5F6368' }}>{persona.traits?.job_title ?? 'No role'}</p>
+                        <div className="min-w-0 flex-1 pt-1">
+                          <h3 className="font-serif text-2xl leading-tight truncate" style={{ color: '#202124' }}>{persona.name}</h3>
+                          <p className="text-sm font-medium truncate mt-0.5" style={{ color: '#202124', opacity: 0.8 }}>{persona.traits?.job_title ?? 'No role'}</p>
                           {persona.traits?.location && (
-                            <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: '#9CA3AF' }}>
-                              <MapPin size={11} />
+                            <p className="text-sm flex items-center gap-1 mt-1.5" style={{ color: '#5F6368' }}>
+                              <MapPin size={13} />
                               {persona.traits.location}
                             </p>
                           )}
@@ -402,25 +407,27 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       </div>
 
                       {persona.tags && persona.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {persona.tags.slice(0, 3).map((tag: string) => (
-                            <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium" style={{ background: '#F1F1F1', color: '#4B5563' }}>
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {persona.tags.slice(0, 4).map((tag: string) => (
+                            <span key={tag} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#E3E3DA', color: '#4B5563' }}>
                               {tag}
                             </span>
                           ))}
                         </div>
                       )}
 
-                      <p className="text-xs leading-relaxed line-clamp-3 pt-3" style={{ color: '#5F6368', borderTop: '1px solid #F1F1F1' }}>
+                      <div className="my-5 h-px" style={{ background: '#E3E3DA' }} />
+
+                      <p className="text-sm leading-relaxed line-clamp-3" style={{ color: '#5F6368' }}>
                         {persona.traits?.additional_context ?? `${persona.traits?.job_title ?? 'A persona'} with defined goals and behaviors.`}
                       </p>
                     </div>
 
-                    <div className="px-5 pb-4 flex gap-2">
+                    <div className="px-6 pb-6 flex gap-3">
                       <Link
                         href={`/personas/${persona.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="flex-1 text-center text-sm font-semibold py-2 rounded-lg"
+                        className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl"
                         style={{ background: 'white', border: '1px solid #DADCE0', color: '#202124' }}
                       >
                         View Details
@@ -428,15 +435,15 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       <Link
                         href={`/interviews/new?persona_id=${persona.id}`}
                         onClick={e => e.stopPropagation()}
-                        className="flex-1 text-center text-sm font-semibold py-2 rounded-lg text-white"
-                        style={{ background: '#1C3D2E' }}
+                        className="flex-1 text-center text-sm font-medium py-2.5 rounded-xl text-white"
+                        style={{ background: '#243329' }}
                       >
                         Start Interview
                       </Link>
                     </div>
 
                     {/* Subtle "Show preview" link — always visible when selected, hover-reveal otherwise */}
-                    <div className={isSelected ? 'px-5 pb-4 -mt-1.5 text-center' : 'px-5 pb-4 -mt-1.5 text-center opacity-0 group-hover:opacity-100 transition-opacity'}>
+                    <div className={isSelected ? 'px-6 pb-4 -mt-2 text-center' : 'px-6 pb-4 -mt-2 text-center opacity-0 group-hover:opacity-100 transition-opacity'}>
                       <button
                         onClick={e => { e.stopPropagation(); showPersonaPreview(persona) }}
                         className="text-xs transition-colors text-[#9CA3AF] hover:text-[#4B5563]"
@@ -477,7 +484,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     style={{
                       background: 'white',
-                      border: isSelected ? '1.5px solid #1C3D2E' : '1.5px solid rgba(0,0,0,0.05)',
+                      border: isSelected ? '1.5px solid #AAABA6' : '1.5px solid #E3E3DA',
                       boxShadow: isSelected ? '0 0 0 2px rgba(28,61,46,0.1)' : '0 1px 3px rgba(0,0,0,0.05)',
                       borderRadius: 16,
                     }}
@@ -501,7 +508,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         <Eye size={13} />
                       </button>
                       <Link href={`/personas/${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0" style={{ background: 'white', border: '1px solid #DADCE0', color: '#202124' }}>View</Link>
-                      <Link href={`/interviews/new?persona_id=${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg text-white flex-shrink-0" style={{ background: '#1C3D2E' }}>Start Interview</Link>
+                      <Link href={`/interviews/new?persona_id=${persona.id}`} onClick={e => e.stopPropagation()} className="hidden sm:inline-block text-xs font-semibold px-3 py-1.5 rounded-lg text-white flex-shrink-0" style={{ background: '#243329' }}>Start Interview</Link>
                       <button onClick={e => handleArchive(e, persona.id)} className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-amber-500" style={{ background: '#F9FAFB', border: '1px solid rgba(0,0,0,0.08)' }} title="Archive">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
                       </button>
@@ -524,7 +531,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-4">
                   {archived.map((persona: Persona) => {
                     const isSelected = selectedId === persona.id
                     return (
@@ -541,58 +548,59 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                         style={{
                           background: 'white',
                           opacity: 0.85,
-                          boxShadow: isSelected ? '0 0 0 2px #1C3D2E, 0 4px 16px rgba(28,61,46,0.12)' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)',
-                          border: isSelected ? '1.5px solid #1C3D2E' : '1.5px solid rgba(0,0,0,0.05)',
+                          boxShadow: isSelected ? '0 0 0 1px #AAABA6' : '0 1px 3px rgba(0,0,0,0.04)',
+                          border: isSelected ? '1.5px solid #AAABA6' : '1.5px solid #E3E3DA',
                           borderRadius: 16,
                         }}
                       >
                         {/* Checkmark when selected */}
                         {isSelected && (
-                          <div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ background: '#1C3D2E' }}>
+                          <div className="absolute top-5 right-5 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ background: '#1C3D2E' }}>
                             <Check size={11} strokeWidth={3} />
                             Selected
                           </div>
                         )}
 
-                        <div className="p-5">
-                          <div className="flex items-start gap-3 mb-3 pr-6">
+                        <div className="p-6">
+                          <div className="flex items-start gap-4 pr-6">
                             <PersonaAvatar
                               avatarUrl={persona.avatar_url}
                               avatarInitials={persona.avatar_initials}
                               avatarColor={persona.avatar_color}
                               name={persona.name}
-                              size="lg"
+                              size="2xl"
                               shape="square"
                               className="flex-shrink-0"
                             />
-                            <div className="min-w-0 flex-1 pt-0.5">
-                              <h3 className="font-serif text-lg leading-tight truncate" style={{ color: '#5F6368' }}>{persona.name}</h3>
-                              <p className="text-sm truncate" style={{ color: '#9CA3AF' }}>{persona.traits?.job_title ?? 'No role'}</p>
+                            <div className="min-w-0 flex-1 pt-1">
+                              <h3 className="font-serif text-2xl leading-tight truncate" style={{ color: '#5F6368' }}>{persona.name}</h3>
+                              <p className="text-sm font-medium truncate mt-0.5" style={{ color: '#9CA3AF' }}>{persona.traits?.job_title ?? 'No role'}</p>
                               {persona.traits?.location && (
-                                <p className="text-xs flex items-center gap-1 mt-0.5" style={{ color: '#9CA3AF' }}>
-                                  <MapPin size={11} />
+                                <p className="text-sm flex items-center gap-1 mt-1.5" style={{ color: '#9CA3AF' }}>
+                                  <MapPin size={13} />
                                   {persona.traits.location}
                                 </p>
                               )}
                             </div>
                           </div>
                           {persona.tags && persona.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mb-3">
-                              {persona.tags.slice(0, 3).map((tag: string) => (
-                                <span key={tag} className="text-xs px-2.5 py-0.5 rounded-full font-medium" style={{ background: '#F1F1F1', color: '#9CA3AF' }}>
+                            <div className="flex flex-wrap gap-2 mt-4">
+                              {persona.tags.slice(0, 4).map((tag: string) => (
+                                <span key={tag} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#E3E3DA', color: '#9CA3AF' }}>
                                   {tag}
                                 </span>
                               ))}
                             </div>
                           )}
-                          <p className="text-xs leading-relaxed line-clamp-2 pt-3 mb-3" style={{ color: '#9CA3AF', borderTop: '1px solid #F1F1F1' }}>
+                          <div className="my-5 h-px" style={{ background: '#E3E3DA' }} />
+                          <p className="text-sm leading-relaxed line-clamp-2 mb-4" style={{ color: '#9CA3AF' }}>
                             {persona.traits?.additional_context ?? `${persona.traits?.job_title ?? 'A persona'} with defined goals and behaviors.`}
                           </p>
                           <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#F3F4F6', color: '#9CA3AF' }}>Archived</span>
                         </div>
 
                         {/* Footer with preview + restore + delete buttons */}
-                        <div className="px-5 pb-4 flex gap-2">
+                        <div className="px-6 pb-6 flex gap-2">
                           <button
                             onClick={(e) => { e.stopPropagation(); showPersonaPreview(persona) }}
                             className="w-9 h-9 rounded-xl flex items-center justify-center text-neutral-400 hover:text-neutral-700 transition-colors flex-shrink-0"

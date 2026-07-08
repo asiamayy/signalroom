@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  Home, Briefcase, Users, MessageSquare, FileText, Settings, GitCompare, Menu, X,
-  BarChart3, Activity, Users2, LogOut, Search, HelpCircle, ChevronDown, Plus,
+  Home, Briefcase, Users, MessageSquare, Settings, ArrowLeftRight, Menu, X,
+  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
@@ -17,11 +17,10 @@ const NAV_ITEMS = [
   { href: '/projects', label: 'Projects', icon: Briefcase },
   { href: '/personas', label: 'Personas', icon: Users },
   { href: '/interviews', label: 'Interviews', icon: MessageSquare },
-  { href: '/compare', label: 'Compare', icon: GitCompare },
-  { href: '/audience-panel', label: 'Audience Panel', icon: Users2 },
-  { href: '/signals', label: 'Signals', icon: BarChart3 },
-  { href: '/insights', label: 'Insights', icon: Activity },
-  { href: '/reports', label: 'Reports', icon: FileText },
+  { href: '/compare', label: 'Compare', icon: ArrowLeftRight },
+  { href: '/audience-panel', label: 'Audience Panel', icon: UsersRound },
+  { href: '/signals', label: 'Signals', icon: BarChart2 },
+  { href: '/reports', label: 'Insights', icon: Activity },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -100,7 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="px-5 py-5 flex items-start justify-between" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
         <div>
           <Logo href="/personas" size="sm" />
-          <p className="text-[11px] font-semibold tracking-wide mt-0.5" style={{ color: '#9CA3AF' }}>AI Market Research</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] mt-1" style={{ color: '#9CA3AF' }}>AI Market Research</p>
         </div>
         {/* Close button - mobile only */}
         <button
@@ -124,9 +123,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 'flex items-center gap-2.5 px-3 py-2.5 md:py-2 rounded-lg text-sm font-semibold transition-all',
                 active ? '' : 'text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50'
               )}
-              style={active ? { background: '#DCE5E1', color: '#1C3D2E' } : {}}
+              style={active ? { background: '#CACFC6', color: '#1C3D2E' } : {}}
             >
-              <Icon size={15} strokeWidth={1.75} />
+              <Icon size={15} strokeWidth={1.75} fill={active ? '#1C3D2E' : 'none'} />
               {label}
             </Link>
           )
@@ -213,7 +212,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* Search */}
-          <div className="hidden md:flex items-center gap-2.5 rounded-full px-4 py-2.5 flex-1 max-w-2xl" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
+          <div className="hidden md:flex items-center gap-2.5 rounded-lg px-4 py-2.5 flex-1 max-w-2xl" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
             <Search size={16} style={{ color: '#9CA3AF' }} />
             <input
               type="text"
@@ -268,19 +267,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
 
               {showAccountMenu && (
-                <div className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '200px' }}>
-                  <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                    <p className="text-sm font-semibold" style={{ color: '#202124' }}>{fullName ?? 'Account'}</p>
-                    <p className="text-xs truncate" style={{ color: '#5F6368' }}>{userEmail ?? ''}</p>
-                  </div>
-                  <Link href="/settings" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50" style={{ color: '#202124' }}>
-                    <Settings size={14} />
-                    Settings
-                  </Link>
-                  <Link href="/help" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50" style={{ color: '#202124' }}>
-                    <HelpCircle size={14} />
-                    Help
-                  </Link>
+                <div className="absolute right-0 top-full mt-2 rounded-lg overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '160px' }}>
                   <button
                     onClick={handleSignOut}
                     className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50"

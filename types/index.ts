@@ -44,6 +44,9 @@ export interface PersonaTraits {
   tech_savviness: 1 | 2 | 3 | 4 | 5
   risk_tolerance: 1 | 2 | 3 | 4 | 5
   additional_context: string
+  motivations?: string[]
+  preferred_tools?: string[]
+  key_quote?: string
 }
 
 export interface Persona {

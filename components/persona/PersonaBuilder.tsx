@@ -42,6 +42,9 @@ const DEFAULT_TRAITS: PersonaTraits = {
   tech_savviness: 3,
   risk_tolerance: 3,
   additional_context: '',
+  motivations: [''],
+  preferred_tools: [''],
+  key_quote: '',
 }
 
 // ─── Options ──────────────────────────────────────────────────────────────────
@@ -116,6 +119,9 @@ export default function PersonaBuilder() {
         tech_savviness: s.tech_savviness ?? 3,
         risk_tolerance: s.risk_tolerance ?? 3,
         additional_context: s.additional_context ?? '',
+        motivations: s.motivations ?? [''],
+        preferred_tools: s.preferred_tools ?? [''],
+        key_quote: s.key_quote ?? '',
       })
     } catch (e: any) {
       setError(e.message ?? 'Failed to generate persona')
@@ -258,27 +264,27 @@ export default function PersonaBuilder() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
 
         {/* ── Main form card ── */}
-        <div className="lg:col-span-2 rounded-2xl p-6" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-          <h2 className="font-serif text-xl mb-1" style={{ color: '#202124' }}>{cardCopy.title}</h2>
+        <div className="rounded-2xl p-6 lg:p-8" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
+          <h2 className="font-serif text-2xl mb-1" style={{ color: '#202124' }}>{cardCopy.title}</h2>
           <p className="text-sm mb-6" style={{ color: '#5F6368' }}>{cardCopy.subtitle}</p>
 
           {/* ── Step 0: Identity ─────────────────────────────────────────── */}
           {step === 0 && (
-            <div className="flex flex-col sm:flex-row gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-x-8 gap-y-6">
               {/* Avatar column */}
-              <div className="flex-shrink-0 sm:w-40">
-                <label className="block text-sm font-medium mb-2" style={{ color: '#202124' }}>Avatar</label>
-                <div className="relative w-32 h-32 sm:w-full sm:h-auto sm:aspect-square rounded-full sm:rounded-2xl flex items-center justify-center mb-3" style={{ background: '#F1F1F1' }}>
+              <div className="flex flex-col items-center gap-3 lg:w-40 lg:items-start">
+                <label className="block text-sm font-medium self-start" style={{ color: '#202124' }}>Avatar</label>
+                <div className="relative w-32 h-32 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#F1F1F1' }}>
                   {avatarUrl ? (
-                    <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-full sm:rounded-2xl" />
+                    <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-full" />
                   ) : (
                     <User size={40} style={{ color: '#C4C7C9' }} />
                   )}
                   {generatingAvatar && (
-                    <div className="absolute inset-0 rounded-full sm:rounded-2xl bg-black/40 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
                       <Loader2 size={18} className="text-white animate-spin" />
                     </div>
                   )}
@@ -391,6 +397,14 @@ export default function PersonaBuilder() {
                 placeholder="How do they research tools? What do they read, who do they trust, what makes them pull the trigger or walk away?"
                 rows={3}
               />
+              <ListInput
+                label="Preferred tools"
+                hint="Products or tools they already rely on"
+                items={traits.preferred_tools ?? ['']}
+                onChange={v => updateTrait('preferred_tools', v)}
+                placeholder="e.g. Figma, Notion, Slack"
+                max={6}
+              />
             </div>
           )}
 
@@ -411,6 +425,20 @@ export default function PersonaBuilder() {
                 leftLabel="Very cautious"
                 rightLabel="Early adopter"
               />
+              <ListInput
+                label="Motivations"
+                hint="What drives them, deep down?"
+                items={traits.motivations ?? ['']}
+                onChange={v => updateTrait('motivations', v)}
+                placeholder="e.g. Making an impact through their work"
+                max={5}
+              />
+              <Input
+                label="Key quote"
+                value={traits.key_quote ?? ''}
+                onChange={e => updateTrait('key_quote', e.target.value)}
+                placeholder="A first-person sentence that captures how they see the world"
+              />
               <Textarea
                 label="Additional context"
                 value={traits.additional_context}
@@ -428,7 +456,7 @@ export default function PersonaBuilder() {
         </div>
 
         {/* ── AI assistant panel ── */}
-        <div className="lg:col-span-1 rounded-2xl p-5" style={{ background: '#FDFDFD', border: '1px solid #E0E2E4' }}>
+        <div className="rounded-2xl p-6" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
           <button
             onClick={() => setAiPanelOpen(o => !o)}
             className="w-full flex items-center justify-between mb-1"

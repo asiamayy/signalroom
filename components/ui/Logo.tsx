@@ -18,7 +18,7 @@ export function Logo({ size = 'md', href, className }: LogoProps) {
         src="/signalroom-logo.png"
         alt="Signalroom"
         width={w}
-        height={Math.round(w / 4.4)}
+        height={Math.round(w / 2.5)}
         style={{ width: `${w}px`, height: 'auto' }}
         priority
         unoptimized

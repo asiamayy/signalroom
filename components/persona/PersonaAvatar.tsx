@@ -5,7 +5,7 @@ interface PersonaAvatarProps {
   avatarInitials?: string
   avatarColor?: { bg: string; text: string } | string | null
   name?: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
   shape?: 'circle' | 'square'
   className?: string
 }
@@ -16,6 +16,8 @@ const SIZES = {
   md: 'w-10 h-10 text-sm',
   lg: 'w-12 h-12 text-base',
   xl: 'w-14 h-14 text-lg',
+  '2xl': 'w-24 h-24 text-2xl',
+  '3xl': 'w-32 h-32 sm:w-40 sm:h-40 text-4xl',
 }
 
 export function PersonaAvatar({

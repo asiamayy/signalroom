@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
 @import "tailwindcss";
 @source "../app";
 @source "../components";
@@ -31,12 +31,12 @@ body {
   min-height: 100dvh;
 }
 
-/* Dashboard-only typography: Lora for serif/headings, Inter for UI text.
+/* Dashboard-only typography: Newsreader for serif/headings, Inter for UI text.
    Scoped so the marketing/landing page keeps its original fonts untouched. */
 .dashboard-shell {
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-serif: 'Lora', Georgia, serif;
-  font-family: 'Inter', system-ui, sans-serif;
+  --font-sans: var(--nf-inter), system-ui, sans-serif;
+  --font-serif: var(--nf-newsreader), Georgia, serif;
+  font-family: var(--nf-inter), system-ui, sans-serif;
 }
 
 @media print {

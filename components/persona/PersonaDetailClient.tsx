@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   ChevronRight, Sparkles, Loader2, Quote, Database, Activity, Share2, MoreHorizontal,
   BadgeCheck, Briefcase, MapPin, User, Target, AlertTriangle, ShoppingCart, Tag as TagIcon,
-  Bookmark, Archive, Trash2, Check,
+  Bookmark, Archive, Trash2, Check, Heart, LayoutGrid, Users, Plus,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { INTERVIEW_TYPE_LABELS } from '@/lib/utils'
@@ -161,7 +161,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
           <Link
             href={`/interviews/new?persona_id=${persona.id}`}
             className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg text-white"
-            style={{ background: '#1C3D2E' }}
+            style={{ background: '#243329' }}
           >
             Start Interview
           </Link>
@@ -170,75 +170,82 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
 
       {/* ── Hero ── */}
       <div className="px-4 sm:px-6 pb-2">
-        <div className="rounded-2xl overflow-hidden relative p-5 sm:p-7" style={{ background: 'linear-gradient(135deg, #F3F5F1 0%, #EAEFE9 100%)', border: '1px solid #E5E9E4' }}>
+        <div className="rounded-3xl overflow-hidden relative" style={{ background: 'rgba(243,245,241,0.6)', border: '1px solid #E5E9E4' }}>
 
           {/* Soft abstract blobs */}
-          <div className="absolute rounded-full pointer-events-none" style={{ width: 260, height: 260, right: -60, top: -80, background: 'radial-gradient(circle, rgba(110,138,125,0.18) 0%, rgba(110,138,125,0) 70%)' }} />
-          <div className="absolute rounded-full pointer-events-none" style={{ width: 200, height: 200, right: 120, bottom: -80, background: 'radial-gradient(circle, rgba(28,61,46,0.10) 0%, rgba(28,61,46,0) 70%)' }} />
+          <div className="absolute inset-y-0 right-0 w-1/2 pointer-events-none overflow-hidden" aria-hidden="true">
+            <svg viewBox="0 0 500 300" preserveAspectRatio="xMaxYMid slice" className="h-full w-full">
+              <path d="M500 0 C360 40 380 180 500 220 Z" fill="#E0E9E3" opacity="0.6" />
+              <path d="M500 60 C300 90 340 260 500 300 L500 60 Z" fill="#D3E0D8" opacity="0.5" />
+              <circle cx="300" cy="40" r="90" fill="#E5EBE1" opacity="0.5" />
+            </svg>
+          </div>
 
-          <div className="relative z-10 flex flex-col sm:flex-row items-start gap-5 sm:gap-6 md:pr-64">
+          <div className="relative flex flex-col gap-6 p-6 lg:flex-row lg:items-start lg:gap-8 lg:p-8">
+            {/* Avatar */}
             <div className="relative flex-shrink-0">
               <PersonaAvatar
                 avatarUrl={persona.avatar_url}
                 avatarInitials={persona.avatar_initials}
                 avatarColor={persona.avatar_color}
                 name={persona.name}
-                size="xl"
-                className="shadow-md"
+                size="3xl"
+                className="border-4 border-white shadow-md"
               />
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#1C3D2E', border: '2px solid #F3F5F1' }}>
-                <Check size={11} color="white" strokeWidth={3} />
-              </div>
+              <span className="absolute right-2 bottom-2 flex w-8 h-8 items-center justify-center rounded-full border-2 border-white" style={{ background: '#243329' }}>
+                <BadgeCheck size={16} color="white" />
+              </span>
             </div>
 
-            <div className="flex-1 min-w-0 w-full">
-              <div className="flex items-center gap-2 mb-1.5">
-                <h1 className="font-serif text-2xl sm:text-3xl tracking-tight" style={{ color: '#202124' }}>{persona.name}</h1>
-                <BadgeCheck size={20} style={{ color: '#1C3D2E' }} />
+            {/* Identity */}
+            <div className="min-w-0 flex-1 pt-1 lg:max-w-2xl">
+              <div className="flex items-center gap-3">
+                <h1 className="font-serif text-4xl lg:text-5xl font-semibold tracking-tight" style={{ color: '#202124' }}>{persona.name}</h1>
+                <BadgeCheck size={28} style={{ color: '#243329' }} />
               </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm mb-3" style={{ color: '#5F6368' }}>
-                {t?.job_title && <span className="flex items-center gap-1.5"><Briefcase size={13} />{t.job_title}</span>}
-                {t?.location && <span className="flex items-center gap-1.5"><MapPin size={13} />{t.location}</span>}
-                {t?.age && <span className="flex items-center gap-1.5"><User size={13} />{t.age} years</span>}
+
+              <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm" style={{ color: '#202124', opacity: 0.85 }}>
+                {t?.job_title && <span className="flex items-center gap-1.5"><Briefcase size={16} style={{ color: '#9CA3AF' }} />{t.job_title}</span>}
+                {t?.location && <span className="flex items-center gap-1.5"><MapPin size={16} style={{ color: '#9CA3AF' }} />{t.location}</span>}
+                {t?.age && <span className="flex items-center gap-1.5"><User size={16} style={{ color: '#9CA3AF' }} />{t.age} years</span>}
               </div>
+
               {pills.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-2">
                   {pills.map(tag => (
-                    <span key={tag} className="text-xs px-3 py-1 rounded-full font-medium" style={{ background: 'white', color: '#4B5563', border: '1px solid #E0E2E4' }}>
+                    <span key={tag} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: '#E8ECE5', color: '#243329' }}>
                       {tag}
                     </span>
                   ))}
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Stat box — desktop, top-right */}
-          <div className="hidden md:block absolute top-6 right-6 z-20 rounded-2xl p-4" style={{ background: 'white', border: '1px solid #E0E2E4', minWidth: '220px' }}>
-            <div className="grid grid-cols-2 gap-4 mb-3">
-              <div>
-                <div className="text-xl font-bold leading-none" style={{ color: '#202124' }}>{interviews?.length ?? 0}</div>
-                <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Interviews</div>
-              </div>
-              <div>
-                <div className="text-xl font-bold leading-none" style={{ color: '#202124' }}>{journeys?.length ?? 0}</div>
-                <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Journeys</div>
-              </div>
+              {t?.key_quote && (
+                <p className="mt-5 flex items-start gap-2 font-serif text-lg italic" style={{ color: '#202124', opacity: 0.8 }}>
+                  <Quote size={16} className="mt-1 flex-shrink-0 rotate-180" style={{ color: '#9CA3AF' }} />
+                  {t.key_quote}
+                  <Quote size={16} className="mt-1 flex-shrink-0" style={{ color: '#9CA3AF' }} />
+                </p>
+              )}
             </div>
-            <p className="text-[11px] pt-3" style={{ color: '#9CA3AF', borderTop: '1px solid #F1F1F1' }}>
-              Last updated {new Date(persona.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-            </p>
-          </div>
 
-          {/* Stat row — mobile */}
-          <div className="md:hidden relative z-10 flex gap-3 mt-5">
-            <div className="flex-1 text-center rounded-xl p-3" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-              <div className="text-lg font-bold leading-none" style={{ color: '#202124' }}>{interviews?.length ?? 0}</div>
-              <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Interviews</div>
-            </div>
-            <div className="flex-1 text-center rounded-xl p-3" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-              <div className="text-lg font-bold leading-none" style={{ color: '#202124' }}>{journeys?.length ?? 0}</div>
-              <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Journeys</div>
+            {/* Stats card */}
+            <div className="relative w-full flex-shrink-0 rounded-2xl p-5 shadow-sm lg:mt-14 lg:w-72" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
+              <div className="grid grid-cols-2 gap-y-5">
+                <div>
+                  <p className="font-serif text-3xl font-semibold" style={{ color: '#202124' }}>{interviews?.length ?? 0}</p>
+                  <p className="mt-0.5 text-sm" style={{ color: '#9CA3AF' }}>Interviews</p>
+                </div>
+                <div>
+                  <p className="font-serif text-3xl font-semibold" style={{ color: '#202124' }}>{journeys?.length ?? 0}</p>
+                  <p className="mt-0.5 text-sm" style={{ color: '#9CA3AF' }}>Journeys</p>
+                </div>
+              </div>
+              <div className="mt-5 pt-3" style={{ borderTop: '1px solid #E3E3DA' }}>
+                <p className="text-xs" style={{ color: '#9CA3AF' }}>
+                  Last updated {new Date(persona.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -285,35 +292,42 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
 
 // ─── Overview tab (existing real data, unchanged content) ───────────────────
 
-function CardHeader({ icon: Icon, title }: { icon: typeof User; title: string }) {
+function CardHeader({ icon: Icon, title, iconColor = '#9CA3AF' }: { icon: typeof User; title: string; iconColor?: string }) {
   return (
-    <div className="flex items-center gap-2 mb-4">
-      <Icon size={15} style={{ color: '#1C3D2E' }} />
-      <h2 className="text-sm font-bold" style={{ color: '#3C4043' }}>{title}</h2>
+    <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center gap-2.5">
+        <Icon size={18} style={{ color: iconColor }} />
+        <h2 className="text-base font-semibold" style={{ color: '#202124' }}>{title}</h2>
+      </div>
+      <button aria-label="Card options" style={{ color: '#9CA3AF', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <MoreHorizontal size={18} />
+      </button>
     </div>
   )
 }
+
+const cardStyle = { background: 'white', boxShadow: '0 1px 2px rgba(31,36,32,0.04)', border: '1px solid #E0E2E4' }
 
 function OverviewTab({ persona, interviews }: { persona: Persona; interviews: Interview[] }) {
   const t = persona.traits
 
   return (
-    <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
       {t?.additional_context && (
-        <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
+        <div className="rounded-2xl p-6" style={cardStyle}>
           <CardHeader icon={User} title="About" />
           <p className="text-sm leading-relaxed" style={{ color: '#5F6368' }}>{t.additional_context}</p>
         </div>
       )}
 
       {t?.goals?.filter(Boolean).length > 0 && (
-        <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
+        <div className="rounded-2xl p-6" style={cardStyle}>
           <CardHeader icon={Target} title="Goals" />
-          <ul className="space-y-2.5">
+          <ul className="flex flex-col gap-3">
             {t.goals.filter(Boolean).map((g: string, i: number) => (
-              <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#5F6368' }}>
-                <span className="flex-shrink-0 mt-0.5" style={{ color: '#1C3D2E' }}>✓</span>
+              <li key={i} className="flex items-start gap-2.5 text-sm" style={{ color: '#202124', opacity: 0.9 }}>
+                <Check size={16} className="mt-0.5 flex-shrink-0" style={{ color: '#243329' }} />
                 {g}
               </li>
             ))}
@@ -322,12 +336,12 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
       )}
 
       {t?.frustrations?.filter(Boolean).length > 0 && (
-        <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-          <CardHeader icon={AlertTriangle} title="Frustrations" />
-          <ul className="space-y-2.5">
+        <div className="rounded-2xl p-6" style={cardStyle}>
+          <CardHeader icon={AlertTriangle} title="Frustrations" iconColor="#DB4437" />
+          <ul className="flex flex-col gap-3">
             {t.frustrations.filter(Boolean).map((f: string, i: number) => (
-              <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#5F6368' }}>
-                <span className="flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{ background: '#DB4437' }} />
+              <li key={i} className="flex items-start gap-2.5 text-sm" style={{ color: '#202124', opacity: 0.9 }}>
+                <span className="flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(219,68,55,0.7)' }} />
                 {f}
               </li>
             ))}
@@ -335,9 +349,9 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
         </div>
       )}
 
-      <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-        <CardHeader icon={MapPin} title="Demographics" />
-        <div className="space-y-2.5">
+      <div className="rounded-2xl p-6" style={cardStyle}>
+        <CardHeader icon={Users} title="Demographics" />
+        <dl className="flex flex-col gap-3.5">
           {[
             { label: 'Age', value: t?.age },
             { label: 'Location', value: t?.location },
@@ -348,35 +362,80 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
             { label: 'Tech savviness', value: t?.tech_savviness ? `${t.tech_savviness}/5` : null },
             { label: 'Risk tolerance', value: t?.risk_tolerance ? `${t.risk_tolerance}/5` : null },
           ].filter(item => item.value).map(({ label, value }) => (
-            <div key={label} className="flex items-center justify-between text-sm">
-              <dt style={{ color: '#9CA3AF' }}>{label}</dt>
+            <div key={label} className="flex items-center gap-3 text-sm">
+              <dt className="w-28 flex-shrink-0" style={{ color: '#9CA3AF' }}>{label}</dt>
               <dd className="font-medium" style={{ color: '#202124' }}>{value}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </div>
 
+      {t?.motivations?.filter(Boolean).length ? (
+        <div className="rounded-2xl p-6" style={cardStyle}>
+          <CardHeader icon={Heart} title="Motivations" />
+          <ul className="flex flex-col gap-3.5">
+            {t.motivations.filter(Boolean).map((m: string, i: number) => (
+              <li key={i} className="flex items-center gap-3 text-sm" style={{ color: '#202124', opacity: 0.9 }}>
+                <Heart size={16} className="flex-shrink-0" style={{ color: '#9CA3AF' }} />
+                {m}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {t?.buying_behavior && (
-        <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
+        <div className="rounded-2xl p-6" style={cardStyle}>
           <CardHeader icon={ShoppingCart} title="Buying Behavior" />
           <p className="text-sm leading-relaxed" style={{ color: '#5F6368' }}>{t.buying_behavior}</p>
         </div>
       )}
 
-      <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Briefcase size={15} style={{ color: '#1C3D2E' }} />
-            <h2 className="text-sm font-bold" style={{ color: '#3C4043' }}>Interviews</h2>
+      {t?.preferred_tools?.filter(Boolean).length ? (
+        <div className="rounded-2xl p-6" style={cardStyle}>
+          <div className="mb-5 flex items-center gap-2.5">
+            <LayoutGrid size={18} style={{ color: '#9CA3AF' }} />
+            <h2 className="text-base font-semibold" style={{ color: '#202124' }}>Preferred tools</h2>
           </div>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#E8F3EF', color: '#1C3D2E' }}>
+          <div className="flex flex-wrap gap-2">
+            {t.preferred_tools.filter(Boolean).map((tool: string) => (
+              <span key={tool} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium" style={{ border: '1px solid #E0E2E4', color: '#202124' }}>
+                <span className="flex w-4 h-4 items-center justify-center rounded text-[10px] font-bold" style={{ background: '#E3E3DA', color: '#4B5563' }}>
+                  {tool[0]}
+                </span>
+                {tool}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {t?.key_quote && (
+        <div className="rounded-2xl p-6" style={cardStyle}>
+          <div className="mb-4 flex items-center gap-2.5">
+            <Quote size={18} style={{ color: '#9CA3AF' }} />
+            <h2 className="text-base font-semibold" style={{ color: '#202124' }}>Key quote</h2>
+          </div>
+          <p className="font-serif text-[15px] leading-relaxed italic" style={{ color: '#202124', opacity: 0.8 }}>
+            &ldquo;{t.key_quote}&rdquo;
+          </p>
+        </div>
+      )}
+
+      <div className="rounded-2xl p-6" style={cardStyle}>
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2.5">
+            <Briefcase size={18} style={{ color: '#9CA3AF' }} />
+            <h2 className="text-base font-semibold" style={{ color: '#202124' }}>Interviews</h2>
+          </div>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#E8F3EF', color: '#243329' }}>
             {interviews?.length ?? 0}
           </span>
         </div>
         {(!interviews || interviews.length === 0) ? (
           <div className="text-center py-4">
             <p className="text-xs mb-3" style={{ color: '#9CA3AF' }}>No interviews yet</p>
-            <Link href={`/interviews/new?persona_id=${persona.id}`} className="text-xs font-semibold" style={{ color: '#1C3D2E' }}>
+            <Link href={`/interviews/new?persona_id=${persona.id}`} className="text-xs font-semibold" style={{ color: '#243329' }}>
               Start first interview →
             </Link>
           </div>
@@ -396,12 +455,22 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
       </div>
 
       {persona.tags && persona.tags.length > 0 && (
-        <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05)', border: '1px solid #E0E2E4' }}>
-          <CardHeader icon={TagIcon} title="Tags" />
-          <div className="flex flex-wrap gap-1.5">
+        <div className="rounded-2xl p-6" style={cardStyle}>
+          <div className="mb-5 flex items-center gap-2.5">
+            <TagIcon size={18} style={{ color: '#9CA3AF' }} />
+            <h2 className="text-base font-semibold" style={{ color: '#202124' }}>Tags</h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             {persona.tags.map(tag => (
-              <span key={tag} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#F1F1F1', color: '#4B5563' }}>{tag}</span>
+              <span key={tag} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: '#E3E3DA', color: '#4B5563' }}>{tag}</span>
             ))}
+            <button
+              aria-label="Add tag"
+              className="flex w-7 h-7 items-center justify-center rounded-full transition-colors hover:bg-neutral-50"
+              style={{ border: '1px dashed #DADCE0', color: '#9CA3AF', background: 'none', cursor: 'pointer' }}
+            >
+              <Plus size={14} />
+            </button>
           </div>
         </div>
       )}
