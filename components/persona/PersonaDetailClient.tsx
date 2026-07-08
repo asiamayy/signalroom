@@ -104,6 +104,22 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
 
   const pills = persona.tags ?? []
 
+  // Honest, computed "data points" count — how many trait fields are
+  // actually filled in for this persona. Not fabricated: every field
+  // counted here is real data the user (or AI generation) provided.
+  const dataPointsCount = (() => {
+    const scalarFields = [t?.age, t?.gender, t?.location, t?.job_title, t?.industry, t?.income, t?.education, t?.buying_behavior, t?.additional_context, t?.key_quote]
+    const listFields = [t?.goals, t?.frustrations, t?.motivations, t?.preferred_tools]
+    return scalarFields.filter(Boolean).length + listFields.reduce((sum, arr) => sum + (arr?.filter(Boolean).length ?? 0), 0)
+  })()
+
+  const stats = [
+    { label: 'Interviews', value: interviews?.length ?? 0 },
+    { label: 'Journeys', value: journeys?.length ?? 0 },
+    { label: 'Tags', value: persona.tags?.length ?? 0 },
+    { label: 'Data points', value: dataPointsCount },
+  ]
+
   return (
     <div style={{ background: '#F9F9F9', minHeight: '100%' }}>
 
@@ -170,79 +186,85 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
 
       {/* ── Hero ── */}
       <div className="px-4 sm:px-6 pb-2">
-        <div className="rounded-3xl overflow-hidden relative" style={{ background: '#F9F8F5', border: '1px solid #E5E9E4' }}>
+        <div className="rounded-3xl overflow-hidden relative" style={{ background: '#FCFBFA', border: '1px solid #E5E9E4' }}>
 
-          {/* Soft abstract blobs */}
+          {/* Abstract geometric overlapping-circle graphic, blended into the right side */}
           <div className="absolute inset-y-0 right-0 w-2/3 pointer-events-none overflow-hidden" aria-hidden="true">
             <svg viewBox="0 0 700 300" preserveAspectRatio="xMaxYMid slice" className="h-full w-full">
-              <path d="M700 -20 C520 20 540 170 700 230 Z" fill="#C9DBD1" opacity="0.55" />
-              <path d="M700 50 C450 70 480 260 700 300 L700 50 Z" fill="#B7D0C4" opacity="0.45" />
-              <circle cx="470" cy="60" r="110" fill="#DCE7E0" opacity="0.5" />
-              <circle cx="620" cy="200" r="70" fill="#CFE0D7" opacity="0.4" />
+              <circle cx="560" cy="60" r="180" fill="#B7D0C4" opacity="0.35" />
+              <circle cx="680" cy="190" r="150" fill="#9FC1AF" opacity="0.35" />
+              <circle cx="470" cy="220" r="120" fill="#CFE0D7" opacity="0.4" />
             </svg>
           </div>
 
-          <div className="relative flex flex-col gap-6 p-6 lg:flex-row lg:items-start lg:gap-8 lg:p-8">
-            {/* Avatar */}
-            <div className="relative flex-shrink-0">
-              <PersonaAvatar
-                avatarUrl={persona.avatar_url}
-                avatarInitials={persona.avatar_initials}
-                avatarColor={persona.avatar_color}
-                name={persona.name}
-                size="3xl"
-                className="border-4 border-white shadow-md"
-              />
-              <span className="absolute right-2 bottom-2 flex w-8 h-8 items-center justify-center rounded-full border-2 border-white" style={{ background: '#243329' }}>
-                <BadgeCheck size={16} color="white" />
-              </span>
-            </div>
-
-            {/* Identity */}
-            <div className="min-w-0 flex-1 pt-1 lg:max-w-2xl">
-              <div className="flex items-center gap-3">
-                <h1 className="heading-editorial text-3xl lg:text-4xl" style={{ color: '#202124' }}>{persona.name}</h1>
-                <BadgeCheck size={24} style={{ color: '#243329' }} />
+          <div className="relative flex flex-col gap-6 p-6 lg:flex-row lg:justify-between lg:items-center lg:gap-8 lg:p-10">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-start lg:items-center">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <PersonaAvatar
+                  avatarUrl={persona.avatar_url}
+                  avatarInitials={persona.avatar_initials}
+                  avatarColor={persona.avatar_color}
+                  name={persona.name}
+                  size="3xl"
+                  className="border-4 border-white shadow-md"
+                />
+                <span className="absolute right-2 bottom-2 flex w-8 h-8 items-center justify-center rounded-full border-2 border-white" style={{ background: '#1E3A2B' }}>
+                  <Check size={16} color="white" strokeWidth={3} />
+                </span>
               </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm" style={{ color: '#202124', opacity: 0.85 }}>
-                {t?.job_title && <span className="flex items-center gap-1.5"><Briefcase size={16} style={{ color: '#9CA3AF' }} />{t.job_title}</span>}
-                {t?.location && <span className="flex items-center gap-1.5"><MapPin size={16} style={{ color: '#9CA3AF' }} />{t.location}</span>}
-                {t?.age && <span className="flex items-center gap-1.5"><User size={16} style={{ color: '#9CA3AF' }} />{t.age} years</span>}
-              </div>
-
-              {pills.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {pills.map(tag => (
-                    <span key={tag} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'white', color: '#4B5563', border: '1px solid #E0E2E4' }}>
-                      {tag}
-                    </span>
-                  ))}
+              {/* Identity */}
+              <div className="min-w-0 flex-1 lg:max-w-2xl">
+                <div className="flex items-center gap-3">
+                  <h1 className="heading-editorial text-3xl lg:text-4xl" style={{ color: '#14231B' }}>{persona.name}</h1>
+                  <BadgeCheck size={24} style={{ color: '#1E3A2B' }} />
                 </div>
-              )}
 
-              {t?.key_quote && (
-                <p className="mt-5 flex items-start gap-2 font-serif text-lg italic" style={{ color: '#202124', opacity: 0.8 }}>
-                  <Quote size={16} className="mt-1 flex-shrink-0 rotate-180" style={{ color: '#9CA3AF' }} />
-                  {t.key_quote}
-                  <Quote size={16} className="mt-1 flex-shrink-0" style={{ color: '#9CA3AF' }} />
-                </p>
-              )}
+                <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm" style={{ color: '#3F4B44' }}>
+                  {t?.job_title && <span className="flex items-center gap-1.5"><Briefcase size={16} style={{ color: '#9CA3AF' }} />{t.job_title}</span>}
+                  {t?.location && <span className="flex items-center gap-1.5"><MapPin size={16} style={{ color: '#9CA3AF' }} />{t.location}</span>}
+                  {t?.age && <span className="flex items-center gap-1.5"><User size={16} style={{ color: '#9CA3AF' }} />{t.age} years</span>}
+                </div>
+
+                {pills.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {pills.map(tag => (
+                      <span key={tag} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: '#F0F4F1', color: '#2D4A36' }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {t?.key_quote && (
+                  <p className="heading-editorial mt-5 flex items-start gap-2 text-lg italic" style={{ color: '#2D4A36', fontWeight: 400 }}>
+                    <span style={{ color: '#1E3A2B' }}>&ldquo;</span>
+                    {t.key_quote}
+                    <span style={{ color: '#1E3A2B' }}>&rdquo;</span>
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Stats card */}
-            <div className="relative w-full flex-shrink-0 rounded-2xl p-5 shadow-sm lg:mt-14 lg:w-72" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-              <div className="grid grid-cols-2 gap-y-5">
-                <div>
-                  <p className="font-serif text-2xl" style={{ color: '#202124' }}>{interviews?.length ?? 0}</p>
-                  <p className="mt-0.5 text-sm" style={{ color: '#9CA3AF' }}>Interviews</p>
-                </div>
-                <div>
-                  <p className="font-serif text-2xl" style={{ color: '#202124' }}>{journeys?.length ?? 0}</p>
-                  <p className="mt-0.5 text-sm" style={{ color: '#9CA3AF' }}>Journeys</p>
-                </div>
+            <div className="relative w-full flex-shrink-0 rounded-2xl shadow-sm lg:w-72" style={{ background: 'white', border: '1px solid #E2E2E2' }}>
+              <div className="grid grid-cols-2">
+                {stats.map((stat, i) => (
+                  <div
+                    key={stat.label}
+                    className="px-5 py-4"
+                    style={{
+                      borderRight: i % 2 === 0 ? '1px solid #EDEDED' : 'none',
+                      borderBottom: i < 2 ? '1px solid #EDEDED' : 'none',
+                    }}
+                  >
+                    <p className="font-serif text-2xl font-medium" style={{ color: '#1E3A2B' }}>{stat.value}</p>
+                    <p className="mt-0.5 text-xs" style={{ color: '#9CA3AF' }}>{stat.label}</p>
+                  </div>
+                ))}
               </div>
-              <div className="mt-5 pt-3" style={{ borderTop: '1px solid #E3E3DA' }}>
+              <div className="px-5 py-3" style={{ borderTop: '1px solid #EDEDED' }}>
                 <p className="text-xs" style={{ color: '#9CA3AF' }}>
                   Last updated {new Date(persona.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </p>
