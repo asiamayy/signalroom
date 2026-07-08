@@ -53,7 +53,7 @@ export default function InterviewsPage() {
     <div style={{ background: '#F4F6F8', minHeight: '100%' }}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-7 py-4 sm:py-5" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
         <div>
-          <h1 className="font-serif text-2xl tracking-tight text-neutral-900">Interviews</h1>
+          <h1 className="heading-editorial text-2xl text-neutral-900">Interviews</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Conversations with your personas</p>
         </div>
         <Link href="/interviews/new" className="flex items-center gap-1.5 text-white text-sm font-semibold px-4 py-2 rounded-xl" style={{ background: '#1A8C6A' }}>

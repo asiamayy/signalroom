@@ -268,7 +268,7 @@ export default function PersonaBuilder() {
 
         {/* ── Main form card ── */}
         <div className="rounded-2xl p-6 lg:p-8" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-          <h2 className="font-serif text-2xl mb-1" style={{ color: '#202124' }}>{cardCopy.title}</h2>
+          <h2 className="heading-editorial text-2xl mb-1" style={{ color: '#202124' }}>{cardCopy.title}</h2>
           <p className="text-sm mb-6" style={{ color: '#5F6368' }}>{cardCopy.subtitle}</p>
 
           {/* ── Step 0: Identity ─────────────────────────────────────────── */}
@@ -277,11 +277,11 @@ export default function PersonaBuilder() {
               {/* Avatar column */}
               <div className="flex flex-col items-center gap-3 lg:w-40 lg:items-start">
                 <label className="block text-sm font-medium self-start" style={{ color: '#202124' }}>Avatar</label>
-                <div className="relative w-32 h-32 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#F1F1F1' }}>
+                <div className="relative w-32 h-32 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#F5F3EF' }}>
                   {avatarUrl ? (
                     <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-full" />
                   ) : (
-                    <User size={40} style={{ color: '#C4C7C9' }} />
+                    <User size={44} strokeWidth={1.5} style={{ color: '#6B7280' }} />
                   )}
                   {generatingAvatar && (
                     <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">

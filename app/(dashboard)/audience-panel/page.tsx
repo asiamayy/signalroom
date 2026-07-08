@@ -364,7 +364,7 @@ export default function AudiencePanelPage() {
     return (
       <div className="p-4 sm:p-8 max-w-2xl">
         <div className="mb-8">
-          <h1 className="text-2xl font-serif tracking-tight text-neutral-900 flex items-center gap-2">
+          <h1 className="heading-editorial text-2xl flex items-center gap-2" style={{ color: '#171717' }}>
             <BarChart3 size={22} className="text-neutral-400" />
             Audience Panel
           </h1>
@@ -393,7 +393,7 @@ export default function AudiencePanelPage() {
   return (
     <div className="p-4 sm:p-6 max-w-6xl" style={{ background: '#F7F8FA', minHeight: '100%' }}>
       <div className="mb-6">
-        <h1 className="text-2xl font-serif tracking-tight text-neutral-900 flex items-center gap-2">
+        <h1 className="heading-editorial text-2xl flex items-center gap-2" style={{ color: '#171717' }}>
           <BarChart3 size={22} style={{ color: '#1A9B76' }} />
           Audience Panel
         </h1>

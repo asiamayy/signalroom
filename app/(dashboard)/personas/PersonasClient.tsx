@@ -291,7 +291,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
               <button
                 key={tab}
                 onClick={() => { setFunnelTab(tab); setSelectedId(null) }}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex-shrink-0"
                 style={isActive
                   ? { background: '#243329', color: 'white', border: '1px solid #243329' }
                   : { background: 'white', color: '#202124', border: '1px solid #E3E3DA' }}

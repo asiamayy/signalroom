@@ -8,7 +8,7 @@ export function ComingSoon({ icon: Icon, title, description }: { icon: LucideIco
           <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: '#E8F3EF' }}>
             <Icon size={22} style={{ color: '#1C3D2E' }} />
           </div>
-          <h1 className="font-serif text-xl text-neutral-900 mb-2">{title}</h1>
+          <h1 className="heading-editorial text-xl text-neutral-900 mb-2">{title}</h1>
           <p className="text-sm" style={{ color: '#5F6368' }}>{description}</p>
         </div>
       </div>

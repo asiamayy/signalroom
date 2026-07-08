@@ -80,7 +80,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               size="lg"
             />
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-serif tracking-tight text-neutral-900 mb-0.5">
+              <h1 className="heading-editorial text-lg sm:text-xl text-neutral-900 mb-0.5">
                 {interview?.title ?? 'Untitled interview'}
               </h1>
               <p className="text-sm text-neutral-500">

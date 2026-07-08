@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
 @import "tailwindcss";
 @source "../app";
@@ -40,11 +41,11 @@ body {
 }
 
 /* Locked-in heading treatment for the main dashboard titles (page heading,
-   persona names). Uses the Google-Fonts-loaded Playfair Display / Lora,
-   with a fixed weight/tracking/line-height so it can't drift. */
+   persona names, section titles). Playfair Display only — no system-serif
+   fallback in the stack besides the generic `serif` keyword. */
 .dashboard-shell .heading-editorial {
-  font-family: 'Playfair Display', 'Lora', serif !important;
-  font-weight: 500 !important;
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 600 !important;
   letter-spacing: -0.01em !important;
   font-stretch: normal !important;
   line-height: 1.2 !important;

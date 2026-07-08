@@ -42,7 +42,7 @@ export default function ProjectsPage() {
   return (
     <div className="p-4 sm:p-8" style={{ background: '#F9F9F9', minHeight: '100%' }}>
       <div className="mb-6">
-        <h1 className="font-serif text-2xl text-neutral-900 tracking-tight">Projects</h1>
+        <h1 className="heading-editorial text-2xl text-neutral-900">Projects</h1>
         <p className="text-sm mt-1" style={{ color: '#5F6368' }}>Group personas, interviews, and reports into research projects.</p>
       </div>
 

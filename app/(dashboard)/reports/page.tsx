@@ -51,7 +51,7 @@ export default function ReportsPage() {
   return (
     <div className="p-4 sm:p-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-serif tracking-tight text-neutral-900">Reports</h1>
+        <h1 className="heading-editorial text-2xl text-neutral-900">Reports</h1>
         <p className="text-sm text-neutral-500 mt-0.5">Structured insights from your interviews</p>
       </div>
 

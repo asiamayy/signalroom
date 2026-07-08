@@ -170,14 +170,15 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
 
       {/* ── Hero ── */}
       <div className="px-4 sm:px-6 pb-2">
-        <div className="rounded-3xl overflow-hidden relative" style={{ background: 'rgba(243,245,241,0.6)', border: '1px solid #E5E9E4' }}>
+        <div className="rounded-3xl overflow-hidden relative" style={{ background: '#F9F8F5', border: '1px solid #E5E9E4' }}>
 
           {/* Soft abstract blobs */}
-          <div className="absolute inset-y-0 right-0 w-1/2 pointer-events-none overflow-hidden" aria-hidden="true">
-            <svg viewBox="0 0 500 300" preserveAspectRatio="xMaxYMid slice" className="h-full w-full">
-              <path d="M500 0 C360 40 380 180 500 220 Z" fill="#E0E9E3" opacity="0.6" />
-              <path d="M500 60 C300 90 340 260 500 300 L500 60 Z" fill="#D3E0D8" opacity="0.5" />
-              <circle cx="300" cy="40" r="90" fill="#E5EBE1" opacity="0.5" />
+          <div className="absolute inset-y-0 right-0 w-2/3 pointer-events-none overflow-hidden" aria-hidden="true">
+            <svg viewBox="0 0 700 300" preserveAspectRatio="xMaxYMid slice" className="h-full w-full">
+              <path d="M700 -20 C520 20 540 170 700 230 Z" fill="#C9DBD1" opacity="0.55" />
+              <path d="M700 50 C450 70 480 260 700 300 L700 50 Z" fill="#B7D0C4" opacity="0.45" />
+              <circle cx="470" cy="60" r="110" fill="#DCE7E0" opacity="0.5" />
+              <circle cx="620" cy="200" r="70" fill="#CFE0D7" opacity="0.4" />
             </svg>
           </div>
 
@@ -213,7 +214,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
               {pills.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {pills.map(tag => (
-                    <span key={tag} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: '#E8ECE5', color: '#243329' }}>
+                    <span key={tag} className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'white', color: '#4B5563', border: '1px solid #E0E2E4' }}>
                       {tag}
                     </span>
                   ))}
@@ -317,7 +318,7 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
       {t?.additional_context && (
         <div className="rounded-2xl p-6" style={cardStyle}>
           <CardHeader icon={User} title="About" />
-          <p className="text-sm leading-relaxed" style={{ color: '#5F6368' }}>{t.additional_context}</p>
+          <p className="text-xs leading-relaxed" style={{ color: '#5F6368' }}>{t.additional_context}</p>
         </div>
       )}
 
@@ -326,7 +327,7 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
           <CardHeader icon={Target} title="Goals" />
           <ul className="flex flex-col gap-3">
             {t.goals.filter(Boolean).map((g: string, i: number) => (
-              <li key={i} className="flex items-start gap-2.5 text-sm" style={{ color: '#202124', opacity: 0.9 }}>
+              <li key={i} className="flex items-start gap-2.5 text-xs" style={{ color: '#202124', opacity: 0.9 }}>
                 <Check size={16} className="mt-0.5 flex-shrink-0" style={{ color: '#243329' }} />
                 {g}
               </li>
@@ -340,7 +341,7 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
           <CardHeader icon={AlertTriangle} title="Frustrations" iconColor="#DB4437" />
           <ul className="flex flex-col gap-3">
             {t.frustrations.filter(Boolean).map((f: string, i: number) => (
-              <li key={i} className="flex items-start gap-2.5 text-sm" style={{ color: '#202124', opacity: 0.9 }}>
+              <li key={i} className="flex items-start gap-2.5 text-xs" style={{ color: '#202124', opacity: 0.9 }}>
                 <span className="flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full" style={{ background: 'rgba(219,68,55,0.7)' }} />
                 {f}
               </li>
@@ -362,7 +363,7 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
             { label: 'Tech savviness', value: t?.tech_savviness ? `${t.tech_savviness}/5` : null },
             { label: 'Risk tolerance', value: t?.risk_tolerance ? `${t.risk_tolerance}/5` : null },
           ].filter(item => item.value).map(({ label, value }) => (
-            <div key={label} className="flex items-center gap-3 text-sm">
+            <div key={label} className="flex items-center gap-3 text-xs">
               <dt className="w-28 flex-shrink-0" style={{ color: '#9CA3AF' }}>{label}</dt>
               <dd className="font-medium" style={{ color: '#202124' }}>{value}</dd>
             </div>
@@ -375,7 +376,7 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
           <CardHeader icon={Heart} title="Motivations" />
           <ul className="flex flex-col gap-3.5">
             {t.motivations.filter(Boolean).map((m: string, i: number) => (
-              <li key={i} className="flex items-center gap-3 text-sm" style={{ color: '#202124', opacity: 0.9 }}>
+              <li key={i} className="flex items-center gap-3 text-xs" style={{ color: '#202124', opacity: 0.9 }}>
                 <Heart size={16} className="flex-shrink-0" style={{ color: '#9CA3AF' }} />
                 {m}
               </li>
@@ -387,7 +388,7 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
       {t?.buying_behavior && (
         <div className="rounded-2xl p-6" style={cardStyle}>
           <CardHeader icon={ShoppingCart} title="Buying Behavior" />
-          <p className="text-sm leading-relaxed" style={{ color: '#5F6368' }}>{t.buying_behavior}</p>
+          <p className="text-xs leading-relaxed" style={{ color: '#5F6368' }}>{t.buying_behavior}</p>
         </div>
       )}
 
@@ -399,7 +400,7 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
           </div>
           <div className="flex flex-wrap gap-2">
             {t.preferred_tools.filter(Boolean).map((tool: string) => (
-              <span key={tool} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium" style={{ border: '1px solid #E0E2E4', color: '#202124' }}>
+              <span key={tool} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium" style={{ border: '1px solid #E0E2E4', color: '#202124' }}>
                 <span className="flex w-4 h-4 items-center justify-center rounded text-[10px] font-bold" style={{ background: '#E3E3DA', color: '#4B5563' }}>
                   {tool[0]}
                 </span>

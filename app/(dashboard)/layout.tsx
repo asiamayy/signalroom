@@ -121,7 +121,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <>
       {/* Logo */}
       <div className="px-5 py-5 flex items-start justify-between">
-        <DashboardLogo width={140} />
+        <DashboardLogo width={165} />
         {/* Close button - mobile only */}
         <button
           onClick={() => setMobileNavOpen(false)}
@@ -194,10 +194,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className={cn('dashboard-shell flex h-screen overflow-hidden', inter.variable, playfair.variable)} style={{ background: '#F9F9F9' }}>
 
-      {/* React 19 auto-hoists this into <head>. Rendered only on dashboard
-          routes, so the landing page never loads or references it. */}
-      <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet" />
-
       {/* Desktop sidebar — always visible at md+ */}
       <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
         {SidebarContent}
@@ -233,7 +229,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Menu size={18} />
           </button>
           <div className="md:hidden">
-            <DashboardLogo width={110} />
+            <DashboardLogo width={125} />
           </div>
 
           {/* Search */}

@@ -122,7 +122,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   return (
     <div className="p-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-serif tracking-tight text-neutral-900">Settings</h1>
+        <h1 className="heading-editorial text-2xl text-neutral-900">Settings</h1>
         <p className="text-sm text-neutral-500 mt-0.5">Manage your account and billing</p>
       </div>
 

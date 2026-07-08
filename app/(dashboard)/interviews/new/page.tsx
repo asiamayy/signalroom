@@ -87,7 +87,7 @@ function NewInterviewForm() {
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-serif tracking-tight text-neutral-900">New interview</h1>
+        <h1 className="heading-editorial text-2xl text-neutral-900">New interview</h1>
         <p className="text-sm text-neutral-500 mt-0.5">Set up your session before entering the room</p>
       </div>
 
