@@ -471,8 +471,7 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-  &copy; {new Date().getFullYear()} SignalRoom. All rights reserved. 
-  SignalRoom&trade; is a proprietary product and trademark.
+  © {new Date().getFullYear()} SignalRoom. All rights reserved. SignalRoom™ is a proprietary product and trademark.
 </p>
         </div>
       </footer>
