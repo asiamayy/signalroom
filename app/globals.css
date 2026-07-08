@@ -31,11 +31,11 @@ body {
   min-height: 100dvh;
 }
 
-/* Dashboard-only typography: Newsreader for serif/headings, Inter for UI text.
+/* Dashboard-only typography: Playfair Display for serif/headings, Inter for UI text.
    Scoped so the marketing/landing page keeps its original fonts untouched. */
 .dashboard-shell {
   --font-sans: var(--nf-inter), system-ui, sans-serif;
-  --font-serif: var(--nf-newsreader), Georgia, serif;
+  --font-serif: var(--nf-playfair), Georgia, serif;
   font-family: var(--nf-inter), system-ui, sans-serif;
 }
 

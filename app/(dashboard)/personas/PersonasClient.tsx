@@ -176,7 +176,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
         {/* ── Page heading + controls ── */}
         <div className="flex items-center justify-between gap-4 px-4 sm:px-6 pt-5 pb-4" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
           <div className="min-w-0">
-            <h1 className="font-serif text-3xl tracking-tight" style={{ color: '#202124' }}>Personas</h1>
+            <h1 className="font-serif font-medium text-3xl tracking-[-0.01em]" style={{ color: '#202124' }}>Personas</h1>
             <p className="text-sm mt-1 leading-relaxed" style={{ color: '#5F6368' }}>AI-generated personas built from real research. Explore beliefs, behaviors, needs, and motivations.</p>
           </div>
 
@@ -397,8 +397,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                           className="flex-shrink-0"
                         />
                         <div className="min-w-0 flex-1 pt-0.5">
-                          <h3 className="font-serif text-xl leading-tight truncate" style={{ color: '#202124' }}>{persona.name}</h3>
-                          <p className="text-sm truncate mt-0.5" style={{ color: '#5F6368' }}>{persona.traits?.job_title ?? 'No role'}</p>
+                          <h3 className="font-serif font-medium text-xl leading-tight truncate tracking-[-0.01em]" style={{ color: '#202124' }}>{persona.name}</h3>
+                          <p className="text-xs truncate mt-0.5" style={{ color: '#5F6368' }}>{persona.traits?.job_title ?? 'No role'}</p>
                           {persona.traits?.location && (
                             <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#9CA3AF' }}>
                               <MapPin size={11} />
@@ -575,8 +575,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                               className="flex-shrink-0"
                             />
                             <div className="min-w-0 flex-1 pt-0.5">
-                              <h3 className="font-serif text-xl leading-tight truncate" style={{ color: '#5F6368' }}>{persona.name}</h3>
-                              <p className="text-sm truncate mt-0.5" style={{ color: '#9CA3AF' }}>{persona.traits?.job_title ?? 'No role'}</p>
+                              <h3 className="font-serif font-medium text-xl leading-tight truncate tracking-[-0.01em]" style={{ color: '#5F6368' }}>{persona.name}</h3>
+                              <p className="text-xs truncate mt-0.5" style={{ color: '#9CA3AF' }}>{persona.traits?.job_title ?? 'No role'}</p>
                               {persona.traits?.location && (
                                 <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#9CA3AF' }}>
                                   <MapPin size={11} />

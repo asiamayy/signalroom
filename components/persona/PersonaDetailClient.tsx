@@ -200,7 +200,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
             {/* Identity */}
             <div className="min-w-0 flex-1 pt-1 lg:max-w-2xl">
               <div className="flex items-center gap-3">
-                <h1 className="font-serif text-3xl lg:text-4xl tracking-tight" style={{ color: '#202124' }}>{persona.name}</h1>
+                <h1 className="font-serif font-medium text-3xl lg:text-4xl tracking-[-0.01em]" style={{ color: '#202124' }}>{persona.name}</h1>
                 <BadgeCheck size={24} style={{ color: '#243329' }} />
               </div>
 
@@ -258,7 +258,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
             <button
               key={tabName}
               onClick={() => setTab(tabName)}
-              className="px-4 py-2.5 text-sm font-medium transition-colors flex-shrink-0"
+              className="px-4 py-2.5 text-xs font-medium transition-colors flex-shrink-0"
               style={{
                 color: tab === tabName ? '#1C3D2E' : '#757575',
                 borderBottom: tab === tabName ? '2px solid #1C3D2E' : '2px solid transparent',
