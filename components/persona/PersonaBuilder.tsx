@@ -229,7 +229,7 @@ export default function PersonaBuilder() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-serif tracking-tight" style={{ color: '#202124' }}>New Persona</h1>
+        <h1 className="text-3xl font-serif tracking-tight" style={{ color: '#202124' }}>New Persona</h1>
         <p className="text-sm mt-1" style={{ color: '#5F6368' }}>Build a realistic, research-backed persona with AI assistance.</p>
       </div>
 
@@ -494,7 +494,6 @@ export default function PersonaBuilder() {
                 size="sm"
                 onClick={handleGenerate}
                 loading={generating}
-                disabled={!aiPrompt.trim()}
                 className="w-full mb-5"
               >
                 Generate

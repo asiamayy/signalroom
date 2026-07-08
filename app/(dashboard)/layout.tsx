@@ -99,7 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="px-5 py-5 flex items-start justify-between" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
         <div>
           <Logo href="/personas" size="sm" />
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] mt-1" style={{ color: '#9CA3AF' }}>AI Market Research</p>
+          <p className="text-[11px] font-medium tracking-wide mt-0.5" style={{ color: '#9CA3AF' }}>AI Market Research</p>
         </div>
         {/* Close button - mobile only */}
         <button
@@ -212,7 +212,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* Search */}
-          <div className="hidden md:flex items-center gap-2.5 rounded-lg px-4 py-2.5 flex-1 max-w-2xl" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
+          <div className="hidden md:flex items-center gap-2.5 rounded-xl px-4 py-2.5 flex-1" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
             <Search size={16} style={{ color: '#9CA3AF' }} />
             <input
               type="text"
@@ -267,13 +267,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
 
               {showAccountMenu && (
-                <div className="absolute right-0 top-full mt-2 rounded-lg overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '160px' }}>
+                <div className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.1)', border: '1px solid #E3E3DA', minWidth: '200px' }}>
+                  <div className="px-4 py-3" style={{ borderBottom: '1px solid #F1F1F1' }}>
+                    <p className="font-serif text-base leading-tight truncate" style={{ color: '#202124' }}>{fullName ?? userEmail?.split('@')[0] ?? 'Account'}</p>
+                    <p className="text-xs mt-0.5 truncate" style={{ color: '#9CA3AF' }}>{userEmail ?? ''}</p>
+                  </div>
                   <button
                     onClick={handleSignOut}
-                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors hover:bg-neutral-50"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: '#DB4437' }}
+                    className="w-full flex items-center gap-2.5 px-4 py-3 text-sm transition-colors hover:bg-neutral-50"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', color: '#202124' }}
                   >
-                    <LogOut size={14} />
+                    <LogOut size={14} style={{ color: '#9CA3AF' }} />
                     Sign out
                   </button>
                 </div>

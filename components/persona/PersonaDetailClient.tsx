@@ -200,8 +200,8 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
             {/* Identity */}
             <div className="min-w-0 flex-1 pt-1 lg:max-w-2xl">
               <div className="flex items-center gap-3">
-                <h1 className="font-serif text-4xl lg:text-5xl font-semibold tracking-tight" style={{ color: '#202124' }}>{persona.name}</h1>
-                <BadgeCheck size={28} style={{ color: '#243329' }} />
+                <h1 className="font-serif text-3xl lg:text-4xl tracking-tight" style={{ color: '#202124' }}>{persona.name}</h1>
+                <BadgeCheck size={24} style={{ color: '#243329' }} />
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm" style={{ color: '#202124', opacity: 0.85 }}>
@@ -233,11 +233,11 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
             <div className="relative w-full flex-shrink-0 rounded-2xl p-5 shadow-sm lg:mt-14 lg:w-72" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
               <div className="grid grid-cols-2 gap-y-5">
                 <div>
-                  <p className="font-serif text-3xl font-semibold" style={{ color: '#202124' }}>{interviews?.length ?? 0}</p>
+                  <p className="font-serif text-2xl" style={{ color: '#202124' }}>{interviews?.length ?? 0}</p>
                   <p className="mt-0.5 text-sm" style={{ color: '#9CA3AF' }}>Interviews</p>
                 </div>
                 <div>
-                  <p className="font-serif text-3xl font-semibold" style={{ color: '#202124' }}>{journeys?.length ?? 0}</p>
+                  <p className="font-serif text-2xl" style={{ color: '#202124' }}>{journeys?.length ?? 0}</p>
                   <p className="mt-0.5 text-sm" style={{ color: '#9CA3AF' }}>Journeys</p>
                 </div>
               </div>
@@ -258,7 +258,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
             <button
               key={tabName}
               onClick={() => setTab(tabName)}
-              className="px-4 py-2.5 text-sm font-semibold transition-colors flex-shrink-0"
+              className="px-4 py-2.5 text-sm font-medium transition-colors flex-shrink-0"
               style={{
                 color: tab === tabName ? '#1C3D2E' : '#757575',
                 borderBottom: tab === tabName ? '2px solid #1C3D2E' : '2px solid transparent',
@@ -557,10 +557,10 @@ function JourneysTab({ persona, journeys, setJourneys }: { persona: Persona; jou
                 <button
                   key={j.id}
                   onClick={() => setActiveJourneyId(j.id)}
-                  className="px-3.5 py-1.5 rounded-full text-xs font-semibold flex-shrink-0 transition-colors"
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 transition-colors"
                   style={activeJourneyId === j.id
-                    ? { background: '#1C3D2E', color: 'white', border: '1px solid #1C3D2E' }
-                    : { background: 'white', color: '#5F6368', border: '1px solid #E0E2E4' }}
+                    ? { background: '#243329', color: 'white', border: '1px solid #243329' }
+                    : { background: 'white', color: '#5F6368', border: '1px solid #E3E3DA' }}
                 >
                   {j.title}
                 </button>
