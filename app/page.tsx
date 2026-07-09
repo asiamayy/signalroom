@@ -252,7 +252,7 @@ export default function LandingPage() {
                     <div className="border-t border-[#d1d5d3] pt-2.5 space-y-1.5 text-[11px] text-neutral-600">
                       <div className="flex justify-between"><span>Time</span><span className="font-semibold text-neutral-800">3 weeks</span></div>
                       <div className="flex justify-between"><span>Per interview</span><span className="font-semibold text-neutral-800">$750</span></div>
-                      <div className="flex justify-between"><span>Hours</span><span class="font-semibold text-neutral-800">{traditionalHours}h</span></div>
+                      <div className="flex justify-between"><span>Hours</span><span className="font-semibold text-neutral-800">{traditionalHours}h</span></div>
                     </div>
                   </div>
                   <div className="p-6 bg-[#e9edea]">
