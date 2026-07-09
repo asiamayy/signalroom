@@ -91,7 +91,7 @@ export default function LandingPage() {
         <div className="flex items-center gap-3">
           {/* Brand Logo Integration */}
           <img 
-            src="/signalroom-logo.jpg" 
+            src="/signalroom-logo.svg" 
             alt="SignalRoom Logo" 
             className="h-9 w-auto object-contain"
           />
@@ -113,13 +113,13 @@ export default function LandingPage() {
       <header className="relative border-b border-[#1c2d24]/10 pt-32 pb-20 px-12">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-6 flex items-center gap-4">
-            <span className="text-[11px] font-normal uppercase tracking-[0.4em] text-[#2e533e] whitespace-nowrap">Customer intelligence that turns market signals into strategic decisions</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#2e533e] whitespace-nowrap">Customer intelligence that turns market signals into strategic decisions</span>
             <div className="h-px w-20 bg-[#1c2d24]/10" />
           </div>
           <div className="md:col-span-12 lg:col-span-9">
-            <h1 className="text-[48px] md:text-[84px] md:leading-[82px] tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            <h1 className="text-[48px] md:text-[84px] md:leading-[82px] tracking-tight font-normal text-[#121314] whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
-              <span className="relative inline-block text-[#2e533e] italic whitespace-nowrap">
+              <span className="relative inline-block text-[#2e533e] italic">
                 <span className="relative inline-block">
                   {displayedWord.split('').map((char, idx) => (
                     <span 
@@ -133,7 +133,7 @@ export default function LandingPage() {
                 </span>
                 <span>.</span>
               </span><br />
-              Now you can ask.
+              <span className="block mt-2">Now you can ask.</span>
             </h1>
           </div>
           <div className="md:col-start-7 md:col-span-6 lg:col-start-8 lg:col-span-5 pt-6 flex flex-col justify-end">
@@ -141,12 +141,12 @@ export default function LandingPage() {
               SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
             </p>
             <div className="border-l-2 pl-4 mb-6 border-[#2e533e]/30">
-              <p className="text-xs font-normal uppercase tracking-wide text-[#2e533e] mb-2">AI-powered customer intelligence for teams building what customers actually want.</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#2e533e] mb-2">AI-powered customer intelligence for teams building what customers actually want.</p>
               <p className="text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
               <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
             </div>
             <div className="flex items-center gap-8">
-              <button className="border border-[#1c2d24]/20 px-8 py-4 text-[11px] font-normal uppercase tracking-[0.3em] bg-[#1c2d24] text-white hover:bg-[#2e533e] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
+              <button className="border border-[#1c2d24]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1c2d24] text-white hover:bg-[#2e533e] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
                 Explore Platform
               </button>
             </div>
@@ -162,7 +162,7 @@ export default function LandingPage() {
           className={`mb-20 flex items-end justify-between cursor-pointer group ${isMethodologyActive ? 'is-active' : ''}`}
         >
           <div className="flex-shrink-0">
-            <span className="text-[11px] font-normal uppercase tracking-[0.4em] text-neutral-600">00 // Operational Logic</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600">00 // Operational Logic</span>
             <h2 className="text-[36px] mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>The Methodology</h2>
           </div>
           <div className="h-px flex-grow ml-16 bg-[#b5bab7]/20 relative">
@@ -217,7 +217,7 @@ export default function LandingPage() {
       <section id="roi" className="px-12 py-20 bg-[#fafbfa] border-b border-[#1c2d24]/10 relative overflow-hidden scroll-mt-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           <div className="md:col-span-5">
-            <span className="text-[11px] font-normal uppercase tracking-[0.4em] text-neutral-600 mb-6 block">The Value Logic</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-6 block">The Value Logic</span>
             <h2 className="text-[36px] mb-8 leading-[1.05] tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Quantify the Signal. Eliminate Waste.</h2>
             <p className="text-[15px] text-[#454947] mb-10 max-w-sm leading-relaxed opacity-90">
               Traditional market research tools cost $8,000 or more for a 6-month subscription — before you factor in recruiting, moderation, and analysis. SignalRoom replaces all of that for a flat monthly fee with no contracts.
@@ -232,7 +232,7 @@ export default function LandingPage() {
               <div className="space-y-12">
                 <div>
                   <div className="flex justify-between items-center mb-4">
-                    <label className="text-[11px] font-normal uppercase tracking-[0.3em] text-neutral-700 block">Interviews per month</label>
+                    <label className="text-[11px] font-medium uppercase tracking-[0.3em] text-neutral-700 block">Interviews per month</label>
                     <span className="text-neutral-900 font-normal text-xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{roiValue}</span>
                   </div>
                   <input 
@@ -245,43 +245,43 @@ export default function LandingPage() {
                     value={roiValue}
                     onChange={(e) => setRoiValue(parseInt(e.target.value))}
                   />
-                  <div className="flex justify-between mt-4 text-[10px] tracking-[0.2em] font-normal text-neutral-600">
+                  <div className="flex justify-between mt-4 text-[10px] tracking-[0.2em] font-medium text-neutral-600">
                     <span>1 UNIT</span>
                     <span>30 UNITS</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 divide-x divide-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
                   <div className="p-6">
-                    <span className="text-[10px] font-normal uppercase tracking-[0.3em] text-neutral-600 block mb-2">Traditional</span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-600 block mb-2">Traditional</span>
                     <span className="text-[28px] font-normal tracking-tighter text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>${traditionalCost.toLocaleString()}</span>
                     <p className="text-[11px] text-neutral-600 font-medium mb-3">/month</p>
                     <div className="border-t border-[#d1d5d3] pt-2.5 space-y-1.5 text-[11px] text-neutral-600">
-                      <div className="flex justify-between"><span>Time</span><span className="font-normal text-neutral-800">3 weeks</span></div>
-                      <div className="flex justify-between"><span>Per interview</span><span className="font-normal text-neutral-800">$750</span></div>
-                      <div className="flex justify-between"><span>Hours</span><span className="font-normal text-neutral-800">{traditionalHours}h</span></div>
+                      <div className="flex justify-between"><span>Time</span><span className="font-medium text-neutral-800">3 weeks</span></div>
+                      <div className="flex justify-between"><span>Per interview</span><span className="font-medium text-neutral-800">$750</span></div>
+                      <div className="flex justify-between"><span>Hours</span><span className="font-medium text-neutral-800">{traditionalHours}h</span></div>
                     </div>
                   </div>
                   <div className="p-6 bg-[#e9edea]">
-                    <span className="text-[10px] font-normal uppercase tracking-[0.3em] text-[#1c2d24] block mb-2">SignalRoom</span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1c2d24] block mb-2">SignalRoom</span>
                     <span className="text-[28px] font-normal tracking-tighter text-[#1c2d24]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
                     <p className="text-[11px] text-[#1c2d24] font-medium mb-3">unlimited/month</p>
                     <div className="border-t border-[#b8c2bc] pt-2.5 space-y-1.5 text-[11px] text-[#1c2d24]">
-                      <div className="flex justify-between"><span>Time</span><span className="font-normal">Minutes</span></div>
-                      <div className="flex justify-between"><span>Per interview</span><span className="font-normal">~$0</span></div>
-                      <div className="flex justify-between"><span>Hours</span><span className="font-normal">&lt; 1h</span></div>
+                      <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
+                      <div className="flex justify-between"><span>Per interview</span><span className="font-medium">~$0</span></div>
+                      <div className="flex justify-between"><span>Hours</span><span className="font-medium">&lt; 1h</span></div>
                     </div>
                   </div>
                 </div>
                 <div className="bg-[#1c2d24] p-6 grid grid-cols-2 gap-4 text-white rounded-[4px]">
                   <div>
-                    <span className="text-[9px] font-normal uppercase tracking-[0.3em] text-neutral-300 block mb-1">You save</span>
+                    <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-300 block mb-1">You save</span>
                     <div className="text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                       ${savings.toLocaleString()}<span className="text-xs font-sans font-normal text-neutral-400">/mo</span>
                     </div>
                     <div className="text-[10px] text-neutral-300 mt-0.5">${annualSavings.toLocaleString()}/year</div>
                   </div>
                   <div className="text-right">
-                    <span className="text-[9px] font-normal uppercase tracking-[0.3em] text-neutral-400 block mb-1">Time saved</span>
+                    <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-400 block mb-1">Time saved</span>
                     <div className="text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{calculatedReduction}%</div>
                     <div className="text-[10px] text-neutral-400 mt-0.5">faster</div>
                   </div>
@@ -295,18 +295,18 @@ export default function LandingPage() {
       {/* Pricing */}
       <section id="pricing" className="px-12 py-20 border-b border-[#1c2d24]/10 scroll-mt-16">
         <div className="text-center mb-20">
-          <span className="text-[11px] font-normal uppercase tracking-[0.4em] text-neutral-600">Subscription Models</span>
+          <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600">Subscription Models</span>
           <h2 className="text-[36px] mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simple pricing. No surprises.</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 border border-[#d1d5d3] divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden">
           {/* Plan 1 */}
           <div className="p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group border-b md:border-b-0 border-[#1c2d24]/10">
-            <span className="text-[11px] font-normal uppercase tracking-[0.4em] text-neutral-700 mb-10">01 // Pulse</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 font-bold mb-10">01 // Pulse</span>
             <h3 className="text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Pulse</h3>
             <p className="text-xs text-neutral-600 mb-4">For solo founders getting started</p>
             <div className="flex items-baseline gap-2 mb-10">
               <span className="text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$49</span>
-              <span className="text-[11px] text-neutral-600 font-normal uppercase tracking-widest">/ month</span>
+              <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
             </div>
             <ul className="space-y-4 mb-16 flex-grow">
               <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 3 personas</li>
@@ -314,35 +314,35 @@ export default function LandingPage() {
               <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Core templates</li>
               <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Basic reports</li>
             </ul>
-            <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-normal uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
+            <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
           </div>
           {/* Plan 2 */}
           <div className="p-10 flex flex-col bg-[#e9edea] relative border-b md:border-b-0 border-[#1c2d24]/10 shadow-xl shadow-black/[0.01]">
             <div className="absolute top-0 right-0 bg-[#1c2d24] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
-            <span className="text-[11px] font-normal uppercase tracking-[0.4em] text-[#1c2d24] mb-10">02 // Core</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1c2d24] mb-10">02 // Core</span>
             <h3 className="text-[32px] mb-2 tracking-tighter text-[#1c2d24] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
-            <p className="text-xs text-[#1c2d24] font-normal mb-4">For teams validating fast</p>
+            <p className="text-xs text-[#1c2d24] font-medium mb-4">For teams validating fast</p>
             <div className="flex items-baseline gap-2 mb-10">
               <span className="text-[48px] tracking-tighter text-[#1c2d24]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
-              <span className="text-[11px] text-[#1c2d24] font-normal uppercase tracking-widest">/ month</span>
+              <span className="text-[11px] text-[#1c2d24] font-medium uppercase tracking-widest">/ month</span>
             </div>
             <ul className="space-y-4 mb-16 flex-grow">
-              <li className="flex items-center gap-4 text-xs text-[#121314] font-normal">✓ Unlimited personas</li>
-              <li className="flex items-center gap-4 text-xs text-[#121314] font-normal">✓ Unlimited interviews</li>
-              <li className="flex items-center gap-4 text-xs text-[#121314] font-normal">✓ All templates</li>
-              <li className="flex items-center gap-4 text-xs text-[#121314] font-normal">✓ Full reports</li>
-              <li className="flex items-center gap-4 text-xs text-[#121314] font-normal">✓ Multi-persona testing</li>
+              <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited personas</li>
+              <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited interviews</li>
+              <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ All templates</li>
+              <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Full reports</li>
+              <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona testing</li>
             </ul>
-            <Link href="/signup" className="w-full text-center bg-[#1c2d24] text-white py-4 text-[11px] font-normal uppercase tracking-[0.3em] hover:bg-[#2e533e] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
+            <Link href="/signup" className="w-full text-center bg-[#1c2d24] text-white py-4 text-[11px] font-medium uppercase tracking-[0.3em] hover:bg-[#2e533e] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
           </div>
           {/* Plan 3 */}
           <div className="p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group thin-border">
-            <span className="text-[11px] font-normal uppercase tracking-[0.4em] text-neutral-700 mb-10">03 // Scale</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-10">03 // Scale</span>
             <h3 className="text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Broadcast</h3>
             <p className="text-xs text-neutral-500 mb-4">For agencies and growing teams</p>
             <div className="flex items-baseline gap-2 mb-10">
               <span className="text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$249</span>
-              <span className="text-[11px] text-neutral-600 font-normal uppercase tracking-widest">/ month</span>
+              <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
             </div>
             <ul className="space-y-4 mb-16 flex-grow">
               <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in Signal</li>
@@ -350,7 +350,7 @@ export default function LandingPage() {
               <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label reports</li>
               <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority support</li>
             </ul>
-            <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-normal uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
+            <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
           </div>
         </div>
       </section>
@@ -358,7 +358,7 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="relative bg-[#1c2d24] text-white py-24 px-12 overflow-hidden border-b border-[#1c2d24]/10">
         <div className="relative z-10 flex flex-col items-center text-center">
-          <span className="text-[11px] font-normal uppercase tracking-[0.6em] mb-10 opacity-60">Final Directive</span>
+          <span className="text-[11px] font-medium uppercase tracking-[0.6em] mb-10 opacity-60">Final Directive</span>
           <h2 className="text-[48px] md:text-[64px] leading-[1.1] max-w-4xl tracking-tighter font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
             The market is speaking. It’s time you answered back.
           </h2>
@@ -367,10 +367,10 @@ export default function LandingPage() {
             Validate faster. Reduce risk. Build what customers actually want.
           </p>
           <div className="flex flex-col md:flex-row gap-6 mt-10">
-            <Link href="/signup" className="bg-white text-[#1c2d24] px-12 py-4 text-[11px] font-normal uppercase tracking-[0.4em] hover:bg-[#f0f2f0] transition-all duration-300 rounded-[4px]">
+            <Link href="/signup" className="bg-white text-[#1c2d24] px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#f0f2f0] transition-all duration-300 rounded-[4px]">
               Find the signal
             </Link>
-            <Link href="/contact" className="border border-white/20 px-12 py-4 text-[11px] font-normal uppercase tracking-[0.4em] hover:bg-white hover:text-[#1c2d24] transition-all duration-500 rounded-[4px]">
+            <Link href="/contact" className="border border-white/20 px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-white hover:text-[#1c2d24] transition-all duration-500 rounded-[4px]">
               Talk to Strategist
             </Link>
           </div>
@@ -382,7 +382,7 @@ export default function LandingPage() {
         <div className="md:col-span-4">
           <div className="flex items-center gap-3 mb-6">
             <img 
-              src="/signalroom-logo.jpg" 
+              src="/signalroom-logo.svg" 
               alt="SignalRoom Logo" 
               className="h-7 w-auto object-contain"
             />
@@ -392,12 +392,12 @@ export default function LandingPage() {
           </p>
         </div>
         <div className="md:col-start-6 md:col-span-2 space-y-4">
-          <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-normal block mb-6">Legal</span>
+          <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-medium block mb-6">Legal</span>
           <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1c2d24] transition-colors font-medium" href="/privacy">Privacy</Link>
           <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1c2d24] transition-colors font-medium" href="/terms">Terms</Link>
         </div>
         <div className="md:col-span-2 space-y-4">
-          <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-normal block mb-6">Support</span>
+          <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-medium block mb-6">Support</span>
           <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1c2d24] transition-colors font-medium" href="/faq">FAQ</Link>
           <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1c2d24] transition-colors font-medium" href="/contact">Contact</Link>
         </div>
