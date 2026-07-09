@@ -21,7 +21,7 @@ function DashboardLogo({ width = 140 }: { width?: number }) {
   return (
     <Link href="/personas" className="inline-flex focus:outline-none">
       <Image
-        src="/signalroom-logo-dashboard.png"
+        src="/signalroom-logo-dashboard.svg"
         alt="Signalroom — AI Market Research"
         width={width}
         height={Math.round(width / 3.182)}
