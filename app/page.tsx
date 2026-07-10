@@ -39,129 +39,6 @@ function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode;
   );
 }
 
-// Seamless Premium High-End High-Frequency Math Canvas Animation
-function IntelligenceFocusCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animationFrameId: number;
-    let width = (canvas.width = canvas.parentElement?.clientWidth || 700);
-    let height = (canvas.height = 160);
-
-    const handleResize = () => {
-      if (canvas) {
-        width = canvas.width = canvas.parentElement?.clientWidth || 700;
-        height = canvas.height = 160;
-      }
-    };
-    window.addEventListener('resize', handleResize);
-
-    // Precise node network structures mapped cleanly within the header column spacing
-    const clusters = [
-      { x: width * 0.18, y: 55, label: 'customer expectation detected', phase: 0 },
-      { x: width * 0.62, y: 90, label: 'hidden objection uncovered', phase: Math.PI * 0.66 }
-    ];
-
-    let globalTime = 0;
-
-    const render = () => {
-      globalTime += 0.004; // Calm, continuous baseline pacing
-      ctx.clearRect(0, 0, width, height);
-
-      // Re-map centers securely if width changes dynamically
-      clusters[0].x = width * 0.18;
-      clusters[1].x = width * 0.62;
-
-      clusters.forEach((cluster) => {
-        const localCycle = Math.sin(globalTime + cluster.phase);
-        const focusIntensity = Math.max(0, localCycle); 
-
-        ctx.save();
-        
-        // Draw constellation support scaffolding lines
-        ctx.strokeStyle = '#AAB0A3';
-        ctx.lineWidth = 0.5;
-        
-        // Base subtle permanent lines
-        ctx.globalAlpha = 0.06;
-        ctx.beginPath();
-        ctx.moveTo(cluster.x - 50, cluster.y + 15);
-        ctx.lineTo(cluster.x, cluster.y);
-        ctx.lineTo(cluster.x + 40, cluster.y - 25);
-        ctx.stroke();
-
-        // High-precision connection light rays matching focus transitions
-        if (focusIntensity > 0) {
-          ctx.globalAlpha = focusIntensity * 0.35;
-          ctx.strokeStyle = '#1A3024';
-          ctx.lineWidth = 0.75;
-          ctx.beginPath();
-          ctx.moveTo(cluster.x - 50, cluster.y + 15);
-          ctx.lineTo(cluster.x, cluster.y);
-          ctx.lineTo(cluster.x + 40, cluster.y - 25);
-          ctx.stroke();
-        }
-
-        // Auxiliary context nodes
-        ctx.globalAlpha = 0.15 + focusIntensity * 0.2;
-        ctx.fillStyle = '#AAB0A3';
-        ctx.beginPath();
-        ctx.arc(cluster.x - 50, cluster.y + 15, 1.5, 0, Math.PI * 2);
-        ctx.arc(cluster.x + 40, cluster.y - 25, 1.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Master Focal Center point
-        ctx.beginPath();
-        if (focusIntensity > 0.5) {
-          ctx.fillStyle = '#1A3024';
-          const glowRadius = 3 + (focusIntensity * 1.5);
-          ctx.arc(cluster.x, cluster.y, glowRadius, 0, Math.PI * 2);
-          ctx.shadowColor = 'rgba(26, 48, 36, 0.25)';
-          ctx.shadowBlur = 6;
-        } else {
-          ctx.fillStyle = '#AAB0A3';
-          ctx.arc(cluster.x, cluster.y, 2.5, 0, Math.PI * 2);
-        }
-        ctx.fill();
-        ctx.restore();
-
-        // Smooth text display handling
-        if (focusIntensity > 0.1) {
-          ctx.save();
-          ctx.font = "normal 450 10px font-mono, ui-monospace, monospace";
-          ctx.fillStyle = '#1A3024';
-          ctx.globalAlpha = Math.min(0.75, (focusIntensity - 0.1) * 1.5);
-          const txt = cluster.label.toUpperCase();
-          const charSpacing = 2.2;
-          let currentX = cluster.x + 15;
-          
-          for (let i = 0; i < txt.length; i++) {
-            ctx.fillText(txt[i], currentX, cluster.y + 3.5);
-            currentX += ctx.measureText(txt[i]).width + charSpacing;
-          }
-          ctx.restore();
-        }
-      });
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="w-full h-full block" />;
-}
-
 interface DashboardPersona {
   id: string;
   name: string;
@@ -323,11 +200,11 @@ export default function LandingPage() {
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
-        </div>
+  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
+  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
+  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
+  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
+</div>
         <div className="flex items-center gap-4 sm:gap-6">
           <Link className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#454947] hover:text-[#121314] transition-colors" href="/login">Sign In</Link>
           <Link className="bg-[#1A3024] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#5A7973] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
@@ -337,16 +214,14 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative pt-16 sm:pt-24 pb-4 sm:pb-6 px-6 sm:px-12 z-10">
+      <header className="relative pt-16 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
             <div className="hidden sm:block h-px w-20 bg-[#1A3024]/10" />
           </div>
-          
-          {/* Main Title Left Column */}
-          <div className="md:col-span-12 lg:col-span-7 xl:col-span-7 overflow-visible flex flex-col justify-between">
-            <h1 className="text-[38px] sm:text-[64px] lg:text-[76px] xl:text-[84px] leading-[1.1] lg:leading-[76px] xl:leading-[82px] tracking-tight font-normal text-[#121314] break-words" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+          <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
+            <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
               <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
                 <span className="relative inline-flex overflow-visible">
@@ -361,21 +236,14 @@ export default function LandingPage() {
                   ))}
                 </span>
                 <span>.</span>
-              </span><br />
+              </span><br className="hidden lg:block" />
               <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
             </h1>
-
-            {/* High-End Canvas Animation Fitted Directly in the Workspace Underneath the Headline */}
-            <div className="w-full h-40 mt-8 relative overflow-hidden hidden lg:block select-none pointer-events-none">
-              <IntelligenceFocusCanvas />
-            </div>
           </div>
-          
-          {/* Context Descriptions Right Column */}
-          <div className="md:col-span-12 lg:col-span-5 xl:col-start-8 xl:col-span-5 pt-4 sm:pt-6 flex flex-col justify-end">
+          <div className="md:col-span-12 lg:col-start-7 lg:col-span-6 xl:col-start-8 xl:col-span-5 pt-4 sm:pt-6 flex flex-col justify-end">
             <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 leading-normal tracking-[-0.01em] opacity-90 font-normal">
-              SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
-            </p>
+  SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
+</p>
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
