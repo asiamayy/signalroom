@@ -1,39 +1,39 @@
 'use client'
 
-// Proportional, chronologically-locked layout.
-// 1. Text weights, fonts, and styling fully restored.
-// 2. Clusters 2 & 3 completely hidden at initiation.
-// 3. Forward tracking links animate simultaneously with intermediate node branching.
+// 1. Clusters hidden at start, appearing only upon connection.
+// 2. Linear transitions (C1 -> Middle Node -> C2).
+// 3. Middle node branches one-by-one simultaneously in the background.
+// 4. Texts anchored exactly relative to their clusters (Hidden objection at TOP).
+// 5. Old clusters fade as new ones connect.
 
 const d = {
-  // Cluster 1: Placed under 'Customer expectation detected'
+  // Cluster 1: V
   a1: { cx: 40, cy: 110 },
-  a2: { cx: 70, cy: 140 },
-  a3: { cx: 100, cy: 110 },
+  a2: { cx: 80, cy: 150 },
+  a3: { cx: 120, cy: 110 },
   
-  // Cluster 2: Placed under 'Hidden objection'
-  b1: { cx: 345, cy: 110 },
-  b2: { cx: 315, cy: 140 },
-  b3: { cx: 345, cy: 170 },
+  // Cluster 2: < 
+  b1: { cx: 415, cy: 10 },
+  b2: { cx: 375, cy: 50 },
+  b3: { cx: 415, cy: 90 },
   
-  // Cluster 3: Placed under 'Emerging opportunity'
-  c1: { cx: 620, cy: 140 },
-  c2: { cx: 650, cy: 110 },
-  c3: { cx: 680, cy: 140 },
+  // Cluster 3: ^
+  c1: { cx: 680, cy: 150 },
+  c2: { cx: 720, cy: 110 },
+  c3: { cx: 760, cy: 150 },
 
-  // Transit Hub Centroids
-  hubAB: { cx: 192, cy: 140 },
-  hubBC: { cx: 482, cy: 125 },
+  // Middle Transit Nodes
+  hubAB: { cx: 227, cy: 100 },
+  hubBC: { cx: 547, cy: 80 },
 
-  // Offset Micro-Nodes
-  abScat1: { cx: 160, cy: 60 },
-  abScat2: { cx: 220, cy: 210 },
-  abScat3: { cx: 250, cy: 80 },
+  // Subtle Background Nodes (Placed far off the main diagonal path)
+  abScat1: { cx: 200, cy: 160 }, // Below
+  abScat2: { cx: 260, cy: 150 }, // Below
+  abScat3: { cx: 210, cy: 40 },  // Above
 
-  // Offset Micro-Nodes
-  bcScat1: { cx: 450, cy: 200 },
-  bcScat2: { cx: 470, cy: 50 },
-  bcScat3: { cx: 550, cy: 65 }
+  bcScat1: { cx: 520, cy: 140 }, // Below
+  bcScat2: { cx: 580, cy: 150 }, // Below
+  bcScat3: { cx: 550, cy: 30 }   // Above
 }
 
 export default function IntelligenceSignal() {
@@ -41,154 +41,195 @@ export default function IntelligenceSignal() {
     <div className="relative w-full h-64 overflow-visible bg-transparent mt-4">
       <svg viewBox="0 0 800 240" className="absolute top-0 left-0 w-full h-full overflow-visible">
         
-        {/* ── LAYER 1: SUBTLE BACKGROUND MICRO-NETWORKS ── */}
-        <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat1.cx} y2={d.abScat1.cy} className="subtle-seq-line ab-l1" />
-        <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat2.cx} y2={d.abScat2.cy} className="subtle-seq-line ab-l2" />
-        <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat3.cx} y2={d.abScat3.cy} className="subtle-seq-line ab-l3" />
-        <circle cx={d.abScat1.cx} cy={d.abScat1.cy} r="2.5" className="subtle-node-core ab-c1" />
-        <circle cx={d.abScat2.cx} cy={d.abScat2.cy} r="2.5" className="subtle-node-core ab-c2" />
-        <circle cx={d.abScat3.cx} cy={d.abScat3.cy} r="2.5" className="subtle-node-core ab-c3" />
+        {/* ── BACKGROUND LAYER: SUBTLE MIDDLE NODE BRANCHES ── */}
+        <g className="subtle-network">
+          {/* Hub 1 Branches */}
+          <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat1.cx} y2={d.abScat1.cy} className="sub-line sub1-1" strokeDasharray="100" />
+          <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat2.cx} y2={d.abScat2.cy} className="sub-line sub1-2" strokeDasharray="100" />
+          <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat3.cx} y2={d.abScat3.cy} className="sub-line sub1-3" strokeDasharray="100" />
+          <circle cx={d.abScat1.cx} cy={d.abScat1.cy} r="2" className="sub-dot sub1-1" />
+          <circle cx={d.abScat2.cx} cy={d.abScat2.cy} r="2" className="sub-dot sub1-2" />
+          <circle cx={d.abScat3.cx} cy={d.abScat3.cy} r="2" className="sub-dot sub1-3" />
 
-        <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat1.cx} y2={d.bcScat1.cy} className="subtle-seq-line bc-l1" />
-        <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat2.cx} y2={d.bcScat2.cy} className="subtle-seq-line bc-l2" />
-        <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat3.cx} y2={d.bcScat3.cy} className="subtle-seq-line bc-l3" />
-        <circle cx={d.bcScat1.cx} cy={d.bcScat1.cy} r="2.5" className="subtle-node-core bc-c1" />
-        <circle cx={d.bcScat2.cx} cy={d.bcScat2.cy} r="2.5" className="subtle-node-core bc-c2" />
-        <circle cx={d.bcScat3.cx} cy={d.bcScat3.cy} r="2.5" className="subtle-node-core bc-c3" />
+          {/* Hub 2 Branches */}
+          <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat1.cx} y2={d.bcScat1.cy} className="sub-line sub2-1" strokeDasharray="100" />
+          <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat2.cx} y2={d.bcScat2.cy} className="sub-line sub2-2" strokeDasharray="100" />
+          <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat3.cx} y2={d.bcScat3.cy} className="sub-line sub2-3" strokeDasharray="100" />
+          <circle cx={d.bcScat1.cx} cy={d.bcScat1.cy} r="2" className="sub-dot sub2-1" />
+          <circle cx={d.bcScat2.cx} cy={d.bcScat2.cy} r="2" className="sub-dot sub2-2" />
+          <circle cx={d.bcScat3.cx} cy={d.bcScat3.cy} r="2" className="sub-dot sub2-3" />
+        </g>
 
-        {/* ── LAYER 2: CHRONOLOGICAL TRANSIT BACKBONE ── */}
-        <line x1={d.a2.cx} y1={d.a2.cy} x2={d.hubAB.cx} y2={d.hubAB.cy} className="primary-backbone-edge bb-a1" />
-        <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.b2.cx} y2={d.b2.cy} className="primary-backbone-edge bb-a2" />
-        <line x1={d.b2.cx} y1={d.b2.cy} x2={d.hubBC.cx} y2={d.hubBC.cy} className="primary-backbone-edge bb-b1" />
-        <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.c2.cx} y2={d.c2.cy} className="primary-backbone-edge bb-b2" />
+        {/* ── MAIN LAYER: CONNECTING TRANSITION LINES ── */}
+        <g className="main-network">
+          {/* Line: Cluster 1 to Middle Node 1 */}
+          <line x1={d.a2.cx} y1={d.a2.cy} x2={d.hubAB.cx} y2={d.hubAB.cy} className="main-line bb1" strokeDasharray="300" />
+          <circle cx={d.hubAB.cx} cy={d.hubAB.cy} r="3" className="hub-dot pin1" />
 
-        <circle cx={d.hubAB.cx} cy={d.hubAB.cy} r="3" className="hub-center-pin pin-ab" />
-        <circle cx={d.hubBC.cx} cy={d.hubBC.cy} r="3" className="hub-center-pin pin-bc" />
+          {/* Line: Middle Node 1 to Cluster 2 */}
+          <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.b2.cx} y2={d.b2.cy} className="main-line bb2" strokeDasharray="300" />
 
-        {/* ── LAYER 3: GEOMETRIES PROPORTIONALLY LOCKED UNDER TEXT TRACKS ── */}
-        {/* Cluster 1: V */}
-        <g className="master-cluster cluster-reveal-1">
+          {/* Line: Cluster 2 to Middle Node 2 */}
+          <line x1={d.b2.cx} y1={d.b2.cy} x2={d.hubBC.cx} y2={d.hubBC.cy} className="main-line bb3" strokeDasharray="300" />
+          <circle cx={d.hubBC.cx} cy={d.hubBC.cy} r="3" className="hub-dot pin2" />
+
+          {/* Line: Middle Node 2 to Cluster 3 */}
+          <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.c2.cx} y2={d.c2.cy} className="main-line bb4" strokeDasharray="300" />
+        </g>
+
+        {/* ── FOREGROUND LAYER: CLUSTERS AND LOCKED TEXT ── */}
+        
+        {/* Cluster 1 Group */}
+        <g className="cluster-group c1-group">
           <line x1={d.a1.cx} y1={d.a1.cy} x2={d.a2.cx} y2={d.a2.cy} className="cluster-wire" />
           <line x1={d.a2.cx} y1={d.a2.cy} x2={d.a3.cx} y2={d.a3.cy} className="cluster-wire" />
-          <circle cx={d.a2.cx} cy={d.a2.cy} r="4" className="permanent-wave wave-loop-1" style={{ transformOrigin: `${d.a2.cx}px ${d.a2.cy}px` }} />
-          <circle cx={d.a2.cx} cy={d.a2.cy} r="3.5" fill="#AAB0A3" className="permanent-dot" />
-          <circle cx={d.a1.cx} cy={d.a1.cy} r="2.5" fill="#AAB0A3" className="permanent-dot-ambient" />
-          <circle cx={d.a3.cx} cy={d.a3.cy} r="2.5" fill="#AAB0A3" className="permanent-dot-ambient" />
+          <circle cx={d.a2.cx} cy={d.a2.cy} r="4" className="pulse-ripple" style={{ transformOrigin: `${d.a2.cx}px ${d.a2.cy}px` }} />
+          <circle cx={d.a2.cx} cy={d.a2.cy} r="3.5" className="cluster-dot-main" />
+          <circle cx={d.a1.cx} cy={d.a1.cy} r="2.5" className="cluster-dot-sub" />
+          <circle cx={d.a3.cx} cy={d.a3.cy} r="2.5" className="cluster-dot-sub" />
+          {/* Label Directly Below Cluster 1 */}
+          <text x={d.a2.cx} y={d.a2.cy + 35} textAnchor="middle" className="cluster-label">CUSTOMER EXPECTATION DETECTED</text>
         </g>
 
-        {/* Cluster 2: < */}
-        <g className="master-cluster cluster-reveal-2">
+        {/* Cluster 2 Group */}
+        <g className="cluster-group c2-group">
           <line x1={d.b1.cx} y1={d.b1.cy} x2={d.b2.cx} y2={d.b2.cy} className="cluster-wire" />
           <line x1={d.b2.cx} y1={d.b2.cy} x2={d.b3.cx} y2={d.b3.cy} className="cluster-wire" />
-          <circle cx={d.b2.cx} cy={d.b2.cy} r="4" className="permanent-wave wave-loop-2" style={{ transformOrigin: `${d.b2.cx}px ${d.b2.cy}px` }} />
-          <circle cx={d.b2.cx} cy={d.b2.cy} r="3.5" fill="#AAB0A3" className="permanent-dot" />
-          <circle cx={d.b1.cx} cy={d.b1.cy} r="2.5" fill="#AAB0A3" className="permanent-dot-ambient" />
-          <circle cx={d.b3.cx} cy={d.b3.cy} r="2.5" fill="#AAB0A3" className="permanent-dot-ambient" />
+          <circle cx={d.b2.cx} cy={d.b2.cy} r="4" className="pulse-ripple" style={{ transformOrigin: `${d.b2.cx}px ${d.b2.cy}px` }} />
+          <circle cx={d.b2.cx} cy={d.b2.cy} r="3.5" className="cluster-dot-main" />
+          <circle cx={d.b1.cx} cy={d.b1.cy} r="2.5" className="cluster-dot-sub" />
+          <circle cx={d.b3.cx} cy={d.b3.cy} r="2.5" className="cluster-dot-sub" />
+          {/* Label Directly AT THE TOP of Cluster 2 */}
+          <text x={d.b2.cx} y={d.b2.cy - 30} textAnchor="middle" className="cluster-label">HIDDEN OBJECTION</text>
         </g>
 
-        {/* Cluster 3: ^ */}
-        <g className="master-cluster cluster-reveal-3">
+        {/* Cluster 3 Group */}
+        <g className="cluster-group c3-group">
           <line x1={d.c1.cx} y1={d.c1.cy} x2={d.c2.cx} y2={d.c2.cy} className="cluster-wire" />
           <line x1={d.c2.cx} y1={d.c2.cy} x2={d.c3.cx} y2={d.c3.cy} className="cluster-wire" />
-          <circle cx={d.c2.cx} cy={d.c2.cy} r="4" className="permanent-wave wave-loop-3" style={{ transformOrigin: `${d.c2.cx}px ${d.c2.cy}px` }} />
-          <circle cx={d.c2.cx} cy={d.c2.cy} r="3.5" fill="#AAB0A3" className="permanent-dot" />
-          <circle cx={d.c1.cx} cy={d.c1.cy} r="2.5" fill="#AAB0A3" className="permanent-dot-ambient" />
-          <circle cx={d.c3.cx} cy={d.c3.cy} r="2.5" fill="#AAB0A3" className="permanent-dot-ambient" />
+          <circle cx={d.c2.cx} cy={d.c2.cy} r="4" className="pulse-ripple" style={{ transformOrigin: `${d.c2.cx}px ${d.c2.cy}px` }} />
+          <circle cx={d.c2.cx} cy={d.c2.cy} r="3.5" className="cluster-dot-main" />
+          <circle cx={d.c1.cx} cy={d.c1.cy} r="2.5" className="cluster-dot-sub" />
+          <circle cx={d.c3.cx} cy={d.c3.cy} r="2.5" className="cluster-dot-sub" />
+          {/* Label Directly Below Cluster 3 */}
+          <text x={d.c2.cx} y={d.c2.cy + 35} textAnchor="middle" className="cluster-label">EMERGING OPPORTUNITY</text>
         </g>
       </svg>
 
-      {/* ── LAYER 4: TEXT CONTEXT LABELS ── */}
-      <div className="absolute pointer-events-none" style={{ left: '40px', top: '70px' }}>
-        <span className="context-label label-fade-1">Customer expectation detected</span>
-      </div>
-
-      <div className="absolute pointer-events-none" style={{ left: '315px', top: '70px' }}>
-        <span className="context-label label-fade-2">Hidden objection</span>
-      </div>
-
-      <div className="absolute pointer-events-none" style={{ left: '620px', top: '70px' }}>
-        <span className="context-label label-fade-3">Emerging opportunity</span>
-      </div>
-
       <style jsx global>{`
-        /* Infrastructure Architecture Rules */
-        .cluster-wire { stroke: #aab0a3; stroke-width: 1.2; opacity: 0.45; }
-        .permanent-dot { opacity: 0.95; }
-        .permanent-dot-ambient { opacity: 0.55; }
+        /* Global Base SVG Styles */
+        .cluster-wire { stroke: #aab0a3; stroke-width: 1.5; opacity: 0.6; }
+        .cluster-dot-main { fill: #AAB0A3; opacity: 1; }
+        .cluster-dot-sub { fill: #AAB0A3; opacity: 0.6; }
         
-        /* Master Groups Hidden at Start */
-        .master-cluster { opacity: 0; animation-duration: 19s; animation-iteration-count: infinite; animation-timing-function: ease-in-out; }
-        .cluster-reveal-1 { animation-name: revC1; }
-        .cluster-reveal-2 { animation-name: revC2; }
-        .cluster-reveal-3 { animation-name: revC3; }
+        /* Restored Perfect Font Styling for SVG Text */
+        .cluster-label { 
+          fill: #1A3024; 
+          font-size: 10px; 
+          font-weight: 500;
+          letter-spacing: 0.25em; 
+          font-family: inherit;
+        }
 
-        @keyframes revC1 { 0%, 94%, 100% { opacity: 1; } }
-        @keyframes revC2 { 0%, 40% { opacity: 0; } 42%, 94% { opacity: 1; } 96%, 100% { opacity: 0; } }
-        @keyframes revC3 { 0%, 74% { opacity: 0; } 76%, 94% { opacity: 1; } 96%, 100% { opacity: 0; } }
+        /* Continuous Pulsing Effect (Runs constantly while cluster is visible) */
+        .pulse-ripple { 
+          fill: none; 
+          stroke: #aab0a3; 
+          stroke-width: 1.5; 
+          animation: nodePulse 3s cubic-bezier(0.16, 1, 0.3, 1) infinite; 
+        }
+        @keyframes nodePulse {
+          0% { opacity: 0.8; transform: scale(1); }
+          100% { opacity: 0; transform: scale(5); }
+        }
 
-        /* Pulsing Wave Loops */
-        .permanent-wave { fill: none; stroke: #aab0a3; stroke-width: 1.2; opacity: 0; animation: permanentPulse 3.8s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
-        .wave-loop-2 { animation-delay: 0.4s; }
-        .wave-loop-3 { animation-delay: 0.8s; }
-        @keyframes permanentPulse { 0% { opacity: 0.75; transform: scale(1); } 100% { opacity: 0; transform: scale(5); } }
+        /* ── SEAMLESS 19s TIMELINE CHOREOGRAPHY ── */
 
-        /* Labels Fade-In on Node Connection Trigger */
-        .context-label { display: block; text-transform: uppercase; font-size: 10px; tracking: 0.25em; color: #1A3024; opacity: 0; animation-duration: 19s; animation-iteration-count: infinite; animation-timing-function: ease-in-out; white-space: nowrap; }
-        .label-fade-1 { animation-name: kfL1; }
-        .label-fade-2 { animation-name: kfL2; }
-        .label-fade-3 { animation-name: kfL3; }
+        /* CLUSTER 1: Starts animation */
+        .c1-group { animation: c1-anim 19s infinite; }
+        @keyframes c1-anim {
+          0%, 5% { opacity: 0; }
+          10%, 35% { opacity: 1; }
+          40%, 100% { opacity: 0; }
+        }
 
-        @keyframes kfL1 { 0%, 94%, 100% { opacity: 1; } }
-        @keyframes kfL2 { 0%, 40% { opacity: 0; } 42%, 94% { opacity: 1; } 96%, 100% { opacity: 0; } }
-        @keyframes kfL3 { 0%, 74% { opacity: 0; } 76%, 94% { opacity: 1; } 96%, 100% { opacity: 0; } }
-
-        /* Backbone & Transition Paths */
-        .primary-backbone-edge { stroke: #aab0a3; stroke-width: 1.2; fill: none; stroke-dasharray: 200; stroke-dashoffset: 200; animation-duration: 19s; animation-iteration-count: infinite; animation-timing-function: linear; }
-        .hub-center-pin { fill: #AAB0A3; opacity: 0; animation-duration: 19s; animation-iteration-count: infinite; }
-
-        /* Sub-Networks */
-        .subtle-seq-line { stroke: #aab0a3; stroke-width: 0.75; stroke-dasharray: 80; stroke-dashoffset: 80; fill: none; animation-duration: 19s; animation-iteration-count: infinite; animation-timing-function: linear; }
-        .subtle-node-core { fill: #AAB0A3; opacity: 0; animation-duration: 19s; animation-iteration-count: infinite; }
-
-        /* ── SIMULTANEOUS TRANSIT TIMELINE ENGINE ── */
-        .bb-a1 { animation-name: anBB_A1; }
-        @keyframes anBB_A1 { 0%, 14% { stroke-dashoffset: 200; opacity: 1; } 22%, 46% { stroke-dashoffset: 0; opacity: 1; } 48%, 100% { opacity: 0; } }
+        /* LINE 1: C1 to Middle Node 1 */
+        .main-line { stroke: #aab0a3; stroke-width: 1.2; fill: none; }
+        .bb1 { animation: bb1-anim 19s infinite linear; }
+        @keyframes bb1-anim {
+          0%, 15% { stroke-dashoffset: 300; opacity: 1; }
+          25%, 35% { stroke-dashoffset: 0; opacity: 1; }
+          40%, 100% { opacity: 0; stroke-dashoffset: 0; }
+        }
         
-        .pin-ab { animation-name: anPinAB; transform-origin: 192px 140px; }
-        @keyframes anPinAB { 0%, 21% { opacity: 0; transform: scale(0); } 22%, 46% { opacity: 0.7; transform: scale(1); } 48%, 100% { opacity: 0; } }
+        .pin1 { fill: #aab0a3; animation: pin1-anim 19s infinite; }
+        @keyframes pin1-anim { 0%, 24% { opacity: 0; } 25%, 35% { opacity: 1; } 40%, 100% { opacity: 0; } }
 
-        /* Simultaneous Overlap: Transit Line 2 moves as Nodes branch out */
-        .bb-a2 { animation-name: anBB_A2; }
-        @keyframes anBB_A2 { 0%, 22% { stroke-dashoffset: 200; opacity: 1; } 42%, 94% { stroke-dashoffset: 0; opacity: 1; } 96%, 100% { opacity: 0; } }
+        /* LINE 2: Middle Node 1 to C2 (Simultaneous with Sub-nodes below) */
+        .bb2 { animation: bb2-anim 19s infinite linear; }
+        @keyframes bb2-anim {
+          0%, 25% { stroke-dashoffset: 300; opacity: 1; }
+          35%, 70% { stroke-dashoffset: 0; opacity: 1; }
+          75%, 100% { opacity: 0; stroke-dashoffset: 0; }
+        }
 
-        .ab-l1 { animation-name: anAB_L1; } @keyframes anAB_L1 { 0%, 22% { stroke-dashoffset: 80; opacity: 0.3; } 28%, 46% { stroke-dashoffset: 0; opacity: 0.3; } 48%, 100% { opacity: 0; } }
-        .ab-c1 { animation-name: anAB_C1; } @keyframes anAB_C1 { 0%, 27% { opacity: 0; } 28%, 46% { opacity: 0.35; } 48%, 100% { opacity: 0; } }
-
-        .ab-l2 { animation-name: anAB_L2; } @keyframes anAB_L2 { 0%, 27% { stroke-dashoffset: 80; opacity: 0.3; } 33%, 46% { stroke-dashoffset: 0; opacity: 0.3; } 48%, 100% { opacity: 0; } }
-        .ab-c2 { animation-name: anAB_C2; } @keyframes anAB_C2 { 0%, 32% { opacity: 0; } 33%, 46% { opacity: 0.35; } 48%, 100% { opacity: 0; } }
-
-        .ab-l3 { animation-name: anAB_L3; } @keyframes anAB_L3 { 0%, 33% { stroke-dashoffset: 80; opacity: 0.3; } 39%, 46% { stroke-dashoffset: 0; opacity: 0.3; } 48%, 100% { opacity: 0; } }
-        .ab-c3 { animation-name: anAB_C3; } @keyframes anAB_C3 { 0%, 38% { opacity: 0; } 39%, 46% { opacity: 0.35; } 48%, 100% { opacity: 0; } }
-
-        /* Segment B1 Transit */
-        .bb-b1 { animation-name: anBB_B1; }
-        @keyframes anBB_B1 { 0%, 48% { stroke-dashoffset: 200; opacity: 1; } 56%, 88% { stroke-dashoffset: 0; opacity: 1; } 92%, 100% { opacity: 0; } }
+        /* SUBTLE BACKGROUND NODES 1 (Draws one-by-one seamlessly alongside bb2) */
+        .sub-line { stroke: #aab0a3; stroke-width: 0.75; stroke-dasharray: 2 2; fill: none; }
+        .sub-dot { fill: #aab0a3; }
         
-        .pin-bc { animation-name: anPinBC; transform-origin: 482px 125px; }
-        @keyframes anPinBC { 0%, 55% { opacity: 0; transform: scale(0); } 56%, 88% { opacity: 0.7; transform: scale(1); } 92%, 100% { opacity: 0; } }
+        .sub1-1 { animation: sub1-1-anim 19s infinite linear; }
+        @keyframes sub1-1-anim { 0%, 25% { stroke-dashoffset: 100; opacity: 0; } 28%, 35% { stroke-dashoffset: 0; opacity: 0.3; } 40%, 100% { opacity: 0; } }
+        
+        .sub1-2 { animation: sub1-2-anim 19s infinite linear; }
+        @keyframes sub1-2-anim { 0%, 28% { stroke-dashoffset: 100; opacity: 0; } 31%, 35% { stroke-dashoffset: 0; opacity: 0.3; } 40%, 100% { opacity: 0; } }
+        
+        .sub1-3 { animation: sub1-3-anim 19s infinite linear; }
+        @keyframes sub1-3-anim { 0%, 31% { stroke-dashoffset: 100; opacity: 0; } 34%, 35% { stroke-dashoffset: 0; opacity: 0.3; } 40%, 100% { opacity: 0; } }
 
-        /* Simultaneous Overlap: Transit Line 4 moves as Nodes branch out */
-        .bb-b2 { animation-name: anBB_B2; }
-        @keyframes anBB_B2 { 0%, 56% { stroke-dashoffset: 200; opacity: 1; } 76%, 94% { stroke-dashoffset: 0; opacity: 1; } 96%, 100% { opacity: 0; } }
+        /* CLUSTER 2: Appears upon connection completion, fades when C3 is done */
+        .c2-group { animation: c2-anim 19s infinite; }
+        @keyframes c2-anim {
+          0%, 35% { opacity: 0; }
+          40%, 70% { opacity: 1; }
+          75%, 100% { opacity: 0; }
+        }
 
-        .bc-l1 { animation-name: anBC_L1; } @keyframes anBC_L1 { 0%, 56% { stroke-dashoffset: 80; opacity: 0.3; } 62%, 88% { stroke-dashoffset: 0; opacity: 0.3; } 92%, 100% { opacity: 0; } }
-        .bc-c1 { animation-name: anBC_C1; } @keyframes anBC_C1 { 0%, 61% { opacity: 0; } 62%, 88% { opacity: 0.35; } 92%, 100% { opacity: 0; } }
+        /* LINE 3: C2 to Middle Node 2 */
+        .bb3 { animation: bb3-anim 19s infinite linear; }
+        @keyframes bb3-anim {
+          0%, 50% { stroke-dashoffset: 300; opacity: 1; }
+          60%, 70% { stroke-dashoffset: 0; opacity: 1; }
+          75%, 100% { opacity: 0; stroke-dashoffset: 0; }
+        }
 
-        .bc-l2 { animation-name: anBC_L2; } @keyframes anBC_L2 { 0%, 62% { stroke-dashoffset: 80; opacity: 0.3; } 68%, 88% { stroke-dashoffset: 0; opacity: 0.3; } 92%, 100% { opacity: 0; } }
-        .bc-c2 { animation-name: anBC_C2; } @keyframes anBC_C2 { 0%, 67% { opacity: 0; } 68%, 88% { opacity: 0.35; } 92%, 100% { opacity: 0; } }
+        .pin2 { fill: #aab0a3; animation: pin2-anim 19s infinite; }
+        @keyframes pin2-anim { 0%, 59% { opacity: 0; } 60%, 70% { opacity: 1; } 75%, 100% { opacity: 0; } }
 
-        .bc-l3 { animation-name: anBC_L3; } @keyframes anBC_L3 { 0%, 68% { stroke-dashoffset: 80; opacity: 0.3; } 74%, 88% { stroke-dashoffset: 0; opacity: 0.3; } 92%, 100% { opacity: 0; } }
-        .bc-c3 { animation-name: anBC_C3; } @keyframes anBC_C3 { 0%, 73% { opacity: 0; } 74%, 88% { opacity: 0.35; } 92%, 100% { opacity: 0; } }
+        /* LINE 4: Middle Node 2 to C3 (Simultaneous with Sub-nodes below) */
+        .bb4 { animation: bb4-anim 19s infinite linear; }
+        @keyframes bb4-anim {
+          0%, 60% { stroke-dashoffset: 300; opacity: 1; }
+          70%, 95% { stroke-dashoffset: 0; opacity: 1; }
+          100% { opacity: 0; stroke-dashoffset: 0; }
+        }
+
+        /* SUBTLE BACKGROUND NODES 2 (Draws one-by-one seamlessly alongside bb4) */
+        .sub2-1 { animation: sub2-1-anim 19s infinite linear; }
+        @keyframes sub2-1-anim { 0%, 60% { stroke-dashoffset: 100; opacity: 0; } 63%, 70% { stroke-dashoffset: 0; opacity: 0.3; } 75%, 100% { opacity: 0; } }
+        
+        .sub2-2 { animation: sub2-2-anim 19s infinite linear; }
+        @keyframes sub2-2-anim { 0%, 63% { stroke-dashoffset: 100; opacity: 0; } 66%, 70% { stroke-dashoffset: 0; opacity: 0.3; } 75%, 100% { opacity: 0; } }
+        
+        .sub2-3 { animation: sub2-3-anim 19s infinite linear; }
+        @keyframes sub2-3-anim { 0%, 66% { stroke-dashoffset: 100; opacity: 0; } 69%, 70% { stroke-dashoffset: 0; opacity: 0.3; } 75%, 100% { opacity: 0; } }
+
+        /* CLUSTER 3: Appears upon connection completion */
+        .c3-group { animation: c3-anim 19s infinite; }
+        @keyframes c3-anim {
+          0%, 70% { opacity: 0; }
+          75%, 95% { opacity: 1; }
+          100% { opacity: 0; }
+        }
       `}</style>
     </div>
   )
