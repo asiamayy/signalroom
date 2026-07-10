@@ -75,28 +75,6 @@ export default function LandingPage() {
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
 
-  // Clean Native SVG Logo Component (Enlarged Name, White Blotches Removed)
-  const SignalRoomLogo = ({ className = "h-8" }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* S Icon Mark with Forest Green Gradients */}
-      <defs>
-        <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1c2d24" />
-          <stop offset="100%" stopColor="#2e533e" />
-        </linearGradient>
-      </defs>
-      <path d="M50 20C35 20 32 28 26 34C20 40 15 48 15 56C15 64 22 70 32 70C45 70 48 60 54 54C60 48 65 40 65 32C65 24 58 20 50 20Z" fill="url(#logo-grad)"/>
-      <path d="M32 36C42 36 45 28 52 22C58 16 64 10 74 10C84 10 90 18 90 28C90 38 82 44 72 50C62 56 55 64 45 70" stroke="#1c2d24" strokeWidth="8" strokeLinecap="round"/>
-      
-      {/* Brand Name Text Block - Scaled Up and Weighted Correctly */}
-      <text x="105" y="48" fill="#121314" fontSize="29" fontWeight="500" letterSpacing="-0.04em" style={{ fontFamily: "var(--font-serif, 'Playfair Display', Georgia, serif)" }}>Signal</text>
-      <text x="184" y="48" fill="#2e533e" fontSize="29" fontWeight="500" letterSpacing="-0.04em" style={{ fontFamily: "var(--font-serif, 'Playfair Display', Georgia, serif)" }}>room</text>
-      
-      {/* Premium Minimal Subtext Tagline */}
-      <text x="106" y="65" fill="#454947" fontSize="9.5" fontWeight="500" letterSpacing="0.25em" opacity="0.8">FIND THE SIGNAL</text>
-    </svg>
-  );
-
   return (
     <div className="font-body-md overflow-x-hidden relative min-h-screen bg-white text-[#121314] antialiased">
       {/* Import Material Symbols + Fonts */}
@@ -147,7 +125,11 @@ export default function LandingPage() {
       {/* TopNavBar */}
       <nav className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#1c2d24]/10 bg-white/80 px-6 sm:px-12 backdrop-blur-xl">
         <div className="flex items-center">
-          <SignalRoomLogo className="h-9 w-auto" />
+          <img 
+            src="/signalroom-logo.svg" 
+            alt="SignalRoom Logo" 
+            className="h-10 w-auto object-contain" 
+          />
         </div>
         <div className="hidden lg:flex items-center gap-10">
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1c2d24]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
@@ -207,7 +189,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Methodology Section wrapped in Reveal wrapper */}
+      {/* Methodology Section */}
       <RevealSection>
         <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1c2d24]/10 scroll-mt-16">
           <div 
@@ -268,7 +250,7 @@ export default function LandingPage() {
         </section>
       </RevealSection>
 
-      {/* ROI Calculator wrapped in Reveal wrapper */}
+      {/* ROI Calculator */}
       <RevealSection>
         <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#fafbfa] border-b border-[#1c2d24]/10 relative overflow-hidden scroll-mt-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-start">
@@ -309,7 +291,7 @@ export default function LandingPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
                     <div className="p-5 sm:p-6">
                       <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-600 block mb-2">Traditional</span>
-                      <span className="text-[26px] sm:text-[28px] font-normal tracking-tighter text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>${traditionalCost.toLocaleString()}</span>
+                      <span className="text-[28px] font-normal tracking-tighter text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>${traditionalCost.toLocaleString()}</span>
                       <p className="text-[11px] text-neutral-600 font-medium mb-3">/month</p>
                       <div className="border-t border-[#d1d5d3] pt-3 space-y-1.5 text-[11px] text-neutral-600">
                         <div className="flex justify-between"><span>Time</span><span className="font-medium text-neutral-800">3 weeks</span></div>
@@ -319,7 +301,7 @@ export default function LandingPage() {
                     </div>
                     <div className="p-5 sm:p-6 bg-[#e9edea]">
                       <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1c2d24] block mb-2">SignalRoom</span>
-                      <span className="text-[26px] sm:text-[28px] font-normal tracking-tighter text-[#1c2d24]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
+                      <span className="text-[28px] font-normal tracking-tighter text-[#1c2d24]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
                       <p className="text-[11px] text-[#1c2d24] font-medium mb-3">unlimited/month</p>
                       <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1c2d24]">
                         <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
@@ -349,7 +331,7 @@ export default function LandingPage() {
         </section>
       </RevealSection>
 
-      {/* Pricing Section wrapped in Reveal wrapper */}
+      {/* Pricing Section */}
       <RevealSection>
         <section id="pricing" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1c2d24]/10 scroll-mt-16">
           <div className="text-center mb-12 sm:mb-20">
@@ -414,7 +396,7 @@ export default function LandingPage() {
         </section>
       </RevealSection>
 
-      {/* CTA Section wrapped in Reveal wrapper */}
+      {/* CTA Section */}
       <RevealSection>
         <section className="relative bg-[#1c2d24] text-white py-20 sm:py-24 px-6 sm:px-12 overflow-hidden border-b border-[#1c2d24]/10">
           <div className="relative z-10 flex flex-col items-center text-center">
@@ -442,7 +424,11 @@ export default function LandingPage() {
       <footer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-6 px-6 sm:px-12 py-16 sm:py-20 w-full bg-white relative z-10">
         <div className="sm:col-span-2 md:col-span-4">
           <div className="flex items-center gap-3 mb-6">
-            <SignalRoomLogo className="h-7 w-auto" />
+            <img 
+              src="/signalroom-logo.svg" 
+              alt="SignalRoom Logo" 
+              className="h-8 w-auto object-contain" 
+            />
           </div>
           <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-xs mb-6 sm:mb-10 leading-relaxed opacity-90">
             Architectural intelligence for market-leading firms. Precision defined.
