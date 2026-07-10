@@ -65,12 +65,12 @@ export default function LandingPage() {
     setIsCharIn(true);
 
     const rotationInterval = setInterval(() => {
-      setIsCharIn(false); // Trigger fade-out animation
+      setIsCharIn(false); // Trigger smooth fade-out drift
       
       setTimeout(() => {
         setCurrentWordIndex((prev) => (prev + 1) % wordsDataset.length);
-      }, 650); // Wait for fade-out to finish before changing word
-    }, 3600);
+      }, 800); // Expanded gap to let the slow fade-out complete perfectly
+    }, 4000); // 4-second dwell cycle for premium pacing
 
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
@@ -92,25 +92,54 @@ export default function LandingPage() {
         }}
       />
 
-      {/* Global CSS Inject for Keyframe Animations */}
+      {/* Global Premium CSS Inject */}
       <style jsx global>{`
         html { scroll-behavior: smooth; }
-        @keyframes charIn {
-          0% { opacity: 0; transform: translateY(0.20em) scale(0.94); filter: blur(3px); }
-          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        
+        /* Slow, Elegant Character Reveals (No Choppiness) */
+        @keyframes premiumCharIn {
+          0% { 
+            opacity: 0; 
+            transform: translateY(0.35em) scale(0.96); 
+            filter: blur(4px); 
+          }
+          100% { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+            filter: blur(0); 
+          }
         }
-        @keyframes charOut {
-          0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-          100% { opacity: 0; transform: translateY(-0.20em) scale(0.94); filter: blur(3px); }
+        @keyframes premiumCharOut {
+          0% { 
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+            filter: blur(0); 
+          }
+          100% { 
+            opacity: 0; 
+            transform: translateY(-0.35em) scale(0.96); 
+            filter: blur(4px); 
+          }
         }
+        
         .animate-char-in {
           display: inline-block;
-          animation: charIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: premiumCharIn 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .animate-char-out {
           display: inline-block;
-          animation: charOut 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: premiumCharOut 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        /* SVG Mobile High-Density Anti-Blur Fix overrides */
+        .mobile-crisp-vector {
+          image-rendering: -webkit-optimize-contrast;
+          image-rendering: crisp-edges;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          content-visibility: auto;
+        }
+
         @keyframes floatIcon {
           0% { transform: translateY(0px); }
           50% { transform: translateY(-6px); }
@@ -128,9 +157,10 @@ export default function LandingPage() {
           <img 
             src="/signalroom-logo.svg" 
             alt="SignalRoom Logo" 
-            width="140"
-            height="35"
-            className="h-9 w-auto object-contain box-content" 
+            width="142"
+            height="36"
+            className="h-9 w-auto object-contain mobile-crisp-vector" 
+            style={{ imageRendering: '-webkit-optimize-contrast' }}
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
@@ -162,7 +192,7 @@ export default function LandingPage() {
                     <span 
                       key={`${currentWordIndex}-${idx}`}
                       className={isCharIn ? 'animate-char-in' : 'animate-char-out'}
-                      style={{ animationDelay: `${idx * 50}ms` }}
+                      style={{ animationDelay: `${idx * 40}ms` }}
                     >
                       {char === ' ' ? '\u00A0' : char}
                     </span>
@@ -392,7 +422,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority support</li>
               </ul>
-              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
+              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
           </div>
         </section>
@@ -431,7 +461,8 @@ export default function LandingPage() {
               alt="SignalRoom Logo" 
               width="140"
               height="35"
-              className="h-8 w-auto object-contain box-content" 
+              className="h-8 w-auto object-contain mobile-crisp-vector" 
+              style={{ imageRendering: '-webkit-optimize-contrast' }}
             />
           </div>
           <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-xs mb-6 sm:mb-10 leading-relaxed opacity-90">
