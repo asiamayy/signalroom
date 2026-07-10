@@ -222,7 +222,7 @@ export default function LandingPage() {
           <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
             <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
-              <span className="relative inline-block text-[#1c3d2e] italic whitespace-nowrap min-w-[220px]">
+              <span className="relative inline-block text-[#CBCFC6] italic whitespace-nowrap min-w-[220px]">
                 <span className="relative inline-flex overflow-visible">
                   {displayedWord.split('').map((char, idx) => (
                     <span 
