@@ -59,18 +59,18 @@ export default function LandingPage() {
   const annualSavings = savings * 12;
   const calculatedReduction = Math.round((1 - (10 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
 
-  // Character-by-Character Word Animation Loop with Flash Preventions
+  // Character-by-Character Word Animation Loop with Crisp Swap Timings
   useEffect(() => {
     setDisplayedWord(wordsDataset[currentWordIndex]);
     setIsCharIn(true);
 
     const rotationInterval = setInterval(() => {
-      setIsCharIn(false); // Trigger smooth fade-out drift
+      setIsCharIn(false); // Snap opacity out
       
       setTimeout(() => {
         setCurrentWordIndex((prev) => (prev + 1) % wordsDataset.length);
-      }, 700); // Perfectly synced to let the slow fade-out complete first
-    }, 4000); // 4-second dwell cycle for premium pacing
+      }, 300); // Fast exit window to swap indices seamlessly
+    }, 4000);
 
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
@@ -96,12 +96,12 @@ export default function LandingPage() {
       <style jsx global>{`
         html { scroll-behavior: smooth; }
         
-        /* Slow, Elegant Character Reveals (No Flash / Choppiness) */
+        /* Premium Entry Fade-In Reveal */
         @keyframes premiumCharIn {
           0% { 
             opacity: 0; 
-            transform: translateY(0.25em) scale(0.97); 
-            filter: blur(4px); 
+            transform: translateY(0.2em) scale(0.98); 
+            filter: blur(2px); 
           }
           100% { 
             opacity: 1; 
@@ -109,22 +109,22 @@ export default function LandingPage() {
             filter: blur(0); 
           }
         }
+        
+        /* Fast, Clean Exit Dissolve to prevent wonky tracking gaps */
         @keyframes premiumCharOut {
           0% { 
-            opacity: 1; 
-            transform: translateY(0) scale(1); 
-            filter: blur(0); 
+            opacity: 1;
+            filter: blur(0);
           }
           100% { 
             opacity: 0; 
-            transform: translateY(-0.25em) scale(0.97); 
-            filter: blur(4px); 
+            filter: blur(2px);
           }
         }
         
         .char-reveal-span {
           display: inline-block;
-          opacity: 0; /* Guard entry flash */
+          opacity: 0;
           will-change: transform, opacity;
         }
 
@@ -132,7 +132,7 @@ export default function LandingPage() {
           animation: premiumCharIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .animate-char-out {
-          animation: premiumCharOut 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: premiumCharOut 0.25s ease-out forwards;
         }
 
         /* SVG Mobile High-Density Anti-Blur Fix overrides */
@@ -196,7 +196,7 @@ export default function LandingPage() {
                     <span 
                       key={`${currentWordIndex}-${idx}`}
                       className={`char-reveal-span ${isCharIn ? 'animate-char-in' : 'animate-char-out'}`}
-                      style={{ animationDelay: `${idx * 45}ms` }}
+                      style={{ animationDelay: isCharIn ? `${idx * 40}ms` : '0ms' }}
                     >
                       {char === ' ' ? '\u00A0' : char}
                     </span>
@@ -213,7 +213,7 @@ export default function LandingPage() {
             </p>
             <div className="border-l-2 pl-4 mb-6 border-[#2e533e]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#2e533e] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
-              <p className="text-[11px] sm:text-[xs] text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
+              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
               <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
             </div>
             <div className="flex items-center gap-8">
