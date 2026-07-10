@@ -188,7 +188,7 @@ export default function LandingPage() {
           color: #1A3024 !important;
         }
 
-        /* Eyebrow light-sweep — a subtle, slow highlight passes over the text every 20s */
+        /* Enhanced light-sweep animation block - adjusted visibility and 15s timeframe */
         .eyebrow-shine-wrap {
           position: relative;
           display: inline-block;
@@ -198,12 +198,12 @@ export default function LandingPage() {
           position: absolute;
           top: 0;
           left: -75%;
-          width: 35%;
+          width: 50%;
           height: 100%;
           pointer-events: none;
-          background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+          background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.65) 50%, transparent 100%);
           mix-blend-mode: overlay;
-          animation: eyebrowShineSweep 20s ease-in-out infinite;
+          animation: eyebrowShineSweep 15s ease-in-out infinite;
         }
         @keyframes eyebrowShineSweep {
           0% { left: -75%; }
@@ -224,11 +224,11 @@ export default function LandingPage() {
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
-  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
-  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
-  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
-  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
-</div>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
+        </div>
         <div className="flex items-center gap-4 sm:gap-6">
           <Link className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#454947] hover:text-[#121314] transition-colors" href="/login">Sign In</Link>
           <Link className="bg-[#1A3024] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#5A7973] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
@@ -247,43 +247,47 @@ export default function LandingPage() {
             </span>
             <div className="hidden sm:block h-px w-20 bg-[#1A3024]/10" />
           </div>
-          <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
-            <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Your market has {' '}
-              <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
-                <span className="relative inline-flex overflow-visible">
-                  {displayedWord.split('').map((char, idx) => (
-                    <span 
-                      key={`${currentWordIndex}-${idx}`}
-                      className="char-reveal-span"
-                      style={{ animationDelay: `${idx * 40}ms` }}
-                    >
-                      {char === ' ' ? '\u00A0' : char}
-                    </span>
-                  ))}
-                </span>
-                <span>.</span>
-              </span><br className="hidden lg:block" />
-              <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
-            </h1>
-            <div className="mt-2 sm:mt-4">
-              <IntelligenceSignal />
+
+          {/* Master Flex Row: Re-anchors description layout boxes inline next to the main title */}
+          <div className="md:col-span-12 grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
+            <div className="lg:col-span-7 overflow-visible">
+              <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                Your market has {' '}
+                <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
+                  <span className="relative inline-flex overflow-visible">
+                    {displayedWord.split('').map((char, idx) => (
+                      <span 
+                        key={`${currentWordIndex}-${idx}`}
+                        className="char-reveal-span"
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                      >
+                        {char === ' ' ? '\u00A0' : char}
+                      </span>
+                    ))}
+                  </span>
+                  <span>.</span>
+                </span><br className="hidden lg:block" />
+                <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
+              </h1>
+            </div>
+
+            <div className="lg:col-span-5 pt-4 sm:pt-0 flex flex-col justify-end">
+              <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
+                <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
+                <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.</p>
+                <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
+              </div>
+              <div className="flex items-center gap-8">
+                <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1A3024]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1A3024] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
+                  Explore Platform
+                </a>
+              </div>
             </div>
           </div>
-          <div className="md:col-span-12 lg:col-start-7 lg:col-span-6 xl:col-start-8 xl:col-span-5 pt-4 sm:pt-6 flex flex-col justify-end">
-            <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 leading-normal tracking-[-0.01em] opacity-70 font-normal">
-  SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
-</p>
-            <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
-              <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
-              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
-              <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
-            </div>
-            <div className="flex items-center gap-8">
-              <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1A3024]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1A3024] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
-                Explore Platform
-              </a>
-            </div>
+
+          {/* Connected Vector Component: Placed right beneath header, spanning from left wall edge up to the text box */}
+          <div className="md:col-span-12 mt-6 lg:mt-4">
+            <IntelligenceSignal />
           </div>
         </div>
       </header>

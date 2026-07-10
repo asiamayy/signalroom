@@ -1,23 +1,9 @@
 'use client'
 
 // A slow (19s), continuously-looping "market intelligence coming into focus"
-// sequence. Cluster A seeds first (single dot, then two, then three). Once it
-// glows, a signal travels toward cluster B along a 3-segment path — through
-// two scattered waypoint dots (styled like any other node, not on the
-// straight hub-to-hub line) — before finally reaching B. Critically, B has
-// already been gradually, faintly fading in this whole time, well before the
-// connection completes, so its arrival reads as a culmination rather than a
-// pop-in. The same then happens for B -> C.
-//
-// Mobile traces a "/\" peak (left cluster low, center cluster high, right
-// cluster low). Desktop traces a ">" chevron (upper-left, a rightmost vertex,
-// lower-left).
-//
-// Every element's opacity/transform is driven by CSS keyframe percentages of
-// one shared 19s @keyframes duration, so nothing can drift out of sync across
-// loops the way independent JS timers eventually would. The dot/ripple/label
-// keyframes are shared between the mobile and desktop layouts — only the
-// (cx, cy) coordinates differ, via each circle's own transformOrigin.
+// sequence. Every element's opacity/transform is driven by CSS keyframe percentages of
+// one shared 19s @keyframes duration.
+// Both mobile and desktop viewports are now explicitly updated to trace a unified "/\" peak.
 
 const MOBILE_DOTS = {
   a1: { cx: 70, cy: 97 },
@@ -29,29 +15,27 @@ const MOBILE_DOTS = {
   c1: { cx: 470, cy: 97 },
   c2: { cx: 500, cy: 105 },
   c3: { cx: 530, cy: 97 },
-  // scattered waypoints between A and B, and between B and C — deliberately
-  // off the straight hub-to-hub line so the connection doesn't read as a
-  // single ruler-straight path
   abWay1: { cx: 162, cy: 68 },
   abWay2: { cx: 250, cy: 70 },
   bcWay1: { cx: 358, cy: 70 },
   bcWay2: { cx: 454, cy: 76 },
 }
 
+// Normalized coordinate systems to map the /\_ shape across wide desktop containers
 const DESKTOP_DOTS = {
-  a1: { cx: 82, cy: 48 },
-  a2: { cx: 120, cy: 60 },
-  a3: { cx: 158, cy: 48 },
-  b1: { cx: 392, cy: 148 },
-  b2: { cx: 430, cy: 160 },
-  b3: { cx: 468, cy: 148 },
-  c1: { cx: 82, cy: 248 },
-  c2: { cx: 120, cy: 260 },
-  c3: { cx: 158, cy: 248 },
-  abWay1: { cx: 214, cy: 110 },
-  abWay2: { cx: 352, cy: 118 },
-  bcWay1: { cx: 337, cy: 207 },
-  bcWay2: { cx: 198, cy: 220 },
+  a1: { cx: 50, cy: 100 },
+  a2: { cx: 80, cy: 108 },
+  a3: { cx: 110, cy: 100 },
+  b1: { cx: 270, cy: 30 },
+  b2: { cx: 300, cy: 38 },
+  b3: { cx: 330, cy: 30 },
+  c1: { cx: 490, cy: 100 },
+  c2: { cx: 520, cy: 108 },
+  c3: { cx: 550, cy: 100 },
+  abWay1: { cx: 150, cy: 70 },
+  abWay2: { cx: 220, cy: 50 },
+  bcWay1: { cx: 380, cy: 50 },
+  bcWay2: { cx: 440, cy: 70 },
 }
 
 function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
@@ -80,7 +64,7 @@ function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
       <circle cx={dots.b2.cx} cy={dots.b2.cy} r="3" className="signal-ripple signal-ripple-b" style={{ transformOrigin: `${dots.b2.cx}px ${dots.b2.cy}px` }} />
       <circle cx={dots.c2.cx} cy={dots.c2.cy} r="3" className="signal-ripple signal-ripple-c" style={{ transformOrigin: `${dots.c2.cx}px ${dots.c2.cy}px` }} />
 
-      {/* waypoint dots — same size/style as the cluster nodes, not miniature dots */}
+      {/* waypoint dots — same size/style as the cluster nodes */}
       <circle cx={dots.abWay1.cx} cy={dots.abWay1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-way-ab1" style={{ transformOrigin: `${dots.abWay1.cx}px ${dots.abWay1.cy}px` }} />
       <circle cx={dots.abWay2.cx} cy={dots.abWay2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-way-ab2" style={{ transformOrigin: `${dots.abWay2.cx}px ${dots.abWay2.cy}px` }} />
       <circle cx={dots.bcWay1.cx} cy={dots.bcWay1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-way-bc1" style={{ transformOrigin: `${dots.bcWay1.cx}px ${dots.bcWay1.cy}px` }} />
@@ -102,8 +86,8 @@ function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
 
 export default function IntelligenceSignal() {
   return (
-    <div className="relative w-full h-40 sm:h-44 md:h-64 lg:h-80">
-      {/* ── Mobile: "/\" peak ── */}
+    <div className="relative w-full h-32 overflow-visible">
+      {/* ── Mobile Viewport ── */}
       <div className="md:hidden absolute inset-0">
         <svg
           viewBox="0 0 600 145"
@@ -127,10 +111,10 @@ export default function IntelligenceSignal() {
         </div>
       </div>
 
-      {/* ── Desktop: ">" chevron, filling the space beside the right-hand copy ── */}
+      {/* ── Desktop Viewport: Standard Horizontal Alignment ── */}
       <div className="hidden md:block absolute inset-0">
         <svg
-          viewBox="0 0 600 320"
+          viewBox="0 0 600 145"
           style={{ overflow: 'visible' }}
           className="absolute top-0 left-0 w-full h-full"
         >
@@ -139,19 +123,19 @@ export default function IntelligenceSignal() {
 
         <span
           className="signal-label absolute signal-label-a text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.a2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.a3.cy / 320) * 100 + 6}%` }}
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.a2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.a3.cy / 145) * 100 + 12}%` }}
         >
           Customer expectation detected
         </span>
         <span
           className="signal-label absolute signal-label-b text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.b2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.b3.cy / 320) * 100 + 6}%` }}
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.b2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.b3.cy / 145) * 100 - 18}%` }}
         >
           Hidden objection
         </span>
         <span
           className="signal-label absolute signal-label-c text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.c2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.c3.cy / 320) * 100 + 6}%` }}
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.c2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.c3.cy / 145) * 100 + 12}%` }}
         >
           Emerging opportunity
         </span>
@@ -219,7 +203,6 @@ export default function IntelligenceSignal() {
         .signal-label-b { animation-name: labelB; }
         .signal-label-c { animation-name: labelC; }
 
-        /* ── cluster A: seeds first (single -> two -> three), then glows ── */
         @keyframes dotAHero {
           0% { opacity: 0.12; transform: scale(1); }
           2% { opacity: 0.5; transform: scale(1.15); }
@@ -250,9 +233,6 @@ export default function IntelligenceSignal() {
           100% { opacity: 0.12; transform: scale(1); }
         }
 
-        /* ── clusters B & C: a slow, faint pre-glow starts well before the
-             connecting signal arrives, so the arrival reads as a culmination
-             rather than a sudden pop-in ── */
         @keyframes dotBGradual {
           0% { opacity: 0.12; transform: scale(1); }
           14% { opacity: 0.12; transform: scale(1); }
@@ -274,7 +254,6 @@ export default function IntelligenceSignal() {
           100% { opacity: 0.12; transform: scale(1); }
         }
 
-        /* ── waypoint dots: appear one after another as the signal travels ── */
         @keyframes wayAB1 {
           0% { opacity: 0.12; transform: scale(1); }
           25% { opacity: 0.12; transform: scale(1); }
@@ -308,7 +287,6 @@ export default function IntelligenceSignal() {
           100% { opacity: 0.12; transform: scale(1); }
         }
 
-        /* ── connecting lines within a cluster: fire with that cluster's label ── */
         @keyframes lineA {
           0% { opacity: 0; }
           28% { opacity: 0; }
@@ -331,7 +309,6 @@ export default function IntelligenceSignal() {
           100% { opacity: 0; }
         }
 
-        /* ── leg A -> B: the path draws through both waypoints in sequence ── */
         @keyframes legASeg1 {
           0% { opacity: 0; }
           25% { opacity: 0; }
@@ -354,7 +331,6 @@ export default function IntelligenceSignal() {
           100% { opacity: 0; }
         }
 
-        /* ── leg B -> C ── */
         @keyframes legBSeg1 {
           0% { opacity: 0; }
           53% { opacity: 0; }
@@ -377,7 +353,6 @@ export default function IntelligenceSignal() {
           100% { opacity: 0; }
         }
 
-        /* ── ripples: one expanding ping per cluster, timed to its glow ── */
         @keyframes rippleA {
           0% { opacity: 0; transform: scale(1); }
           19% { opacity: 0; transform: scale(1); }
@@ -400,7 +375,6 @@ export default function IntelligenceSignal() {
           100% { opacity: 0; transform: scale(1); }
         }
 
-        /* ── labels: shown for what was just found, while the signal moves on ── */
         @keyframes labelA {
           0% { opacity: 0; }
           25% { opacity: 0; }
