@@ -213,7 +213,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative pt-28 sm:pt-36 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
+      <header className="relative pt-16 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
@@ -240,9 +240,9 @@ export default function LandingPage() {
             </h1>
           </div>
           <div className="md:col-span-12 lg:col-start-7 lg:col-span-6 xl:col-start-8 xl:col-span-5 pt-4 sm:pt-6 flex flex-col justify-end">
-            <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 KEY-relaxed opacity-90">
-              SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
-            </p>
+            <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 leading-normal tracking-[-0.01em] opacity-90 font-normal">
+  SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
+</p>
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
