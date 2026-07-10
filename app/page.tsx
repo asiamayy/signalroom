@@ -39,7 +39,6 @@ function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode;
   );
 }
 
-// Persona Interface matching your UI dashboard components exactly
 interface DashboardPersona {
   id: string;
   name: string;
@@ -59,8 +58,8 @@ const DASHBOARD_PERSONAS: DashboardPersona[] = [
     location: 'Austin, Texas',
     imgUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80',
     tags: ['freelancer', 'solopreneur', 'growth-focused', 'developer'],
-    bio: 'Arjun moved from Bangalore to Austin three years ago and built his freelance business from scratch with no local network. He tracks his business metrics obsessively...',
-    interviewQuote: "Our team will stonewall any platform that lacks raw automated telemetry maps. Even if your core utility saves us hundreds of operational hours, data-at-rest integration security takes precedence."
+    bio: 'Arjun moved from Bangalore to Austin three years ago and built his freelance business from scratch with no local network. He tracks his business metrics obsessively in a Notion...',
+    interviewQuote: "I track my metrics closely, but my biggest blindspot is positioning. Traditional tools charge thousands just to tell me what keywords to target. With SignalRoom, I simulated a discovery call with three local tech founders and unraveled exactly why they hesitate to hire external agency contractors within twenty minutes."
   },
   {
     id: 'priya',
@@ -90,14 +89,13 @@ export default function LandingPage() {
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0);
   const [displayedWord, setDisplayedWord] = useState<string>('');
 
-  // Active Dashboard Interaction States
+  // Sandbox UI Sync States
   const [selectedPersona, setSelectedPersona] = useState<DashboardPersona>(DASHBOARD_PERSONAS[0]);
   const [streamingText, setStreamingText] = useState<string>('');
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
   const wordsDataset = ["opinions", "objections", "blindspots", "expectations"];
 
-  // Cost Engine Definitions
   const TRADITIONAL_COST_PER_INTERVIEW = 750;
   const TRADITIONAL_HOURS_PER_INTERVIEW = 2;
   const TRADITIONAL_WEEKS_TURNAROUND = 3;
@@ -108,7 +106,6 @@ export default function LandingPage() {
   const annualSavings = savings * 12;
   const calculatedReduction = Math.round((1 - (10 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
 
-  // Instant Word Rotator Hook
   useEffect(() => {
     setDisplayedWord(wordsDataset[currentWordIndex]);
     const rotationInterval = setInterval(() => {
@@ -117,7 +114,7 @@ export default function LandingPage() {
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
 
-  // Clean Character Stream Generator for the Simulated Quote block
+  // Gentle layout stream typing effect
   useEffect(() => {
     setStreamingText('');
     setIsSimulating(true);
@@ -132,7 +129,7 @@ export default function LandingPage() {
         clearInterval(stream);
         setIsSimulating(false);
       }
-    }, 10);
+    }, 8);
 
     return () => clearInterval(stream);
   }, [selectedPersona]);
@@ -141,18 +138,7 @@ export default function LandingPage() {
     <div className="font-body-md overflow-x-hidden relative min-h-screen bg-white text-[#121314] antialiased">
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
-      {/* Structural Minimal Grid Background Overlay */}
-      <div 
-        className="pointer-events-none absolute inset-0 z-0 opacity-[0.012]"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, #1C3D2E 1px, transparent 1px),
-            linear-gradient(to bottom, #1C3D2E 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px'
-        }}
-      />
-
+      {/* Global CSS for Clean Typography & Image Renderers */}
       <style jsx global>{`
         html { scroll-behavior: smooth; }
         @keyframes premiumCharIn {
@@ -171,12 +157,12 @@ export default function LandingPage() {
           transform: translateZ(0);
           content-visibility: auto;
         }
-        @keyframes customBlink {
+        @keyframes subtleCursorBlink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
-        .live-stream-cursor {
-          animation: customBlink 0.8s infinite;
+        .editorial-stream-cursor {
+          animation: subtleCursorBlink 1s infinite;
         }
       `}</style>
 
@@ -204,7 +190,7 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Content Block */}
+      {/* Hero Header Section */}
       <header className="relative pt-28 sm:pt-36 pb-12 sm:pb-16 px-6 sm:px-12">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -249,18 +235,16 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* DASHBOARD REPLICA SIMULATION ENVIRONMENT */}
+      {/* TRUE EDITORIAL DASHBOARD SIMULATOR WORKSPACE */}
       <RevealSection>
         <section id="dashboard-replica" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20">
-          <div className="bg-white border border-neutral-200 rounded-[8px] shadow-sm min-h-[580px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
+          <div className="bg-[#f8f9f8] border border-neutral-200 rounded-[12px] shadow-sm min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
             
-            {/* Dashboard Sidebar Navigation Menu Layer */}
-            <div className="md:col-span-3 lg:col-span-2 bg-[#FAFBFB] border-r border-neutral-200 p-5 flex flex-col justify-between hidden md:flex">
-              <div className="space-y-7">
-                {/* Simulated Meta Logo space */}
-                <div className="px-2 text-xs font-mono tracking-widest text-[#5A7973] font-bold uppercase">SignalRoom Dashboard</div>
+            {/* Left Sidebar Layout */}
+            <div className="md:col-span-3 lg:col-span-2 bg-white border-r border-neutral-200/80 p-5 flex flex-col justify-between hidden md:flex">
+              <div className="space-y-8">
+                <div className="px-2 text-[11px] font-mono tracking-widest text-neutral-400 font-medium uppercase">Navigation</div>
                 
-                {/* Core Routes Links List */}
                 <div className="space-y-1">
                   {[
                     { n: 'Home', i: 'home', a: false },
@@ -274,108 +258,104 @@ export default function LandingPage() {
                   ].map((route, rIdx) => (
                     <div 
                       key={rIdx} 
-                      className={`flex items-center gap-3 px-3 py-2 text-[12px] font-medium tracking-tight rounded-[4px] cursor-not-allowed ${
-                        route.a ? 'bg-neutral-200/60 text-[#1C3D2E]' : 'text-neutral-500'
+                      className={`flex items-center gap-3 px-3 py-2 text-[13px] font-medium tracking-tight rounded-[6px] transition-colors ${
+                        route.a ? 'bg-[#dbe3df] text-[#1C3D2E]' : 'text-neutral-500 opacity-80'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[16px] opacity-70">{route.i}</span>
+                      <span className="material-symbols-outlined text-[18px]">{route.i}</span>
                       {route.n}
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Sidebar Project Section Hook */}
-              <div className="border-t border-neutral-200 pt-5 space-y-2">
-                <span className="text-[10px] uppercase tracking-wider font-semibold font-mono text-neutral-400 block px-2">Recent Project</span>
-                <div className="flex items-center gap-2 px-2 py-1 text-xs text-neutral-800 font-medium">
+              <div className="pt-6 border-t border-neutral-100 space-y-2">
+                <span className="text-[10px] uppercase tracking-wider font-semibold font-mono text-neutral-400 block px-2">Recent Projects</span>
+                <div className="flex items-center gap-2 px-2 py-1 text-[12px] text-neutral-700 font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#1C3D2E]" />
-                  Sustainable Skincare Launch
+                  Sustainable Skincare L...
                 </div>
               </div>
             </div>
 
-            {/* Dashboard Workspace View Container Layer */}
-            <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-8 flex flex-col justify-between bg-white relative">
+            {/* Main Editorial Workspace Component Canvas */}
+            <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-10 flex flex-col justify-between bg-white relative">
               <div>
                 
-                {/* Workspace Header Substructure Section */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-neutral-100 pb-6 mb-6">
+                {/* Clean Top Row Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 mb-6">
                   <div>
-                    <h2 className="text-2xl font-normal text-neutral-900 tracking-tight mb-1" style={{ fontFamily: "var(--font-serif, 'Playfair Display', Georgia, serif)" }}>Personas</h2>
-                    <p className="text-xs text-neutral-500 max-w-xl">AI-generated segments built from contextual dataset synthesis. Explore systemic customer beliefs, behaviors, and core market needs.</p>
+                    <h2 className="text-[32px] font-normal text-neutral-900 tracking-tight leading-none" style={{ fontFamily: "'Instrument Serif', serif" }}>Personas</h2>
+                    <p className="text-xs text-neutral-500 mt-2 max-w-2xl">AI-generated personas built from real research. Explore beliefs, behaviors, needs, and motivations.</p>
                   </div>
-                  <button disabled className="bg-[#1C3D2E] text-white px-3.5 py-1.5 text-[11px] font-medium tracking-tight rounded-[4px] opacity-90 cursor-not-allowed flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-sm">add</span> Create Persona
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button disabled className="bg-[#1C3D2E] text-white px-4 py-2 text-[12px] font-medium rounded-[6px] opacity-95 cursor-not-allowed flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-sm">add</span> Create Persona
+                    </button>
+                    <button disabled className="border border-neutral-200 text-neutral-600 px-3 py-2 text-[12px] rounded-[6px] bg-white cursor-not-allowed flex items-center gap-1"><span className="material-symbols-outlined text-sm">tune</span> Filters</button>
+                  </div>
                 </div>
 
-                {/* Sub-Category Filter Horizon Bar Layout */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-neutral-100 text-[11px] font-mono whitespace-nowrap">
-                  <span className="bg-[#1C3D2E] text-white px-3 py-1 rounded-[4px] font-medium">All Personas <span className="opacity-60 ml-1">3</span></span>
-                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1 rounded-[4px] bg-[#FAFBFB]">Awareness</span>
-                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1 rounded-[4px] bg-[#FAFBFB]">Consideration</span>
-                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1 rounded-[4px] bg-[#FAFBFB]">Purchase</span>
+                {/* Sub-Category Horizon Ribbon */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-neutral-100 text-[12px] whitespace-nowrap font-medium">
+                  <span className="bg-[#1C3D2E] text-white px-3 py-1.5 rounded-[6px]">All Personas <span className="opacity-60 ml-1 text-xs bg-black/20 px-1.5 py-0.5 rounded-full">3</span></span>
+                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1.5 rounded-[6px] bg-[#FAFBFB]">Awareness <span className="opacity-50 text-xs">0</span></span>
+                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1.5 rounded-[6px] bg-[#FAFBFB]">Consideration <span className="opacity-50 text-xs">0</span></span>
+                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1.5 rounded-[6px] bg-[#FAFBFB]">Purchase <span className="opacity-50 text-xs">0</span></span>
                 </div>
 
-                {/* Real interactive Persona Grid Matrix */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {/* Highly Faithful Persona Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {DASHBOARD_PERSONAS.map((persona) => {
                     const isSelected = selectedPersona.id === persona.id;
                     return (
                       <div 
                         key={persona.id}
                         onClick={() => !isSimulating && setSelectedPersona(persona)}
-                        className={`border p-5 rounded-[6px] transition-all duration-300 flex flex-col justify-between cursor-pointer group relative min-h-[300px] ${
+                        className={`border p-6 rounded-[12px] transition-all duration-500 flex flex-col justify-between relative group ${
                           isSelected 
-                            ? 'bg-[#FAFBFB] border-neutral-400 shadow-xs scale-[1.01]' 
-                            : 'bg-white border-neutral-200 opacity-70 hover:opacity-100 hover:border-neutral-300'
+                            ? 'bg-[#eef1ef] border-neutral-400 shadow-xs' 
+                            : 'bg-white border-neutral-200 opacity-80 hover:opacity-100 hover:border-neutral-300'
                         }`}
                       >
-                        {isSelected && (
-                          <div className="absolute top-4 right-4 bg-[#1C3D2E] text-white text-[9px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-white animate-ping" /> Selected
-                          </div>
-                        )}
                         <div>
-                          {/* Profile Data Header */}
                           <div className="flex items-start gap-4 mb-4">
-                            <img src={persona.imgUrl} alt={persona.name} className="w-12 h-12 rounded-full object-cover border border-neutral-100" />
+                            <img src={persona.imgUrl} alt={persona.name} className="w-14 h-14 rounded-[8px] object-cover border border-neutral-100" />
                             <div>
-                              <h4 className="text-md font-semibold text-neutral-900 tracking-tight" style={{ fontFamily: "var(--font-serif, 'Playfair Display', Georgia, serif)" }}>{persona.name}</h4>
-                              <p className="text-[11px] text-neutral-500 leading-none mt-0.5">{persona.title}</p>
-                              <p className="text-[10px] text-neutral-400 font-mono mt-1 flex items-center gap-0.5">
-                                <span className="material-symbols-outlined text-[10px]">location_on</span>{persona.location}
+                              <h4 className="text-[20px] font-normal text-neutral-900 tracking-tight leading-snug" style={{ fontFamily: "'Instrument Serif', serif" }}>{persona.name}</h4>
+                              <p className="text-[12px] text-neutral-500 font-light mt-0.5">{persona.title}</p>
+                              <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-0.5 font-light">
+                                <span className="material-symbols-outlined text-[12px]">location_on</span> {persona.location}
                               </p>
                             </div>
                           </div>
 
                           {/* Dynamic Attribute Pill Tags Horizon */}
-                          <div className="flex flex-wrap gap-1 mb-4">
+                          <div className="flex flex-wrap gap-1.5 mb-5">
                             {persona.tags.map((tag, tIdx) => (
-                              <span key={tIdx} className="bg-neutral-100 text-neutral-600 text-[9px] font-mono px-2 py-0.5 rounded-full border border-neutral-200/60">
+                              <span key={tIdx} className="bg-neutral-100 text-neutral-600 text-[10px] px-2.5 py-0.5 rounded-[4px] border border-neutral-200/40 font-light">
                                 {tag}
                               </span>
                             ))}
                           </div>
 
                           {/* Bio Segment Copy */}
-                          <p className="text-[11px] text-neutral-600 leading-relaxed font-light line-clamp-4 border-b border-neutral-100 pb-4 mb-4">
+                          <p className="text-[12px] text-neutral-600 leading-relaxed font-light mb-6">
                             {persona.bio}
                           </p>
                         </div>
 
-                        {/* Interactive Start Action Element Component */}
-                        <div className="grid grid-cols-2 gap-2 mt-auto">
-                          <button disabled className="w-full text-center border border-neutral-200 bg-white text-neutral-700 py-1.5 rounded-[4px] text-[10px] font-semibold cursor-not-allowed">View Details</button>
+                        {/* Interactive Start Action Button Bar */}
+                        <div className="grid grid-cols-2 gap-3 mt-auto pt-4 border-t border-neutral-200/50">
+                          <button disabled className="w-full text-center border border-neutral-200 bg-white text-neutral-700 py-2 rounded-[6px] text-[12px] font-medium cursor-not-allowed">View Details</button>
                           <button 
-                            className={`w-full text-center py-1.5 rounded-[4px] text-[10px] font-semibold transition-all shadow-2xs ${
+                            className={`w-full text-center py-2 rounded-[6px] text-[12px] font-medium transition-all ${
                               isSelected 
-                                ? 'bg-[#1C3D2E] text-white font-bold tracking-wide' 
-                                : 'bg-neutral-900 text-white group-hover:bg-[#1C3D2E]'
+                                ? 'bg-[#1C3D2E] text-white font-semibold' 
+                                : 'bg-[#1C3D2E] text-white hover:bg-[#5A7973]'
                             }`}
                           >
-                            {isSelected ? 'Simulating...' : 'Start Interview'}
+                            {isSelected ? 'Selected' : 'Start Interview'}
                           </button>
                         </div>
                       </div>
@@ -383,16 +363,21 @@ export default function LandingPage() {
                   })}
                 </div>
 
-                {/* Simulated Sub-Section: Live Insight Pipeline Layer */}
-                <div className="mt-8 bg-[#1C3D2E] text-white p-5 rounded-[6px] relative overflow-hidden border border-black/10 min-h-[110px]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-[#5A7973] font-bold">Live Context Interview Output Terminal // {selectedPersona.name}</span>
+                {/* Clean Editorial Insight Panel (Replaces The Futuristic Terminal) */}
+                <div className="mt-8 bg-[#FAFBFB] border border-neutral-200 p-6 rounded-[8px] relative transition-all">
+                  <div className="flex items-center justify-between border-b border-neutral-200/60 pb-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#1C3D2E] animate-pulse" />
+                      <h4 className="text-[16px] font-normal text-neutral-900" style={{ fontFamily: "'Instrument Serif', serif" }}>
+                        Simulated Dialogue Panel // Response from {selectedPersona.name}
+                      </h4>
+                    </div>
+                    <span className="text-[10px] font-mono text-neutral-400">STATUS: PIPELINE_ACTIVE</span>
                   </div>
-                  <p className="text-xs sm:text-sm font-mono text-neutral-200 font-light leading-relaxed tracking-tight">
+                  <p className="text-[13px] text-neutral-700 font-light leading-relaxed italic">
                     "{streamingText}"
                     {isSimulating && (
-                      <span className="inline-block w-1.5 h-3.5 bg-emerald-400 ml-1 live-stream-cursor align-middle" />
+                      <span className="inline-block w-1 h-3.5 bg-[#1C3D2E] ml-1 editorial-stream-cursor align-middle" />
                     )}
                   </p>
                 </div>
@@ -400,9 +385,9 @@ export default function LandingPage() {
               </div>
 
               {/* Informative Environment Banner */}
-              <div className="pt-4 border-t border-neutral-100 mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-neutral-400 font-mono text-[10px]">
-                <span>PROPRIETARY LAYOUT GRID PIPELINE // SIGNALROOM LAYER V2.0</span>
-                <span className="text-[#5A7973] font-semibold font-sans uppercase tracking-wider">Click columns to alternate interview engines</span>
+              <div className="pt-4 border-t border-neutral-100 mt-8 flex justify-between items-center text-neutral-400 text-[11px] font-light">
+                <span>Interactive Sandboxed Environment</span>
+                <span className="text-[#1C3D2E] font-medium uppercase tracking-wider text-[10px]">Select cards above to change stream payload</span>
               </div>
 
             </div>
