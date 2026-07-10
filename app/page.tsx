@@ -135,14 +135,22 @@ export default function LandingPage() {
   }, [selectedPersona]);
 
   return (
-    <div className="font-body-md overflow-x-hidden relative min-h-screen bg-white text-[#121314] antialiased">
+    <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased">
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
-      {/* Global CSS for Clean Typography & Image Renderers */}
+      {/* Editorial Noise Texture Base Overlay */}
+      <div 
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.022] mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+        }}
+      />
+
+      {/* Global CSS for Clean Typography & Optimus Vercel Interactive Card Effects */}
       <style jsx global>{`
         html { scroll-behavior: smooth; }
         @keyframes premiumCharIn {
-          0% { opacity: 0; transform: translateY(0.2em) scale(0.98); filter: blur(2px); }
+          0% { opacity: 0; transform: translateY(0.18em) scale(0.99); filter: blur(1.5px); }
           100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
         .char-reveal-span {
@@ -163,6 +171,41 @@ export default function LandingPage() {
         }
         .editorial-stream-cursor {
           animation: subtleCursorBlink 1s infinite;
+        }
+        
+        /* Premium Vercel Optimus Card Interaction Parameters */
+        .optimus-methodology-card {
+          position: relative;
+          background: transparent;
+          transition: border-color 0.5s ease, background-color 0.5s ease;
+        }
+        .optimus-methodology-card::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(400px circle at var(--x, 0px) var(--y, 0px), rgba(28, 38, 33, 0.035), transparent 80%);
+          opacity: 0;
+          transition: opacity 0.5s ease;
+          pointer-events: none;
+          z-index: 1;
+        }
+        .optimus-methodology-card:hover::before {
+          opacity: 1;
+        }
+        .optimus-icon-wrapper {
+          position: relative;
+          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+          z-index: 2;
+        }
+        .optimus-methodology-card:hover .optimus-icon-wrapper {
+          transform: scale(1.08) translateY(-4px);
+        }
+        .optimus-icon-inner {
+          transition: text-shadow 0.4s ease, color 0.4s ease;
+        }
+        .optimus-methodology-card:hover .optimus-icon-inner {
+          color: #1C2621;
+          text-shadow: 0 4px 20px rgba(28, 38, 33, 0.15);
         }
       `}</style>
 
@@ -200,7 +243,7 @@ export default function LandingPage() {
           <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
             <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
-              <span className="relative inline-block text-[#1C2621] italic whitespace-nowrap min-w-[220px]">
+              <span className="relative inline-block text-[#1c3d2e] italic whitespace-nowrap min-w-[220px]">
                 <span className="relative inline-flex overflow-visible">
                   {displayedWord.split('').map((char, idx) => (
                     <span 
@@ -235,10 +278,10 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* 100% DASHBOARD COLOR SYNCED SIMULATOR WORKSPACE */}
+      {/* DASHBOARD COLOR SYNCED SIMULATOR WORKSPACE */}
       <RevealSection>
         <section id="dashboard-replica" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20">
-          <div className="bg-[#F4F5F4] border border-[#E3E5E3] rounded-[12px] shadow-sm min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
+          <div className="bg-[#F4F5F4] border border-[#E3E5E3] rounded-[12px] shadow-xs min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
             
             {/* Left Sidebar Layout */}
             <div className="md:col-span-3 lg:col-span-2 bg-white border-r border-[#E3E5E3] p-5 flex flex-col justify-between hidden md:flex">
@@ -395,7 +438,7 @@ export default function LandingPage() {
         </section>
       </RevealSection>
 
-      {/* Methodology Section */}
+      {/* Methodology Section with Vercel Optimus Mouse Tracker Hooks */}
       <RevealSection>
         <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-t border-b border-[#1C2621]/10 scroll-mt-16">
           <div 
@@ -409,49 +452,80 @@ export default function LandingPage() {
             </div>
             <div className="hidden sm:block h-px flex-grow ml-16 bg-[#b5bab7]/20 relative">
               <div 
-                className="absolute inset-0 bg-[#1C2621]/30 h-full transition-all duration-600"
+                className="absolute inset-0 h-full transition-all duration-600"
                 style={{ 
                   width: isMethodologyActive ? '100%' : '0%', 
                   opacity: isMethodologyActive ? 1 : 0,
-                  backgroundColor: isMethodologyActive ? '#1C2621' : 'rgba(28, 38, 33, 0.3)'
+                  backgroundColor: '#1C2621'
                 }} 
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden bg-white">
+            
             {/* Step 01 */}
-            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
+            <div 
+              className="p-8 sm:p-16 group optimus-methodology-card"
+              onMouseMove={(e) => {
+                const bounds = e.currentTarget.getBoundingClientRect();
+                e.currentTarget.style.setProperty('--x', `${e.clientX - bounds.left}px`);
+                e.currentTarget.style.setProperty('--y', `${e.clientY - bounds.top}px`);
+              }}
+            >
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none group-hover:text-[#1C2621]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C2621] transition-colors text-2xl sm:text-3xl">hub</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
+                <div className="optimus-icon-wrapper p-2 rounded-full bg-neutral-50 border border-neutral-100">
+                  <span className="material-symbols-outlined optimus-icon-inner text-neutral-400 text-2xl sm:text-3xl">hub</span>
+                </div>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Transform assumptions into intelligence. Bring your customer, market, and product context together to build a foundation for smarter decisions.
               </p>
             </div>
+
             {/* Step 02 */}
-            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
+            <div 
+              className="p-8 sm:p-16 group optimus-methodology-card"
+              onMouseMove={(e) => {
+                const bounds = e.currentTarget.getBoundingClientRect();
+                e.currentTarget.style.setProperty('--x', `${e.clientX - bounds.left}px`);
+                e.currentTarget.style.setProperty('--y', `${e.clientY - bounds.top}px`);
+              }}
+            >
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none group-hover:text-[#1C2621]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C2621] transition-colors text-2xl sm:text-3xl">psychology</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
+                <div className="optimus-icon-wrapper p-2 rounded-full bg-neutral-50 border border-neutral-100">
+                  <span className="material-symbols-outlined optimus-icon-inner text-neutral-400 text-2xl sm:text-3xl">psychology</span>
+                </div>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Understand your customers at scale. Model customer perspectives and uncover motivations, objections, and opportunities before investing resources.
               </p>
             </div>
+
             {/* Step 03 */}
-            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
+            <div 
+              className="p-8 sm:p-16 group optimus-methodology-card"
+              onMouseMove={(e) => {
+                const bounds = e.currentTarget.getBoundingClientRect();
+                e.currentTarget.style.setProperty('--x', `${e.clientX - bounds.left}px`);
+                e.currentTarget.style.setProperty('--y', `${e.clientY - bounds.top}px`);
+              }}
+            >
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none group-hover:text-[#1C2621]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C2621] transition-colors text-2xl sm:text-3xl">location_on</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
+                <div className="optimus-icon-wrapper p-2 rounded-full bg-neutral-50 border border-neutral-100">
+                  <span className="material-symbols-outlined optimus-icon-inner text-neutral-400 text-2xl sm:text-3xl">location_on</span>
+                </div>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Move forward with confidence. Convert customer signals into strategic recommendations that help teams reduce risk and act faster.
               </p>
             </div>
+
           </div>
         </section>
       </RevealSection>
