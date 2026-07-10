@@ -244,7 +244,7 @@ export default function LandingPage() {
           </div>
 
           {/* LEFT SIDE: Main Title + Transparent Node Animation Whitespace */}
-          <div className="md:col-span-12 lg:col-span-7 flex flex-col justify-between min-h-[400px] overflow-visible">
+          <div className="md:col-span-12 lg:col-span-7 flex flex-col justify-between min-h-[350px] overflow-visible">
             <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
               <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
@@ -264,21 +264,22 @@ export default function LandingPage() {
               <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
             </h1>
 
-            {/* Animation placed under header with width restricted to left side */}
-            <div className="mt-auto w-full max-w-[550px] bg-transparent overflow-visible">
+            {/* Shifted up cleanly to fill the middle whitespace segment nicely */}
+            <div className="mt-4 mb-4 w-full max-w-[550px] bg-transparent overflow-visible">
               <IntelligenceSignal />
             </div>
           </div>
 
-          {/* RIGHT SIDE: Text Boxes Restored Exactly to the Right of the Space */}
+          {/* RIGHT SIDE: Layout Cleaned Up Exactly As Specified */}
           <div className="md:col-span-12 lg:col-span-5 lg:pt-48 flex flex-col justify-end">
-            <p className="text-[14px] sm:text-[15px] text-[#454947] mb-6 leading-normal tracking-[-0.01em] opacity-70 font-normal">
-              SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
-            </p>
-            
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
-              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
+              
+              {/* Inherited exact style/sizing from old paragraph block for perfect cleanliness */}
+              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">
+                SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
+              </p>
+              
               <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
             </div>
 

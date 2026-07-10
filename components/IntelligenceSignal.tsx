@@ -1,48 +1,38 @@
 'use client'
 
-// Tracing symmetrical wide geometry peak with transparent foundation wrapper styles.
+// Clean 19s sequence mimicking the pure "/\" sketch path with zero intermediate waypoints.
+// Shrunk y-coordinates slightly to shift the absolute physical layout position higher up.
+
 const MOBILE_DOTS = {
-  a1: { cx: 40, cy: 110 },
-  a2: { cx: 70, cy: 118 },
-  a3: { cx: 100, cy: 110 },
-  b1: { cx: 270, cy: 27 },
-  b2: { cx: 300, cy: 35 },
-  b3: { cx: 330, cy: 27 },
-  c1: { cx: 500, cy: 110 },
-  c2: { cx: 530, cy: 118 },
-  c3: { cx: 560, cy: 110 },
-  abWay1: { cx: 140, cy: 85 },
-  abWay2: { cx: 210, cy: 55 },
-  bcWay1: { cx: 390, cy: 60 },
-  bcWay2: { cx: 450, cy: 88 },
+  a1: { cx: 40, cy: 90 },
+  a2: { cx: 70, cy: 98 },
+  a3: { cx: 100, cy: 90 },
+  b1: { cx: 270, cy: 20 },
+  b2: { cx: 300, cy: 28 },
+  b3: { cx: 330, cy: 20 },
+  c1: { cx: 500, cy: 90 },
+  c2: { cx: 530, cy: 98 },
+  c3: { cx: 560, cy: 90 },
 }
 
 const DESKTOP_DOTS = {
-  a1: { cx: 40, cy: 110 },
-  a2: { cx: 70, cy: 118 },
-  a3: { cx: 100, cy: 110 },
-  b1: { cx: 270, cy: 25 },
-  b2: { cx: 300, cy: 33 },
-  b3: { cx: 330, cy: 25 },
-  c1: { cx: 500, cy: 110 },
-  c2: { cx: 530, cy: 118 },
-  c3: { cx: 560, cy: 110 },
-  abWay1: { cx: 135, cy: 82 },
-  abWay2: { cx: 212, cy: 58 },
-  bcWay1: { cx: 398, cy: 52 },
-  bcWay2: { cx: 456, cy: 84 },
+  a1: { cx: 40, cy: 90 },
+  a2: { cx: 70, cy: 98 },
+  a3: { cx: 100, cy: 90 },
+  b1: { cx: 270, cy: 15 },
+  b2: { cx: 300, cy: 23 },
+  b3: { cx: 330, cy: 15 },
+  c1: { cx: 500, cy: 90 },
+  c2: { cx: 530, cy: 98 },
+  c3: { cx: 560, cy: 90 },
 }
 
 function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
   return (
     <>
-      <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.abWay1.cx} y2={dots.abWay1.cy} className="signal-line signal-leg-a-seg1" />
-      <line x1={dots.abWay1.cx} y1={dots.abWay1.cy} x2={dots.abWay2.cx} y2={dots.abWay2.cy} className="signal-line signal-leg-a-seg2" />
-      <line x1={dots.abWay2.cx} y1={dots.abWay2.cy} x2={dots.b2.cx} y2={dots.b2.cy} className="signal-line signal-leg-a-seg3" />
-
-      <line x1={dots.b2.cx} y1={dots.b2.cy} x2={dots.bcWay1.cx} y2={dots.bcWay1.cy} className="signal-line signal-leg-b-seg1" />
-      <line x1={dots.bcWay1.cx} y1={dots.bcWay1.cy} x2={dots.bcWay2.cx} y2={dots.bcWay2.cy} className="signal-line signal-leg-b-seg2" />
-      <line x1={dots.bcWay2.cx} y1={dots.bcWay2.cy} x2={dots.c2.cx} y2={dots.c2.cy} className="signal-line signal-leg-b-seg3" />
+      {/* direct crisp alignment lines connecting directly between node cluster points */}
+      <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.b2.cx} y2={dots.b2.cy} className="signal-line signal-leg-a-seg1" />
+      <line x1={dots.b2.cx} y1={dots.b2.cy} x2={dots.c2.cx} y2={dots.c2.cy} className="signal-line signal-leg-b-seg1" />
 
       <line x1={dots.a1.cx} y1={dots.a1.cy} x2={dots.a2.cx} y2={dots.a2.cy} className="signal-line signal-line-a" />
       <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.a3.cx} y2={dots.a3.cy} className="signal-line signal-line-a" />
@@ -54,11 +44,6 @@ function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
       <circle cx={dots.a2.cx} cy={dots.a2.cy} r="3" className="signal-ripple signal-ripple-a" style={{ transformOrigin: `${dots.a2.cx}px ${dots.a2.cy}px` }} />
       <circle cx={dots.b2.cx} cy={dots.b2.cy} r="3" className="signal-ripple signal-ripple-b" style={{ transformOrigin: `${dots.b2.cx}px ${dots.b2.cy}px` }} />
       <circle cx={dots.c2.cx} cy={dots.c2.cy} r="3" className="signal-ripple signal-ripple-c" style={{ transformOrigin: `${dots.c2.cx}px ${dots.c2.cy}px` }} />
-
-      <circle cx={dots.abWay1.cx} cy={dots.abWay1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-way-ab1" style={{ transformOrigin: `${dots.abWay1.cx}px ${dots.abWay1.cy}px` }} />
-      <circle cx={dots.abWay2.cx} cy={dots.abWay2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-way-ab2" style={{ transformOrigin: `${dots.abWay2.cx}px ${dots.abWay2.cy}px` }} />
-      <circle cx={dots.bcWay1.cx} cy={dots.bcWay1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-way-bc1" style={{ transformOrigin: `${dots.bcWay1.cx}px ${dots.bcWay1.cy}px` }} />
-      <circle cx={dots.bcWay2.cx} cy={dots.bcWay2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-way-bc2" style={{ transformOrigin: `${dots.bcWay2.cx}px ${dots.bcWay2.cy}px` }} />
 
       <circle cx={dots.a2.cx} cy={dots.a2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-hero" style={{ transformOrigin: `${dots.a2.cx}px ${dots.a2.cy}px` }} />
       <circle cx={dots.a1.cx} cy={dots.a1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-side" style={{ transformOrigin: `${dots.a1.cx}px ${dots.a1.cy}px` }} />
@@ -75,10 +60,10 @@ function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
 
 export default function IntelligenceSignal() {
   return (
-    <div className="relative w-full h-32 overflow-visible bg-transparent">
+    <div className="relative w-full h-28 overflow-visible bg-transparent">
       {/* ── Mobile Layout ── */}
       <div className="md:hidden absolute inset-0">
-        <svg viewBox="0 0 600 145" preserveAspectRatio="none" className="absolute top-0 left-0 w-full h-[75%] overflow-visible">
+        <svg viewBox="0 0 600 120" preserveAspectRatio="none" className="absolute top-0 left-0 w-full h-[75%] overflow-visible">
           <ClusterDots dots={MOBILE_DOTS} />
         </svg>
         <div className="absolute bottom-0 left-0 w-full h-[25%] flex items-center justify-between px-2">
@@ -90,25 +75,25 @@ export default function IntelligenceSignal() {
 
       {/* ── Desktop Layout ── */}
       <div className="hidden md:block absolute inset-0">
-        <svg viewBox="0 0 600 145" className="absolute top-0 left-0 w-full h-full overflow-visible">
+        <svg viewBox="0 0 600 120" className="absolute top-0 left-0 w-full h-full overflow-visible">
           <ClusterDots dots={DESKTOP_DOTS} />
         </svg>
 
         <span
           className="signal-label absolute signal-label-a text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.a2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.a2.cy / 145) * 100 + 12}%` }}
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.a2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.a2.cy / 120) * 100 + 10}%` }}
         >
           Customer expectation detected
         </span>
         <span
           className="signal-label absolute signal-label-b text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.b2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.b2.cy / 145) * 100 - 20}%` }}
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.b2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.b2.cy / 120) * 100 - 22}%` }}
         >
           Hidden objection
         </span>
         <span
           className="signal-label absolute signal-label-c text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.c2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.c2.cy / 145) * 100 + 12}%` }}
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.c2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.c2.cy / 120) * 100 + 10}%` }}
         >
           Emerging opportunity
         </span>
@@ -124,15 +109,7 @@ export default function IntelligenceSignal() {
         .signal-line-b { animation-name: lineB; }
         .signal-line-c { animation-name: lineC; }
         .signal-leg-a-seg1 { animation-name: legASeg1; }
-        .signal-leg-a-seg2 { animation-name: legASeg2; }
-        .signal-leg-a-seg3 { animation-name: legASeg3; }
         .signal-leg-b-seg1 { animation-name: legBSeg1; }
-        .signal-leg-b-seg2 { animation-name: legBSeg2; }
-        .signal-leg-b-seg3 { animation-name: legBSeg3; }
-        .signal-way-ab1 { animation-name: wayAB1; }
-        .signal-way-ab2 { animation-name: wayAB2; }
-        .signal-way-bc1 { animation-name: wayBC1; }
-        .signal-way-bc2 { animation-name: wayBC2; }
         .signal-dot-a-hero { animation-name: dotAHero; }
         .signal-dot-a-side { animation-name: dotASide; }
         .signal-dot-a-outer { animation-name: dotAOuter; }
@@ -150,19 +127,11 @@ export default function IntelligenceSignal() {
         @keyframes dotAOuter { 0%, 13%, 100% { opacity: 0.12; transform: scale(1); } 14%, 18% { opacity: 0.42; transform: scale(1.08); } 20% { opacity: 0.78; transform: scale(1.28); } 24%, 94% { opacity: 0.46; transform: scale(1.04); } }
         @keyframes dotBGradual { 0%, 14%, 100% { opacity: 0.12; transform: scale(1); } 22%, 37% { opacity: 0.25; transform: scale(1.05); } 38% { opacity: 0.85; transform: scale(1.35); } 44%, 94% { opacity: 0.5; transform: scale(1.08); } }
         @keyframes dotCGradual { 0%, 38%, 100% { opacity: 0.12; transform: scale(1); } 46%, 65% { opacity: 0.25; transform: scale(1.05); } 66% { opacity: 0.85; transform: scale(1.35); } 72%, 94% { opacity: 0.5; transform: scale(1.08); } }
-        @keyframes wayAB1 { 0%, 25%, 100% { opacity: 0.12; transform: scale(1); } 26% { opacity: 0.55; transform: scale(1.15); } 30%, 94% { opacity: 0.4; transform: scale(1.05); } }
-        @keyframes wayAB2 { 0%, 29%, 100% { opacity: 0.12; transform: scale(1); } 30% { opacity: 0.55; transform: scale(1.15); } 34%, 94% { opacity: 0.4; transform: scale(1.05); } }
-        @keyframes wayBC1 { 0%, 53%, 100% { opacity: 0.12; transform: scale(1); } 54% { opacity: 0.55; transform: scale(1.15); } 58%, 94% { opacity: 0.4; transform: scale(1.05); } }
-        @keyframes wayBC2 { 0%, 57%, 100% { opacity: 0.12; transform: scale(1); } 58% { opacity: 0.55; transform: scale(1.15); } 62%, 94% { opacity: 0.4; transform: scale(1.05); } }
         @keyframes lineA { 0%, 28%, 100% { opacity: 0; } 29%, 94% { opacity: 0.3; } }
         @keyframes lineB { 0%, 42%, 100% { opacity: 0; } 43%, 94% { opacity: 0.3; } }
         @keyframes lineC { 0%, 70%, 100% { opacity: 0; } 71%, 94% { opacity: 0.3; } }
         @keyframes legASeg1 { 0%, 25%, 100% { opacity: 0; } 26%, 94% { opacity: 0.3; } }
-        @keyframes legASeg2 { 0%, 29%, 100% { opacity: 0; } 30%, 94% { opacity: 0.3; } }
-        @keyframes legASeg3 { 0%, 33%, 100% { opacity: 0; } 34%, 94% { opacity: 0.3; } }
         @keyframes legBSeg1 { 0%, 53%, 100% { opacity: 0; } 54%, 94% { opacity: 0.3; } }
-        @keyframes legBSeg2 { 0%, 57%, 100% { opacity: 0; } 58%, 94% { opacity: 0.3; } }
-        @keyframes legBSeg3 { 0%, 61%, 100% { opacity: 0; } 62%, 94% { opacity: 0.3; } }
         @keyframes rippleA { 0%, 19%, 100% { opacity: 0; transform: scale(1); } 20% { opacity: 0.5; transform: scale(1); } 28% { opacity: 0; transform: scale(7); } }
         @keyframes rippleB { 0%, 37%, 100% { opacity: 0; transform: scale(1); } 38% { opacity: 0.5; transform: scale(1); } 46% { opacity: 0; transform: scale(7); } }
         @keyframes rippleC { 0%, 65%, 100% { opacity: 0; transform: scale(1); } 66% { opacity: 0.5; transform: scale(1); } 74% { opacity: 0; transform: scale(7); } }
