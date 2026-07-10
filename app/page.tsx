@@ -39,48 +39,48 @@ function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode;
   );
 }
 
-// Interactive Mock Datasets for Persona Simulator
-interface Persona {
+// Persona Interface matching your UI dashboard components exactly
+interface DashboardPersona {
   id: string;
   name: string;
   title: string;
-  avatarColor: string;
-  borderColor: string;
-  promptQuestion: string;
-  responseOutput: string;
-  firmographic: string;
+  location: string;
+  imgUrl: string;
+  tags: string[];
+  bio: string;
+  interviewQuote: string;
 }
 
-const PERSONA_DATASET: Persona[] = [
+const DASHBOARD_PERSONAS: DashboardPersona[] = [
   {
-    id: 'enterprise-sarah',
-    name: 'Sarah Jenkins',
-    title: 'VP of Product, FinTech Scaleup',
-    avatarColor: 'bg-[#1C3D2E]',
-    borderColor: 'border-[#1C3D2E]/30',
-    firmographic: '500+ employees // $40M ARR // B2B SaaS',
-    promptQuestion: 'How does your team evaluate vendor security compliance overhead?',
-    responseOutput: "Our compliance team will stonewall any platform that lacks SOC2 Type II raw exports. Even if your core utility saves us hundreds of operational engineering hours, the security vetting process itself takes precedence. If you can't offer isolated tenant partitioning or automated data-at-rest data structures, we won't even begin a pilot program."
+    id: 'arjun',
+    name: 'Arjun Sharma',
+    title: 'Freelance Full-Stack Developer',
+    location: 'Austin, Texas',
+    imgUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80',
+    tags: ['freelancer', 'solopreneur', 'growth-focused', 'developer'],
+    bio: 'Arjun moved from Bangalore to Austin three years ago and built his freelance business from scratch with no local network. He tracks his business metrics obsessively...',
+    interviewQuote: "Our team will stonewall any platform that lacks raw automated telemetry maps. Even if your core utility saves us hundreds of operational hours, data-at-rest integration security takes precedence."
   },
   {
-    id: 'founder-alex',
-    name: 'Alex Rivera',
-    title: 'Technical Founder, DevTools Startup',
-    avatarColor: 'bg-[#5A7973]',
-    borderColor: 'border-[#5A7973]/30',
-    firmographic: 'Seed stage // 8 developers // Open Source API',
-    promptQuestion: 'What is your primary hesitation when upgrading analytical infrastructure?',
-    responseOutput: "I won't buy proprietary analytics tooling unless it integrates directly into our existing telemetry layers like Prometheus or OpenTelemetry. I am highly allergic to installing another opaque client-side script wrapper that degrades application performance metrics. Give me clean Postgres pipeline routing or a raw webhook data model, otherwise it is an automatic pass."
+    id: 'priya',
+    name: 'Priya Nair',
+    title: 'Senior Product Manager',
+    location: 'Austin, Texas',
+    imgUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80',
+    tags: ['startup', 'product management', 'SaaS', 'time-pressed'],
+    bio: 'Priya loves the startup density but misses the slower pace of her hometown. She manages complex multi-tenant system backlogs and cross-functional user pipelines...',
+    interviewQuote: "We won't buy proprietary analytical infrastructure unless it integrates natively. I am highly allergic to client-side scripts wrapper layers that degrade performance funnel metrics."
   },
   {
-    id: 'growth-elena',
-    name: 'Elena Rostova',
-    title: 'Head of Growth, Consumer Marketplace',
-    avatarColor: 'bg-[#2E533E]',
-    borderColor: 'border-[#2E533E]/20',
-    firmographic: 'Series A // 45 employees // Mobile-First PLG',
-    promptQuestion: 'What triggers user churn during your checkout funnel activation?',
-    responseOutput: "Our user activation drop-off isn't driven by UI aesthetics; it's entirely friction-based micro-friction. Forcing account registration prior to a user experiencing the core search utility cuts conversion rates by exactly 34%. Users want a sandboxed immediate value trial before they hand over corporate credentials or billing records."
+    id: 'marisol',
+    name: 'Marisol Delgado',
+    title: 'Stay-at-Home Mom & Full-Time Caregiver',
+    location: 'Albuquerque, New Mexico',
+    imgUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80',
+    tags: ['stay-at-home mom', 'budget-conscious', 'caregiver', 'family-first'],
+    bio: 'Marisol holds a bachelor\'s degree in Communications but left a marketing coordinator job when her second child was born with a mild developmental delay requiring extra therapeutic attention...',
+    interviewQuote: "Our activation drop-off is entirely structural micro-friction. Forcing user profile registration prior to experiencing the actual utility core cuts conversion metrics by exactly 34%."
   }
 ];
 
@@ -90,14 +90,14 @@ export default function LandingPage() {
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0);
   const [displayedWord, setDisplayedWord] = useState<string>('');
 
-  // Simulator Section Specific States
-  const [activePersona, setActivePersona] = useState<Persona>(PERSONA_DATASET[0]);
-  const [simulatedStreamText, setSimulatedStreamText] = useState<string>('');
-  const [isStreaming, setIsStreaming] = useState<boolean>(false);
+  // Active Dashboard Interaction States
+  const [selectedPersona, setSelectedPersona] = useState<DashboardPersona>(DASHBOARD_PERSONAS[0]);
+  const [streamingText, setStreamingText] = useState<string>('');
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
   const wordsDataset = ["opinions", "objections", "blindspots", "expectations"];
 
-  // Math Calculations Engine
+  // Cost Engine Definitions
   const TRADITIONAL_COST_PER_INTERVIEW = 750;
   const TRADITIONAL_HOURS_PER_INTERVIEW = 2;
   const TRADITIONAL_WEEKS_TURNAROUND = 3;
@@ -108,45 +108,42 @@ export default function LandingPage() {
   const annualSavings = savings * 12;
   const calculatedReduction = Math.round((1 - (10 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
 
-  // Instantly Swap Word State and Cascade Characters In
+  // Instant Word Rotator Hook
   useEffect(() => {
     setDisplayedWord(wordsDataset[currentWordIndex]);
-
     const rotationInterval = setInterval(() => {
       setCurrentWordIndex((prev) => (prev + 1) % wordsDataset.length);
     }, 3800);
-
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
 
-  // Real-time Text Streaming Typing Simulation Logic
+  // Clean Character Stream Generator for the Simulated Quote block
   useEffect(() => {
-    setSimulatedStreamText('');
-    setIsStreaming(true);
-    let charIndex = 0;
-    const fullText = activePersona.responseOutput;
+    setStreamingText('');
+    setIsSimulating(true);
+    let charIdx = 0;
+    const targetPayload = selectedPersona.interviewQuote;
 
-    const streamingInterval = setInterval(() => {
-      if (charIndex < fullText.length) {
-        setSimulatedStreamText((prev) => prev + fullText.charAt(charIndex));
-        charIndex++;
+    const stream = setInterval(() => {
+      if (charIdx < targetPayload.length) {
+        setStreamingText((prev) => prev + targetPayload.charAt(charIdx));
+        charIdx++;
       } else {
-        clearInterval(streamingInterval);
-        setIsStreaming(false);
+        clearInterval(stream);
+        setIsSimulating(false);
       }
-    }, 12);
+    }, 10);
 
-    return () => clearInterval(streamingInterval);
-  }, [activePersona]);
+    return () => clearInterval(stream);
+  }, [selectedPersona]);
 
   return (
     <div className="font-body-md overflow-x-hidden relative min-h-screen bg-white text-[#121314] antialiased">
-      {/* Import Material Symbols + Fonts */}
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
-      {/* Structural Architectural Grid Overlay */}
+      {/* Structural Minimal Grid Background Overlay */}
       <div 
-        className="pointer-events-none absolute inset-0 z-0 opacity-[0.015]"
+        className="pointer-events-none absolute inset-0 z-0 opacity-[0.012]"
         style={{
           backgroundImage: `
             linear-gradient(to right, #1C3D2E 1px, transparent 1px),
@@ -156,56 +153,29 @@ export default function LandingPage() {
         }}
       />
 
-      {/* Global Premium CSS Inject */}
       <style jsx global>{`
         html { scroll-behavior: smooth; }
-        
-        /* Premium Cascade Entry Reveal */
         @keyframes premiumCharIn {
-          0% { 
-            opacity: 0; 
-            transform: translateY(0.2em) scale(0.98); 
-            filter: blur(2px); 
-          }
-          100% { 
-            opacity: 1; 
-            transform: translateY(0) scale(1); 
-            filter: blur(0); 
-          }
+          0% { opacity: 0; transform: translateY(0.2em) scale(0.98); filter: blur(2px); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
-        
         .char-reveal-span {
           display: inline-block;
           opacity: 0;
           will-change: transform, opacity;
           animation: premiumCharIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-
-        /* SVG Mobile High-Density Anti-Blur Fix overrides */
         .mobile-crisp-vector {
           image-rendering: -webkit-optimize-contrast;
           image-rendering: crisp-edges;
           transform: translateZ(0);
-          backface-visibility: hidden;
           content-visibility: auto;
         }
-
-        @keyframes floatIcon {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-6px); }
-          100% { transform: translateY(0px); }
-        }
-        .group:hover .group-hover-animated-symbol {
-          display: inline-block;
-          animation: floatIcon 2.5s ease-in-out infinite;
-        }
-
-        /* Cursor blinking animation for the streaming code box */
         @keyframes customBlink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
-        .animated-streaming-cursor {
+        .live-stream-cursor {
           animation: customBlink 0.8s infinite;
         }
       `}</style>
@@ -219,7 +189,6 @@ export default function LandingPage() {
             width="142"
             height="36"
             className="h-9 w-auto object-contain mobile-crisp-vector" 
-            style={{ imageRendering: '-webkit-optimize-contrast' }}
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
@@ -229,13 +198,13 @@ export default function LandingPage() {
         </div>
         <div className="flex items-center gap-4 sm:gap-6">
           <Link className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#454947] hover:text-[#121314] transition-colors" href="/login">Sign In</Link>
-          <Link className="bg-[#5A7973] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#1C3D2E] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
+          <Link className="bg-[#1C3D2E] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#5A7973] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
             Start Free
           </Link>
         </div>
       </nav>
 
-      {/* Hero Header Section */}
+      {/* Hero Content Block */}
       <header className="relative pt-28 sm:pt-36 pb-12 sm:pb-16 px-6 sm:px-12">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -272,7 +241,7 @@ export default function LandingPage() {
               <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
             </div>
             <div className="flex items-center gap-8">
-              <a href="#simulator" className="w-full sm:w-auto text-center border border-[#1C3D2E]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#5A7973] text-white hover:bg-[#1C3D2E] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
+              <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1C3D2E]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1C3D2E] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
                 Explore Platform
               </a>
             </div>
@@ -280,114 +249,162 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Live Interview Simulator Dashboard */}
+      {/* DASHBOARD REPLICA SIMULATION ENVIRONMENT */}
       <RevealSection>
-        <section id="simulator" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20">
-          <div className="bg-[#FAFBFB] border border-[#D1D5D3] rounded-[6px] overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#D1D5D3]">
+        <section id="dashboard-replica" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20">
+          <div className="bg-white border border-neutral-200 rounded-[8px] shadow-sm min-h-[580px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
             
-            {/* Left Column Profile Selector */}
-            <div className="lg:col-span-4 p-6 sm:p-8 flex flex-col justify-between bg-white">
-              <div>
-                <div className="flex items-center gap-2 mb-6">
-                  <span className="w-2 h-2 rounded-full bg-[#1C3D2E] animate-pulse" />
-                  <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-500">Target Audiences Mounted</span>
-                </div>
-                <h3 className="text-xl font-normal text-[#121314] mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Select AI Persona</h3>
-                <p className="text-xs text-neutral-600 mb-6 leading-relaxed">Toggle active models below to query simulated context segments instantly.</p>
+            {/* Dashboard Sidebar Navigation Menu Layer */}
+            <div className="md:col-span-3 lg:col-span-2 bg-[#FAFBFB] border-r border-neutral-200 p-5 flex flex-col justify-between hidden md:flex">
+              <div className="space-y-7">
+                {/* Simulated Meta Logo space */}
+                <div className="px-2 text-xs font-mono tracking-widest text-[#5A7973] font-bold uppercase">SignalRoom Dashboard</div>
                 
-                <div className="space-y-3">
-                  {PERSONA_DATASET.map((persona) => {
-                    const isSelected = activePersona.id === persona.id;
-                    return (
-                      <button
-                        key={persona.id}
-                        onClick={() => !isStreaming && setActivePersona(persona)}
-                        disabled={isStreaming}
-                        className={`w-full text-left p-4 rounded-[4px] border transition-all duration-300 flex flex-col gap-1 relative ${
-                          isSelected 
-                            ? `bg-[#FAFBFB] ${persona.borderColor} shadow-xs` 
-                            : 'bg-white border-transparent hover:border-neutral-200 opacity-60 hover:opacity-90'
-                        }`}
-                      >
-                        {isSelected && (
-                          <div className="absolute left-0 top-0 h-full w-[3px] bg-[#1C3D2E] rounded-l-[4px]" />
-                        )}
-                        <div className="flex items-center gap-2.5">
-                          <div className={`w-2.5 h-2.5 rounded-full ${persona.avatarColor}`} />
-                          <span className="text-xs font-semibold text-[#121314] tracking-tight">{persona.name}</span>
-                        </div>
-                        <span className="text-[11px] text-[#454947] pl-5 font-medium">{persona.title}</span>
-                        <span className="text-[10px] text-neutral-400 pl-5 font-mono tracking-tighter mt-1">{persona.firmographic}</span>
-                      </button>
-                    );
-                  })}
+                {/* Core Routes Links List */}
+                <div className="space-y-1">
+                  {[
+                    { n: 'Home', i: 'home', a: false },
+                    { n: 'Projects', i: 'folder', a: false },
+                    { n: 'Personas', i: 'groups', a: true },
+                    { n: 'Interviews', i: 'chat_bubble', a: false },
+                    { n: 'Compare', i: 'compare_arrows', a: false },
+                    { n: 'Audience Panel', i: 'assignment_ind', a: false },
+                    { n: 'Signals', i: 'analytics', a: false },
+                    { n: 'Insights', i: 'insights', a: false }
+                  ].map((route, rIdx) => (
+                    <div 
+                      key={rIdx} 
+                      className={`flex items-center gap-3 px-3 py-2 text-[12px] font-medium tracking-tight rounded-[4px] cursor-not-allowed ${
+                        route.a ? 'bg-neutral-200/60 text-[#1C3D2E]' : 'text-neutral-500'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px] opacity-70">{route.i}</span>
+                      {route.n}
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="pt-8 border-t border-neutral-100 mt-8 hidden lg:block">
-                <div className="text-[10px] font-mono tracking-tight text-neutral-400 uppercase">System Feedback Loop</div>
-                <div className="text-xs text-[#5A7973] mt-1 italic font-medium">“Revealing micro-friction vectors prior to codebase implementation.”</div>
+              {/* Sidebar Project Section Hook */}
+              <div className="border-t border-neutral-200 pt-5 space-y-2">
+                <span className="text-[10px] uppercase tracking-wider font-semibold font-mono text-neutral-400 block px-2">Recent Project</span>
+                <div className="flex items-center gap-2 px-2 py-1 text-xs text-neutral-800 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C3D2E]" />
+                  Sustainable Skincare Launch
+                </div>
               </div>
             </div>
 
-            {/* Right Column Output Log Area */}
-            <div className="lg:col-span-8 p-6 sm:p-8 bg-[#FAFBFB] flex flex-col justify-between">
+            {/* Dashboard Workspace View Container Layer */}
+            <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-8 flex flex-col justify-between bg-white relative">
               <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200 pb-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-neutral-400 bg-neutral-200/50 px-2.5 py-0.5 rounded">SESSION // SIM_04</span>
-                    <span className="text-xs text-neutral-500 font-mono tracking-tight">Active Core Route: /app/simulations/sandbox</span>
+                
+                {/* Workspace Header Substructure Section */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-neutral-100 pb-6 mb-6">
+                  <div>
+                    <h2 className="text-2xl font-normal text-neutral-900 tracking-tight mb-1" style={{ fontFamily: "var(--font-serif, 'Playfair Display', Georgia, serif)" }}>Personas</h2>
+                    <p className="text-xs text-neutral-500 max-w-xl">AI-generated segments built from contextual dataset synthesis. Explore systemic customer beliefs, behaviors, and core market needs.</p>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-amber-500 animate-pulse' : 'bg-green-600'}`} />
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600">
-                      {isStreaming ? 'Streaming Insight Architecture' : 'Pipeline Synchronized'}
-                    </span>
-                  </div>
+                  <button disabled className="bg-[#1C3D2E] text-white px-3.5 py-1.5 text-[11px] font-medium tracking-tight rounded-[4px] opacity-90 cursor-not-allowed flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">add</span> Create Persona
+                  </button>
                 </div>
 
-                <div className="bg-white border border-[#D1D5D3] p-4 rounded-[4px] mb-4 shadow-2xs">
-                  <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-[#5A7973] block mb-1.5 font-bold">Injected Market Query</span>
-                  <p className="text-xs sm:text-sm font-normal text-neutral-800 italic leading-relaxed">
-                    "{activePersona.promptQuestion}"
-                  </p>
+                {/* Sub-Category Filter Horizon Bar Layout */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-neutral-100 text-[11px] font-mono whitespace-nowrap">
+                  <span className="bg-[#1C3D2E] text-white px-3 py-1 rounded-[4px] font-medium">All Personas <span className="opacity-60 ml-1">3</span></span>
+                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1 rounded-[4px] bg-[#FAFBFB]">Awareness</span>
+                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1 rounded-[4px] bg-[#FAFBFB]">Consideration</span>
+                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1 rounded-[4px] bg-[#FAFBFB]">Purchase</span>
                 </div>
 
-                <div className="bg-[#1C3D2E] text-neutral-100 p-5 sm:p-6 rounded-[4px] shadow-inner font-mono text-[12px] sm:text-[13px] leading-relaxed min-h-[160px] relative overflow-hidden border border-black/10">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-black/10" />
-                  <span className="text-[9px] uppercase tracking-[0.25em] text-[#5A7973] block mb-3 font-bold opacity-90">Simulated Perspective Output // Signal Stream</span>
-                  
-                  <p className="text-neutral-200 tracking-tight font-light whitespace-pre-wrap">
-                    {simulatedStreamText}
-                    {isStreaming && (
-                      <span className="inline-block w-1.5 h-4 bg-emerald-400 ml-1 animated-streaming-cursor align-middle" />
+                {/* Real interactive Persona Grid Matrix */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                  {DASHBOARD_PERSONAS.map((persona) => {
+                    const isSelected = selectedPersona.id === persona.id;
+                    return (
+                      <div 
+                        key={persona.id}
+                        onClick={() => !isSimulating && setSelectedPersona(persona)}
+                        className={`border p-5 rounded-[6px] transition-all duration-300 flex flex-col justify-between cursor-pointer group relative min-h-[300px] ${
+                          isSelected 
+                            ? 'bg-[#FAFBFB] border-neutral-400 shadow-xs scale-[1.01]' 
+                            : 'bg-white border-neutral-200 opacity-70 hover:opacity-100 hover:border-neutral-300'
+                        }`}
+                      >
+                        {isSelected && (
+                          <div className="absolute top-4 right-4 bg-[#1C3D2E] text-white text-[9px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-white animate-ping" /> Selected
+                          </div>
+                        )}
+                        <div>
+                          {/* Profile Data Header */}
+                          <div className="flex items-start gap-4 mb-4">
+                            <img src={persona.imgUrl} alt={persona.name} className="w-12 h-12 rounded-full object-cover border border-neutral-100" />
+                            <div>
+                              <h4 className="text-md font-semibold text-neutral-900 tracking-tight" style={{ fontFamily: "var(--font-serif, 'Playfair Display', Georgia, serif)" }}>{persona.name}</h4>
+                              <p className="text-[11px] text-neutral-500 leading-none mt-0.5">{persona.title}</p>
+                              <p className="text-[10px] text-neutral-400 font-mono mt-1 flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[10px]">location_on</span>{persona.location}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Dynamic Attribute Pill Tags Horizon */}
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {persona.tags.map((tag, tIdx) => (
+                              <span key={tIdx} className="bg-neutral-100 text-neutral-600 text-[9px] font-mono px-2 py-0.5 rounded-full border border-neutral-200/60">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Bio Segment Copy */}
+                          <p className="text-[11px] text-neutral-600 leading-relaxed font-light line-clamp-4 border-b border-neutral-100 pb-4 mb-4">
+                            {persona.bio}
+                          </p>
+                        </div>
+
+                        {/* Interactive Start Action Element Component */}
+                        <div className="grid grid-cols-2 gap-2 mt-auto">
+                          <button disabled className="w-full text-center border border-neutral-200 bg-white text-neutral-700 py-1.5 rounded-[4px] text-[10px] font-semibold cursor-not-allowed">View Details</button>
+                          <button 
+                            className={`w-full text-center py-1.5 rounded-[4px] text-[10px] font-semibold transition-all shadow-2xs ${
+                              isSelected 
+                                ? 'bg-[#1C3D2E] text-white font-bold tracking-wide' 
+                                : 'bg-neutral-900 text-white group-hover:bg-[#1C3D2E]'
+                            }`}
+                          >
+                            {isSelected ? 'Simulating...' : 'Start Interview'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Simulated Sub-Section: Live Insight Pipeline Layer */}
+                <div className="mt-8 bg-[#1C3D2E] text-white p-5 rounded-[6px] relative overflow-hidden border border-black/10 min-h-[110px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-[#5A7973] font-bold">Live Context Interview Output Terminal // {selectedPersona.name}</span>
+                  </div>
+                  <p className="text-xs sm:text-sm font-mono text-neutral-200 font-light leading-relaxed tracking-tight">
+                    "{streamingText}"
+                    {isSimulating && (
+                      <span className="inline-block w-1.5 h-3.5 bg-emerald-400 ml-1 live-stream-cursor align-middle" />
                     )}
                   </p>
                 </div>
+
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-neutral-200 pt-6 mt-8">
-                <p className="text-[11px] text-[#454947] max-w-sm leading-normal">
-                  This console demonstrates real-time pipeline behavior. Actual dashboard arrays support mass multi-persona matrix indexing and auto-generated data summaries.
-                </p>
-                <button
-                  onClick={() => {
-                    if (!isStreaming) {
-                      const current = activePersona;
-                      setActivePersona({ ...current });
-                    }
-                  }}
-                  disabled={isStreaming}
-                  className={`px-5 py-2.5 rounded-[4px] text-[10px] font-medium uppercase tracking-[0.2em] transition-all flex items-center gap-2 whitespace-nowrap ${
-                    isStreaming
-                      ? 'bg-neutral-200 text-neutral-400 border border-transparent cursor-not-allowed'
-                      : 'bg-white border border-neutral-300 hover:border-[#1C3D2E] text-neutral-800 shadow-2xs hover:shadow-xs'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm">refresh</span>
-                  Re-Run Simulation
-                </button>
+              {/* Informative Environment Banner */}
+              <div className="pt-4 border-t border-neutral-100 mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-neutral-400 font-mono text-[10px]">
+                <span>PROPRIETARY LAYOUT GRID PIPELINE // SIGNALROOM LAYER V2.0</span>
+                <span className="text-[#5A7973] font-semibold font-sans uppercase tracking-wider">Click columns to alternate interview engines</span>
               </div>
+
             </div>
           </div>
         </section>
@@ -634,7 +651,6 @@ export default function LandingPage() {
               width="140"
               height="35"
               className="h-8 w-auto object-contain mobile-crisp-vector" 
-              style={{ imageRendering: '-webkit-optimize-contrast' }}
             />
           </div>
           <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-xs mb-6 sm:mb-10 leading-relaxed opacity-90">
