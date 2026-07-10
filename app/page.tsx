@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import IntelligenceSignal from '@/components/IntelligenceSignal';
 
 // Scroll Reveal Wrapper Component for Vercel/Optimus Effect
 function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode; delay?: string }) {
@@ -186,6 +187,29 @@ export default function LandingPage() {
           animation: clearIconBounce 1.4s ease-in-out infinite;
           color: #1A3024 !important;
         }
+
+        /* Eyebrow light-sweep — a subtle, slow highlight passes over the text every 20s */
+        .eyebrow-shine-wrap {
+          position: relative;
+          display: inline-block;
+          overflow: hidden;
+        }
+        .eyebrow-shine-sweep {
+          position: absolute;
+          top: 0;
+          left: -75%;
+          width: 35%;
+          height: 100%;
+          pointer-events: none;
+          background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+          mix-blend-mode: overlay;
+          animation: eyebrowShineSweep 20s ease-in-out infinite;
+        }
+        @keyframes eyebrowShineSweep {
+          0% { left: -75%; }
+          30% { left: 130%; }
+          100% { left: 130%; }
+        }
       `}</style>
 
       {/* TopNavBar */}
@@ -217,7 +241,10 @@ export default function LandingPage() {
       <header className="relative pt-16 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
+            <span className="eyebrow-shine-wrap">
+              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
+              <span className="eyebrow-shine-sweep" aria-hidden="true" />
+            </span>
             <div className="hidden sm:block h-px w-20 bg-[#1A3024]/10" />
           </div>
           <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
@@ -239,9 +266,12 @@ export default function LandingPage() {
               </span><br className="hidden lg:block" />
               <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
             </h1>
+            <div className="mt-2 sm:mt-4">
+              <IntelligenceSignal />
+            </div>
           </div>
           <div className="md:col-span-12 lg:col-start-7 lg:col-span-6 xl:col-start-8 xl:col-span-5 pt-4 sm:pt-6 flex flex-col justify-end">
-            <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 leading-normal tracking-[-0.01em] opacity-90 font-normal">
+            <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 leading-normal tracking-[-0.01em] opacity-70 font-normal">
   SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
 </p>
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
