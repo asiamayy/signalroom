@@ -138,11 +138,11 @@ export default function LandingPage() {
     <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased">
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
-      {/* High-Visibility Editorial Paper Grain Base Overlay */}
+      {/* High-Contrast Print-Quality Editorial Paper Grain Overlay */}
       <div 
-        className="pointer-events-none fixed inset-0 z-0 opacity-[0.045] mix-blend-multiply"
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.06] mix-blend-multiply"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.99' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperNoise)'/%3E%3C/svg%3E")`
         }}
       />
 
@@ -286,7 +286,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Main Workspace Component Canvas */}
+            {/* Main Workspace Canvas Container */}
             <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-10 flex flex-col justify-between bg-[#F4F5F4] relative">
               <div>
                 
@@ -403,13 +403,13 @@ export default function LandingPage() {
         </section>
       </RevealSection>
 
-      {/* Methodology Section with Vercel Optimus Structural Layout */}
+      {/* Methodology Section */}
       <RevealSection>
-        <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-t border-b border-[#1C2621]/10 scroll-mt-16 z-10 relative bg-transparent">
+        <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-t border-b border-[#1C2621]/10 scroll-mt-16 z-10 relative">
           <div 
             id="methodology-header" 
             onClick={() => setIsMethodologyActive(!isMethodologyActive)}
-            className={`mb-6 flex items-end justify-between cursor-pointer group ${isMethodologyActive ? 'is-active' : ''}`}
+            className={`mb-12 sm:mb-20 flex items-end justify-between cursor-pointer group ${isMethodologyActive ? 'is-active' : ''}`}
           >
             <div className="flex-shrink-0">
               <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">00 // Operational Logic</span>
@@ -417,7 +417,7 @@ export default function LandingPage() {
             </div>
             <div className="hidden sm:block h-px flex-grow ml-16 bg-[#b5bab7]/20 relative">
               <div 
-                className="absolute inset-0 h-full transition-all duration-600"
+                className="absolute inset-0 bg-[#1C2621]/30 h-full transition-all duration-600"
                 style={{ 
                   width: isMethodologyActive ? '100%' : '0%', 
                   opacity: isMethodologyActive ? 1 : 0,
@@ -426,159 +426,42 @@ export default function LandingPage() {
               />
             </div>
           </div>
-
-          <div className="flex flex-col w-full divide-y divide-[#1C2621]/10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden bg-white">
             
             {/* Step 01 */}
-            <div className="group relative transition-all duration-700 opacity-100 translate-y-0" style={{ transitionDelay: '100ms' }}>
-              <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 py-12 lg:py-20">
-                <div className="shrink-0">
-                  <span className="font-mono text-sm text-neutral-400">01</span>
-                </div>
-                <div className="flex-1 grid lg:grid-cols-2 gap-8 items-center">
-                  <div>
-                    <h3 className="text-3xl lg:text-4xl font-normal tracking-tight mb-4 group-hover:translate-x-2 transition-transform duration-500" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                      Ingest Content Ecosystem
-                    </h3>
-                    <p className="text-base text-neutral-500 leading-relaxed font-light">
-                      Transform assumptions into intelligence. Bring your customer, market, and product context together to build a structural foundation for smarter decisions.
-                    </p>
-                  </div>
-                  <div className="flex justify-center lg:justify-end">
-                    <div className="w-48 h-40 text-[#1C2621]">
-                      <svg viewBox="0 0 200 160" className="w-full h-full">
-                        <circle cx="100" cy="80" r="12" fill="currentColor">
-                          <animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite" />
-                        </circle>
-                        <g>
-                          <line x1="100" y1="80" x2="150" y2="80" stroke="currentColor" stroke-width="1" opacity="0.3">
-                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" begin="0s" repeatCount="indefinite" />
-                          </line>
-                          <circle cx="150" cy="80" r="6" fill="none" stroke="currentColor" stroke-width="2">
-                            <animate attributeName="r" values="6;9;6" dur="2s" begin="0s" repeatCount="indefinite" />
-                          </circle>
-                        </g>
-                        <g>
-                          <line x1="100" y1="80" x2="125" y2="123.3" stroke="currentColor" stroke-width="1" opacity="0.3">
-                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" begin="0.3s" repeatCount="indefinite" />
-                          </line>
-                          <circle cx="125" cy="123.3" r="6" fill="none" stroke="currentColor" stroke-width="2">
-                            <animate attributeName="r" values="6;9;6" dur="2s" begin="0.3s" repeatCount="indefinite" />
-                          </circle>
-                        </g>
-                        <g>
-                          <line x1="100" y1="80" x2="75" y2="123.3" stroke="currentColor" stroke-width="1" opacity="0.3">
-                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" begin="0.6s" repeatCount="indefinite" />
-                          </line>
-                          <circle cx="75" cy="123.3" r="6" fill="none" stroke="currentColor" stroke-width="2">
-                            <animate attributeName="r" values="6;9;6" dur="2s" begin="0.6s" repeatCount="indefinite" />
-                          </circle>
-                        </g>
-                        <g>
-                          <line x1="100" y1="80" x2="50" y2="80" stroke="currentColor" stroke-width="1" opacity="0.3">
-                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" begin="0.9s" repeatCount="indefinite" />
-                          </line>
-                          <circle cx="50" cy="80" r="6" fill="none" stroke="currentColor" stroke-width="2">
-                            <animate attributeName="r" values="6;9;6" dur="2s" begin="0.9s" repeatCount="indefinite" />
-                          </circle>
-                        </g>
-                        <circle cx="100" cy="80" r="30" fill="none" stroke="currentColor" stroke-width="1" opacity="0">
-                          <animate attributeName="r" values="20;65" dur="2s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.6;0" dur="2s" repeatCount="indefinite" />
-                        </circle>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
+              <div className="flex justify-between items-start mb-10 sm:mb-16">
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
+                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] transform group-hover:-translate-y-2 group-hover:scale-110 group-hover:text-[#1C2621]">hub</span>
               </div>
+              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314] transition-all duration-500 transform group-hover:translate-x-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
+              <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
+                Transform assumptions into intelligence. Bring your customer, market, and product context together to build a foundation for smarter decisions.
+              </p>
             </div>
 
             {/* Step 02 */}
-            <div className="group relative transition-all duration-700 opacity-100 translate-y-0" style={{ transitionDelay: '200ms' }}>
-              <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 py-12 lg:py-20">
-                <div className="shrink-0">
-                  <span className="font-mono text-sm text-neutral-400">02</span>
-                </div>
-                <div className="flex-1 grid lg:grid-cols-2 gap-8 items-center">
-                  <div>
-                    <h3 className="text-3xl lg:text-4xl font-normal tracking-tight mb-4 group-hover:translate-x-2 transition-transform duration-500" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                      Simulate Persona Matrices
-                    </h3>
-                    <p className="text-base text-neutral-500 leading-relaxed font-light">
-                      Understand your customers at scale. Model accurate user perspectives and uncover latent motivations, objections, and market pipeline variations before deployment.
-                    </p>
-                  </div>
-                  <div className="flex justify-center lg:justify-end">
-                    <div className="w-48 h-40 text-[#1C2621]">
-                      <svg viewBox="0 0 200 160" className="w-full h-full">
-                        <circle cx="100" cy="80" r="12" fill="currentColor">
-                          <animate attributeName="r" values="12;14;12" dur="2.5s" repeatCount="indefinite" />
-                        </circle>
-                        <g>
-                          <line x1="100" y1="80" x2="75" y2="36.7" stroke="currentColor" stroke-width="1" opacity="0.3">
-                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.5s" begin="0.2s" repeatCount="indefinite" />
-                          </line>
-                          <circle cx="75" cy="36.7" r="6" fill="none" stroke="currentColor" stroke-width="2">
-                            <animate attributeName="r" values="6;9;6" dur="2.5s" begin="0.2s" repeatCount="indefinite" />
-                          </circle>
-                        </g>
-                        <g>
-                          <line x1="100" y1="80" x2="125" y2="36.7" stroke="currentColor" stroke-width="1" opacity="0.3">
-                            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.5s" begin="0.5s" repeatCount="indefinite" />
-                          </line>
-                          <circle cx="125" cy="36.7" r="6" fill="none" stroke="currentColor" stroke-width="2">
-                            <animate attributeName="r" values="6;9;6" dur="2.5s" begin="0.5s" repeatCount="indefinite" />
-                          </circle>
-                        </g>
-                        <circle cx="100" cy="80" r="30" fill="none" stroke="currentColor" stroke-width="1" opacity="0">
-                          <animate attributeName="r" values="15;70" dur="2.5s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.5;0" dur="2.5s" repeatCount="indefinite" />
-                        </circle>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
+              <div className="flex justify-between items-start mb-10 sm:mb-16">
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
+                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] transform group-hover:-translate-y-2 group-hover:scale-110 group-hover:text-[#1C2621]">psychology</span>
               </div>
+              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314] transition-all duration-500 transform group-hover:translate-x-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
+              <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
+                Understand your customers at scale. Model customer perspectives and uncover motivations, objections, and opportunities before investing resources.
+              </p>
             </div>
 
             {/* Step 03 */}
-            <div className="group relative transition-all duration-700 opacity-100 translate-y-0" style={{ transitionDelay: '300ms' }}>
-              <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 py-12 lg:py-20">
-                <div className="shrink-0">
-                  <span className="font-mono text-sm text-neutral-400">03</span>
-                </div>
-                <div className="flex-1 grid lg:grid-cols-2 gap-8 items-center">
-                  <div>
-                    <h3 className="text-3xl lg:text-4xl font-normal tracking-tight mb-4 group-hover:translate-x-2 transition-transform duration-500" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                      Decide with Confidence
-                    </h3>
-                    <p className="text-base text-neutral-500 leading-relaxed font-light">
-                      Move forward with alignment. Convert customer signals into deep strategic parameters that help product and marketing teams mitigate vector risk.
-                    </p>
-                  </div>
-                  <div className="flex justify-center lg:justify-end">
-                    <div className="w-48 h-40 text-[#1C2621]">
-                      <svg viewBox="0 0 200 160" className="w-full h-full">
-                        <circle cx="100" cy="80" r="12" fill="currentColor">
-                          <animate attributeName="r" values="12;15;12" dur="1.8s" repeatCount="indefinite" />
-                        </circle>
-                        <g>
-                          <line x1="100" y1="80" x2="150" y2="80" stroke="currentColor" stroke-width="1" opacity="0.3">
-                            <animate attributeName="opacity" values="0.2;0.9;0.2" dur="1.8s" begin="0.1s" repeatCount="indefinite" />
-                          </line>
-                          <circle cx="150" cy="80" r="6" fill="none" stroke="currentColor" stroke-width="2">
-                            <animate attributeName="r" values="6;10;6" dur="1.8s" begin="0.1s" repeatCount="indefinite" />
-                          </circle>
-                        </g>
-                        <circle cx="100" cy="80" r="30" fill="none" stroke="currentColor" stroke-width="1" opacity="0">
-                          <animate attributeName="r" values="25;60" dur="1.8s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.7;0" dur="1.8s" repeatCount="indefinite" />
-                        </circle>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
+              <div className="flex justify-between items-start mb-10 sm:mb-16">
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
+                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] transform group-hover:-translate-y-2 group-hover:scale-110 group-hover:text-[#1C2621]">location_on</span>
               </div>
+              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314] transition-all duration-500 transform group-hover:translate-x-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
+              <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
+                Move forward with confidence. Convert customer signals into strategic recommendations that help teams reduce risk and act faster.
+              </p>
             </div>
 
           </div>
