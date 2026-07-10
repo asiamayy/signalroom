@@ -167,7 +167,7 @@ export default function LandingPage() {
       `}</style>
 
       {/* TopNavBar */}
-      <nav className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#1C3D2E]/10 bg-white/80 px-6 sm:px-12 backdrop-blur-xl">
+      <nav className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#1C2621]/10 bg-white/80 px-6 sm:px-12 backdrop-blur-xl">
         <div className="flex items-center">
           <img 
             src="/signalroom-logo.svg" 
@@ -178,13 +178,13 @@ export default function LandingPage() {
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C3D2E]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C3D2E]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C3D2E]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C2621]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C2621]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C2621]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
         </div>
         <div className="flex items-center gap-4 sm:gap-6">
           <Link className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#454947] hover:text-[#121314] transition-colors" href="/login">Sign In</Link>
-          <Link className="bg-[#1C3D2E] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#5A7973] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
+          <Link className="bg-[#1C2621] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#5A7973] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
             Start Free
           </Link>
         </div>
@@ -195,12 +195,12 @@ export default function LandingPage() {
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
-            <div className="hidden sm:block h-px w-20 bg-[#1C3D2E]/10" />
+            <div className="hidden sm:block h-px w-20 bg-[#1C2621]/10" />
           </div>
           <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
             <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
-              <span className="relative inline-block text-[#1C3D2E] italic whitespace-nowrap min-w-[220px]">
+              <span className="relative inline-block text-[#1C2621] italic whitespace-nowrap min-w-[220px]">
                 <span className="relative inline-flex overflow-visible">
                   {displayedWord.split('').map((char, idx) => (
                     <span 
@@ -222,12 +222,12 @@ export default function LandingPage() {
               SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
             </p>
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
-              <p className="text-xs font-medium uppercase tracking-wide text-[#1C3D2E] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#1C2621] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
               <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
             </div>
             <div className="flex items-center gap-8">
-              <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1C3D2E]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1C3D2E] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
+              <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1C2621]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1C2621] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
                 Explore Platform
               </a>
             </div>
@@ -235,13 +235,13 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* TRUE EDITORIAL DASHBOARD SIMULATOR WORKSPACE */}
+      {/* 100% DASHBOARD COLOR SYNCED SIMULATOR WORKSPACE */}
       <RevealSection>
         <section id="dashboard-replica" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20">
-          <div className="bg-[#f8f9f8] border border-neutral-200 rounded-[12px] shadow-sm min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
+          <div className="bg-[#F4F5F4] border border-[#E3E5E3] rounded-[12px] shadow-sm min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
             
             {/* Left Sidebar Layout */}
-            <div className="md:col-span-3 lg:col-span-2 bg-white border-r border-neutral-200/80 p-5 flex flex-col justify-between hidden md:flex">
+            <div className="md:col-span-3 lg:col-span-2 bg-white border-r border-[#E3E5E3] p-5 flex flex-col justify-between hidden md:flex">
               <div className="space-y-8">
                 <div className="px-2 text-[11px] font-mono tracking-widest text-neutral-400 font-medium uppercase">Navigation</div>
                 
@@ -259,7 +259,7 @@ export default function LandingPage() {
                     <div 
                       key={rIdx} 
                       className={`flex items-center gap-3 px-3 py-2 text-[13px] font-medium tracking-tight rounded-[6px] transition-colors ${
-                        route.a ? 'bg-[#dbe3df] text-[#1C3D2E]' : 'text-neutral-500 opacity-80'
+                        route.a ? 'bg-[#D1D6CE] text-[#1C2621]' : 'text-neutral-500 opacity-80'
                       }`}
                     >
                       <span className="material-symbols-outlined text-[18px]">{route.i}</span>
@@ -269,42 +269,42 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-neutral-100 space-y-2">
+              <div className="pt-6 border-t border-[#E3E5E3] space-y-2">
                 <span className="text-[10px] uppercase tracking-wider font-semibold font-mono text-neutral-400 block px-2">Recent Projects</span>
                 <div className="flex items-center gap-2 px-2 py-1 text-[12px] text-neutral-700 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C3D2E]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1C2621]" />
                   Sustainable Skincare L...
                 </div>
               </div>
             </div>
 
             {/* Main Editorial Workspace Component Canvas */}
-            <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-10 flex flex-col justify-between bg-white relative">
+            <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-10 flex flex-col justify-between bg-[#F4F5F4] relative">
               <div>
                 
                 {/* Clean Top Row Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 mb-6">
                   <div>
-                    <h2 className="text-[32px] font-normal text-neutral-900 tracking-tight leading-none" style={{ fontFamily: "'Instrument Serif', serif" }}>Personas</h2>
+                    <h2 className="text-[32px] font-normal text-neutral-900 tracking-tight leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Personas</h2>
                     <p className="text-xs text-neutral-500 mt-2 max-w-2xl">AI-generated personas built from real research. Explore beliefs, behaviors, needs, and motivations.</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button disabled className="bg-[#1C3D2E] text-white px-4 py-2 text-[12px] font-medium rounded-[6px] opacity-95 cursor-not-allowed flex items-center gap-1.5">
+                    <button disabled className="bg-[#1C2621] text-white px-4 py-2 text-[12px] font-medium rounded-[6px] opacity-95 cursor-not-allowed flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-sm">add</span> Create Persona
                     </button>
-                    <button disabled className="border border-neutral-200 text-neutral-600 px-3 py-2 text-[12px] rounded-[6px] bg-white cursor-not-allowed flex items-center gap-1"><span className="material-symbols-outlined text-sm">tune</span> Filters</button>
+                    <button disabled className="border border-[#E3E5E3] text-neutral-600 px-3 py-2 text-[12px] rounded-[6px] bg-white cursor-not-allowed flex items-center gap-1"><span className="material-symbols-outlined text-sm">tune</span> Filters</button>
                   </div>
                 </div>
 
                 {/* Sub-Category Horizon Ribbon */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-neutral-100 text-[12px] whitespace-nowrap font-medium">
-                  <span className="bg-[#1C3D2E] text-white px-3 py-1.5 rounded-[6px]">All Personas <span className="opacity-60 ml-1 text-xs bg-black/20 px-1.5 py-0.5 rounded-full">3</span></span>
-                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1.5 rounded-[6px] bg-[#FAFBFB]">Awareness <span className="opacity-50 text-xs">0</span></span>
-                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1.5 rounded-[6px] bg-[#FAFBFB]">Consideration <span className="opacity-50 text-xs">0</span></span>
-                  <span className="border border-neutral-200 text-neutral-500 px-3 py-1.5 rounded-[6px] bg-[#FAFBFB]">Purchase <span className="opacity-50 text-xs">0</span></span>
+                <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-[#E3E5E3] text-[12px] whitespace-nowrap font-medium">
+                  <span className="bg-[#1C2621] text-white px-3 py-1.5 rounded-[6px]">All Personas <span className="opacity-60 ml-1 text-xs bg-black/20 px-1.5 py-0.5 rounded-full">3</span></span>
+                  <span className="border border-[#E3E5E3] text-neutral-500 px-3 py-1.5 rounded-[6px] bg-white">Awareness <span className="opacity-50 text-xs">0</span></span>
+                  <span className="border border-[#E3E5E3] text-neutral-500 px-3 py-1.5 rounded-[6px] bg-white">Consideration <span className="opacity-50 text-xs">0</span></span>
+                  <span className="border border-[#E3E5E3] text-neutral-500 px-3 py-1.5 rounded-[6px] bg-white">Purchase <span className="opacity-50 text-xs">0</span></span>
                 </div>
 
-                {/* Highly Faithful Persona Grid */}
+                {/* Color-Synchronized Dashboard Persona Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {DASHBOARD_PERSONAS.map((persona) => {
                     const isSelected = selectedPersona.id === persona.id;
@@ -314,15 +314,15 @@ export default function LandingPage() {
                         onClick={() => !isSimulating && setSelectedPersona(persona)}
                         className={`border p-6 rounded-[12px] transition-all duration-500 flex flex-col justify-between relative group ${
                           isSelected 
-                            ? 'bg-[#eef1ef] border-neutral-400 shadow-xs' 
-                            : 'bg-white border-neutral-200 opacity-80 hover:opacity-100 hover:border-neutral-300'
+                            ? 'bg-[#E3E5E3] border-neutral-400 shadow-xs scale-[1.01]' 
+                            : 'bg-white border-[#E3E5E3] opacity-80 hover:opacity-100 hover:border-neutral-300'
                         }`}
                       >
                         <div>
                           <div className="flex items-start gap-4 mb-4">
                             <img src={persona.imgUrl} alt={persona.name} className="w-14 h-14 rounded-[8px] object-cover border border-neutral-100" />
                             <div>
-                              <h4 className="text-[20px] font-normal text-neutral-900 tracking-tight leading-snug" style={{ fontFamily: "'Instrument Serif', serif" }}>{persona.name}</h4>
+                              <h4 className="text-[20px] font-normal text-neutral-900 tracking-tight leading-snug" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{persona.name}</h4>
                               <p className="text-[12px] text-neutral-500 font-light mt-0.5">{persona.title}</p>
                               <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-0.5 font-light">
                                 <span className="material-symbols-outlined text-[12px]">location_on</span> {persona.location}
@@ -333,7 +333,7 @@ export default function LandingPage() {
                           {/* Dynamic Attribute Pill Tags Horizon */}
                           <div className="flex flex-wrap gap-1.5 mb-5">
                             {persona.tags.map((tag, tIdx) => (
-                              <span key={tIdx} className="bg-neutral-100 text-neutral-600 text-[10px] px-2.5 py-0.5 rounded-[4px] border border-neutral-200/40 font-light">
+                              <span key={tIdx} className="bg-[#F4F5F4] text-neutral-600 text-[10px] px-2.5 py-0.5 rounded-[4px] border border-[#E3E5E3]/60 font-light">
                                 {tag}
                               </span>
                             ))}
@@ -347,12 +347,12 @@ export default function LandingPage() {
 
                         {/* Interactive Start Action Button Bar */}
                         <div className="grid grid-cols-2 gap-3 mt-auto pt-4 border-t border-neutral-200/50">
-                          <button disabled className="w-full text-center border border-neutral-200 bg-white text-neutral-700 py-2 rounded-[6px] text-[12px] font-medium cursor-not-allowed">View Details</button>
+                          <button disabled className="w-full text-center border border-[#E3E5E3] bg-white text-neutral-700 py-2 rounded-[6px] text-[12px] font-medium cursor-not-allowed">View Details</button>
                           <button 
                             className={`w-full text-center py-2 rounded-[6px] text-[12px] font-medium transition-all ${
                               isSelected 
-                                ? 'bg-[#1C3D2E] text-white font-semibold' 
-                                : 'bg-[#1C3D2E] text-white hover:bg-[#5A7973]'
+                                ? 'bg-[#1C2621] text-white font-semibold' 
+                                : 'bg-[#1C2621] text-white hover:bg-[#5A7973]'
                             }`}
                           >
                             {isSelected ? 'Selected' : 'Start Interview'}
@@ -363,12 +363,12 @@ export default function LandingPage() {
                   })}
                 </div>
 
-                {/* Clean Editorial Insight Panel (Replaces The Futuristic Terminal) */}
-                <div className="mt-8 bg-[#FAFBFB] border border-neutral-200 p-6 rounded-[8px] relative transition-all">
-                  <div className="flex items-center justify-between border-b border-neutral-200/60 pb-3 mb-4">
+                {/* Clean Editorial Insight Panel */}
+                <div className="mt-8 bg-white border border-[#E3E5E3] p-6 rounded-[8px] relative transition-all">
+                  <div className="flex items-center justify-between border-b border-[#E3E5E3]/60 pb-3 mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[#1C3D2E] animate-pulse" />
-                      <h4 className="text-[16px] font-normal text-neutral-900" style={{ fontFamily: "'Instrument Serif', serif" }}>
+                      <span className="w-2 h-2 rounded-full bg-[#1C2621] animate-pulse" />
+                      <h4 className="text-[16px] font-normal text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                         Simulated Dialogue Panel // Response from {selectedPersona.name}
                       </h4>
                     </div>
@@ -377,7 +377,7 @@ export default function LandingPage() {
                   <p className="text-[13px] text-neutral-700 font-light leading-relaxed italic">
                     "{streamingText}"
                     {isSimulating && (
-                      <span className="inline-block w-1 h-3.5 bg-[#1C3D2E] ml-1 editorial-stream-cursor align-middle" />
+                      <span className="inline-block w-1 h-3.5 bg-[#1C2621] ml-1 editorial-stream-cursor align-middle" />
                     )}
                   </p>
                 </div>
@@ -385,9 +385,9 @@ export default function LandingPage() {
               </div>
 
               {/* Informative Environment Banner */}
-              <div className="pt-4 border-t border-neutral-100 mt-8 flex justify-between items-center text-neutral-400 text-[11px] font-light">
-                <span>Interactive Sandboxed Environment</span>
-                <span className="text-[#1C3D2E] font-medium uppercase tracking-wider text-[10px]">Select cards above to change stream payload</span>
+              <div className="pt-4 border-t border-[#E3E5E3] mt-8 flex justify-between items-center text-neutral-400 text-[11px] font-light">
+                <span>Interactive Sandboxed Preview Engine</span>
+                <span className="text-[#1C2621] font-medium uppercase tracking-wider text-[10px]">Select cards above to alternate streams</span>
               </div>
 
             </div>
@@ -397,7 +397,7 @@ export default function LandingPage() {
 
       {/* Methodology Section */}
       <RevealSection>
-        <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-t border-b border-[#1C3D2E]/10 scroll-mt-16">
+        <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-t border-b border-[#1C2621]/10 scroll-mt-16">
           <div 
             id="methodology-header" 
             onClick={() => setIsMethodologyActive(!isMethodologyActive)}
@@ -409,11 +409,11 @@ export default function LandingPage() {
             </div>
             <div className="hidden sm:block h-px flex-grow ml-16 bg-[#b5bab7]/20 relative">
               <div 
-                className="absolute inset-0 bg-[#1C3D2E]/30 h-full transition-all duration-600"
+                className="absolute inset-0 bg-[#1C2621]/30 h-full transition-all duration-600"
                 style={{ 
                   width: isMethodologyActive ? '100%' : '0%', 
                   opacity: isMethodologyActive ? 1 : 0,
-                  backgroundColor: isMethodologyActive ? '#1C3D2E' : 'rgba(28, 61, 46, 0.3)'
+                  backgroundColor: isMethodologyActive ? '#1C2621' : 'rgba(28, 38, 33, 0.3)'
                 }} 
               />
             </div>
@@ -422,8 +422,8 @@ export default function LandingPage() {
             {/* Step 01 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1C3D2E]/10 leading-none group-hover:text-[#1C3D2E]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C3D2E] transition-colors text-2xl sm:text-3xl">hub</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none group-hover:text-[#1C2621]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
+                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C2621] transition-colors text-2xl sm:text-3xl">hub</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
@@ -433,8 +433,8 @@ export default function LandingPage() {
             {/* Step 02 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1C3D2E]/10 leading-none group-hover:text-[#1C3D2E]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C3D2E] transition-colors text-2xl sm:text-3xl">psychology</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none group-hover:text-[#1C2621]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
+                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C2621] transition-colors text-2xl sm:text-3xl">psychology</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
@@ -444,8 +444,8 @@ export default function LandingPage() {
             {/* Step 03 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1C3D2E]/10 leading-none group-hover:text-[#1C3D2E]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C3D2E] transition-colors text-2xl sm:text-3xl">location_on</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none group-hover:text-[#1C2621]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
+                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C2621] transition-colors text-2xl sm:text-3xl">location_on</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
@@ -458,7 +458,7 @@ export default function LandingPage() {
 
       {/* ROI Calculator */}
       <RevealSection>
-        <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#fafbfa] border-b border-[#1C3D2E]/10 relative overflow-hidden scroll-mt-16">
+        <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#fafbfa] border-b border-[#1C2621]/10 relative overflow-hidden scroll-mt-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-start">
             <div className="lg:col-span-5">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
@@ -480,7 +480,7 @@ export default function LandingPage() {
                       <span className="text-neutral-900 font-normal text-xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{roiValue}</span>
                     </div>
                     <input 
-                      className="w-full h-[2px] bg-[#e2e2e2] appearance-none accent-[#1C3D2E] cursor-pointer rounded" 
+                      className="w-full h-[2px] bg-[#e2e2e2] appearance-none accent-[#1C2621] cursor-pointer rounded" 
                       id="roi-range" 
                       max="30" 
                       min="1" 
@@ -506,17 +506,17 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="p-5 sm:p-6 bg-[#e9edea]">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1C3D2E] block mb-2">SignalRoom</span>
-                      <span className="text-[28px] font-normal tracking-tighter text-[#1C3D2E]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
-                      <p className="text-[11px] text-[#1C3D2E] font-medium mb-3">unlimited/month</p>
-                      <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1C3D2E]">
+                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1C2621] block mb-2">SignalRoom</span>
+                      <span className="text-[28px] font-normal tracking-tighter text-[#1C2621]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
+                      <p className="text-[11px] text-[#1C2621] font-medium mb-3">unlimited/month</p>
+                      <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1C2621]">
                         <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
                         <div className="flex justify-between"><span>Per interview</span><span className="font-medium">~$0</span></div>
                         <div className="flex justify-between"><span>Hours</span><span className="font-medium">&lt; 1h</span></div>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-[#1C3D2E] p-5 sm:p-6 grid grid-cols-2 gap-4 text-white rounded-[4px]">
+                  <div className="bg-[#1C2621] p-5 sm:p-6 grid grid-cols-2 gap-4 text-white rounded-[4px]">
                     <div>
                       <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-300 block mb-1">You save</span>
                       <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
@@ -539,7 +539,7 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <RevealSection>
-        <section id="pricing" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1C3D2E]/10 scroll-mt-16">
+        <section id="pricing" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1C2621]/10 scroll-mt-16">
           <div className="text-center mb-12 sm:mb-20">
             <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600">Subscription Models</span>
             <h2 className="text-[30px] sm:text-[36px] mt-3 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simple pricing. No surprises.</h2>
@@ -560,17 +560,17 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Core templates</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Basic reports</li>
               </ul>
-              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1C3D2E] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
+              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1C2621] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
             {/* Plan 2 */}
             <div className="p-6 sm:p-10 flex flex-col bg-[#e9edea] relative shadow-xl shadow-black/[0.01]">
-              <div className="absolute top-0 right-0 bg-[#1C3D2E] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
-              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1C3D2E] mb-8 sm:mb-10">02 // Core</span>
-              <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1C3D2E] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
-              <p className="text-xs text-[#1C3D2E] font-medium mb-4">For teams validating fast</p>
+              <div className="absolute top-0 right-0 bg-[#1C2621] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
+              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1C2621] mb-8 sm:mb-10">02 // Core</span>
+              <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1C2621] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
+              <p className="text-xs text-[#1C2621] font-medium mb-4">For teams validating fast</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#1C3D2E]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
-                <span className="text-[11px] text-[#1C3D2E] font-medium uppercase tracking-widest">/ month</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#1C2621]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
+                <span className="text-[11px] text-[#1C2621] font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited personas</li>
@@ -579,7 +579,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Full reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona testing</li>
               </ul>
-              <Link href="/signup" className="w-full text-center bg-[#1C3D2E] text-white py-4 text-[11px] font-medium uppercase tracking-[0.3em] hover:bg-[#5A7973] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
+              <Link href="/signup" className="w-full text-center bg-[#1C2621] text-white py-4 text-[11px] font-medium uppercase tracking-[0.3em] hover:bg-[#5A7973] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
             </div>
             {/* Plan 3 */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group thin-border">
@@ -596,7 +596,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority support</li>
               </ul>
-              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1C3D2E] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
+              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1C2621] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
           </div>
         </section>
@@ -604,7 +604,7 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <RevealSection>
-        <section className="relative bg-[#1C3D2E] text-white py-20 sm:py-24 px-6 sm:px-12 overflow-hidden border-b border-[#1C3D2E]/10">
+        <section className="relative bg-[#1C2621] text-white py-20 sm:py-24 px-6 sm:px-12 overflow-hidden border-b border-[#1C2621]/10">
           <div className="relative z-10 flex flex-col items-center text-center">
             <span className="text-[11px] font-medium uppercase tracking-[0.6em] mb-8 sm:mb-10 opacity-60">Final Directive</span>
             <h2 className="text-[34px] sm:text-[48px] md:text-[64px] leading-[1.15] lg:leading-[1.1] max-w-4xl tracking-tighter font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
@@ -615,10 +615,10 @@ export default function LandingPage() {
               Validate faster. Reduce risk. Build what customers actually want.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-10 w-full sm:w-auto">
-              <Link href="/signup" className="w-full sm:w-auto bg-white text-[#1C3D2E] px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#f0f2f0] transition-all duration-300 rounded-[4px] text-center">
+              <Link href="/signup" className="w-full sm:w-auto bg-white text-[#1C2621] px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#f0f2f0] transition-all duration-300 rounded-[4px] text-center">
                 Find the signal
               </Link>
-              <Link href="/contact" className="w-full sm:w-auto border border-white/20 px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-white hover:text-[#1C3D2E] transition-all duration-500 rounded-[4px] text-center">
+              <Link href="/contact" className="w-full sm:w-auto border border-white/20 px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-white hover:text-[#1C2621] transition-all duration-500 rounded-[4px] text-center">
                 Talk to Strategist
               </Link>
             </div>
@@ -644,13 +644,13 @@ export default function LandingPage() {
         </div>
         <div className="md:col-start-6 md:col-span-2 space-y-3 sm:space-y-4">
           <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-medium block mb-4 sm:mb-6">Legal</span>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C3D2E] transition-colors font-medium" href="/privacy">Privacy</Link>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C3D2E] transition-colors font-medium" href="/terms">Terms</Link>
+          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C2621] transition-colors font-medium" href="/privacy">Privacy</Link>
+          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C2621] transition-colors font-medium" href="/terms">Terms</Link>
         </div>
         <div className="md:col-span-2 space-y-3 sm:space-y-4">
           <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-medium block mb-4 sm:mb-6">Support</span>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C3D2E] transition-colors font-medium" href="/faq">FAQ</Link>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C3D2E] transition-colors font-medium" href="/contact">Contact</Link>
+          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C2621] transition-colors font-medium" href="/faq">FAQ</Link>
+          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C2621] transition-colors font-medium" href="/contact">Contact</Link>
         </div>
         <div className="sm:col-span-2 md:col-span-4 text-left sm:text-right flex flex-col justify-end mt-8 sm:mt-12 md:mt-0">
           <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-600 font-medium leading-loose">
