@@ -1,111 +1,143 @@
 'use client'
 
-// Full-scale, high-visibility structural configuration.
-// Perfect uniform cluster shapes: Cluster 1 (V) | Cluster 2 (<) | Cluster 3 (^)
-// Gradual, highly visible intermediate branching micro-networks between nodes.
+// Clean 19s sequence mimicking the pure "/\" sketch path with zero intermediate waypoints.
+// Shrunk y-coordinates slightly to shift the absolute physical layout position higher up.
 
-const d = {
-  // Cluster 1: V
-  a1: { cx: 80, cy: 190 }, a2: { cx: 130, cy: 280 }, a3: { cx: 180, cy: 190 },
-  // Cluster 2: < 
-  b1: { cx: 550, cy: 40 }, b2: { cx: 500, cy: 180 }, b3: { cx: 550, cy: 320 },
-  // Cluster 3: ^
-  c1: { cx: 820, cy: 280 }, c2: { cx: 870, cy: 190 }, c3: { cx: 920, cy: 280 },
-  // Hubs (Adjusted for the mountain shape)
-  hubAB: { cx: 320, cy: 180 }, hubBC: { cx: 680, cy: 180 },
-  // Branches
-  abScat1: { cx: 280, cy: 250 }, abScat2: { cx: 360, cy: 250 }, abScat3: { cx: 320, cy: 80 },
-  bcScat1: { cx: 640, cy: 250 }, bcScat2: { cx: 720, cy: 250 }, bcScat3: { cx: 680, cy: 80 }
+const MOBILE_DOTS = {
+  a1: { cx: 40, cy: 90 },
+  a2: { cx: 70, cy: 98 },
+  a3: { cx: 100, cy: 90 },
+  b1: { cx: 270, cy: 20 },
+  b2: { cx: 300, cy: 28 },
+  b3: { cx: 330, cy: 20 },
+  c1: { cx: 500, cy: 90 },
+  c2: { cx: 530, cy: 98 },
+  c3: { cx: 560, cy: 90 },
+}
+
+const DESKTOP_DOTS = {
+  a1: { cx: 40, cy: 90 },
+  a2: { cx: 70, cy: 98 },
+  a3: { cx: 100, cy: 90 },
+  b1: { cx: 270, cy: 15 },
+  b2: { cx: 300, cy: 23 },
+  b3: { cx: 330, cy: 15 },
+  c1: { cx: 500, cy: 90 },
+  c2: { cx: 530, cy: 98 },
+  c3: { cx: 560, cy: 90 },
+}
+
+function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
+  return (
+    <>
+      {/* direct crisp alignment lines connecting directly between node cluster points */}
+      <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.b2.cx} y2={dots.b2.cy} className="signal-line signal-leg-a-seg1" />
+      <line x1={dots.b2.cx} y1={dots.b2.cy} x2={dots.c2.cx} y2={dots.c2.cy} className="signal-line signal-leg-b-seg1" />
+
+      <line x1={dots.a1.cx} y1={dots.a1.cy} x2={dots.a2.cx} y2={dots.a2.cy} className="signal-line signal-line-a" />
+      <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.a3.cx} y2={dots.a3.cy} className="signal-line signal-line-a" />
+      <line x1={dots.b1.cx} y1={dots.b1.cy} x2={dots.b2.cx} y2={dots.b2.cy} className="signal-line signal-line-b" />
+      <line x1={dots.b2.cx} y1={dots.b2.cy} x2={dots.b3.cx} y2={dots.b3.cy} className="signal-line signal-line-b" />
+      <line x1={dots.c1.cx} y1={dots.c1.cy} x2={dots.c2.cx} y2={dots.c2.cy} className="signal-line signal-line-c" />
+      <line x1={dots.c2.cx} y1={dots.c2.cy} x2={dots.c3.cx} y2={dots.c3.cy} className="signal-line signal-line-c" />
+
+      <circle cx={dots.a2.cx} cy={dots.a2.cy} r="3" className="signal-ripple signal-ripple-a" style={{ transformOrigin: `${dots.a2.cx}px ${dots.a2.cy}px` }} />
+      <circle cx={dots.b2.cx} cy={dots.b2.cy} r="3" className="signal-ripple signal-ripple-b" style={{ transformOrigin: `${dots.b2.cx}px ${dots.b2.cy}px` }} />
+      <circle cx={dots.c2.cx} cy={dots.c2.cy} r="3" className="signal-ripple signal-ripple-c" style={{ transformOrigin: `${dots.c2.cx}px ${dots.c2.cy}px` }} />
+
+      <circle cx={dots.a2.cx} cy={dots.a2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-hero" style={{ transformOrigin: `${dots.a2.cx}px ${dots.a2.cy}px` }} />
+      <circle cx={dots.a1.cx} cy={dots.a1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-side" style={{ transformOrigin: `${dots.a1.cx}px ${dots.a1.cy}px` }} />
+      <circle cx={dots.a3.cx} cy={dots.a3.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-outer" style={{ transformOrigin: `${dots.a3.cx}px ${dots.a3.cy}px` }} />
+      <circle cx={dots.b1.cx} cy={dots.b1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-b-gradual" style={{ transformOrigin: `${dots.b1.cx}px ${dots.b1.cy}px` }} />
+      <circle cx={dots.b2.cx} cy={dots.b2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-b-gradual" style={{ transformOrigin: `${dots.b2.cx}px ${dots.b2.cy}px` }} />
+      <circle cx={dots.b3.cx} cy={dots.b3.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-b-gradual" style={{ transformOrigin: `${dots.b3.cx}px ${dots.b3.cy}px` }} />
+      <circle cx={dots.c1.cx} cy={dots.c1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-c-gradual" style={{ transformOrigin: `${dots.c1.cx}px ${dots.c1.cy}px` }} />
+      <circle cx={dots.c2.cx} cy={dots.c2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-c-gradual" style={{ transformOrigin: `${dots.c2.cx}px ${dots.c2.cy}px` }} />
+      <circle cx={dots.c3.cx} cy={dots.c3.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-c-gradual" style={{ transformOrigin: `${dots.c3.cx}px ${dots.c3.cy}px` }} />
+    </>
+  )
 }
 
 export default function IntelligenceSignal() {
   return (
-    <div className="relative w-full h-[400px] overflow-visible bg-transparent">
-      <svg viewBox="0 0 1000 380" className="absolute top-0 left-0 w-full h-full overflow-visible" style={{ stroke: '#AAB0A3', fill: '#AAB0A3' }}>
-        
-        {/* Hubs */}
-        <g className="hub1">
-          <circle cx={d.hubAB.cx} cy={d.hubAB.cy} r="18" className="hub-ring" />
-          <circle cx={d.hubAB.cx} cy={d.hubAB.cy} r="10" className="hub-pulse" />
-          <circle cx={d.hubAB.cx} cy={d.hubAB.cy} r="6" className="hub-core" />
-          <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat1.cx} y2={d.abScat1.cy} className="hub-line hl1a" />
-          <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat2.cx} y2={d.abScat2.cy} className="hub-line hl1b" />
-          <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.abScat3.cx} y2={d.abScat3.cy} className="hub-line hl1c" />
-        </g>
+    <div className="relative w-full h-28 overflow-visible bg-transparent">
+      {/* ── Mobile Layout ── */}
+      <div className="md:hidden absolute inset-0">
+        <svg viewBox="0 0 600 120" preserveAspectRatio="none" className="absolute top-0 left-0 w-full h-[75%] overflow-visible">
+          <ClusterDots dots={MOBILE_DOTS} />
+        </svg>
+        <div className="absolute bottom-0 left-0 w-full h-[25%] flex items-center justify-between px-2">
+          <span className="signal-label signal-label-a text-[10px] uppercase tracking-[0.25em]" style={{ color: '#1A3024' }}>Customer expectation detected</span>
+          <span className="signal-label signal-label-b text-[10px] uppercase tracking-[0.25em] hidden sm:inline" style={{ color: '#1A3024' }}>Hidden objection</span>
+          <span className="signal-label signal-label-c text-[10px] uppercase tracking-[0.25em]" style={{ color: '#1A3024' }}>Emerging opportunity</span>
+        </div>
+      </div>
 
-        <g className="hub2">
-          <circle cx={d.hubBC.cx} cy={d.hubBC.cy} r="18" className="hub-ring" />
-          <circle cx={d.hubBC.cx} cy={d.hubBC.cy} r="10" className="hub-pulse" />
-          <circle cx={d.hubBC.cx} cy={d.hubBC.cy} r="6" className="hub-core" />
-          <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat1.cx} y2={d.bcScat1.cy} className="hub-line hl2a" />
-          <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat2.cx} y2={d.bcScat2.cy} className="hub-line hl2b" />
-          <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.bcScat3.cx} y2={d.bcScat3.cy} className="hub-line hl2c" />
-        </g>
+      {/* ── Desktop Layout ── */}
+      <div className="hidden md:block absolute inset-0">
+        <svg viewBox="0 0 600 120" className="absolute top-0 left-0 w-full h-full overflow-visible">
+          <ClusterDots dots={DESKTOP_DOTS} />
+        </svg>
 
-        {/* Backbone */}
-        <g className="main-line">
-          <line x1={d.a2.cx} y1={d.a2.cy} x2={d.hubAB.cx} y2={d.hubAB.cy} />
-          <line x1={d.hubAB.cx} y1={d.hubAB.cy} x2={d.b2.cx} y2={d.b2.cy} />
-          <line x1={d.b2.cx} y1={d.b2.cy} x2={d.hubBC.cx} y2={d.hubBC.cy} />
-          <line x1={d.hubBC.cx} y1={d.hubBC.cy} x2={d.c2.cx} y2={d.c2.cy} />
-        </g>
+        <span
+          className="signal-label absolute signal-label-a text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.a2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.a2.cy / 120) * 100 + 10}%` }}
+        >
+          Customer expectation detected
+        </span>
+        <span
+          className="signal-label absolute signal-label-b text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.b2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.b2.cy / 120) * 100 - 22}%` }}
+        >
+          Hidden objection
+        </span>
+        <span
+          className="signal-label absolute signal-label-c text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.c2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.c2.cy / 120) * 100 + 10}%` }}
+        >
+          Emerging opportunity
+        </span>
+      </div>
 
-        {/* Clusters */}
-        <g className="cluster">
-          <line x1={d.a1.cx} y1={d.a1.cy} x2={d.a2.cx} y2={d.a2.cy} className="cluster-wire" />
-          <line x1={d.a2.cx} y1={d.a2.cy} x2={d.a3.cx} y2={d.a3.cy} className="cluster-wire" />
-          <circle cx={d.a2.cx} cy={d.a2.cy} r="8" className="pulse" />
-          <circle cx={d.a2.cx} cy={d.a2.cy} r="5" />
-          <circle cx={d.a1.cx} cy={d.a1.cy} r="5" />
-          <circle cx={d.a3.cx} cy={d.a3.cy} r="5" />
-          <text x={d.a2.cx} y={d.a2.cy + 60} textAnchor="middle" className="cluster-label">CUSTOMER EXPECTATION DETECTED</text>
-        </g>
+      <style jsx global>{`
+        .signal-line { stroke: #aab0a3; stroke-width: 0.75; opacity: 0; animation-duration: 19s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+        .signal-dot { opacity: 0.12; animation-duration: 19s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+        .signal-ripple { fill: none; stroke: #aab0a3; stroke-width: 1; opacity: 0; animation-duration: 19s; animation-timing-function: ease-out; animation-iteration-count: infinite; }
+        .signal-label { opacity: 0; animation-duration: 19s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; white-space: nowrap; }
 
-        <g className="cluster">
-          <line x1={d.b1.cx} y1={d.b1.cy} x2={d.b2.cx} y2={d.b2.cy} className="cluster-wire" />
-          <line x1={d.b2.cx} y1={d.b2.cy} x2={d.b3.cx} y2={d.b3.cy} className="cluster-wire" />
-          <circle cx={d.b2.cx} cy={d.b2.cy} r="8" className="pulse" />
-          <circle cx={d.b2.cx} cy={d.b2.cy} r="5" />
-          <circle cx={d.b1.cx} cy={d.b1.cy} r="5" />
-          <circle cx={d.b3.cx} cy={d.b3.cy} r="5" />
-          <text x={d.b2.cx} y={d.b1.cy - 20} textAnchor="middle" className="cluster-label">HIDDEN OBJECTION</text>
-        </g>
+        .signal-line-a { animation-name: lineA; }
+        .signal-line-b { animation-name: lineB; }
+        .signal-line-c { animation-name: lineC; }
+        .signal-leg-a-seg1 { animation-name: legASeg1; }
+        .signal-leg-b-seg1 { animation-name: legBSeg1; }
+        .signal-dot-a-hero { animation-name: dotAHero; }
+        .signal-dot-a-side { animation-name: dotASide; }
+        .signal-dot-a-outer { animation-name: dotAOuter; }
+        .signal-dot-b-gradual { animation-name: dotBGradual; }
+        .signal-dot-c-gradual { animation-name: dotCGradual; }
+        .signal-ripple-a { animation-name: rippleA; }
+        .signal-ripple-b { animation-name: rippleB; }
+        .signal-ripple-c { animation-name: rippleC; }
+        .signal-label-a { animation-name: labelA; }
+        .signal-label-b { animation-name: labelB; }
+        .signal-label-c { animation-name: labelC; }
 
-        <g className="cluster">
-          <line x1={d.c1.cx} y1={d.c1.cy} x2={d.c2.cx} y2={d.c2.cy} className="cluster-wire" />
-          <line x1={d.c2.cx} y1={d.c2.cy} x2={d.c3.cx} y2={d.c3.cy} className="cluster-wire" />
-          <circle cx={d.c2.cx} cy={d.c2.cy} r="8" className="pulse" />
-          <circle cx={d.c2.cx} cy={d.c2.cy} r="5" />
-          <circle cx={d.c1.cx} cy={d.c1.cy} r="5" />
-          <circle cx={d.c3.cx} cy={d.c3.cy} r="5" />
-          <text x={d.c2.cx} y={d.c2.cy + 60} textAnchor="middle" className="cluster-label">EMERGING OPPORTUNITY</text>
-        </g>
-      </svg>
-
-      <style jsx>{`
-        .hub-ring { fill: none; stroke: #AAB0A3; stroke-width: 1; opacity: .6; animation: ringExpand 2.8s ease-out infinite; }
-        @keyframes ringExpand { 0% { opacity: .8; transform: scale(.5); } 100% { opacity: 0; transform: scale(2.5); } }
-        
-        .hub1 { animation: hub1-anim 19s infinite, hubGrow 3s ease-in-out infinite; }
-        .hub2 { animation: hub2-anim 19s infinite, hubGrow 3s ease-in-out infinite; }
-        @keyframes hubGrow { 0% { transform: scale(.3); } 25% { transform: scale(1.4); } 45% { transform: scale(1); } 65% { transform: scale(1.2); } 100% { transform: scale(.3); } }
-        
-        .hub-line { stroke: #AAB0A3; stroke-width: 1.5; stroke-dasharray: 150; }
-        .hl1a { animation: hl1a 19s infinite linear; } .hl1b { animation: hl1b 19s infinite linear; } .hl1c { animation: hl1c 19s infinite linear; }
-        .hl2a { animation: hl2a 19s infinite linear; } .hl2b { animation: hl2b 19s infinite linear; } .hl2c { animation: hl2c 19s infinite linear; }
-        
-        @keyframes hl1a { 0%, 15% { stroke-dashoffset: 150; } 30% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
-        @keyframes hl1b { 0%, 18% { stroke-dashoffset: 150; } 33% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
-        @keyframes hl1c { 0%, 21% { stroke-dashoffset: 150; } 36% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
-        @keyframes hl2a { 0%, 15% { stroke-dashoffset: 150; } 30% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
-        @keyframes hl2b { 0%, 18% { stroke-dashoffset: 150; } 33% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
-        @keyframes hl2c { 0%, 21% { stroke-dashoffset: 150; } 36% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; } }
-        
-        .main-line { stroke-width: 2.8; stroke-linecap: round; }
-        .cluster-wire { stroke-width: 3; stroke-linecap: round; }
-        .cluster-label { fill: #1A3024; font-size: 16px; font-weight: 600; letter-spacing: .18em; font-family: inherit; }
-        .pulse { fill: none; stroke-width: 2; animation: pulse 3s infinite; }
-        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(5); } }
+        @keyframes dotAHero { 0%, 100% { opacity: 0.12; transform: scale(1); } 2%, 18% { opacity: 0.5; transform: scale(1.15); } 20% { opacity: 0.85; transform: scale(1.35); } 24%, 94% { opacity: 0.5; transform: scale(1.1); } }
+        @keyframes dotASide { 0%, 7%, 100% { opacity: 0.12; transform: scale(1); } 8%, 18% { opacity: 0.45; transform: scale(1.1); } 20% { opacity: 0.8; transform: scale(1.3); } 24%, 94% { opacity: 0.48; transform: scale(1.05); } }
+        @keyframes dotAOuter { 0%, 13%, 100% { opacity: 0.12; transform: scale(1); } 14%, 18% { opacity: 0.42; transform: scale(1.08); } 20% { opacity: 0.78; transform: scale(1.28); } 24%, 94% { opacity: 0.46; transform: scale(1.04); } }
+        @keyframes dotBGradual { 0%, 14%, 100% { opacity: 0.12; transform: scale(1); } 22%, 37% { opacity: 0.25; transform: scale(1.05); } 38% { opacity: 0.85; transform: scale(1.35); } 44%, 94% { opacity: 0.5; transform: scale(1.08); } }
+        @keyframes dotCGradual { 0%, 38%, 100% { opacity: 0.12; transform: scale(1); } 46%, 65% { opacity: 0.25; transform: scale(1.05); } 66% { opacity: 0.85; transform: scale(1.35); } 72%, 94% { opacity: 0.5; transform: scale(1.08); } }
+        @keyframes lineA { 0%, 28%, 100% { opacity: 0; } 29%, 94% { opacity: 0.3; } }
+        @keyframes lineB { 0%, 42%, 100% { opacity: 0; } 43%, 94% { opacity: 0.3; } }
+        @keyframes lineC { 0%, 70%, 100% { opacity: 0; } 71%, 94% { opacity: 0.3; } }
+        @keyframes legASeg1 { 0%, 25%, 100% { opacity: 0; } 26%, 94% { opacity: 0.3; } }
+        @keyframes legBSeg1 { 0%, 53%, 100% { opacity: 0; } 54%, 94% { opacity: 0.3; } }
+        @keyframes rippleA { 0%, 19%, 100% { opacity: 0; transform: scale(1); } 20% { opacity: 0.5; transform: scale(1); } 28% { opacity: 0; transform: scale(7); } }
+        @keyframes rippleB { 0%, 37%, 100% { opacity: 0; transform: scale(1); } 38% { opacity: 0.5; transform: scale(1); } 46% { opacity: 0; transform: scale(7); } }
+        @keyframes rippleC { 0%, 65%, 100% { opacity: 0; transform: scale(1); } 66% { opacity: 0.5; transform: scale(1); } 74% { opacity: 0; transform: scale(7); } }
+        @keyframes labelA { 0%, 25%, 37%, 100% { opacity: 0; } 29%, 34% { opacity: 1; } }
+        @keyframes labelB { 0%, 39%, 53%, 100% { opacity: 0; } 43%, 50% { opacity: 1; } }
+        @keyframes labelC { 0%, 67%, 82%, 100% { opacity: 0; } 71%, 78% { opacity: 1; } }
       `}</style>
     </div>
   )
