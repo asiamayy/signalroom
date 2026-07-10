@@ -128,7 +128,9 @@ export default function LandingPage() {
           <img 
             src="/signalroom-logo.svg" 
             alt="SignalRoom Logo" 
-            className="h-10 w-auto object-contain" 
+            width="140"
+            height="35"
+            className="h-9 w-auto object-contain box-content" 
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
@@ -258,7 +260,7 @@ export default function LandingPage() {
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
               <h2 className="text-[30px] sm:text-[36px] mb-6 sm:mb-8 leading-[1.1] tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Quantify the Signal. Eliminate Waste.</h2>
               <p className="text-[14px] sm:text-[15px] text-[#454947] mb-6 max-w-sm leading-relaxed opacity-90">
-                Traditional market research tools cost $8,000 or more for a 6-month subscription — before you factor in recruiting, moderation, and analysis. SignalRoom replaces all of that for a flat monthly fee with no contracts.
+                Traditional research can cost thousands in software, recruiting, incentives, and analysis. SignalRoom replaces all of that for a flat monthly fee with no contracts.
               </p>
             </div>
             <div className="lg:col-start-7 lg:col-span-6">
@@ -319,7 +321,7 @@ export default function LandingPage() {
                       <div className="text-[10px] text-neutral-300 mt-0.5">${annualSavings.toLocaleString()}/year</div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-400 block mb-1">Time saved</span>
+                      <span className="text-[9px] font-medium uppercase tracking-[0.4em] text-neutral-400 block mb-1">Time saved</span>
                       <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{calculatedReduction}%</div>
                       <div className="text-[10px] text-neutral-400 mt-0.5">faster</div>
                     </div>
@@ -427,11 +429,13 @@ export default function LandingPage() {
             <img 
               src="/signalroom-logo.svg" 
               alt="SignalRoom Logo" 
-              className="h-8 w-auto object-contain" 
+              width="140"
+              height="35"
+              className="h-8 w-auto object-contain box-content" 
             />
           </div>
           <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-xs mb-6 sm:mb-10 leading-relaxed opacity-90">
-            Architectural intelligence for market-leading firms. Precision defined.
+            Customer intelligence infrastructure for modern teams.
           </p>
         </div>
         <div className="md:col-start-6 md:col-span-2 space-y-3 sm:space-y-4">
