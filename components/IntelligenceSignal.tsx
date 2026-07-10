@@ -1,39 +1,51 @@
 'use client'
 
-// Clean 19s sequence mimicking the pure "/\" sketch path with zero intermediate waypoints.
-// Shrunk y-coordinates slightly to shift the absolute physical layout position higher up.
+// Symmetrical 19s sequence mimicking your sketch trajectory line paths.
+// Modifies the inner cluster structures to form distinct shapes:
+// Cluster A = "V" | Cluster B = "<" | Cluster C = "^"
 
 const MOBILE_DOTS = {
-  a1: { cx: 40, cy: 90 },
+  // Cluster A: "V" shape (sides elevated above center)
+  a1: { cx: 40, cy: 75 },
   a2: { cx: 70, cy: 98 },
-  a3: { cx: 100, cy: 90 },
-  b1: { cx: 270, cy: 20 },
-  b2: { cx: 300, cy: 28 },
-  b3: { cx: 330, cy: 20 },
-  c1: { cx: 500, cy: 90 },
-  c2: { cx: 530, cy: 98 },
-  c3: { cx: 560, cy: 90 },
+  a3: { cx: 100, cy: 75 },
+  
+  // Cluster B: "<" wedge shape pointing left (center shifted leftward)
+  b1: { cx: 315, cy: 10 },
+  b2: { cx: 285, cy: 23 },
+  b3: { cx: 315, cy: 36 },
+  
+  // Cluster C: "^" inverted chevron shape (center elevated above sides)
+  c1: { cx: 500, cy: 98 },
+  c2: { cx: 530, cy: 75 },
+  c3: { cx: 560, cy: 98 },
 }
 
 const DESKTOP_DOTS = {
-  a1: { cx: 40, cy: 90 },
+  // Cluster A: "V" shape (sides elevated above center)
+  a1: { cx: 40, cy: 75 },
   a2: { cx: 70, cy: 98 },
-  a3: { cx: 100, cy: 90 },
-  b1: { cx: 270, cy: 15 },
-  b2: { cx: 300, cy: 23 },
-  b3: { cx: 330, cy: 15 },
-  c1: { cx: 500, cy: 90 },
-  c2: { cx: 530, cy: 98 },
-  c3: { cx: 560, cy: 90 },
+  a3: { cx: 100, cy: 75 },
+  
+  // Cluster B: "<" wedge shape pointing left (center shifted leftward)
+  b1: { cx: 315, cy: 10 },
+  b2: { cx: 285, cy: 23 },
+  b3: { cx: 315, cy: 36 },
+  
+  // Cluster C: "^" inverted chevron shape (center elevated above sides)
+  c1: { cx: 500, cy: 98 },
+  c2: { cx: 530, cy: 75 },
+  c3: { cx: 560, cy: 98 },
 }
 
 function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
   return (
     <>
-      {/* direct crisp alignment lines connecting directly between node cluster points */}
+      {/* Direct pathing connections between central anchors */}
       <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.b2.cx} y2={dots.b2.cy} className="signal-line signal-leg-a-seg1" />
       <line x1={dots.b2.cx} y1={dots.b2.cy} x2={dots.c2.cx} y2={dots.c2.cy} className="signal-line signal-leg-b-seg1" />
 
+      {/* Internal connection wiring forming geometric cluster glyphs */}
       <line x1={dots.a1.cx} y1={dots.a1.cy} x2={dots.a2.cx} y2={dots.a2.cy} className="signal-line signal-line-a" />
       <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.a3.cx} y2={dots.a3.cy} className="signal-line signal-line-a" />
       <line x1={dots.b1.cx} y1={dots.b1.cy} x2={dots.b2.cx} y2={dots.b2.cy} className="signal-line signal-line-b" />
@@ -41,10 +53,12 @@ function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
       <line x1={dots.c1.cx} y1={dots.c1.cy} x2={dots.c2.cx} y2={dots.c2.cy} className="signal-line signal-line-c" />
       <line x1={dots.c2.cx} y1={dots.c2.cy} x2={dots.c3.cx} y2={dots.c3.cy} className="signal-line signal-line-c" />
 
+      {/* Ripple pulses emitting from target positions */}
       <circle cx={dots.a2.cx} cy={dots.a2.cy} r="3" className="signal-ripple signal-ripple-a" style={{ transformOrigin: `${dots.a2.cx}px ${dots.a2.cy}px` }} />
       <circle cx={dots.b2.cx} cy={dots.b2.cy} r="3" className="signal-ripple signal-ripple-b" style={{ transformOrigin: `${dots.b2.cx}px ${dots.b2.cy}px` }} />
       <circle cx={dots.c2.cx} cy={dots.c2.cy} r="3" className="signal-ripple signal-ripple-c" style={{ transformOrigin: `${dots.c2.cx}px ${dots.c2.cy}px` }} />
 
+      {/* Component node vertices */}
       <circle cx={dots.a2.cx} cy={dots.a2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-hero" style={{ transformOrigin: `${dots.a2.cx}px ${dots.a2.cy}px` }} />
       <circle cx={dots.a1.cx} cy={dots.a1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-side" style={{ transformOrigin: `${dots.a1.cx}px ${dots.a1.cy}px` }} />
       <circle cx={dots.a3.cx} cy={dots.a3.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-outer" style={{ transformOrigin: `${dots.a3.cx}px ${dots.a3.cy}px` }} />
