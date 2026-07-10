@@ -186,6 +186,30 @@ export default function LandingPage() {
           animation: clearIconBounce 1.4s ease-in-out infinite;
           color: #1A3024 !important;
         }
+
+        /* Option 2: Market Intelligence Focus Keyframes */
+        @keyframes focusCycle {
+          0%, 100% { opacity: 0; transform: translateY(5px); }
+          5%, 45% { opacity: 0.15; transform: translateY(0); }
+          50%, 95% { opacity: 0.85; }
+        }
+        @keyframes lineDraw {
+          0%, 100% { stroke-dashoffset: 100; opacity: 0; }
+          15%, 85% { stroke-dashoffset: 0; opacity: 0.4; }
+        }
+        @keyframes clusterGlow {
+          0%, 12%, 88%, 100% { fill: #AAB0A3; r: 2.5; filter: none; }
+          15%, 85% { fill: #1A3024; r: 4; filter: drop-shadow(0 0 4px rgba(26, 48, 36, 0.4)); }
+        }
+        @keyframes labelReveal {
+          0%, 18%, 82%, 100% { opacity: 0; transform: translateX(-4px); }
+          22%, 78% { opacity: 0.7; transform: translateX(0); }
+        }
+
+        .anim-node { animation: focusCycle 18s cubic-bezier(0.25, 1, 0.5, 1) infinite; }
+        .anim-line { stroke-dasharray: 100; animation: lineDraw 18s ease-in-out infinite; }
+        .anim-glow-point { animation: clusterGlow 18s ease-in-out infinite; }
+        .anim-label { animation: labelReveal 18s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
       `}</style>
 
       {/* TopNavBar */}
@@ -200,11 +224,11 @@ export default function LandingPage() {
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
-  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
-  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
-  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
-  <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
-</div>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
+        </div>
         <div className="flex items-center gap-4 sm:gap-6">
           <Link className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#454947] hover:text-[#121314] transition-colors" href="/login">Sign In</Link>
           <Link className="bg-[#1A3024] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#5A7973] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
@@ -242,8 +266,8 @@ export default function LandingPage() {
           </div>
           <div className="md:col-span-12 lg:col-start-7 lg:col-span-6 xl:col-start-8 xl:col-span-5 pt-4 sm:pt-6 flex flex-col justify-end">
             <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 leading-normal tracking-[-0.01em] opacity-90 font-normal">
-  SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
-</p>
+              SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
+            </p>
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
@@ -255,6 +279,49 @@ export default function LandingPage() {
               </a>
             </div>
           </div>
+        </div>
+
+        {/* Option 2 Animation Canvas */}
+        <div className="w-full h-48 mt-12 relative overflow-hidden hidden md:block select-none pointer-events-none">
+          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            {/* Cluster 1: Customer Expectations */}
+            <g style={{ animationDelay: '0s' }}>
+              <line className="anim-line stroke-[#AAB0A3]" x1="80" y1="60" x2="140" y2="40" strokeWidth="0.5" />
+              <line className="anim-line stroke-[#AAB0A3]" x1="140" y1="40" x2="200" y2="80" strokeWidth="0.5" />
+              <line className="anim-line stroke-[#AAB0A3]" x1="80" y1="60" x2="200" y2="80" strokeWidth="0.5" />
+              <circle className="anim-node fill-[#AAB0A3]" cx="80" cy="60" r="2" style={{ animationDelay: '0.2s' }} />
+              <circle className="anim-node fill-[#AAB0A3]" cx="140" cy="40" r="2" style={{ animationDelay: '0.5s' }} />
+              <circle className="anim-glow-point" cx="200" cy="80" />
+              <text className="anim-label fill-[#1A3024] font-mono text-[10px] uppercase tracking-[0.2em]" x="215" y="84" style={{ animationDelay: '0s' }}>
+                customer expectation detected
+              </text>
+            </g>
+
+            {/* Cluster 2: Hidden Objection */}
+            <g style={{ animationDelay: '6s' }}>
+              <line className="anim-line stroke-[#AAB0A3]" x1="520" y1="120" x2="580" y2="70" strokeWidth="0.5" />
+              <line className="anim-line stroke-[#AAB0A3]" x1="580" y1="70" x2="630" y2="110" strokeWidth="0.5" />
+              <circle className="anim-node fill-[#AAB0A3]" cx="520" cy="120" r="2" style={{ animationDelay: '6.3s' }} />
+              <circle className="anim-node fill-[#AAB0A3]" cx="630" cy="110" r="2" style={{ animationDelay: '6.6s' }} />
+              <circle className="anim-glow-point" cx="580" cy="70" style={{ animationDelay: '6s' }} />
+              <text className="anim-label fill-[#1A3024] font-mono text-[10px] uppercase tracking-[0.2em]" x="595" y="74" style={{ animationDelay: '6s' }}>
+                hidden objection uncovered
+              </text>
+            </g>
+
+            {/* Cluster 3: Emerging Opportunity */}
+            <g style={{ animationDelay: '12s' }}>
+              <line className="anim-line stroke-[#AAB0A3]" x1="910" y1="40" x2="960" y2="90" strokeWidth="0.5" />
+              <line className="anim-line stroke-[#AAB0A3]" x1="960" y1="90" x2="1040" y2="50" strokeWidth="0.5" />
+              <line className="anim-line stroke-[#AAB0A3]" x1="910" y1="40" x2="1040" y2="50" strokeWidth="0.5" />
+              <circle className="anim-node fill-[#AAB0A3]" cx="910" cy="40" r="2" style={{ animationDelay: '12.2s' }} />
+              <circle className="anim-node fill-[#AAB0A3]" cx="1040" cy="50" r="2" style={{ animationDelay: '12.5s' }} />
+              <circle className="anim-glow-point" cx="960" cy="90" style={{ animationDelay: '12s' }} />
+              <text className="anim-label fill-[#1A3024] font-mono text-[10px] uppercase tracking-[0.2em]" x="975" y="94" style={{ animationDelay: '12s' }}>
+                emerging market opportunity
+              </text>
+            </g>
+          </svg>
         </div>
       </header>
 
