@@ -39,6 +39,129 @@ function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode;
   );
 }
 
+// Seamless Premium High-End High-Frequency Math Canvas Animation
+function IntelligenceFocusCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = (canvas.width = canvas.parentElement?.clientWidth || 700);
+    let height = (canvas.height = 160);
+
+    const handleResize = () => {
+      if (canvas) {
+        width = canvas.width = canvas.parentElement?.clientWidth || 700;
+        height = canvas.height = 160;
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Precise node network structures mapped cleanly within the header column spacing
+    const clusters = [
+      { x: width * 0.18, y: 55, label: 'customer expectation detected', phase: 0 },
+      { x: width * 0.62, y: 90, label: 'hidden objection uncovered', phase: Math.PI * 0.66 }
+    ];
+
+    let globalTime = 0;
+
+    const render = () => {
+      globalTime += 0.004; // Calm, continuous baseline pacing
+      ctx.clearRect(0, 0, width, height);
+
+      // Re-map centers securely if width changes dynamically
+      clusters[0].x = width * 0.18;
+      clusters[1].x = width * 0.62;
+
+      clusters.forEach((cluster) => {
+        const localCycle = Math.sin(globalTime + cluster.phase);
+        const focusIntensity = Math.max(0, localCycle); 
+
+        ctx.save();
+        
+        // Draw constellation support scaffolding lines
+        ctx.strokeStyle = '#AAB0A3';
+        ctx.lineWidth = 0.5;
+        
+        // Base subtle permanent lines
+        ctx.globalAlpha = 0.06;
+        ctx.beginPath();
+        ctx.moveTo(cluster.x - 50, cluster.y + 15);
+        ctx.lineTo(cluster.x, cluster.y);
+        ctx.lineTo(cluster.x + 40, cluster.y - 25);
+        ctx.stroke();
+
+        // High-precision connection light rays matching focus transitions
+        if (focusIntensity > 0) {
+          ctx.globalAlpha = focusIntensity * 0.35;
+          ctx.strokeStyle = '#1A3024';
+          ctx.lineWidth = 0.75;
+          ctx.beginPath();
+          ctx.moveTo(cluster.x - 50, cluster.y + 15);
+          ctx.lineTo(cluster.x, cluster.y);
+          ctx.lineTo(cluster.x + 40, cluster.y - 25);
+          ctx.stroke();
+        }
+
+        // Auxiliary context nodes
+        ctx.globalAlpha = 0.15 + focusIntensity * 0.2;
+        ctx.fillStyle = '#AAB0A3';
+        ctx.beginPath();
+        ctx.arc(cluster.x - 50, cluster.y + 15, 1.5, 0, Math.PI * 2);
+        ctx.arc(cluster.x + 40, cluster.y - 25, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Master Focal Center point
+        ctx.beginPath();
+        if (focusIntensity > 0.5) {
+          ctx.fillStyle = '#1A3024';
+          const glowRadius = 3 + (focusIntensity * 1.5);
+          ctx.arc(cluster.x, cluster.y, glowRadius, 0, Math.PI * 2);
+          ctx.shadowColor = 'rgba(26, 48, 36, 0.25)';
+          ctx.shadowBlur = 6;
+        } else {
+          ctx.fillStyle = '#AAB0A3';
+          ctx.arc(cluster.x, cluster.y, 2.5, 0, Math.PI * 2);
+        }
+        ctx.fill();
+        ctx.restore();
+
+        // Smooth text display handling
+        if (focusIntensity > 0.1) {
+          ctx.save();
+          ctx.font = "normal 450 10px font-mono, ui-monospace, monospace";
+          ctx.fillStyle = '#1A3024';
+          ctx.globalAlpha = Math.min(0.75, (focusIntensity - 0.1) * 1.5);
+          const txt = cluster.label.toUpperCase();
+          const charSpacing = 2.2;
+          let currentX = cluster.x + 15;
+          
+          for (let i = 0; i < txt.length; i++) {
+            ctx.fillText(txt[i], currentX, cluster.y + 3.5);
+            currentX += ctx.measureText(txt[i]).width + charSpacing;
+          }
+          ctx.restore();
+        }
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="w-full h-full block" />;
+}
+
 interface DashboardPersona {
   id: string;
   name: string;
@@ -186,30 +309,6 @@ export default function LandingPage() {
           animation: clearIconBounce 1.4s ease-in-out infinite;
           color: #1A3024 !important;
         }
-
-        /* Option 2: Market Intelligence Focus Keyframes */
-        @keyframes focusCycle {
-          0%, 100% { opacity: 0; transform: translateY(5px); }
-          5%, 45% { opacity: 0.15; transform: translateY(0); }
-          50%, 95% { opacity: 0.85; }
-        }
-        @keyframes lineDraw {
-          0%, 100% { stroke-dashoffset: 100; opacity: 0; }
-          15%, 85% { stroke-dashoffset: 0; opacity: 0.4; }
-        }
-        @keyframes clusterGlow {
-          0%, 12%, 88%, 100% { fill: #AAB0A3; r: 2.5; filter: none; }
-          15%, 85% { fill: #1A3024; r: 4; filter: drop-shadow(0 0 4px rgba(26, 48, 36, 0.4)); }
-        }
-        @keyframes labelReveal {
-          0%, 18%, 82%, 100% { opacity: 0; transform: translateX(-4px); }
-          22%, 78% { opacity: 0.7; transform: translateX(0); }
-        }
-
-        .anim-node { animation: focusCycle 18s cubic-bezier(0.25, 1, 0.5, 1) infinite; }
-        .anim-line { stroke-dasharray: 100; animation: lineDraw 18s ease-in-out infinite; }
-        .anim-glow-point { animation: clusterGlow 18s ease-in-out infinite; }
-        .anim-label { animation: labelReveal 18s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
       `}</style>
 
       {/* TopNavBar */}
@@ -238,14 +337,16 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative pt-16 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
+      <header className="relative pt-16 sm:pt-24 pb-4 sm:pb-6 px-6 sm:px-12 z-10">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
             <div className="hidden sm:block h-px w-20 bg-[#1A3024]/10" />
           </div>
-          <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
-            <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+          
+          {/* Main Title Left Column */}
+          <div className="md:col-span-12 lg:col-span-7 xl:col-span-7 overflow-visible flex flex-col justify-between">
+            <h1 className="text-[38px] sm:text-[64px] lg:text-[76px] xl:text-[84px] leading-[1.1] lg:leading-[76px] xl:leading-[82px] tracking-tight font-normal text-[#121314] break-words" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
               <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
                 <span className="relative inline-flex overflow-visible">
@@ -260,11 +361,18 @@ export default function LandingPage() {
                   ))}
                 </span>
                 <span>.</span>
-              </span><br className="hidden lg:block" />
+              </span><br />
               <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
             </h1>
+
+            {/* High-End Canvas Animation Fitted Directly in the Workspace Underneath the Headline */}
+            <div className="w-full h-40 mt-8 relative overflow-hidden hidden lg:block select-none pointer-events-none">
+              <IntelligenceFocusCanvas />
+            </div>
           </div>
-          <div className="md:col-span-12 lg:col-start-7 lg:col-span-6 xl:col-start-8 xl:col-span-5 pt-4 sm:pt-6 flex flex-col justify-end">
+          
+          {/* Context Descriptions Right Column */}
+          <div className="md:col-span-12 lg:col-span-5 xl:col-start-8 xl:col-span-5 pt-4 sm:pt-6 flex flex-col justify-end">
             <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 leading-normal tracking-[-0.01em] opacity-90 font-normal">
               SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
             </p>
@@ -279,49 +387,6 @@ export default function LandingPage() {
               </a>
             </div>
           </div>
-        </div>
-
-        {/* Option 2 Animation Canvas */}
-        <div className="w-full h-48 mt-12 relative overflow-hidden hidden md:block select-none pointer-events-none">
-          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            {/* Cluster 1: Customer Expectations */}
-            <g style={{ animationDelay: '0s' }}>
-              <line className="anim-line stroke-[#AAB0A3]" x1="80" y1="60" x2="140" y2="40" strokeWidth="0.5" />
-              <line className="anim-line stroke-[#AAB0A3]" x1="140" y1="40" x2="200" y2="80" strokeWidth="0.5" />
-              <line className="anim-line stroke-[#AAB0A3]" x1="80" y1="60" x2="200" y2="80" strokeWidth="0.5" />
-              <circle className="anim-node fill-[#AAB0A3]" cx="80" cy="60" r="2" style={{ animationDelay: '0.2s' }} />
-              <circle className="anim-node fill-[#AAB0A3]" cx="140" cy="40" r="2" style={{ animationDelay: '0.5s' }} />
-              <circle className="anim-glow-point" cx="200" cy="80" />
-              <text className="anim-label fill-[#1A3024] font-mono text-[10px] uppercase tracking-[0.2em]" x="215" y="84" style={{ animationDelay: '0s' }}>
-                customer expectation detected
-              </text>
-            </g>
-
-            {/* Cluster 2: Hidden Objection */}
-            <g style={{ animationDelay: '6s' }}>
-              <line className="anim-line stroke-[#AAB0A3]" x1="520" y1="120" x2="580" y2="70" strokeWidth="0.5" />
-              <line className="anim-line stroke-[#AAB0A3]" x1="580" y1="70" x2="630" y2="110" strokeWidth="0.5" />
-              <circle className="anim-node fill-[#AAB0A3]" cx="520" cy="120" r="2" style={{ animationDelay: '6.3s' }} />
-              <circle className="anim-node fill-[#AAB0A3]" cx="630" cy="110" r="2" style={{ animationDelay: '6.6s' }} />
-              <circle className="anim-glow-point" cx="580" cy="70" style={{ animationDelay: '6s' }} />
-              <text className="anim-label fill-[#1A3024] font-mono text-[10px] uppercase tracking-[0.2em]" x="595" y="74" style={{ animationDelay: '6s' }}>
-                hidden objection uncovered
-              </text>
-            </g>
-
-            {/* Cluster 3: Emerging Opportunity */}
-            <g style={{ animationDelay: '12s' }}>
-              <line className="anim-line stroke-[#AAB0A3]" x1="910" y1="40" x2="960" y2="90" strokeWidth="0.5" />
-              <line className="anim-line stroke-[#AAB0A3]" x1="960" y1="90" x2="1040" y2="50" strokeWidth="0.5" />
-              <line className="anim-line stroke-[#AAB0A3]" x1="910" y1="40" x2="1040" y2="50" strokeWidth="0.5" />
-              <circle className="anim-node fill-[#AAB0A3]" cx="910" cy="40" r="2" style={{ animationDelay: '12.2s' }} />
-              <circle className="anim-node fill-[#AAB0A3]" cx="1040" cy="50" r="2" style={{ animationDelay: '12.5s' }} />
-              <circle className="anim-glow-point" cx="960" cy="90" style={{ animationDelay: '12s' }} />
-              <text className="anim-label fill-[#1A3024] font-mono text-[10px] uppercase tracking-[0.2em]" x="975" y="94" style={{ animationDelay: '12s' }}>
-                emerging market opportunity
-              </text>
-            </g>
-          </svg>
         </div>
       </header>
 
