@@ -175,7 +175,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
       <div style={{ background: '#F9F9F9', minHeight: '100%' }}>
 
         {/* ── Page heading + controls ── */}
-        <div className="flex items-center justify-between gap-4 px-4 sm:px-6 pt-5 pb-4" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 pt-5 pb-4" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
           <div className="min-w-0">
             <h1 className="heading-editorial text-3xl" style={{ color: '#202124' }}>Personas</h1>
             <p className="text-sm mt-1 leading-relaxed" style={{ color: '#5F6368' }}>AI-generated personas built from real research. Explore beliefs, behaviors, needs, and motivations.</p>
@@ -446,7 +446,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                     </div>
 
                     {/* Subtle "Show preview" link — always visible when selected, hover-reveal otherwise */}
-                    <div className={isSelected ? 'px-5 pb-4 -mt-1.5 text-center' : 'px-5 pb-4 -mt-1.5 text-center opacity-0 group-hover:opacity-100 transition-opacity'}>
+                    <div className={isSelected ? 'px-5 pb-4 -mt-1.5 text-center' : 'px-5 pb-4 -mt-1.5 text-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'}>
                       <button
                         onClick={e => { e.stopPropagation(); showPersonaPreview(persona) }}
                         className="text-xs transition-colors text-[#9CA3AF] hover:text-[#4B5563]"
