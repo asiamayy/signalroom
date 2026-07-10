@@ -1,10 +1,6 @@
 'use client'
 
-// A slow (19s), continuously-looping market intelligence sequence.
-// Both mobile and desktop viewports trace a perfect "/\" triangle peak across the workspace.
-// Waypoint dots are slightly scattered off the direct straight trajectory paths.
-// Background color removed for total transparency.
-
+// Tracing symmetrical wide geometry peak with transparent foundation wrapper styles.
 const MOBILE_DOTS = {
   a1: { cx: 40, cy: 110 },
   a2: { cx: 70, cy: 118 },
@@ -22,19 +18,19 @@ const MOBILE_DOTS = {
 }
 
 const DESKTOP_DOTS = {
-  a1: { cx: 30, cy: 115 },
-  a2: { cx: 60, cy: 123 },
-  a3: { cx: 90, cy: 115 },
+  a1: { cx: 40, cy: 110 },
+  a2: { cx: 70, cy: 118 },
+  a3: { cx: 100, cy: 110 },
   b1: { cx: 270, cy: 25 },
   b2: { cx: 300, cy: 33 },
   b3: { cx: 330, cy: 25 },
-  c1: { cx: 510, cy: 115 },
-  c2: { cx: 540, cy: 123 },
-  c3: { cx: 570, cy: 115 },
-  abWay1: { cx: 132, cy: 92 },
-  abWay2: { cx: 205, cy: 52 },
-  bcWay1: { cx: 402, cy: 48 },
-  bcWay2: { cx: 468, cy: 86 },
+  c1: { cx: 500, cy: 110 },
+  c2: { cx: 530, cy: 118 },
+  c3: { cx: 560, cy: 110 },
+  abWay1: { cx: 135, cy: 82 },
+  abWay2: { cx: 212, cy: 58 },
+  bcWay1: { cx: 398, cy: 52 },
+  bcWay2: { cx: 456, cy: 84 },
 }
 
 function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
@@ -100,7 +96,7 @@ export default function IntelligenceSignal() {
 
         <span
           className="signal-label absolute signal-label-a text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.a2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.a2.cy / 145) * 100 - 16}%` }}
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.a2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.a2.cy / 145) * 100 + 12}%` }}
         >
           Customer expectation detected
         </span>
@@ -112,7 +108,7 @@ export default function IntelligenceSignal() {
         </span>
         <span
           className="signal-label absolute signal-label-c text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.c2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.c2.cy / 145) * 100 - 16}%` }}
+          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.c2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.c2.cy / 145) * 100 + 12}%` }}
         >
           Emerging opportunity
         </span>

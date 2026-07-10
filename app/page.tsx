@@ -232,7 +232,9 @@ export default function LandingPage() {
 
       {/* Hero Header Section */}
       <header className="relative pt-16 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
+          
+          {/* Eyebrow sub-header */}
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <span className="eyebrow-shine-wrap">
               <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
@@ -241,10 +243,11 @@ export default function LandingPage() {
             <div className="hidden sm:block h-px w-20 bg-[#1A3024]/10" />
           </div>
 
-          <div className="md:col-span-12 lg:col-span-6 overflow-visible">
-            <h1 className="text-[38px] sm:text-[64px] lg:text-[76px] xl:text-[84px] leading-[1.1] tracking-tight font-normal text-[#121314] break-words" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+          {/* LEFT SIDE: Main Title + Transparent Node Animation Whitespace */}
+          <div className="md:col-span-12 lg:col-span-7 flex flex-col justify-between min-h-[400px] overflow-visible">
+            <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
-              <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[180px]">
+              <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
                 <span className="relative inline-flex overflow-visible">
                   {displayedWord.split('').map((char, idx) => (
                     <span 
@@ -257,29 +260,35 @@ export default function LandingPage() {
                   ))}
                 </span>
                 <span>.</span>
-              </span><br />
-              <span className="inline-block mt-1">Now you can ask.</span>
+              </span><br className="hidden lg:block" />
+              <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
             </h1>
-            
-            {/* Custom sizing constraint bounding the vector loop strictly within the first half width on the left side */}
-            <div className="mt-8 w-full max-w-[550px]">
+
+            {/* Animation placed under header with width restricted to left side */}
+            <div className="mt-auto w-full max-w-[550px] bg-transparent overflow-visible">
               <IntelligenceSignal />
             </div>
           </div>
 
-          {/* Restored text container position right below the headline column framework */}
-          <div className="md:col-span-12 lg:col-span-6 pt-6 lg:pt-2 flex flex-col justify-start">
+          {/* RIGHT SIDE: Text Boxes Restored Exactly to the Right of the Space */}
+          <div className="md:col-span-12 lg:col-span-5 lg:pt-48 flex flex-col justify-end">
+            <p className="text-[14px] sm:text-[15px] text-[#454947] mb-6 leading-normal tracking-[-0.01em] opacity-70 font-normal">
+              SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
+            </p>
+            
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
-              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.</p>
+              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
               <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
             </div>
+
             <div className="flex items-center gap-8">
               <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1A3024]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1A3024] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
                 Explore Platform
               </a>
             </div>
           </div>
+
         </div>
       </header>
 
@@ -589,7 +598,7 @@ export default function LandingPage() {
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1A3024] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
               <p className="text-xs text-[#1A3024] font-medium mb-4">For teams validating fast</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
                 <span className="text-[11px] text-[#1A3024] font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
