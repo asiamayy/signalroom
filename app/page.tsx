@@ -16,7 +16,7 @@ function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode;
           observer.unobserve(entry.target);
         }
       },
-      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
 
     if (sectionRef.current) {
@@ -39,11 +39,61 @@ function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode;
   );
 }
 
+// Interactive Mock Datasets for Persona Simulator
+interface Persona {
+  id: string;
+  name: string;
+  title: string;
+  avatarColor: string;
+  borderColor: string;
+  promptQuestion: string;
+  responseOutput: string;
+  firmographic: string;
+}
+
+const PERSONA_DATASET: Persona[] = [
+  {
+    id: 'enterprise-sarah',
+    name: 'Sarah Jenkins',
+    title: 'VP of Product, FinTech Scaleup',
+    avatarColor: 'bg-[#1C3D2E]',
+    borderColor: 'border-[#1C3D2E]/30',
+    firmographic: '500+ employees // $40M ARR // B2B SaaS',
+    promptQuestion: 'How does your team evaluate vendor security compliance overhead?',
+    responseOutput: "Our compliance team will stonewall any platform that lacks SOC2 Type II raw exports. Even if your core utility saves us hundreds of operational engineering hours, the security vetting process itself takes precedence. If you can't offer isolated tenant partitioning or automated data-at-rest data structures, we won't even begin a pilot program."
+  },
+  {
+    id: 'founder-alex',
+    name: 'Alex Rivera',
+    title: 'Technical Founder, DevTools Startup',
+    avatarColor: 'bg-[#5A7973]',
+    borderColor: 'border-[#5A7973]/30',
+    firmographic: 'Seed stage // 8 developers // Open Source API',
+    promptQuestion: 'What is your primary hesitation when upgrading analytical infrastructure?',
+    responseOutput: "I won't buy proprietary analytics tooling unless it integrates directly into our existing telemetry layers like Prometheus or OpenTelemetry. I am highly allergic to installing another opaque client-side script wrapper that degrades application performance metrics. Give me clean Postgres pipeline routing or a raw webhook data model, otherwise it is an automatic pass."
+  },
+  {
+    id: 'growth-elena',
+    name: 'Elena Rostova',
+    title: 'Head of Growth, Consumer Marketplace',
+    avatarColor: 'bg-[#2E533E]',
+    borderColor: 'border-[#2E533E]/20',
+    firmographic: 'Series A // 45 employees // Mobile-First PLG',
+    promptQuestion: 'What triggers user churn during your checkout funnel activation?',
+    responseOutput: "Our user activation drop-off isn't driven by UI aesthetics; it's entirely friction-based micro-friction. Forcing account registration prior to a user experiencing the core search utility cuts conversion rates by exactly 34%. Users want a sandboxed immediate value trial before they hand over corporate credentials or billing records."
+  }
+];
+
 export default function LandingPage() {
   const [roiValue, setRoiValue] = useState<number>(8);
   const [isMethodologyActive, setIsMethodologyActive] = useState<boolean>(false);
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0);
   const [displayedWord, setDisplayedWord] = useState<string>('');
+
+  // Simulator Section Specific States
+  const [activePersona, setActivePersona] = useState<Persona>(PERSONA_DATASET[0]);
+  const [simulatedStreamText, setSimulatedStreamText] = useState<string>('');
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
 
   const wordsDataset = ["opinions", "objections", "blindspots", "expectations"];
 
@@ -64,10 +114,30 @@ export default function LandingPage() {
 
     const rotationInterval = setInterval(() => {
       setCurrentWordIndex((prev) => (prev + 1) % wordsDataset.length);
-    }, 3800); // Tightened dwell cycle since there is no exit latency
+    }, 3800);
 
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
+
+  // Real-time Text Streaming Typing Simulation Logic
+  useEffect(() => {
+    setSimulatedStreamText('');
+    setIsStreaming(true);
+    let charIndex = 0;
+    const fullText = activePersona.responseOutput;
+
+    const streamingInterval = setInterval(() => {
+      if (charIndex < fullText.length) {
+        setSimulatedStreamText((prev) => prev + fullText.charAt(charIndex));
+        charIndex++;
+      } else {
+        clearInterval(streamingInterval);
+        setIsStreaming(false);
+      }
+    }, 12);
+
+    return () => clearInterval(streamingInterval);
+  }, [activePersona]);
 
   return (
     <div className="font-body-md overflow-x-hidden relative min-h-screen bg-white text-[#121314] antialiased">
@@ -79,8 +149,8 @@ export default function LandingPage() {
         className="pointer-events-none absolute inset-0 z-0 opacity-[0.015]"
         style={{
           backgroundImage: `
-            linear-gradient(to right, #1c2d24 1px, transparent 1px),
-            linear-gradient(to bottom, #1c2d24 1px, transparent 1px)
+            linear-gradient(to right, #1C3D2E 1px, transparent 1px),
+            linear-gradient(to bottom, #1C3D2E 1px, transparent 1px)
           `,
           backgroundSize: '40px 40px'
         }}
@@ -129,10 +199,19 @@ export default function LandingPage() {
           display: inline-block;
           animation: floatIcon 2.5s ease-in-out infinite;
         }
+
+        /* Cursor blinking animation for the streaming code box */
+        @keyframes customBlink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .animated-streaming-cursor {
+          animation: customBlink 0.8s infinite;
+        }
       `}</style>
 
       {/* TopNavBar */}
-      <nav className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#1c2d24]/10 bg-white/80 px-6 sm:px-12 backdrop-blur-xl">
+      <nav className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#1C3D2E]/10 bg-white/80 px-6 sm:px-12 backdrop-blur-xl">
         <div className="flex items-center">
           <img 
             src="/signalroom-logo.svg" 
@@ -144,29 +223,29 @@ export default function LandingPage() {
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1c2d24]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1c2d24]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1c2d24]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C3D2E]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C3D2E]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1C3D2E]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
         </div>
         <div className="flex items-center gap-4 sm:gap-6">
           <Link className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#454947] hover:text-[#121314] transition-colors" href="/login">Sign In</Link>
-          <Link className="bg-[#1c2d24] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#2e533e] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
+          <Link className="bg-[#5A7973] text-white px-4 sm:px-5 py-2 text-[11px] font-medium uppercase tracking-[0.15em] hover:bg-[#1C3D2E] transition-all duration-300 rounded-[4px] whitespace-nowrap" href="/signup">
             Start Free
           </Link>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <header className="relative border-b border-[#1c2d24]/10 pt-28 sm:pt-36 pb-16 sm:pb-20 px-6 sm:px-12">
+      {/* Hero Header Section */}
+      <header className="relative pt-28 sm:pt-36 pb-12 sm:pb-16 px-6 sm:px-12">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#2e533e] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
-            <div className="hidden sm:block h-px w-20 bg-[#1c2d24]/10" />
+            <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
+            <div className="hidden sm:block h-px w-20 bg-[#1C3D2E]/10" />
           </div>
           <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
             <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
-              <span className="relative inline-block text-[#2e533e] italic whitespace-nowrap min-w-[220px]">
+              <span className="relative inline-block text-[#1C3D2E] italic whitespace-nowrap min-w-[220px]">
                 <span className="relative inline-flex overflow-visible">
                   {displayedWord.split('').map((char, idx) => (
                     <span 
@@ -187,23 +266,136 @@ export default function LandingPage() {
             <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-sm mb-6 leading-relaxed opacity-90">
               SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
             </p>
-            <div className="border-l-2 pl-4 mb-6 border-[#2e533e]/30">
-              <p className="text-xs font-medium uppercase tracking-wide text-[#2e533e] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
+            <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
+              <p className="text-xs font-medium uppercase tracking-wide text-[#1C3D2E] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
               <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
             </div>
             <div className="flex items-center gap-8">
-              <button className="w-full sm:w-auto border border-[#1c2d24]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1c2d24] text-white hover:bg-[#2e533e] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
+              <a href="#simulator" className="w-full sm:w-auto text-center border border-[#1C3D2E]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#5A7973] text-white hover:bg-[#1C3D2E] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
                 Explore Platform
-              </button>
+              </a>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Live Interview Simulator Dashboard */}
+      <RevealSection>
+        <section id="simulator" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20">
+          <div className="bg-[#FAFBFB] border border-[#D1D5D3] rounded-[6px] overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#D1D5D3]">
+            
+            {/* Left Column Profile Selector */}
+            <div className="lg:col-span-4 p-6 sm:p-8 flex flex-col justify-between bg-white">
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="w-2 h-2 rounded-full bg-[#1C3D2E] animate-pulse" />
+                  <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-500">Target Audiences Mounted</span>
+                </div>
+                <h3 className="text-xl font-normal text-[#121314] mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Select AI Persona</h3>
+                <p className="text-xs text-neutral-600 mb-6 leading-relaxed">Toggle active models below to query simulated context segments instantly.</p>
+                
+                <div className="space-y-3">
+                  {PERSONA_DATASET.map((persona) => {
+                    const isSelected = activePersona.id === persona.id;
+                    return (
+                      <button
+                        key={persona.id}
+                        onClick={() => !isStreaming && setActivePersona(persona)}
+                        disabled={isStreaming}
+                        className={`w-full text-left p-4 rounded-[4px] border transition-all duration-300 flex flex-col gap-1 relative ${
+                          isSelected 
+                            ? `bg-[#FAFBFB] ${persona.borderColor} shadow-xs` 
+                            : 'bg-white border-transparent hover:border-neutral-200 opacity-60 hover:opacity-90'
+                        }`}
+                      >
+                        {isSelected && (
+                          <div className="absolute left-0 top-0 h-full w-[3px] bg-[#1C3D2E] rounded-l-[4px]" />
+                        )}
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-2.5 h-2.5 rounded-full ${persona.avatarColor}`} />
+                          <span className="text-xs font-semibold text-[#121314] tracking-tight">{persona.name}</span>
+                        </div>
+                        <span className="text-[11px] text-[#454947] pl-5 font-medium">{persona.title}</span>
+                        <span className="text-[10px] text-neutral-400 pl-5 font-mono tracking-tighter mt-1">{persona.firmographic}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-8 border-t border-neutral-100 mt-8 hidden lg:block">
+                <div className="text-[10px] font-mono tracking-tight text-neutral-400 uppercase">System Feedback Loop</div>
+                <div className="text-xs text-[#5A7973] mt-1 italic font-medium">“Revealing micro-friction vectors prior to codebase implementation.”</div>
+              </div>
+            </div>
+
+            {/* Right Column Output Log Area */}
+            <div className="lg:col-span-8 p-6 sm:p-8 bg-[#FAFBFB] flex flex-col justify-between">
+              <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200 pb-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono text-neutral-400 bg-neutral-200/50 px-2.5 py-0.5 rounded">SESSION // SIM_04</span>
+                    <span className="text-xs text-neutral-500 font-mono tracking-tight">Active Core Route: /app/simulations/sandbox</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-amber-500 animate-pulse' : 'bg-green-600'}`} />
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-600">
+                      {isStreaming ? 'Streaming Insight Architecture' : 'Pipeline Synchronized'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-[#D1D5D3] p-4 rounded-[4px] mb-4 shadow-2xs">
+                  <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-[#5A7973] block mb-1.5 font-bold">Injected Market Query</span>
+                  <p className="text-xs sm:text-sm font-normal text-neutral-800 italic leading-relaxed">
+                    "{activePersona.promptQuestion}"
+                  </p>
+                </div>
+
+                <div className="bg-[#1C3D2E] text-neutral-100 p-5 sm:p-6 rounded-[4px] shadow-inner font-mono text-[12px] sm:text-[13px] leading-relaxed min-h-[160px] relative overflow-hidden border border-black/10">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-black/10" />
+                  <span className="text-[9px] uppercase tracking-[0.25em] text-[#5A7973] block mb-3 font-bold opacity-90">Simulated Perspective Output // Signal Stream</span>
+                  
+                  <p className="text-neutral-200 tracking-tight font-light whitespace-pre-wrap">
+                    {simulatedStreamText}
+                    {isStreaming && (
+                      <span className="inline-block w-1.5 h-4 bg-emerald-400 ml-1 animated-streaming-cursor align-middle" />
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-neutral-200 pt-6 mt-8">
+                <p className="text-[11px] text-[#454947] max-w-sm leading-normal">
+                  This console demonstrates real-time pipeline behavior. Actual dashboard arrays support mass multi-persona matrix indexing and auto-generated data summaries.
+                </p>
+                <button
+                  onClick={() => {
+                    if (!isStreaming) {
+                      const current = activePersona;
+                      setActivePersona({ ...current });
+                    }
+                  }}
+                  disabled={isStreaming}
+                  className={`px-5 py-2.5 rounded-[4px] text-[10px] font-medium uppercase tracking-[0.2em] transition-all flex items-center gap-2 whitespace-nowrap ${
+                    isStreaming
+                      ? 'bg-neutral-200 text-neutral-400 border border-transparent cursor-not-allowed'
+                      : 'bg-white border border-neutral-300 hover:border-[#1C3D2E] text-neutral-800 shadow-2xs hover:shadow-xs'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">refresh</span>
+                  Re-Run Simulation
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </RevealSection>
+
       {/* Methodology Section */}
       <RevealSection>
-        <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1c2d24]/10 scroll-mt-16">
+        <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-t border-b border-[#1C3D2E]/10 scroll-mt-16">
           <div 
             id="methodology-header" 
             onClick={() => setIsMethodologyActive(!isMethodologyActive)}
@@ -215,11 +407,11 @@ export default function LandingPage() {
             </div>
             <div className="hidden sm:block h-px flex-grow ml-16 bg-[#b5bab7]/20 relative">
               <div 
-                className="absolute inset-0 bg-[#1c2d24]/30 h-full transition-all duration-600"
+                className="absolute inset-0 bg-[#1C3D2E]/30 h-full transition-all duration-600"
                 style={{ 
                   width: isMethodologyActive ? '100%' : '0%', 
                   opacity: isMethodologyActive ? 1 : 0,
-                  backgroundColor: isMethodologyActive ? '#1c2d24' : 'rgba(28, 45, 36, 0.3)'
+                  backgroundColor: isMethodologyActive ? '#1C3D2E' : 'rgba(28, 61, 46, 0.3)'
                 }} 
               />
             </div>
@@ -228,8 +420,8 @@ export default function LandingPage() {
             {/* Step 01 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1c2d24]/10 leading-none group-hover:text-[#1c2d24]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1c2d24] transition-colors text-2xl sm:text-3xl">hub</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C3D2E]/10 leading-none group-hover:text-[#1C3D2E]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
+                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C3D2E] transition-colors text-2xl sm:text-3xl">hub</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
@@ -239,8 +431,8 @@ export default function LandingPage() {
             {/* Step 02 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1c2d24]/10 leading-none group-hover:text-[#1c2d24]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1c2d24] transition-colors text-2xl sm:text-3xl">psychology</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C3D2E]/10 leading-none group-hover:text-[#1C3D2E]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
+                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C3D2E] transition-colors text-2xl sm:text-3xl">psychology</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
@@ -250,8 +442,8 @@ export default function LandingPage() {
             {/* Step 03 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-colors duration-700">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
-                <span className="text-[44px] sm:text-[56px] text-[#1c2d24]/10 leading-none group-hover:text-[#1c2d24]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
-                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1c2d24] transition-colors text-2xl sm:text-3xl">location_on</span>
+                <span className="text-[44px] sm:text-[56px] text-[#1C3D2E]/10 leading-none group-hover:text-[#1C3D2E]/20 transition-colors" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
+                <span className="material-symbols-outlined group-hover-animated-symbol text-neutral-400 group-hover:text-[#1C3D2E] transition-colors text-2xl sm:text-3xl">location_on</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
@@ -264,7 +456,7 @@ export default function LandingPage() {
 
       {/* ROI Calculator */}
       <RevealSection>
-        <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#fafbfa] border-b border-[#1c2d24]/10 relative overflow-hidden scroll-mt-16">
+        <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#fafbfa] border-b border-[#1C3D2E]/10 relative overflow-hidden scroll-mt-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-start">
             <div className="lg:col-span-5">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
@@ -286,7 +478,7 @@ export default function LandingPage() {
                       <span className="text-neutral-900 font-normal text-xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{roiValue}</span>
                     </div>
                     <input 
-                      className="w-full h-[2px] bg-[#e2e2e2] appearance-none accent-[#1c2d24] cursor-pointer rounded" 
+                      className="w-full h-[2px] bg-[#e2e2e2] appearance-none accent-[#1C3D2E] cursor-pointer rounded" 
                       id="roi-range" 
                       max="30" 
                       min="1" 
@@ -312,17 +504,17 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="p-5 sm:p-6 bg-[#e9edea]">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1c2d24] block mb-2">SignalRoom</span>
-                      <span className="text-[28px] font-normal tracking-tighter text-[#1c2d24]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
-                      <p className="text-[11px] text-[#1c2d24] font-medium mb-3">unlimited/month</p>
-                      <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1c2d24]">
+                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1C3D2E] block mb-2">SignalRoom</span>
+                      <span className="text-[28px] font-normal tracking-tighter text-[#1C3D2E]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
+                      <p className="text-[11px] text-[#1C3D2E] font-medium mb-3">unlimited/month</p>
+                      <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1C3D2E]">
                         <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
                         <div className="flex justify-between"><span>Per interview</span><span className="font-medium">~$0</span></div>
                         <div className="flex justify-between"><span>Hours</span><span className="font-medium">&lt; 1h</span></div>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-[#1c2d24] p-5 sm:p-6 grid grid-cols-2 gap-4 text-white rounded-[4px]">
+                  <div className="bg-[#1C3D2E] p-5 sm:p-6 grid grid-cols-2 gap-4 text-white rounded-[4px]">
                     <div>
                       <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-300 block mb-1">You save</span>
                       <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
@@ -345,7 +537,7 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <RevealSection>
-        <section id="pricing" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1c2d24]/10 scroll-mt-16">
+        <section id="pricing" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1C3D2E]/10 scroll-mt-16">
           <div className="text-center mb-12 sm:mb-20">
             <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600">Subscription Models</span>
             <h2 className="text-[30px] sm:text-[36px] mt-3 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simple pricing. No surprises.</h2>
@@ -366,17 +558,17 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Core templates</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Basic reports</li>
               </ul>
-              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
+              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1C3D2E] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
             {/* Plan 2 */}
             <div className="p-6 sm:p-10 flex flex-col bg-[#e9edea] relative shadow-xl shadow-black/[0.01]">
-              <div className="absolute top-0 right-0 bg-[#1c2d24] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
-              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1c2d24] mb-8 sm:mb-10">02 // Core</span>
-              <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1c2d24] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
-              <p className="text-xs text-[#1c2d24] font-medium mb-4">For teams validating fast</p>
+              <div className="absolute top-0 right-0 bg-[#1C3D2E] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
+              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1C3D2E] mb-8 sm:mb-10">02 // Core</span>
+              <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1C3D2E] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
+              <p className="text-xs text-[#1C3D2E] font-medium mb-4">For teams validating fast</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#1c2d24]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
-                <span className="text-[11px] text-[#1c2d24] font-medium uppercase tracking-widest">/ month</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#1C3D2E]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
+                <span className="text-[11px] text-[#1C3D2E] font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited personas</li>
@@ -385,7 +577,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Full reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona testing</li>
               </ul>
-              <Link href="/signup" className="w-full text-center bg-[#1c2d24] text-white py-4 text-[11px] font-medium uppercase tracking-[0.3em] hover:bg-[#2e533e] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
+              <Link href="/signup" className="w-full text-center bg-[#1C3D2E] text-white py-4 text-[11px] font-medium uppercase tracking-[0.3em] hover:bg-[#5A7973] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
             </div>
             {/* Plan 3 */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group thin-border">
@@ -402,7 +594,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority support</li>
               </ul>
-              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
+              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1C3D2E] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
           </div>
         </section>
@@ -410,7 +602,7 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <RevealSection>
-        <section className="relative bg-[#1c2d24] text-white py-20 sm:py-24 px-6 sm:px-12 overflow-hidden border-b border-[#1c2d24]/10">
+        <section className="relative bg-[#1C3D2E] text-white py-20 sm:py-24 px-6 sm:px-12 overflow-hidden border-b border-[#1C3D2E]/10">
           <div className="relative z-10 flex flex-col items-center text-center">
             <span className="text-[11px] font-medium uppercase tracking-[0.6em] mb-8 sm:mb-10 opacity-60">Final Directive</span>
             <h2 className="text-[34px] sm:text-[48px] md:text-[64px] leading-[1.15] lg:leading-[1.1] max-w-4xl tracking-tighter font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
@@ -421,10 +613,10 @@ export default function LandingPage() {
               Validate faster. Reduce risk. Build what customers actually want.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-10 w-full sm:w-auto">
-              <Link href="/signup" className="w-full sm:w-auto bg-white text-[#1c2d24] px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#f0f2f0] transition-all duration-300 rounded-[4px] text-center">
+              <Link href="/signup" className="w-full sm:w-auto bg-white text-[#1C3D2E] px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#f0f2f0] transition-all duration-300 rounded-[4px] text-center">
                 Find the signal
               </Link>
-              <Link href="/contact" className="w-full sm:w-auto border border-white/20 px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-white hover:text-[#1c2d24] transition-all duration-500 rounded-[4px] text-center">
+              <Link href="/contact" className="w-full sm:w-auto border border-white/20 px-12 py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-white hover:text-[#1C3D2E] transition-all duration-500 rounded-[4px] text-center">
                 Talk to Strategist
               </Link>
             </div>
@@ -451,13 +643,13 @@ export default function LandingPage() {
         </div>
         <div className="md:col-start-6 md:col-span-2 space-y-3 sm:space-y-4">
           <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-medium block mb-4 sm:mb-6">Legal</span>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1c2d24] transition-colors font-medium" href="/privacy">Privacy</Link>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1c2d24] transition-colors font-medium" href="/terms">Terms</Link>
+          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C3D2E] transition-colors font-medium" href="/privacy">Privacy</Link>
+          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C3D2E] transition-colors font-medium" href="/terms">Terms</Link>
         </div>
         <div className="md:col-span-2 space-y-3 sm:space-y-4">
           <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-medium block mb-4 sm:mb-6">Support</span>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1c2d24] transition-colors font-medium" href="/faq">FAQ</Link>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1c2d24] transition-colors font-medium" href="/contact">Contact</Link>
+          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C3D2E] transition-colors font-medium" href="/faq">FAQ</Link>
+          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1C3D2E] transition-colors font-medium" href="/contact">Contact</Link>
         </div>
         <div className="sm:col-span-2 md:col-span-4 text-left sm:text-right flex flex-col justify-end mt-8 sm:mt-12 md:mt-0">
           <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-600 font-medium leading-loose">
