@@ -138,11 +138,15 @@ export default function LandingPage() {
     <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased">
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
-      {/* High-Contrast Print-Quality Editorial Paper Grain Overlay */}
+      {/* High-Visibility Editorial Canvas Linen Fine Line Texture Overlay */}
       <div 
-        className="pointer-events-none fixed inset-0 z-0 opacity-[0.06] mix-blend-multiply"
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.12] mix-blend-multiply"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.99' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperNoise)'/%3E%3C/svg%3E")`
+          backgroundImage: `
+            linear-gradient(rgba(28, 38, 33, 0.15) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(28, 38, 33, 0.15) 1px, transparent 1px)
+          `,
+          backgroundSize: '4px 4px'
         }}
       />
 
@@ -171,6 +175,16 @@ export default function LandingPage() {
         }
         .editorial-stream-cursor {
           animation: subtleCursorBlink 1s infinite;
+        }
+        
+        /* Premium Soft Bounce Style Block */
+        @keyframes clearIconBounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-7px) scale(1.04); }
+        }
+        .group:hover .animate-editorial-bounce {
+          animation: clearIconBounce 1.4s ease-in-out infinite;
+          color: #1C2621 !important;
         }
       `}</style>
 
@@ -432,9 +446,9 @@ export default function LandingPage() {
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
-                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] transform group-hover:-translate-y-2 group-hover:scale-110 group-hover:text-[#1C2621]">hub</span>
+                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">hub</span>
               </div>
-              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314] transition-all duration-500 transform group-hover:translate-x-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
+              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Transform assumptions into intelligence. Bring your customer, market, and product context together to build a foundation for smarter decisions.
               </p>
@@ -444,9 +458,9 @@ export default function LandingPage() {
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
-                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] transform group-hover:-translate-y-2 group-hover:scale-110 group-hover:text-[#1C2621]">psychology</span>
+                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">psychology</span>
               </div>
-              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314] transition-all duration-500 transform group-hover:translate-x-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
+              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Understand your customers at scale. Model customer perspectives and uncover motivations, objections, and opportunities before investing resources.
               </p>
@@ -456,9 +470,9 @@ export default function LandingPage() {
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1C2621]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
-                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] transform group-hover:-translate-y-2 group-hover:scale-110 group-hover:text-[#1C2621]">location_on</span>
+                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">location_on</span>
               </div>
-              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314] transition-all duration-500 transform group-hover:translate-x-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
+              <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Move forward with confidence. Convert customer signals into strategic recommendations that help teams reduce risk and act faster.
               </p>
