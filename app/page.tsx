@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import IntelligenceSignal from '@/components/IntelligenceSignal';
 
-// Scroll Reveal Wrapper Component for Vercel/Optimus Effect
 function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode; delay?: string }) {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -90,7 +89,6 @@ export default function LandingPage() {
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0);
   const [displayedWord, setDisplayedWord] = useState<string>('');
 
-  // Sandbox UI Sync States
   const [selectedPersona, setSelectedPersona] = useState<DashboardPersona>(DASHBOARD_PERSONAS[0]);
   const [streamingText, setStreamingText] = useState<string>('');
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
@@ -115,7 +113,6 @@ export default function LandingPage() {
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
 
-  // Gentle layout stream typing effect
   useEffect(() => {
     setStreamingText('');
     setIsSimulating(true);
@@ -139,7 +136,6 @@ export default function LandingPage() {
     <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased">
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
-      {/* High-Visibility Editorial Canvas Linen Fine Line Texture Overlay */}
       <div 
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.12] mix-blend-multiply"
         style={{
@@ -151,7 +147,6 @@ export default function LandingPage() {
         }}
       />
 
-      {/* Global Style Rules */}
       <style jsx global>{`
         html { scroll-behavior: smooth; }
         @keyframes premiumCharIn {
@@ -178,7 +173,6 @@ export default function LandingPage() {
           animation: subtleCursorBlink 1s infinite;
         }
         
-        /* Premium Soft Bounce Style Block */
         @keyframes clearIconBounce {
           0%, 100% { transform: translateY(0) scale(1); }
           50% { transform: translateY(-7px) scale(1.04); }
@@ -188,7 +182,6 @@ export default function LandingPage() {
           color: #1A3024 !important;
         }
 
-        /* Enhanced light-sweep animation block - adjusted visibility and 15s timeframe */
         .eyebrow-shine-wrap {
           position: relative;
           display: inline-block;
@@ -239,7 +232,7 @@ export default function LandingPage() {
 
       {/* Hero Header Section */}
       <header className="relative pt-16 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <span className="eyebrow-shine-wrap">
               <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
@@ -248,46 +241,44 @@ export default function LandingPage() {
             <div className="hidden sm:block h-px w-20 bg-[#1A3024]/10" />
           </div>
 
-          {/* Master Flex Row: Re-anchors description layout boxes inline next to the main title */}
-          <div className="md:col-span-12 grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
-            <div className="lg:col-span-7 overflow-visible">
-              <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                Your market has {' '}
-                <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
-                  <span className="relative inline-flex overflow-visible">
-                    {displayedWord.split('').map((char, idx) => (
-                      <span 
-                        key={`${currentWordIndex}-${idx}`}
-                        className="char-reveal-span"
-                        style={{ animationDelay: `${idx * 40}ms` }}
-                      >
-                        {char === ' ' ? '\u00A0' : char}
-                      </span>
-                    ))}
-                  </span>
-                  <span>.</span>
-                </span><br className="hidden lg:block" />
-                <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
-              </h1>
-            </div>
-
-            <div className="lg:col-span-5 pt-4 sm:pt-0 flex flex-col justify-end">
-              <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
-                <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
-                <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.</p>
-                <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
-              </div>
-              <div className="flex items-center gap-8">
-                <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1A3024]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1A3024] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
-                  Explore Platform
-                </a>
-              </div>
+          <div className="md:col-span-12 lg:col-span-6 overflow-visible">
+            <h1 className="text-[38px] sm:text-[64px] lg:text-[76px] xl:text-[84px] leading-[1.1] tracking-tight font-normal text-[#121314] break-words" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Your market has {' '}
+              <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[180px]">
+                <span className="relative inline-flex overflow-visible">
+                  {displayedWord.split('').map((char, idx) => (
+                    <span 
+                      key={`${currentWordIndex}-${idx}`}
+                      className="char-reveal-span"
+                      style={{ animationDelay: `${idx * 40}ms` }}
+                    >
+                      {char === ' ' ? '\u00A0' : char}
+                    </span>
+                  ))}
+                </span>
+                <span>.</span>
+              </span><br />
+              <span className="inline-block mt-1">Now you can ask.</span>
+            </h1>
+            
+            {/* Custom sizing constraint bounding the vector loop strictly within the first half width on the left side */}
+            <div className="mt-8 w-full max-w-[550px]">
+              <IntelligenceSignal />
             </div>
           </div>
 
-          {/* Connected Vector Component: Placed right beneath header, spanning from left wall edge up to the text box */}
-          <div className="md:col-span-12 mt-6 lg:mt-4">
-            <IntelligenceSignal />
+          {/* Restored text container position right below the headline column framework */}
+          <div className="md:col-span-12 lg:col-span-6 pt-6 lg:pt-2 flex flex-col justify-start">
+            <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
+              <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
+              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.</p>
+              <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
+            </div>
+            <div className="flex items-center gap-8">
+              <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1A3024]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1A3024] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
+                Explore Platform
+              </a>
+            </div>
           </div>
         </div>
       </header>
@@ -297,11 +288,9 @@ export default function LandingPage() {
         <section id="dashboard-replica" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20 z-10 relative">
           <div className="bg-[#F4F5F4] border border-[#E3E5E3] rounded-[12px] shadow-xs min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
             
-            {/* Left Sidebar Layout */}
             <div className="md:col-span-3 lg:col-span-2 bg-white border-r border-[#E3E5E3] p-5 flex flex-col justify-between hidden md:flex">
               <div className="space-y-8">
                 <div className="px-2 text-[11px] font-mono tracking-widest text-neutral-400 font-medium uppercase">Navigation</div>
-                
                 <div className="space-y-1">
                   {[
                     { n: 'Home', i: 'home', a: false },
@@ -325,7 +314,6 @@ export default function LandingPage() {
                   ))}
                 </div>
               </div>
-
               <div className="pt-6 border-t border-[#E3E5E3] space-y-2">
                 <span className="text-[10px] uppercase tracking-wider font-semibold font-mono text-neutral-400 block px-2">Recent Projects</span>
                 <div className="flex items-center gap-2 px-2 py-1 text-[12px] text-neutral-700 font-medium">
@@ -335,11 +323,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Main Workspace Canvas Container */}
             <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-10 flex flex-col justify-between bg-[#F4F5F4] relative">
               <div>
-                
-                {/* Clean Top Row Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 mb-6">
                   <div>
                     <h2 className="text-[32px] font-normal text-neutral-900 tracking-tight leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Personas</h2>
@@ -353,7 +338,6 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Sub-Category Horizon Ribbon */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-[#E3E5E3] text-[12px] whitespace-nowrap font-medium">
                   <span className="bg-[#1A3024] text-white px-3 py-1.5 rounded-[6px]">All Personas <span className="opacity-60 ml-1 text-xs bg-black/20 px-1.5 py-0.5 rounded-full">3</span></span>
                   <span className="border border-[#E3E5E3] text-neutral-500 px-3 py-1.5 rounded-[6px] bg-white">Awareness <span className="opacity-50 text-xs">0</span></span>
@@ -361,7 +345,6 @@ export default function LandingPage() {
                   <span className="border border-[#E3E5E3] text-neutral-500 px-3 py-1.5 rounded-[6px] bg-white">Purchase <span className="opacity-50 text-xs">0</span></span>
                 </div>
 
-                {/* Dashboard Persona Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {DASHBOARD_PERSONAS.map((persona) => {
                     const isSelected = selectedPersona.id === persona.id;
@@ -386,8 +369,6 @@ export default function LandingPage() {
                               </p>
                             </div>
                           </div>
-
-                          {/* Dynamic Attribute Pill Tags Horizon */}
                           <div className="flex flex-wrap gap-1.5 mb-5">
                             {persona.tags.map((tag, tIdx) => (
                               <span key={tIdx} className="bg-[#F4F5F4] text-neutral-600 text-[10px] px-2.5 py-0.5 rounded-[4px] border border-[#E3E5E3]/60 font-light">
@@ -395,14 +376,10 @@ export default function LandingPage() {
                               </span>
                             ))}
                           </div>
-
-                          {/* Bio Segment Copy */}
                           <p className="text-[12px] text-neutral-600 leading-relaxed font-light mb-6">
                             {persona.bio}
                           </p>
                         </div>
-
-                        {/* Interactive Start Action Button Bar */}
                         <div className="grid grid-cols-2 gap-3 mt-auto pt-4 border-t border-neutral-200/50">
                           <button disabled className="w-full text-center border border-[#E3E5E3] bg-white text-neutral-700 py-2 rounded-[6px] text-[12px] font-medium cursor-not-allowed">View Details</button>
                           <button 
@@ -420,7 +397,6 @@ export default function LandingPage() {
                   })}
                 </div>
 
-                {/* Clean Editorial Insight Panel */}
                 <div className="mt-8 bg-white border border-[#E3E5E3] p-6 rounded-[8px] relative transition-all">
                   <div className="flex items-center justify-between border-b border-[#E3E5E3]/60 pb-3 mb-4">
                     <div className="flex items-center gap-2">
@@ -438,15 +414,12 @@ export default function LandingPage() {
                     )}
                   </p>
                 </div>
-
               </div>
 
-              {/* Informative Environment Banner */}
               <div className="pt-4 border-t border-[#E3E5E3] mt-8 flex justify-between items-center text-neutral-400 text-[11px] font-light">
                 <span>Interactive Sandboxed Preview Engine</span>
                 <span className="text-[#1A3024] font-medium uppercase tracking-wider text-[10px]">Select cards above to alternate streams</span>
               </div>
-
             </div>
           </div>
         </section>
@@ -476,8 +449,6 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden bg-white">
-            
-            {/* Step 01 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
@@ -488,8 +459,6 @@ export default function LandingPage() {
                 Transform assumptions into intelligence. Bring your customer, market, and product context together to build a foundation for smarter decisions.
               </p>
             </div>
-
-            {/* Step 02 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
@@ -500,8 +469,6 @@ export default function LandingPage() {
                 Understand your customers at scale. Model customer perspectives and uncover motivations, objections, and opportunities before investing resources.
               </p>
             </div>
-
-            {/* Step 03 */}
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
@@ -512,7 +479,6 @@ export default function LandingPage() {
                 Move forward with confidence. Convert customer signals into strategic recommendations that help teams reduce risk and act faster.
               </p>
             </div>
-
           </div>
         </section>
       </RevealSection>
@@ -542,12 +508,7 @@ export default function LandingPage() {
                     </div>
                     <input 
                       className="w-full h-[2px] bg-[#e2e2e2] appearance-none accent-[#1A3024] cursor-pointer rounded" 
-                      id="roi-range" 
-                      max="30" 
-                      min="1" 
-                      step="1" 
-                      type="range" 
-                      value={roiValue}
+                      id="roi-range" max="30" min="1" step="1" type="range" value={roiValue}
                       onChange={(e) => setRoiValue(parseInt(e.target.value))}
                     />
                     <div className="flex justify-between mt-3 text-[10px] tracking-[0.2em] font-medium text-neutral-600">
@@ -606,7 +567,6 @@ export default function LandingPage() {
             <h2 className="text-[30px] sm:text-[36px] mt-3 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simple pricing. No surprises.</h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden bg-white">
-            {/* Plan 1 */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">01 // Pulse</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Pulse</h3>
@@ -623,7 +583,6 @@ export default function LandingPage() {
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
-            {/* Plan 2 */}
             <div className="p-6 sm:p-10 flex flex-col bg-[#e9edea] relative shadow-xl shadow-black/[0.01]">
               <div className="absolute top-0 right-0 bg-[#1A3024] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1A3024] mb-8 sm:mb-10">02 // Core</span>
@@ -642,7 +601,6 @@ export default function LandingPage() {
               </ul>
               <Link href="/signup" className="w-full text-center bg-[#1A3024] text-white py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#5A7973] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
             </div>
-            {/* Plan 3 */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group thin-border">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">03 // Scale</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Broadcast</h3>
