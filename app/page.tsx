@@ -44,7 +44,6 @@ export default function LandingPage() {
   const [isMethodologyActive, setIsMethodologyActive] = useState<boolean>(false);
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0);
   const [displayedWord, setDisplayedWord] = useState<string>('');
-  const [isCharIn, setIsCharIn] = useState<boolean>(true);
 
   const wordsDataset = ["opinions", "objections", "blindspots", "expectations"];
 
@@ -59,18 +58,13 @@ export default function LandingPage() {
   const annualSavings = savings * 12;
   const calculatedReduction = Math.round((1 - (10 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
 
-  // Character-by-Character Word Animation Loop with Crisp Swap Timings
+  // Instantly Swap Word State and Cascade Characters In
   useEffect(() => {
     setDisplayedWord(wordsDataset[currentWordIndex]);
-    setIsCharIn(true);
 
     const rotationInterval = setInterval(() => {
-      setIsCharIn(false); // Snap opacity out
-      
-      setTimeout(() => {
-        setCurrentWordIndex((prev) => (prev + 1) % wordsDataset.length);
-      }, 300); // Fast exit window to swap indices seamlessly
-    }, 4000);
+      setCurrentWordIndex((prev) => (prev + 1) % wordsDataset.length);
+    }, 3800); // Tightened dwell cycle since there is no exit latency
 
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
@@ -96,7 +90,7 @@ export default function LandingPage() {
       <style jsx global>{`
         html { scroll-behavior: smooth; }
         
-        /* Premium Entry Fade-In Reveal */
+        /* Premium Cascade Entry Reveal */
         @keyframes premiumCharIn {
           0% { 
             opacity: 0; 
@@ -110,29 +104,11 @@ export default function LandingPage() {
           }
         }
         
-        /* Fast, Clean Exit Dissolve to prevent wonky tracking gaps */
-        @keyframes premiumCharOut {
-          0% { 
-            opacity: 1;
-            filter: blur(0);
-          }
-          100% { 
-            opacity: 0; 
-            filter: blur(2px);
-          }
-        }
-        
         .char-reveal-span {
           display: inline-block;
           opacity: 0;
           will-change: transform, opacity;
-        }
-
-        .animate-char-in {
           animation: premiumCharIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .animate-char-out {
-          animation: premiumCharOut 0.25s ease-out forwards;
         }
 
         /* SVG Mobile High-Density Anti-Blur Fix overrides */
@@ -195,8 +171,8 @@ export default function LandingPage() {
                   {displayedWord.split('').map((char, idx) => (
                     <span 
                       key={`${currentWordIndex}-${idx}`}
-                      className={`char-reveal-span ${isCharIn ? 'animate-char-in' : 'animate-char-out'}`}
-                      style={{ animationDelay: isCharIn ? `${idx * 40}ms` : '0ms' }}
+                      className="char-reveal-span"
+                      style={{ animationDelay: `${idx * 40}ms` }}
                     >
                       {char === ' ' ? '\u00A0' : char}
                     </span>
