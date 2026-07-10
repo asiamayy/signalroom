@@ -59,7 +59,7 @@ export default function LandingPage() {
   const annualSavings = savings * 12;
   const calculatedReduction = Math.round((1 - (10 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
 
-  // Character-by-Character Word Animation Loop
+  // Character-by-Character Word Animation Loop with Flash Preventions
   useEffect(() => {
     setDisplayedWord(wordsDataset[currentWordIndex]);
     setIsCharIn(true);
@@ -69,7 +69,7 @@ export default function LandingPage() {
       
       setTimeout(() => {
         setCurrentWordIndex((prev) => (prev + 1) % wordsDataset.length);
-      }, 800); // Expanded gap to let the slow fade-out complete perfectly
+      }, 700); // Perfectly synced to let the slow fade-out complete first
     }, 4000); // 4-second dwell cycle for premium pacing
 
     return () => clearInterval(rotationInterval);
@@ -96,11 +96,11 @@ export default function LandingPage() {
       <style jsx global>{`
         html { scroll-behavior: smooth; }
         
-        /* Slow, Elegant Character Reveals (No Choppiness) */
+        /* Slow, Elegant Character Reveals (No Flash / Choppiness) */
         @keyframes premiumCharIn {
           0% { 
             opacity: 0; 
-            transform: translateY(0.35em) scale(0.96); 
+            transform: translateY(0.25em) scale(0.97); 
             filter: blur(4px); 
           }
           100% { 
@@ -117,18 +117,22 @@ export default function LandingPage() {
           }
           100% { 
             opacity: 0; 
-            transform: translateY(-0.35em) scale(0.96); 
+            transform: translateY(-0.25em) scale(0.97); 
             filter: blur(4px); 
           }
         }
         
-        .animate-char-in {
+        .char-reveal-span {
           display: inline-block;
-          animation: premiumCharIn 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0; /* Guard entry flash */
+          will-change: transform, opacity;
+        }
+
+        .animate-char-in {
+          animation: premiumCharIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .animate-char-out {
-          display: inline-block;
-          animation: premiumCharOut 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: premiumCharOut 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         /* SVG Mobile High-Density Anti-Blur Fix overrides */
@@ -186,13 +190,13 @@ export default function LandingPage() {
           <div className="md:col-span-12 lg:col-span-10 xl:col-span-9 overflow-visible">
             <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Your market has {' '}
-              <span className="relative inline-block text-[#2e533e] italic whitespace-nowrap">
-                <span className="relative inline-block">
+              <span className="relative inline-block text-[#2e533e] italic whitespace-nowrap min-w-[220px]">
+                <span className="relative inline-flex overflow-visible">
                   {displayedWord.split('').map((char, idx) => (
                     <span 
                       key={`${currentWordIndex}-${idx}`}
-                      className={isCharIn ? 'animate-char-in' : 'animate-char-out'}
-                      style={{ animationDelay: `${idx * 40}ms` }}
+                      className={`char-reveal-span ${isCharIn ? 'animate-char-in' : 'animate-char-out'}`}
+                      style={{ animationDelay: `${idx * 45}ms` }}
                     >
                       {char === ' ' ? '\u00A0' : char}
                     </span>
@@ -209,7 +213,7 @@ export default function LandingPage() {
             </p>
             <div className="border-l-2 pl-4 mb-6 border-[#2e533e]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#2e533e] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
-              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
+              <p className="text-[11px] sm:text-[xs] text-neutral-600 leading-relaxed mb-2">Create AI customer models that represent your target audience. Interview them, test ideas, validate decisions, and generate structured insights in minutes — not weeks.</p>
               <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
             </div>
             <div className="flex items-center gap-8">
@@ -422,7 +426,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority support</li>
               </ul>
-              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
+              <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1c2d24] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
           </div>
         </section>
