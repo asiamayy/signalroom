@@ -8,7 +8,8 @@ interface LogoProps {
   className?: string
 }
 
-const WIDTHS = { sm: 120, md: 220, lg: 280, xl: 340 }
+const WIDTHS = { sm: 150, md: 280, lg: 360, xl: 440 }
+const LOGO_ASPECT = 1188 / 698
 
 export function Logo({ size = 'md', href, className }: LogoProps) {
   const w = WIDTHS[size]
@@ -18,7 +19,7 @@ export function Logo({ size = 'md', href, className }: LogoProps) {
         src="/signalroom-logo.svg"
         alt="Signalroom"
         width={w}
-        height={Math.round(w / 2.5)}
+        height={Math.round(w / LOGO_ASPECT)}
         style={{ width: `${w}px`, height: 'auto' }}
         priority
         unoptimized

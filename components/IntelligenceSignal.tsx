@@ -28,6 +28,17 @@ const MESH_LINES: [number, number][] = [
   [12, 14], [7, 5], [9, 6], [13, 11],
 ]
 
+// a handful of ambient mesh nodes get an independent, staggered pulse — each
+// with its own duration/delay so they never sync up, reading as scattered
+// stylistic "activity" across the network rather than the narrative sequence
+const PULSING_MESH: { idx: number; duration: string; delay: string }[] = [
+  { idx: 1, duration: '4.2s', delay: '0.3s' },
+  { idx: 4, duration: '5.1s', delay: '1.8s' },
+  { idx: 7, duration: '3.6s', delay: '0.9s' },
+  { idx: 10, duration: '4.8s', delay: '2.4s' },
+  { idx: 13, duration: '3.9s', delay: '1.2s' },
+]
+
 // the four narrative concept nodes, matching the four labels below
 const n = {
   a: { cx: 80, cy: 100 },
@@ -38,8 +49,8 @@ const n = {
 
 export default function IntelligenceSignal() {
   return (
-    <div className="relative w-full h-32 sm:h-28 mt-4">
-      <svg viewBox="0 0 600 190" preserveAspectRatio="none" className="absolute top-0 left-0 w-full h-[75%]">
+    <div className="relative w-full h-56 sm:h-56 mt-4">
+      <svg viewBox="0 0 600 190" preserveAspectRatio="none" className="absolute top-0 left-0 w-full h-[80%]">
 
         {/* dense ambient mesh — always on, gives the graphic its density */}
         <g className="mesh">
@@ -54,6 +65,23 @@ export default function IntelligenceSignal() {
           {MESH_NODES.map((node, idx) => (
             <circle key={idx} cx={node.cx} cy={node.cy} r="2.25" className="mesh-node" />
           ))}
+          {PULSING_MESH.map(({ idx, duration, delay }) => {
+            const node = MESH_NODES[idx]
+            return (
+              <circle
+                key={idx}
+                cx={node.cx}
+                cy={node.cy}
+                r="2.25"
+                className="mesh-node-pulse"
+                style={{
+                  transformOrigin: `${node.cx}px ${node.cy}px`,
+                  animationDuration: duration,
+                  animationDelay: delay,
+                }}
+              />
+            )
+          })}
         </g>
 
         {/* narrative links: each concept ties into two nearby mesh nodes, lit as it activates */}
@@ -80,8 +108,8 @@ export default function IntelligenceSignal() {
         <circle cx={n.c.cx} cy={n.c.cy} r="3.5" fill="#5F7A70" className="concept-node node-c" />
       </svg>
 
-      <div className="absolute bottom-0 left-0 w-full h-[25%] flex items-start justify-between px-2 sm:px-4">
-        <span className="signal-label label-a text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] max-w-[100px] sm:max-w-none sm:whitespace-nowrap text-left" style={{ color: '#1A3024' }}>
+      <div className="absolute bottom-0 left-0 w-full h-[20%] flex items-start justify-between px-2 sm:px-4">
+        <span className="signal-label label-a text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] max-w-[100px] sm:max-w-[130px] text-left" style={{ color: '#1A3024' }}>
           Customer expectation detected
         </span>
         <span className="signal-label label-b text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] whitespace-nowrap hidden sm:inline" style={{ color: '#1A3024' }}>
@@ -90,7 +118,7 @@ export default function IntelligenceSignal() {
         <span className="signal-label label-p text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] whitespace-nowrap hidden sm:inline" style={{ color: '#1A3024' }}>
           Pattern recognized
         </span>
-        <span className="signal-label label-c text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] max-w-[100px] sm:max-w-none sm:whitespace-nowrap text-right" style={{ color: '#1A3024' }}>
+        <span className="signal-label label-c text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] max-w-[100px] sm:max-w-[130px] text-right" style={{ color: '#1A3024' }}>
           Emerging opportunity
         </span>
       </div>
@@ -100,6 +128,16 @@ export default function IntelligenceSignal() {
            behind the narrative layer */
         .mesh-line { stroke: #8FA097; stroke-width: 0.85; opacity: 0.4; }
         .mesh-node { fill: #8FA097; opacity: 0.55; }
+        .mesh-node-pulse {
+          fill: #5F7A70;
+          animation-name: meshNodePulse;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+        }
+        @keyframes meshNodePulse {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.8); }
+        }
 
         .link {
           stroke: #5F7A70;
@@ -150,16 +188,15 @@ export default function IntelligenceSignal() {
 
         /* ── concept A: opens the sequence ── */
         @keyframes nodeA {
-          0% { opacity: 0.3; transform: scale(1); }
-          3% { opacity: 0.75; transform: scale(1.3); }
-          10% { opacity: 0.55; transform: scale(1); }
-          94% { opacity: 0.55; transform: scale(1); }
-          100% { opacity: 0.3; transform: scale(1); }
+          0%, 2% { opacity: 0.3; }
+          10% { opacity: 0.6; }
+          94% { opacity: 0.6; }
+          100% { opacity: 0.3; }
         }
         @keyframes pulseA {
           0%, 2% { opacity: 0; transform: scale(1); }
-          3% { opacity: 0.5; transform: scale(1); }
-          11% { opacity: 0; transform: scale(4); }
+          8% { opacity: 0.45; transform: scale(1); }
+          22% { opacity: 0; transform: scale(4.2); }
           100% { opacity: 0; transform: scale(1); }
         }
         @keyframes linkA {
@@ -178,16 +215,15 @@ export default function IntelligenceSignal() {
 
         /* ── concept B ── */
         @keyframes nodeB {
-          0%, 20% { opacity: 0.3; transform: scale(1); }
-          23% { opacity: 0.75; transform: scale(1.3); }
-          30% { opacity: 0.55; transform: scale(1); }
-          94% { opacity: 0.55; transform: scale(1); }
-          100% { opacity: 0.3; transform: scale(1); }
+          0%, 20% { opacity: 0.3; }
+          30% { opacity: 0.6; }
+          94% { opacity: 0.6; }
+          100% { opacity: 0.3; }
         }
         @keyframes pulseB {
-          0%, 22% { opacity: 0; transform: scale(1); }
-          23% { opacity: 0.5; transform: scale(1); }
-          31% { opacity: 0; transform: scale(4); }
+          0%, 20% { opacity: 0; transform: scale(1); }
+          26% { opacity: 0.45; transform: scale(1); }
+          40% { opacity: 0; transform: scale(4.2); }
           100% { opacity: 0; transform: scale(1); }
         }
         @keyframes linkB {
@@ -206,16 +242,15 @@ export default function IntelligenceSignal() {
 
         /* ── concept P (pattern recognized) ── */
         @keyframes nodeP {
-          0%, 42% { opacity: 0.3; transform: scale(1); }
-          45% { opacity: 0.75; transform: scale(1.3); }
-          52% { opacity: 0.55; transform: scale(1); }
-          94% { opacity: 0.55; transform: scale(1); }
-          100% { opacity: 0.3; transform: scale(1); }
+          0%, 42% { opacity: 0.3; }
+          52% { opacity: 0.6; }
+          94% { opacity: 0.6; }
+          100% { opacity: 0.3; }
         }
         @keyframes pulseP {
-          0%, 44% { opacity: 0; transform: scale(1); }
-          45% { opacity: 0.5; transform: scale(1); }
-          53% { opacity: 0; transform: scale(4); }
+          0%, 42% { opacity: 0; transform: scale(1); }
+          48% { opacity: 0.45; transform: scale(1); }
+          62% { opacity: 0; transform: scale(4.2); }
           100% { opacity: 0; transform: scale(1); }
         }
         @keyframes linkP {
@@ -234,16 +269,15 @@ export default function IntelligenceSignal() {
 
         /* ── concept C: the sequence completes ── */
         @keyframes nodeC {
-          0%, 66% { opacity: 0.3; transform: scale(1); }
-          69% { opacity: 0.75; transform: scale(1.3); }
-          76% { opacity: 0.55; transform: scale(1); }
-          94% { opacity: 0.55; transform: scale(1); }
-          100% { opacity: 0.3; transform: scale(1); }
+          0%, 66% { opacity: 0.3; }
+          76% { opacity: 0.6; }
+          94% { opacity: 0.6; }
+          100% { opacity: 0.3; }
         }
         @keyframes pulseC {
-          0%, 68% { opacity: 0; transform: scale(1); }
-          69% { opacity: 0.5; transform: scale(1); }
-          77% { opacity: 0; transform: scale(4); }
+          0%, 66% { opacity: 0; transform: scale(1); }
+          72% { opacity: 0.45; transform: scale(1); }
+          86% { opacity: 0; transform: scale(4.2); }
           100% { opacity: 0; transform: scale(1); }
         }
         @keyframes linkC {

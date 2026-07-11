@@ -24,7 +24,7 @@ function DashboardLogo({ width = 140 }: { width?: number }) {
         src="/signalroom-logo-dashboard.svg"
         alt="Signalroom — AI Market Research"
         width={width}
-        height={Math.round(width / 3.182)}
+        height={Math.round(width / 1.702)}
         style={{ width: `${width}px`, height: 'auto' }}
         priority
         unoptimized

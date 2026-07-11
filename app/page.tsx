@@ -208,12 +208,12 @@ export default function LandingPage() {
       {/* TopNavBar */}
       <nav className="fixed top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#1A3024]/10 bg-white/80 px-6 sm:px-12 backdrop-blur-xl">
         <div className="flex items-center">
-          <img 
-            src="/signalroom-logo.svg" 
-            alt="SignalRoom Logo" 
-            width="142"
-            height="36"
-            className="h-9 w-auto object-contain mobile-crisp-vector" 
+          <img
+            src="/signalroom-logo.svg"
+            alt="SignalRoom Logo"
+            width="75"
+            height="44"
+            className="h-11 w-auto object-contain mobile-crisp-vector"
           />
         </div>
         <div className="hidden lg:flex items-center gap-10">
@@ -267,7 +267,7 @@ export default function LandingPage() {
             </h1>
 
             {/* Shifted up cleanly to fill the middle whitespace segment nicely */}
-            <div className="mt-4 mb-4 w-full max-w-[550px] bg-transparent overflow-visible">
+            <div className="mt-4 mb-4 w-full max-w-[650px] bg-transparent overflow-visible">
               <IntelligenceSignal />
             </div>
           </div>
@@ -663,12 +663,12 @@ export default function LandingPage() {
       <footer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-6 px-6 sm:px-12 py-16 sm:py-20 w-full bg-white relative z-10">
         <div className="sm:col-span-2 md:col-span-4">
           <div className="flex items-center gap-3 mb-6">
-            <img 
-              src="/signalroom-logo.svg" 
-              alt="SignalRoom Logo" 
-              width="140"
-              height="35"
-              className="h-8 w-auto object-contain mobile-crisp-vector" 
+            <img
+              src="/signalroom-logo.svg"
+              alt="SignalRoom Logo"
+              width="109"
+              height="64"
+              className="h-16 w-auto object-contain mobile-crisp-vector"
             />
           </div>
           <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-xs mb-6 sm:mb-10 leading-relaxed opacity-90">
