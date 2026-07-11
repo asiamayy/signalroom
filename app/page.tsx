@@ -245,23 +245,25 @@ export default function LandingPage() {
 
           {/* LEFT SIDE: Main Title + Transparent Node Animation Whitespace */}
           <div className="md:col-span-12 lg:col-span-7 flex flex-col justify-between min-h-[350px] overflow-visible">
-            <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words lg:whitespace-nowrap" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Your market has {' '}
-              <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
-                <span className="relative inline-flex overflow-visible">
-                  {displayedWord.split('').map((char, idx) => (
-                    <span 
-                      key={`${currentWordIndex}-${idx}`}
-                      className="char-reveal-span"
-                      style={{ animationDelay: `${idx * 40}ms` }}
-                    >
-                      {char === ' ' ? '\u00A0' : char}
-                    </span>
-                  ))}
+            <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              <span className="block lg:whitespace-nowrap">
+                Your market has {' '}
+                <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
+                  <span className="relative inline-flex overflow-visible">
+                    {displayedWord.split('').map((char, idx) => (
+                      <span
+                        key={`${currentWordIndex}-${idx}`}
+                        className="char-reveal-span"
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                      >
+                        {char === ' ' ? '\u00A0' : char}
+                      </span>
+                    ))}
+                  </span>
+                  <span>.</span>
                 </span>
-                <span>.</span>
-              </span><br className="hidden lg:block" />
-              <span className="inline-block mt-1 lg:mt-2">Now you can ask.</span>
+              </span>
+              <span className="block mt-1 lg:mt-2">Now you can ask.</span>
             </h1>
 
             {/* Shifted up cleanly to fill the middle whitespace segment nicely */}
@@ -270,8 +272,10 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* RIGHT SIDE: Layout Cleaned Up Exactly As Specified */}
-          <div className="md:col-span-12 lg:col-span-5 lg:pt-48 flex flex-col justify-end">
+          {/* RIGHT SIDE: self-start so it never stretches to match the left column's
+              height — its position stays fixed regardless of how tall the node
+              animation is */}
+          <div className="md:col-span-12 lg:col-span-5 lg:pt-64 flex flex-col justify-start lg:self-start">
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               

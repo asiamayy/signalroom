@@ -1,143 +1,264 @@
 'use client'
 
-// Clean 19s sequence mimicking the pure "/\" sketch path with zero intermediate waypoints.
-// Shrunk y-coordinates slightly to shift the absolute physical layout position higher up.
+// A dense, clearly-visible triangulated mesh network (matching the reference
+// "polygon network" style) sits as a constant ambient backdrop — always on
+// screen, not tied to the narrative timing. Layered on top of it are four
+// "concept" nodes (one per label below), each with its own pulsing ring and
+// a highlighted connection into the mesh that lights up as that concept
+// activates in sequence, so the mesh reads as a living, richly-connected
+// network rather than a single line or a sparse, barely-visible scatter.
+//
+// One shared 19s @keyframes clock drives the four concept nodes' opacity via
+// percentage keyframes, so nothing can drift out of sync across loops. The
+// ambient mesh itself is static (always visible) — that's what gives the
+// graphic its density; the animated layer is the narrative on top of it.
 
-const MOBILE_DOTS = {
-  a1: { cx: 40, cy: 90 },
-  a2: { cx: 70, cy: 98 },
-  a3: { cx: 100, cy: 90 },
-  b1: { cx: 270, cy: 20 },
-  b2: { cx: 300, cy: 28 },
-  b3: { cx: 330, cy: 20 },
-  c1: { cx: 500, cy: 90 },
-  c2: { cx: 530, cy: 98 },
-  c3: { cx: 560, cy: 90 },
-}
+// dense ambient mesh — always visible, forms the triangulated backdrop
+const MESH_NODES = [
+  { cx: 25, cy: 55 }, { cx: 65, cy: 145 }, { cx: 115, cy: 35 },
+  { cx: 150, cy: 105 }, { cx: 195, cy: 165 }, { cx: 228, cy: 65 },
+  { cx: 278, cy: 125 }, { cx: 318, cy: 25 }, { cx: 358, cy: 88 },
+  { cx: 405, cy: 155 }, { cx: 448, cy: 45 }, { cx: 488, cy: 118 },
+  { cx: 528, cy: 58 }, { cx: 565, cy: 138 }, { cx: 555, cy: 30 },
+]
+const MESH_LINES: [number, number][] = [
+  [0, 1], [0, 2], [1, 3], [2, 3], [2, 5], [3, 4], [3, 5],
+  [4, 6], [5, 6], [5, 7], [6, 8], [7, 8], [6, 9], [8, 9],
+  [8, 10], [9, 11], [10, 11], [10, 12], [11, 13], [12, 13],
+  [12, 14], [7, 5], [9, 6], [13, 11],
+]
 
-const DESKTOP_DOTS = {
-  a1: { cx: 40, cy: 90 },
-  a2: { cx: 70, cy: 98 },
-  a3: { cx: 100, cy: 90 },
-  b1: { cx: 270, cy: 15 },
-  b2: { cx: 300, cy: 23 },
-  b3: { cx: 330, cy: 15 },
-  c1: { cx: 500, cy: 90 },
-  c2: { cx: 530, cy: 98 },
-  c3: { cx: 560, cy: 90 },
-}
-
-function ClusterDots({ dots }: { dots: typeof MOBILE_DOTS }) {
-  return (
-    <>
-      {/* direct crisp alignment lines connecting directly between node cluster points */}
-      <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.b2.cx} y2={dots.b2.cy} className="signal-line signal-leg-a-seg1" />
-      <line x1={dots.b2.cx} y1={dots.b2.cy} x2={dots.c2.cx} y2={dots.c2.cy} className="signal-line signal-leg-b-seg1" />
-
-      <line x1={dots.a1.cx} y1={dots.a1.cy} x2={dots.a2.cx} y2={dots.a2.cy} className="signal-line signal-line-a" />
-      <line x1={dots.a2.cx} y1={dots.a2.cy} x2={dots.a3.cx} y2={dots.a3.cy} className="signal-line signal-line-a" />
-      <line x1={dots.b1.cx} y1={dots.b1.cy} x2={dots.b2.cx} y2={dots.b2.cy} className="signal-line signal-line-b" />
-      <line x1={dots.b2.cx} y1={dots.b2.cy} x2={dots.b3.cx} y2={dots.b3.cy} className="signal-line signal-line-b" />
-      <line x1={dots.c1.cx} y1={dots.c1.cy} x2={dots.c2.cx} y2={dots.c2.cy} className="signal-line signal-line-c" />
-      <line x1={dots.c2.cx} y1={dots.c2.cy} x2={dots.c3.cx} y2={dots.c3.cy} className="signal-line signal-line-c" />
-
-      <circle cx={dots.a2.cx} cy={dots.a2.cy} r="3" className="signal-ripple signal-ripple-a" style={{ transformOrigin: `${dots.a2.cx}px ${dots.a2.cy}px` }} />
-      <circle cx={dots.b2.cx} cy={dots.b2.cy} r="3" className="signal-ripple signal-ripple-b" style={{ transformOrigin: `${dots.b2.cx}px ${dots.b2.cy}px` }} />
-      <circle cx={dots.c2.cx} cy={dots.c2.cy} r="3" className="signal-ripple signal-ripple-c" style={{ transformOrigin: `${dots.c2.cx}px ${dots.c2.cy}px` }} />
-
-      <circle cx={dots.a2.cx} cy={dots.a2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-hero" style={{ transformOrigin: `${dots.a2.cx}px ${dots.a2.cy}px` }} />
-      <circle cx={dots.a1.cx} cy={dots.a1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-side" style={{ transformOrigin: `${dots.a1.cx}px ${dots.a1.cy}px` }} />
-      <circle cx={dots.a3.cx} cy={dots.a3.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-a-outer" style={{ transformOrigin: `${dots.a3.cx}px ${dots.a3.cy}px` }} />
-      <circle cx={dots.b1.cx} cy={dots.b1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-b-gradual" style={{ transformOrigin: `${dots.b1.cx}px ${dots.b1.cy}px` }} />
-      <circle cx={dots.b2.cx} cy={dots.b2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-b-gradual" style={{ transformOrigin: `${dots.b2.cx}px ${dots.b2.cy}px` }} />
-      <circle cx={dots.b3.cx} cy={dots.b3.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-b-gradual" style={{ transformOrigin: `${dots.b3.cx}px ${dots.b3.cy}px` }} />
-      <circle cx={dots.c1.cx} cy={dots.c1.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-c-gradual" style={{ transformOrigin: `${dots.c1.cx}px ${dots.c1.cy}px` }} />
-      <circle cx={dots.c2.cx} cy={dots.c2.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-c-gradual" style={{ transformOrigin: `${dots.c2.cx}px ${dots.c2.cy}px` }} />
-      <circle cx={dots.c3.cx} cy={dots.c3.cy} r="2.5" fill="#AAB0A3" className="signal-dot signal-dot-c-gradual" style={{ transformOrigin: `${dots.c3.cx}px ${dots.c3.cy}px` }} />
-    </>
-  )
+// the four narrative concept nodes, matching the four labels below
+const n = {
+  a: { cx: 80, cy: 100 },
+  b: { cx: 248, cy: 45 },
+  p: { cx: 358, cy: 140 },
+  c: { cx: 505, cy: 85 },
 }
 
 export default function IntelligenceSignal() {
   return (
-    <div className="relative w-full h-28 overflow-visible bg-transparent">
-      {/* ── Mobile Layout ── */}
-      <div className="md:hidden absolute inset-0">
-        <svg viewBox="0 0 600 120" preserveAspectRatio="none" className="absolute top-0 left-0 w-full h-[75%] overflow-visible">
-          <ClusterDots dots={MOBILE_DOTS} />
-        </svg>
-        <div className="absolute bottom-0 left-0 w-full h-[25%] flex items-center justify-between px-2">
-          <span className="signal-label signal-label-a text-[10px] uppercase tracking-[0.25em]" style={{ color: '#1A3024' }}>Customer expectation detected</span>
-          <span className="signal-label signal-label-b text-[10px] uppercase tracking-[0.25em] hidden sm:inline" style={{ color: '#1A3024' }}>Hidden objection</span>
-          <span className="signal-label signal-label-c text-[10px] uppercase tracking-[0.25em]" style={{ color: '#1A3024' }}>Emerging opportunity</span>
-        </div>
-      </div>
+    <div className="relative w-full h-32 sm:h-28 mt-4">
+      <svg viewBox="0 0 600 190" preserveAspectRatio="none" className="absolute top-0 left-0 w-full h-[75%]">
 
-      {/* ── Desktop Layout ── */}
-      <div className="hidden md:block absolute inset-0">
-        <svg viewBox="0 0 600 120" className="absolute top-0 left-0 w-full h-full overflow-visible">
-          <ClusterDots dots={DESKTOP_DOTS} />
-        </svg>
+        {/* dense ambient mesh — always on, gives the graphic its density */}
+        <g className="mesh">
+          {MESH_LINES.map(([i, j], idx) => (
+            <line
+              key={idx}
+              x1={MESH_NODES[i].cx} y1={MESH_NODES[i].cy}
+              x2={MESH_NODES[j].cx} y2={MESH_NODES[j].cy}
+              className="mesh-line"
+            />
+          ))}
+          {MESH_NODES.map((node, idx) => (
+            <circle key={idx} cx={node.cx} cy={node.cy} r="2.25" className="mesh-node" />
+          ))}
+        </g>
 
-        <span
-          className="signal-label absolute signal-label-a text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.a2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.a2.cy / 120) * 100 + 10}%` }}
-        >
+        {/* narrative links: each concept ties into two nearby mesh nodes, lit as it activates */}
+        <line x1={n.a.cx} y1={n.a.cy} x2={MESH_NODES[1].cx} y2={MESH_NODES[1].cy} className="link link-a" />
+        <line x1={n.a.cx} y1={n.a.cy} x2={MESH_NODES[3].cx} y2={MESH_NODES[3].cy} className="link link-a" />
+        <line x1={n.b.cx} y1={n.b.cy} x2={MESH_NODES[5].cx} y2={MESH_NODES[5].cy} className="link link-b" />
+        <line x1={n.b.cx} y1={n.b.cy} x2={MESH_NODES[7].cx} y2={MESH_NODES[7].cy} className="link link-b" />
+        <line x1={n.p.cx} y1={n.p.cy} x2={MESH_NODES[9].cx} y2={MESH_NODES[9].cy} className="link link-p" />
+        <line x1={n.p.cx} y1={n.p.cy} x2={MESH_NODES[10].cx} y2={MESH_NODES[10].cy} className="link link-p" />
+        <line x1={n.c.cx} y1={n.c.cy} x2={MESH_NODES[11].cx} y2={MESH_NODES[11].cy} className="link link-c" />
+        <line x1={n.c.cx} y1={n.c.cy} x2={MESH_NODES[12].cx} y2={MESH_NODES[12].cy} className="link link-c" />
+
+        {/* the four concept nodes — each with a continuous pulsing ring once active */}
+        <circle cx={n.a.cx} cy={n.a.cy} r="5" className="concept-pulse pulse-a" style={{ transformOrigin: `${n.a.cx}px ${n.a.cy}px` }} />
+        <circle cx={n.a.cx} cy={n.a.cy} r="3.5" fill="#5F7A70" className="concept-node node-a" />
+
+        <circle cx={n.b.cx} cy={n.b.cy} r="5" className="concept-pulse pulse-b" style={{ transformOrigin: `${n.b.cx}px ${n.b.cy}px` }} />
+        <circle cx={n.b.cx} cy={n.b.cy} r="3.5" fill="#5F7A70" className="concept-node node-b" />
+
+        <circle cx={n.p.cx} cy={n.p.cy} r="5" className="concept-pulse pulse-p" style={{ transformOrigin: `${n.p.cx}px ${n.p.cy}px` }} />
+        <circle cx={n.p.cx} cy={n.p.cy} r="3.5" fill="#5F7A70" className="concept-node node-p" />
+
+        <circle cx={n.c.cx} cy={n.c.cy} r="5" className="concept-pulse pulse-c" style={{ transformOrigin: `${n.c.cx}px ${n.c.cy}px` }} />
+        <circle cx={n.c.cx} cy={n.c.cy} r="3.5" fill="#5F7A70" className="concept-node node-c" />
+      </svg>
+
+      <div className="absolute bottom-0 left-0 w-full h-[25%] flex items-start justify-between px-2 sm:px-4">
+        <span className="signal-label label-a text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] max-w-[100px] sm:max-w-none sm:whitespace-nowrap text-left" style={{ color: '#1A3024' }}>
           Customer expectation detected
         </span>
-        <span
-          className="signal-label absolute signal-label-b text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.b2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.b2.cy / 120) * 100 - 22}%` }}
-        >
+        <span className="signal-label label-b text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] whitespace-nowrap hidden sm:inline" style={{ color: '#1A3024' }}>
           Hidden objection
         </span>
-        <span
-          className="signal-label absolute signal-label-c text-[9px] lg:text-[10px] uppercase tracking-[0.25em]"
-          style={{ color: '#1A3024', left: `${(DESKTOP_DOTS.c2.cx / 600) * 100}%`, top: `${(DESKTOP_DOTS.c2.cy / 120) * 100 + 10}%` }}
-        >
+        <span className="signal-label label-p text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] whitespace-nowrap hidden sm:inline" style={{ color: '#1A3024' }}>
+          Pattern recognized
+        </span>
+        <span className="signal-label label-c text-[9px] sm:text-[10px] font-medium uppercase tracking-[0.2em] max-w-[100px] sm:max-w-none sm:whitespace-nowrap text-right" style={{ color: '#1A3024' }}>
           Emerging opportunity
         </span>
       </div>
 
       <style jsx global>{`
-        .signal-line { stroke: #aab0a3; stroke-width: 0.75; opacity: 0; animation-duration: 19s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
-        .signal-dot { opacity: 0.12; animation-duration: 19s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
-        .signal-ripple { fill: none; stroke: #aab0a3; stroke-width: 1; opacity: 0; animation-duration: 19s; animation-timing-function: ease-out; animation-iteration-count: infinite; }
-        .signal-label { opacity: 0; animation-duration: 19s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; white-space: nowrap; }
+        /* dense ambient mesh — always visible, clearly readable but recedes
+           behind the narrative layer */
+        .mesh-line { stroke: #8FA097; stroke-width: 0.85; opacity: 0.4; }
+        .mesh-node { fill: #8FA097; opacity: 0.55; }
 
-        .signal-line-a { animation-name: lineA; }
-        .signal-line-b { animation-name: lineB; }
-        .signal-line-c { animation-name: lineC; }
-        .signal-leg-a-seg1 { animation-name: legASeg1; }
-        .signal-leg-b-seg1 { animation-name: legBSeg1; }
-        .signal-dot-a-hero { animation-name: dotAHero; }
-        .signal-dot-a-side { animation-name: dotASide; }
-        .signal-dot-a-outer { animation-name: dotAOuter; }
-        .signal-dot-b-gradual { animation-name: dotBGradual; }
-        .signal-dot-c-gradual { animation-name: dotCGradual; }
-        .signal-ripple-a { animation-name: rippleA; }
-        .signal-ripple-b { animation-name: rippleB; }
-        .signal-ripple-c { animation-name: rippleC; }
-        .signal-label-a { animation-name: labelA; }
-        .signal-label-b { animation-name: labelB; }
-        .signal-label-c { animation-name: labelC; }
+        .link {
+          stroke: #5F7A70;
+          stroke-width: 1.25;
+          opacity: 0;
+          animation-duration: 19s;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+        }
+        .concept-node {
+          opacity: 0.3;
+          animation-duration: 19s;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+        }
+        .concept-pulse {
+          fill: none;
+          stroke: #5F7A70;
+          stroke-width: 1.25;
+          opacity: 0;
+          animation-duration: 19s;
+          animation-timing-function: ease-out;
+          animation-iteration-count: infinite;
+        }
+        .signal-label {
+          opacity: 0;
+          animation-duration: 19s;
+          animation-timing-function: ease-in-out;
+          animation-iteration-count: infinite;
+        }
 
-        @keyframes dotAHero { 0%, 100% { opacity: 0.12; transform: scale(1); } 2%, 18% { opacity: 0.5; transform: scale(1.15); } 20% { opacity: 0.85; transform: scale(1.35); } 24%, 94% { opacity: 0.5; transform: scale(1.1); } }
-        @keyframes dotASide { 0%, 7%, 100% { opacity: 0.12; transform: scale(1); } 8%, 18% { opacity: 0.45; transform: scale(1.1); } 20% { opacity: 0.8; transform: scale(1.3); } 24%, 94% { opacity: 0.48; transform: scale(1.05); } }
-        @keyframes dotAOuter { 0%, 13%, 100% { opacity: 0.12; transform: scale(1); } 14%, 18% { opacity: 0.42; transform: scale(1.08); } 20% { opacity: 0.78; transform: scale(1.28); } 24%, 94% { opacity: 0.46; transform: scale(1.04); } }
-        @keyframes dotBGradual { 0%, 14%, 100% { opacity: 0.12; transform: scale(1); } 22%, 37% { opacity: 0.25; transform: scale(1.05); } 38% { opacity: 0.85; transform: scale(1.35); } 44%, 94% { opacity: 0.5; transform: scale(1.08); } }
-        @keyframes dotCGradual { 0%, 38%, 100% { opacity: 0.12; transform: scale(1); } 46%, 65% { opacity: 0.25; transform: scale(1.05); } 66% { opacity: 0.85; transform: scale(1.35); } 72%, 94% { opacity: 0.5; transform: scale(1.08); } }
-        @keyframes lineA { 0%, 28%, 100% { opacity: 0; } 29%, 94% { opacity: 0.3; } }
-        @keyframes lineB { 0%, 42%, 100% { opacity: 0; } 43%, 94% { opacity: 0.3; } }
-        @keyframes lineC { 0%, 70%, 100% { opacity: 0; } 71%, 94% { opacity: 0.3; } }
-        @keyframes legASeg1 { 0%, 25%, 100% { opacity: 0; } 26%, 94% { opacity: 0.3; } }
-        @keyframes legBSeg1 { 0%, 53%, 100% { opacity: 0; } 54%, 94% { opacity: 0.3; } }
-        @keyframes rippleA { 0%, 19%, 100% { opacity: 0; transform: scale(1); } 20% { opacity: 0.5; transform: scale(1); } 28% { opacity: 0; transform: scale(7); } }
-        @keyframes rippleB { 0%, 37%, 100% { opacity: 0; transform: scale(1); } 38% { opacity: 0.5; transform: scale(1); } 46% { opacity: 0; transform: scale(7); } }
-        @keyframes rippleC { 0%, 65%, 100% { opacity: 0; transform: scale(1); } 66% { opacity: 0.5; transform: scale(1); } 74% { opacity: 0; transform: scale(7); } }
-        @keyframes labelA { 0%, 25%, 37%, 100% { opacity: 0; } 29%, 34% { opacity: 1; } }
-        @keyframes labelB { 0%, 39%, 53%, 100% { opacity: 0; } 43%, 50% { opacity: 1; } }
-        @keyframes labelC { 0%, 67%, 82%, 100% { opacity: 0; } 71%, 78% { opacity: 1; } }
+        .link-a { animation-name: linkA; }
+        .link-b { animation-name: linkB; }
+        .link-p { animation-name: linkP; }
+        .link-c { animation-name: linkC; }
+        .node-a { animation-name: nodeA; }
+        .node-b { animation-name: nodeB; }
+        .node-p { animation-name: nodeP; }
+        .node-c { animation-name: nodeC; }
+        .pulse-a { animation-name: pulseA; }
+        .pulse-b { animation-name: pulseB; }
+        .pulse-p { animation-name: pulseP; }
+        .pulse-c { animation-name: pulseC; }
+        .label-a { animation-name: labelA; }
+        .label-b { animation-name: labelB; }
+        .label-p { animation-name: labelPr; }
+        .label-c { animation-name: labelC; }
+
+        /* ── concept A: opens the sequence ── */
+        @keyframes nodeA {
+          0% { opacity: 0.3; transform: scale(1); }
+          3% { opacity: 0.75; transform: scale(1.3); }
+          10% { opacity: 0.55; transform: scale(1); }
+          94% { opacity: 0.55; transform: scale(1); }
+          100% { opacity: 0.3; transform: scale(1); }
+        }
+        @keyframes pulseA {
+          0%, 2% { opacity: 0; transform: scale(1); }
+          3% { opacity: 0.5; transform: scale(1); }
+          11% { opacity: 0; transform: scale(4); }
+          100% { opacity: 0; transform: scale(1); }
+        }
+        @keyframes linkA {
+          0%, 6% { opacity: 0; }
+          8% { opacity: 0.55; }
+          94% { opacity: 0.55; }
+          100% { opacity: 0; }
+        }
+        @keyframes labelA {
+          0%, 15% { opacity: 0; }
+          18% { opacity: 1; }
+          25% { opacity: 1; }
+          29% { opacity: 0; }
+          100% { opacity: 0; }
+        }
+
+        /* ── concept B ── */
+        @keyframes nodeB {
+          0%, 20% { opacity: 0.3; transform: scale(1); }
+          23% { opacity: 0.75; transform: scale(1.3); }
+          30% { opacity: 0.55; transform: scale(1); }
+          94% { opacity: 0.55; transform: scale(1); }
+          100% { opacity: 0.3; transform: scale(1); }
+        }
+        @keyframes pulseB {
+          0%, 22% { opacity: 0; transform: scale(1); }
+          23% { opacity: 0.5; transform: scale(1); }
+          31% { opacity: 0; transform: scale(4); }
+          100% { opacity: 0; transform: scale(1); }
+        }
+        @keyframes linkB {
+          0%, 26% { opacity: 0; }
+          28% { opacity: 0.55; }
+          94% { opacity: 0.55; }
+          100% { opacity: 0; }
+        }
+        @keyframes labelB {
+          0%, 39% { opacity: 0; }
+          42% { opacity: 1; }
+          49% { opacity: 1; }
+          53% { opacity: 0; }
+          100% { opacity: 0; }
+        }
+
+        /* ── concept P (pattern recognized) ── */
+        @keyframes nodeP {
+          0%, 42% { opacity: 0.3; transform: scale(1); }
+          45% { opacity: 0.75; transform: scale(1.3); }
+          52% { opacity: 0.55; transform: scale(1); }
+          94% { opacity: 0.55; transform: scale(1); }
+          100% { opacity: 0.3; transform: scale(1); }
+        }
+        @keyframes pulseP {
+          0%, 44% { opacity: 0; transform: scale(1); }
+          45% { opacity: 0.5; transform: scale(1); }
+          53% { opacity: 0; transform: scale(4); }
+          100% { opacity: 0; transform: scale(1); }
+        }
+        @keyframes linkP {
+          0%, 48% { opacity: 0; }
+          50% { opacity: 0.55; }
+          94% { opacity: 0.55; }
+          100% { opacity: 0; }
+        }
+        @keyframes labelPr {
+          0%, 55% { opacity: 0; }
+          58% { opacity: 1; }
+          65% { opacity: 1; }
+          69% { opacity: 0; }
+          100% { opacity: 0; }
+        }
+
+        /* ── concept C: the sequence completes ── */
+        @keyframes nodeC {
+          0%, 66% { opacity: 0.3; transform: scale(1); }
+          69% { opacity: 0.75; transform: scale(1.3); }
+          76% { opacity: 0.55; transform: scale(1); }
+          94% { opacity: 0.55; transform: scale(1); }
+          100% { opacity: 0.3; transform: scale(1); }
+        }
+        @keyframes pulseC {
+          0%, 68% { opacity: 0; transform: scale(1); }
+          69% { opacity: 0.5; transform: scale(1); }
+          77% { opacity: 0; transform: scale(4); }
+          100% { opacity: 0; transform: scale(1); }
+        }
+        @keyframes linkC {
+          0%, 72% { opacity: 0; }
+          74% { opacity: 0.55; }
+          94% { opacity: 0.55; }
+          100% { opacity: 0; }
+        }
+        @keyframes labelC {
+          0%, 79% { opacity: 0; }
+          82% { opacity: 1; }
+          91% { opacity: 1; }
+          94% { opacity: 0; }
+          100% { opacity: 0; }
+        }
       `}</style>
     </div>
   )
