@@ -19,7 +19,7 @@ import { SearchProvider, useSearch } from '@/lib/search-context'
 // baked in). Scoped to the dashboard so the landing page's logo is untouched.
 function DashboardLogo({ width = 140 }: { width?: number }) {
   return (
-    <Link href="/personas" className="inline-flex focus:outline-none">
+    <Link href="/home" className="inline-flex focus:outline-none">
       <Image
         src="/signalroom-logo-dashboard.svg"
         alt="Signalroom — AI Market Research"

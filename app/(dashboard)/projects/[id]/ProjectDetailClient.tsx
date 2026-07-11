@@ -27,11 +27,12 @@ interface ProjectDetailClientProps {
   signals: Signal[]
   reports: (Report & { interview: Interview })[]
   files: ProjectFile[]
+  initialTab?: string
 }
 
-export function ProjectDetailClient({ project: initialProject, allPersonas, allInterviews, signals, reports, files: initialFiles }: ProjectDetailClientProps) {
+export function ProjectDetailClient({ project: initialProject, allPersonas, allInterviews, signals, reports, files: initialFiles, initialTab }: ProjectDetailClientProps) {
   const router = useRouter()
-  const [tab, setTab] = useState<Tab>('Overview')
+  const [tab, setTab] = useState<Tab>((TABS as readonly string[]).includes(initialTab ?? '') ? (initialTab as Tab) : 'Overview')
   const [project, setProject] = useState(initialProject)
   const [personas, setPersonas] = useState(allPersonas)
   const [interviews, setInterviews] = useState(allInterviews)

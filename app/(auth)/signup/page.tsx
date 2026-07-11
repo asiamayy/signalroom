@@ -48,7 +48,7 @@ export default function SignupPage() {
       }).catch(err => console.error('Welcome email failed:', err))
 
       // Redirect straight to dashboard — no email confirmation needed
-      router.push('/personas')
+      router.push('/home')
     }
   }
 
