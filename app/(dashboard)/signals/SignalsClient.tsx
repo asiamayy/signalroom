@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   Activity, Filter, ArrowUp, ArrowDown, Gauge, Share2, Lightbulb, TrendingUp, TrendingDown,
 } from 'lucide-react'
-import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW, formatRelativeTime } from '@/lib/utils'
 import { SignalFeedCard } from '@/components/signals/SignalFeedCard'
 import { SIGNAL_TYPE_LABELS } from '@/types'
@@ -101,13 +101,16 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
       {/* Hero */}
       <section className="relative px-4 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-16 overflow-hidden">
-        <div className="absolute -top-10 right-0 w-72 h-72 rounded-full blur-3xl pointer-events-none opacity-40" style={{ background: HOME_COLORS.primaryFixedDim }} />
+        <div className="absolute top-10 right-8 sm:right-16 flex items-center pointer-events-none hidden sm:flex">
+          <div className="w-20 h-20 rounded-full" style={{ background: HOME_COLORS.outlineVariant }} />
+          <div className="w-20 h-20 rounded-full -ml-10" style={{ background: HOME_COLORS.surfaceContainerHigh, border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
+        </div>
         <div className="relative z-10 max-w-3xl">
           <div className="flex items-center gap-3 mb-4">
             <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
             <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Stream</span>
           </div>
-          <h1 className="text-[32px] sm:text-[40px] mb-6 leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, letterSpacing: '-0.02em', color: HOME_COLORS.onSurface }}>
+          <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
             Market <span className="italic" style={{ fontWeight: 400 }}>Signals</span>
           </h1>
           <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>

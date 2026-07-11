@@ -20,6 +20,7 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
   const [briefing, setBriefing] = useState(initialBriefing)
   const [refreshing, setRefreshing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
     if (!isStale) return
@@ -75,9 +76,18 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
                 {briefing.summary}
               </h1>
               {paragraph && (
-                <p className="mb-8 max-w-xl opacity-90 text-sm sm:text-base leading-relaxed line-clamp-4">
-                  {paragraph}
-                </p>
+                <div className="mb-8 max-w-xl">
+                  <p className={`text-sm sm:text-base leading-relaxed ${expanded ? '' : 'line-clamp-4'}`} style={{ color: '#859585' }}>
+                    {paragraph}
+                  </p>
+                  <button
+                    onClick={() => setExpanded(e => !e)}
+                    className="mt-2 text-xs font-semibold uppercase tracking-wide underline underline-offset-2 bg-transparent"
+                    style={{ color: HOME_COLORS.primaryFixedDim, border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    {expanded ? 'Read less' : 'Read more'}
+                  </button>
+                </div>
               )}
             </>
           )}
@@ -86,7 +96,7 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
             <Link href="/signals" className="px-8 py-3 rounded-full text-sm font-semibold transition-colors" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>
               Deep dive into signals
             </Link>
-            <button onClick={handleShare} className="flex items-center gap-1.5 px-8 py-3 rounded-full text-sm font-semibold transition-colors hover:bg-white/10" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}55`, color: HOME_COLORS.onPrimary, background: 'transparent' }}>
+            <button onClick={handleShare} className="flex items-center gap-1.5 px-8 py-3 rounded-full text-sm font-semibold bg-transparent transition-colors hover:bg-white/10" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}55`, color: HOME_COLORS.onPrimary }}>
               {copied ? <Check size={13} /> : null}
               {copied ? 'Copied' : 'Share briefing'}
             </button>

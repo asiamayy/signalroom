@@ -391,7 +391,7 @@ export default function AudiencePanelPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-6xl" style={{ background: '#F7F8FA', minHeight: '100%' }}>
+    <div className="p-4 sm:p-6 max-w-6xl" style={{ background: '#FCF9F8', minHeight: '100%' }}>
       <div className="mb-6">
         <h1 className="heading-editorial text-2xl flex items-center gap-2" style={{ color: '#171717' }}>
           <BarChart3 size={22} style={{ color: '#2A5C4E' }} />

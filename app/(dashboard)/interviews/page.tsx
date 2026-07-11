@@ -62,7 +62,7 @@ export default function InterviewsPage() {
   }
 
   return (
-    <div style={{ background: '#F4F6F8', minHeight: '100%' }}>
+    <div style={{ background: '#FCF9F8', minHeight: '100%' }}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-7 py-4 sm:py-5" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
         <div>
           <h1 className="heading-editorial text-2xl text-neutral-900">Interviews</h1>

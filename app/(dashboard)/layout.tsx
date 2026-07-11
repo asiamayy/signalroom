@@ -136,12 +136,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const SidebarContent = (
     <>
       {/* Logo */}
-      <div className="px-5 py-5 flex items-start justify-between">
+      <div className="relative px-5 py-5 flex items-center justify-center">
         <DashboardLogo width={128} />
         {/* Close button - mobile only */}
         <button
           onClick={() => setMobileNavOpen(false)}
-          className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:bg-neutral-100 flex-shrink-0"
+          className="md:hidden absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:bg-neutral-100 flex-shrink-0"
           style={{ background: 'none', border: 'none', cursor: 'pointer' }}
         >
           <X size={18} />
@@ -208,7 +208,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <div className={cn('dashboard-shell flex h-screen overflow-hidden', inter.variable, playfair.variable, sourceSerif.variable, hanken.variable)} style={{ background: '#F9F9F9' }}>
+    <div className={cn('dashboard-shell flex h-screen overflow-hidden', inter.variable, playfair.variable, sourceSerif.variable, hanken.variable)} style={{ background: '#FCF9F8' }}>
 
       {/* Desktop sidebar — always visible at md+ */}
       <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: HOME_COLORS.surfaceContainerLowest, borderRight: `1px solid ${HOME_COLORS.outlineVariant}` }}>

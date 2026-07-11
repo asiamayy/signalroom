@@ -33,3 +33,15 @@ export const HOME_COLORS = {
 
 export const HOME_FONT_DISPLAY = 'var(--nf-source-serif), Georgia, serif'
 export const HOME_FONT_BODY = 'var(--nf-hanken), system-ui, sans-serif'
+
+// The reference mockups' "display-lg" token, verbatim: 40px/48px line
+// height, -0.02em tracking, weight 600. Page-title <h1>s (Projects,
+// Signals, ...) use this exact style rather than hand-tuned sizes so they
+// stay pixel-identical to the source.
+export const DISPLAY_LG_STYLE = {
+  fontFamily: HOME_FONT_DISPLAY,
+  fontSize: '40px',
+  lineHeight: '48px',
+  letterSpacing: '-0.02em',
+  fontWeight: 600,
+} as const

@@ -7,7 +7,7 @@ import {
   Search, Plus, ArrowRight, Calendar, ArrowUp, ArrowDown, Briefcase,
   MoreVertical, ArchiveRestore, Trash2, Loader2, Database,
 } from 'lucide-react'
-import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { useSearch } from '@/lib/search-context'
@@ -110,19 +110,19 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
             <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
             <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Hub</span>
           </div>
-          <h1 className="text-[32px] sm:text-[40px] mb-4" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.15, color: HOME_COLORS.onSurface }}>Projects</h1>
+          <h1 className="mb-4" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>Projects</h1>
           <p className="text-sm sm:text-base leading-relaxed max-w-xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
             Manage your research simulations and strategic market signals. Every persona, interview, report, and signal belongs to a project.
           </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="group relative flex items-center gap-3 px-8 py-4 rounded-full transition-all hover:pr-11 hover:shadow-xl active:scale-95 flex-shrink-0"
+          className="group relative flex items-center gap-3 px-8 py-4 rounded-full transition-all hover:pr-10 hover:shadow-xl active:scale-95 flex-shrink-0"
           style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}
         >
-          <Plus size={18} />
+          <Plus size={20} />
           <span className="text-sm font-semibold">Create New Project</span>
-          <ArrowRight size={16} className="absolute right-5 opacity-0 group-hover:opacity-100 transition-all" />
+          <ArrowRight size={18} className="absolute right-4 opacity-0 group-hover:opacity-100 transition-all" />
         </button>
       </section>
 
@@ -179,7 +179,14 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
             </div>
           </div>
         ) : (
-          gridRollups.map(rollup => <ProjectCard key={rollup.project.id} rollup={rollup} />)
+          gridRollups.map(rollup => (
+            <ProjectCard
+              key={rollup.project.id}
+              rollup={rollup}
+              onDelete={() => handleDelete(rollup.project.id, rollup.project.name)}
+              deleting={actionLoading === rollup.project.id}
+            />
+          ))
         )}
       </section>
 
@@ -293,7 +300,7 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
   )
 }
 
-function ProjectCard({ rollup }: { rollup: ProjectRollup }) {
+function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; onDelete: () => void; deleting: boolean }) {
   const { project, interviewCount, signalCount, avgConfidence, topSignalSummary } = rollup
   const tier = confidenceTier(avgConfidence, signalCount)
 
@@ -310,6 +317,14 @@ function ProjectCard({ rollup }: { rollup: ProjectRollup }) {
         <div className="absolute inset-0 flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
           <Briefcase size={56} strokeWidth={1} style={{ color: `${HOME_COLORS.primaryFixedDim}66` }} />
         </div>
+        <button
+          onClick={e => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete "${project.name}"? This cannot be undone. Personas and interviews inside it will become unassigned, not deleted.`)) onDelete() }}
+          title="Delete project"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md"
+          style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
+        >
+          {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+        </button>
         <div className="absolute bottom-5 left-5 right-5 flex justify-between items-end">
           <div className="px-3 py-1 rounded text-white text-[10px] font-bold uppercase tracking-widest backdrop-blur-md" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}>
             {tier}

@@ -55,7 +55,7 @@ export function ProjectDetailClient({ project: initialProject, allPersonas, allI
   const healthScore = Math.round(0.7 * avgConfidence + 0.3 * Math.min(projectInterviews.length / 10, 1) * 100)
 
   return (
-    <div style={{ background: '#F9F9F9', minHeight: '100%' }} className="p-4 sm:p-8">
+    <div style={{ background: '#FCF9F8', minHeight: '100%' }} className="p-4 sm:p-8">
       <Link href="/projects" className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-900 mb-6 transition-colors w-fit">
         <ArrowLeft size={14} /> All projects
       </Link>

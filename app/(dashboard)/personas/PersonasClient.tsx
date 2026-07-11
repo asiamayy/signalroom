@@ -180,7 +180,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
   return (
     <>
       <OnboardingModal />
-      <div style={{ background: '#F9F9F9', minHeight: '100%' }}>
+      <div style={{ background: '#FCF9F8', minHeight: '100%' }}>
 
         {/* ── Page heading + controls ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 sm:px-6 pt-5 pb-4" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
@@ -353,7 +353,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
           {/* ── Grid view ── */}
           {filtered.length > 0 && viewMode === 'grid' && filterTab !== 'Archived' && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-4">
-              {filtered.map((persona: Persona) => {
+              {filtered.map((persona: Persona, index: number) => {
                 const isSelected = selectedId === persona.id
                 return (
                   <motion.div
@@ -366,7 +366,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                       if (target.closest('[data-archive-btn]')) return
                       setSelectedId(persona.id)
                     }}
-                    whileHover={!isSelected ? { y: -3 } : undefined}
+                    whileHover={!isSelected ? { y: -6, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' } : undefined}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     style={{
                       background: isSelected ? '#F2F3EE' : 'white',
@@ -376,6 +376,13 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                       borderRadius: 16,
                     }}
                   >
+                    {/* Large faded index number — fades in on hover */}
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      <span className="heading-editorial select-none italic" style={{ fontSize: 56, color: 'rgba(28,61,46,0.15)' }}>
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+
                     {/* "Selected" pill badge */}
                     {isSelected && (
                       <div className="absolute top-5 right-5 z-10 flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'white', border: '1px solid #E3E3DA', color: '#202124', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
