@@ -16,6 +16,7 @@ interface PersonasClientProps {
   plan: Plan
   limit: number
   count: number
+  projects: { id: string; name: string }[]
 }
 
 const FILTER_TABS = ['All Personas', 'Active', 'Archived'] as const
@@ -26,13 +27,14 @@ const SORT_OPTIONS = ['Most relevant', 'Recently updated', 'Recently created', '
 const FUNNEL_TABS = ['All Personas', 'awareness', 'consideration', 'purchase', 'loyalty'] as const
 type FunnelTab = typeof FUNNEL_TABS[number]
 
-export default function PersonasClient({ initialPersonas, plan, limit, count }: PersonasClientProps) {
+export default function PersonasClient({ initialPersonas, plan, limit, count, projects }: PersonasClientProps) {
   const [personas, setPersonas] = useState<Persona[]>(initialPersonas)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [archiving, setArchiving] = useState<string | null>(null)
   const { query: search, setQuery: setSearch } = useSearch()
   const [filterTab, setFilterTab] = useState<FilterTab>('All Personas')
   const [funnelTab, setFunnelTab] = useState<FunnelTab>('All Personas')
+  const [projectFilter, setProjectFilter] = useState<string>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState('Most relevant')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -148,9 +150,15 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
     return list
   }
 
+  const projectScoped = projectFilter === 'all'
+    ? personas
+    : projectFilter === 'unassigned'
+    ? personas.filter(p => !p.project_id)
+    : personas.filter(p => p.project_id === projectFilter)
+
   const baseFiltered = filterTab === 'Archived'
-    ? personas.filter(p => p.archived)
-    : personas.filter(p => !p.archived)
+    ? projectScoped.filter(p => p.archived)
+    : projectScoped.filter(p => !p.archived)
 
   const funnelFiltered = funnelTab === 'All Personas'
     ? baseFiltered
@@ -231,6 +239,21 @@ export default function PersonasClient({ initialPersonas, plan, limit, count }: 
                       </button>
                     ))}
                   </div>
+                  {projects.length > 0 && (
+                    <>
+                      <label className="block text-xs font-semibold mb-1.5 mt-4" style={{ color: '#202124' }}>Project</label>
+                      <select
+                        value={projectFilter}
+                        onChange={e => setProjectFilter(e.target.value)}
+                        className="w-full text-xs rounded-lg px-3 py-2"
+                        style={{ background: '#F9F9F9', border: '1px solid #E0E2E4', color: '#202124' }}
+                      >
+                        <option value="all">All projects</option>
+                        <option value="unassigned">Unassigned</option>
+                        {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      </select>
+                    </>
+                  )}
                 </div>
               )}
             </div>

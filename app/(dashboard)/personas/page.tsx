@@ -7,9 +7,10 @@ export default async function PersonasPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: personas }, { data: profile }] = await Promise.all([
+  const [{ data: personas }, { data: profile }, { data: projects }] = await Promise.all([
     supabase.from('personas').select('*').eq('user_id', user!.id).order('created_at', { ascending: false }),
     supabase.from('profiles').select('plan').eq('id', user!.id).single(),
+    supabase.from('projects').select('id, name').eq('user_id', user!.id).eq('archived', false).order('name'),
   ])
 
   const plan = (profile?.plan ?? 'starter') as Plan
@@ -23,6 +24,7 @@ export default async function PersonasPage() {
       plan={plan}
       limit={limit}
       count={totalCount}
+      projects={projects ?? []}
     />
   )
 }

@@ -11,11 +11,14 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
   const { query: search } = useSearch()
 
-  const filteredProjects = projects.filter(p =>
+  const visibleProjects = projects.filter(p => !!p.archived === showArchived)
+  const filteredProjects = visibleProjects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
   )
+  const archivedCount = projects.filter(p => p.archived).length
 
   const loadProjects = () => {
     fetch('/api/projects')
@@ -48,9 +51,29 @@ export default function ProjectsPage() {
 
   return (
     <div className="p-4 sm:p-8" style={{ background: '#F9F9F9', minHeight: '100%' }}>
-      <div className="mb-6">
-        <h1 className="heading-editorial text-2xl text-neutral-900">Projects</h1>
-        <p className="text-sm mt-1" style={{ color: '#5F6368' }}>Group personas, interviews, and reports into research projects.</p>
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 className="heading-editorial text-2xl text-neutral-900">Projects</h1>
+          <p className="text-sm mt-1" style={{ color: '#5F6368' }}>Every persona, interview, report, and signal belongs to a project.</p>
+        </div>
+        {archivedCount > 0 && (
+          <div className="flex items-center gap-1 rounded-lg p-1 flex-shrink-0" style={{ background: '#F4F6F8' }}>
+            <button
+              onClick={() => setShowArchived(false)}
+              className="text-xs font-medium px-3 py-1.5 rounded-md transition-colors"
+              style={{ background: showArchived ? 'transparent' : 'white', color: showArchived ? '#6B7280' : '#1C3D2E' }}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => setShowArchived(true)}
+              className="text-xs font-medium px-3 py-1.5 rounded-md transition-colors"
+              style={{ background: showArchived ? 'white' : 'transparent', color: showArchived ? '#1C3D2E' : '#6B7280' }}
+            >
+              Archived ({archivedCount})
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl p-5 mb-6" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
@@ -92,8 +115,12 @@ export default function ProjectsPage() {
       ) : filteredProjects.length === 0 ? (
         <div className="flex items-center justify-center rounded-2xl py-16" style={{ background: '#FFFFFF', border: '1px dashed #E0E2E4' }}>
           <div className="text-center">
-            <p className="text-sm font-semibold" style={{ color: '#202124' }}>No projects match "{search}"</p>
-            <p className="text-xs mt-1" style={{ color: '#5F6368' }}>Try a different search term.</p>
+            <p className="text-sm font-semibold" style={{ color: '#202124' }}>
+              {search ? `No projects match "${search}"` : showArchived ? 'No archived projects' : 'No active projects'}
+            </p>
+            <p className="text-xs mt-1" style={{ color: '#5F6368' }}>
+              {search ? 'Try a different search term.' : showArchived ? 'Projects you archive will show up here.' : 'All your projects are archived.'}
+            </p>
           </div>
         </div>
       ) : (

@@ -12,8 +12,18 @@ export interface UserProfile {
   stripe_subscription_id: string | null
   interviews_used: number
   personas_used: number
+  briefing?: ExecutiveBriefing | null
+  briefing_generated_at?: string | null
   created_at: string
   updated_at: string
+}
+
+// ─── Executive briefing (Home dashboard) ─────────────────────────────────────
+
+export interface ExecutiveBriefing {
+  summary: string
+  observations: string[]
+  recommended_next_step: string
 }
 
 // ─── Persona ─────────────────────────────────────────────────────────────────
@@ -52,6 +62,7 @@ export interface PersonaTraits {
 export interface Persona {
   id: string
   user_id: string
+  project_id?: string | null
   name: string
   avatar_initials: string
   avatar_color: string
@@ -71,6 +82,8 @@ export interface Project {
   id: string
   user_id: string
   name: string
+  archived: boolean
+  archived_at: string | null
   created_at: string
   updated_at: string
 }
@@ -121,6 +134,7 @@ export interface Message {
 export interface Interview {
   id: string
   user_id: string
+  project_id?: string | null
   persona_id: string
   persona?: Persona
   title: string
@@ -164,6 +178,95 @@ export interface Report {
   key_themes: ReportTheme[]
   recommendations: ReportRecommendation[]
   confidence_score: number
+  created_at: string
+}
+
+// ─── Signal ───────────────────────────────────────────────────────────────────
+// AI-synthesized customer intelligence, derived from interview transcripts and
+// reports. Not manually authored — see lib/anthropic/signal-engine.ts.
+
+export type SignalType =
+  | 'pain_point'
+  | 'objection'
+  | 'desired_outcome'
+  | 'feature_request'
+  | 'buying_trigger'
+  | 'trend'
+  | 'opportunity'
+  | 'risk'
+
+export const SIGNAL_TYPE_LABELS: Record<SignalType, string> = {
+  pain_point: 'Pain Point',
+  objection: 'Objection',
+  desired_outcome: 'Desired Outcome',
+  feature_request: 'Feature Request',
+  buying_trigger: 'Buying Trigger',
+  trend: 'Trend',
+  opportunity: 'Opportunity',
+  risk: 'Risk',
+}
+
+export type SignalStatus = 'emerging' | 'growing' | 'validated'
+
+export const SIGNAL_STATUS_LABELS: Record<SignalStatus, string> = {
+  emerging: 'Emerging',
+  growing: 'Growing',
+  validated: 'Validated',
+}
+
+export interface SignalQuote {
+  text: string
+  persona_id: string | null
+  interview_id: string | null
+}
+
+// One snapshot per time a signal is touched (created or merged into by a
+// new interview) — see syncSignalsForInterview in the report route. Lets
+// the UI and the briefing engine describe real movement ("mention count up
+// 42% over 30 days") instead of a static point-in-time read.
+export interface SignalHistoryEntry {
+  date: string
+  mentionCount: number
+  confidenceScore: number
+}
+
+export type SignalImpact = 'low' | 'medium' | 'high'
+
+export const SIGNAL_IMPACT_LABELS: Record<SignalImpact, string> = {
+  low: 'Low impact',
+  medium: 'Medium impact',
+  high: 'High impact',
+}
+
+export interface Signal {
+  id: string
+  user_id: string
+  project_id: string
+  title: string
+  type: SignalType
+  summary: string
+  confidence_score: number
+  supporting_quotes: SignalQuote[]
+  related_persona_ids: string[]
+  related_interview_ids: string[]
+  status: SignalStatus
+  strategic_recommendation: string
+  impact: SignalImpact | null
+  history: SignalHistoryEntry[]
+  created_at: string
+  updated_at: string
+}
+
+// ─── Project files ──────────────────────────────────────────────────────────
+
+export interface ProjectFile {
+  id: string
+  user_id: string
+  project_id: string
+  name: string
+  storage_path: string
+  file_type: string
+  size_bytes: number
   created_at: string
 }
 

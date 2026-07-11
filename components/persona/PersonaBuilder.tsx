@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Camera, Loader2, Check } from 'lucide-react'
 import { Button, Input, Textarea, Select, Slider, TagInput, ListInput } from '@/components/ui'
 import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation } from '@/types'
@@ -74,6 +74,8 @@ const EDUCATION_OPTIONS = [
 
 export default function PersonaBuilder() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const projectId = searchParams.get('project_id')
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
   const [tags, setTags] = useState<string[]>([])
@@ -197,7 +199,7 @@ export default function PersonaBuilder() {
       const res = await fetch('/api/personas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, tags, traits, avatar_url: avatarUrl }),
+        body: JSON.stringify({ name, tags, traits, avatar_url: avatarUrl, project_id: projectId }),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -210,7 +212,7 @@ export default function PersonaBuilder() {
         return
       }
 
-      router.push('/personas')
+      router.push(projectId ? `/projects/${projectId}` : '/personas')
       router.refresh()
     } catch (e: any) {
       setError(e.message ?? 'Failed to save persona')

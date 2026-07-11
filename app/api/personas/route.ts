@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
   }
 
   const funnelStage = request.nextUrl.searchParams.get('funnel_stage')
+  const projectId = request.nextUrl.searchParams.get('project_id')
 
   let query = supabase
     .from('personas')
@@ -23,6 +24,9 @@ export async function GET(request: NextRequest) {
 
   if (funnelStage) {
     query = query.eq('funnel_stage', funnelStage)
+  }
+  if (projectId) {
+    query = query.eq('project_id', projectId)
   }
 
   const { data, error } = await query
@@ -88,6 +92,7 @@ export async function POST(request: NextRequest) {
     .from('personas')
     .insert({
       user_id: user.id,
+      project_id: body.project_id ?? null,
       name: formData.name,
       avatar_initials: initials,
       avatar_color: JSON.stringify(color),
@@ -113,7 +118,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { id, action } = await request.json()
+  const { id, action, project_id } = await request.json()
   if (!id || !action) return NextResponse.json({ error: 'ID and action required' }, { status: 400 })
 
   if (action === 'archive') {
@@ -130,6 +135,16 @@ export async function PATCH(request: NextRequest) {
     const { error } = await supabase
       .from('personas')
       .update({ archived: false, archived_at: null })
+      .eq('id', id)
+      .eq('user_id', user.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
+
+  if (action === 'set_project') {
+    const { error } = await supabase
+      .from('personas')
+      .update({ project_id: project_id ?? null })
       .eq('id', id)
       .eq('user_id', user.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

@@ -6,7 +6,7 @@ import { Plus, MessageSquare, Trash2 } from 'lucide-react'
 import { formatRelativeTime, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { createClient } from '@/lib/supabase/client'
-import type { Interview } from '@/types'
+import type { Interview, Project } from '@/types'
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   active: { bg: '#E8F5F1', color: '#2A5C4E' },
@@ -16,21 +16,33 @@ const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
 
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState<(Interview & { persona: any })[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [projectFilter, setProjectFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
       const supabase = createClient()
-      const { data } = await supabase
-        .from('interviews')
-        .select('*, persona:personas(name, avatar_initials, avatar_color, avatar_url)')
-        .order('created_at', { ascending: false })
+      const [{ data }, { data: projectData }] = await Promise.all([
+        supabase
+          .from('interviews')
+          .select('*, persona:personas(name, avatar_initials, avatar_color, avatar_url)')
+          .order('created_at', { ascending: false }),
+        supabase.from('projects').select('*').eq('archived', false).order('name'),
+      ])
       setInterviews(data ?? [])
+      setProjects(projectData ?? [])
       setLoading(false)
     }
     load()
   }, [])
+
+  const filteredInterviews = projectFilter === 'all'
+    ? interviews
+    : projectFilter === 'unassigned'
+    ? interviews.filter(iv => !iv.project_id)
+    : interviews.filter(iv => iv.project_id === projectFilter)
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.preventDefault()
@@ -56,10 +68,24 @@ export default function InterviewsPage() {
           <h1 className="heading-editorial text-2xl text-neutral-900">Interviews</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Conversations with your personas</p>
         </div>
-        <Link href="/interviews/new" className="flex items-center gap-1.5 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors hover:bg-[#4C665F]" style={{ background: '#2A5C4E' }}>
-          <Plus size={15} />
-          New interview
-        </Link>
+        <div className="flex items-center gap-2">
+          {projects.length > 0 && (
+            <select
+              value={projectFilter}
+              onChange={e => setProjectFilter(e.target.value)}
+              className="text-xs rounded-lg px-3 py-2"
+              style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124' }}
+            >
+              <option value="all">All projects</option>
+              <option value="unassigned">Unassigned</option>
+              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          )}
+          <Link href="/interviews/new" className="flex items-center gap-1.5 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors hover:bg-[#4C665F]" style={{ background: '#2A5C4E' }}>
+            <Plus size={15} />
+            New interview
+          </Link>
+        </div>
       </div>
 
       <div className="px-4 sm:px-7 py-6">
@@ -69,12 +95,12 @@ export default function InterviewsPage() {
           </div>
         )}
 
-        {!loading && interviews.length === 0 && (
+        {!loading && filteredInterviews.length === 0 && (
           <div className="flex items-center justify-center rounded-2xl py-16" style={{ background: 'white', border: '2px dashed rgba(0,0,0,0.1)' }}>
             <div className="text-center">
               <MessageSquare size={24} className="text-neutral-300 mx-auto mb-3" />
-              <h3 className="text-sm font-semibold text-neutral-800 mb-1">No interviews yet</h3>
-              <p className="text-sm text-neutral-400 mb-5">Create a persona, then start an interview.</p>
+              <h3 className="text-sm font-semibold text-neutral-800 mb-1">{interviews.length === 0 ? 'No interviews yet' : 'No interviews match this filter'}</h3>
+              <p className="text-sm text-neutral-400 mb-5">{interviews.length === 0 ? 'Create a persona, then start an interview.' : 'Try a different project filter.'}</p>
               <Link href="/interviews/new" className="inline-flex items-center gap-1.5 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors hover:bg-[#4C665F]" style={{ background: '#2A5C4E' }}>
                 <Plus size={14} /> Start an interview
               </Link>
@@ -82,9 +108,9 @@ export default function InterviewsPage() {
           </div>
         )}
 
-        {!loading && interviews.length > 0 && (
+        {!loading && filteredInterviews.length > 0 && (
           <div className="space-y-3">
-            {interviews.map((interview) => {
+            {filteredInterviews.map((interview) => {
               const statusStyle = STATUS_STYLES[interview.status] ?? STATUS_STYLES.completed
               return (
                 <div key={interview.id} className="relative group">

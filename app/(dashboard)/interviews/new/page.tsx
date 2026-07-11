@@ -30,6 +30,7 @@ function NewInterviewForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedPersonaId = searchParams.get('persona_id') ?? ''
+  const projectId = searchParams.get('project_id')
 
   const [personas, setPersonas] = useState<Persona[]>([])
   const [personaId, setPersonaId] = useState(preselectedPersonaId)
@@ -72,7 +73,7 @@ function NewInterviewForm() {
       const res = await fetch('/api/interviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persona_id: personaId, title, type, context, devils_advocate: devilsAdvocate }),
+        body: JSON.stringify({ persona_id: personaId, title, type, context, devils_advocate: devilsAdvocate, project_id: projectId }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)

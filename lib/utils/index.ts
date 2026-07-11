@@ -106,3 +106,37 @@ export function getPriorityColor(priority: string) {
   }
   return map[priority] ?? map.medium
 }
+
+// ─── Signal type / status color ───────────────────────────────────────────────
+
+export function getSignalTypeColor(type: string) {
+  const map: Record<string, string> = {
+    pain_point: 'text-red-600 bg-red-50',
+    objection: 'text-amber-600 bg-amber-50',
+    desired_outcome: 'text-emerald-600 bg-emerald-50',
+    feature_request: 'text-blue-600 bg-blue-50',
+    buying_trigger: 'text-purple-600 bg-purple-50',
+    trend: 'text-indigo-600 bg-indigo-50',
+    opportunity: 'text-teal-600 bg-teal-50',
+    risk: 'text-orange-600 bg-orange-50',
+  }
+  return map[type] ?? 'text-gray-600 bg-gray-100'
+}
+
+export function getSignalStatusColor(status: string) {
+  const map: Record<string, string> = {
+    emerging: 'text-gray-600 bg-gray-100',
+    growing: 'text-amber-600 bg-amber-50',
+    validated: 'text-emerald-600 bg-emerald-50',
+  }
+  return map[status] ?? map.emerging
+}
+
+export function getSignalImpactColor(impact: string) {
+  const map: Record<string, string> = {
+    high: 'text-white bg-[#1C3D2E]',
+    medium: 'text-amber-700 bg-amber-50',
+    low: 'text-gray-500 bg-gray-100',
+  }
+  return map[impact] ?? map.medium
+}
