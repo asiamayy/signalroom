@@ -21,16 +21,22 @@ const LABELS = [
 
 interface IntelligenceSignalProps {
   anchorRef: React.RefObject<HTMLSpanElement | null>
+  // Right-column element to stay clear of. When it sits beside the animation
+  // (desktop, side-by-side grid columns) the animation's width is clamped to
+  // stop safely short of it; when it's stacked below (mobile/tablet) there's
+  // no horizontal collision to avoid, so the animation uses its natural width.
+  boundaryRef?: React.RefObject<HTMLElement | null>
 }
 
-export default function IntelligenceSignal({ anchorRef }: IntelligenceSignalProps) {
+export default function IntelligenceSignal({ anchorRef, boundaryRef }: IntelligenceSignalProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
+  const [widthPx, setWidthPx] = useState<number | null>(null)
   const [box, setBox] = useState({ w: 960, h: 340 })
   const [pts, setPts] = useState<{ A: Point; B: Point; C: Point; D: Point }>({
-    A: { x: 80, y: 100 },
-    B: { x: 230, y: 30 },
-    C: { x: 380, y: 110 },
-    D: { x: 530, y: 40 },
+    A: { x: 80, y: 135 },
+    B: { x: 305, y: 30 },
+    C: { x: 530, y: 150 },
+    D: { x: 755, y: 45 },
   })
 
   useEffect(() => {
@@ -40,21 +46,42 @@ export default function IntelligenceSignal({ anchorRef }: IntelligenceSignalProp
       if (!wrap || !anchor) return
 
       const wrapRect = wrap.getBoundingClientRect()
-      const w = wrapRect.width
       const h = wrapRect.height
+
+      // Natural width comes from the parent column, not wrap's own rect —
+      // wrap may already carry an inline width from a previous run, so
+      // reading wrap.getBoundingClientRect().width here would just read
+      // back our own last override instead of the true CSS-computed size.
+      const parentWidth = wrap.parentElement
+        ? wrap.parentElement.getBoundingClientRect().width
+        : wrapRect.width
+
+      // stop safely short of the right column when it's beside us; ignore
+      // it entirely when it's stacked below (mobile/tablet single column)
+      let w = Math.min(parentWidth, 900)
+      const boundary = boundaryRef?.current
+      if (boundary) {
+        const bRect = boundary.getBoundingClientRect()
+        const sideBySide = bRect.left > wrapRect.left + 50 && bRect.top < wrapRect.bottom
+        if (sideBySide) {
+          w = Math.max(320, Math.min(900, bRect.left - wrapRect.left - 40))
+        }
+      }
+      setWidthPx(w)
       setBox({ w, h })
 
       const nRect = anchor.getBoundingClientRect()
       const ax = nRect.left + nRect.width / 2 - wrapRect.left
-      const ay = 100
+      const ay = 135
 
       // up, then a bigger drop down past the start line, then back up —
-      // three roughly even-length legs
-      const scale = Math.min(1, (w - ax - 80) / 450)
+      // three roughly even-length legs, compressed by `scale` whenever the
+      // available width is too tight for the full spread
+      const scale = Math.min(1, (w - ax - 80) / 675)
 
-      const bx = ax + 150 * scale, by = ay - 70 * scale
-      const cx = bx + 150 * scale, cy = by + 80 * scale
-      const dx = cx + 150 * scale, dy = cy - 70 * scale
+      const bx = ax + 225 * scale, by = ay - 105 * scale
+      const cx = bx + 225 * scale, cy = by + 120 * scale
+      const dx = cx + 225 * scale, dy = cy - 105 * scale
 
       setPts({
         A: { x: ax, y: ay },
@@ -67,13 +94,13 @@ export default function IntelligenceSignal({ anchorRef }: IntelligenceSignalProp
     place()
     window.addEventListener('resize', place)
     return () => window.removeEventListener('resize', place)
-  }, [anchorRef])
+  }, [anchorRef, boundaryRef])
 
   const nodes = [
-    { key: 'a', pt: pts.A, label: LABELS[0], labelSide: 'below' as const },
-    { key: 'b', pt: pts.B, label: LABELS[1], labelSide: 'below' as const },
-    { key: 'c', pt: pts.C, label: LABELS[2], labelSide: 'below' as const },
-    { key: 'd', pt: pts.D, label: LABELS[3], labelSide: 'above' as const },
+    { key: 'a', pt: pts.A, label: LABELS[0], labelSide: 'below' as const, align: 'left' as const },
+    { key: 'b', pt: pts.B, label: LABELS[1], labelSide: 'above' as const, align: 'center' as const },
+    { key: 'c', pt: pts.C, label: LABELS[2], labelSide: 'below' as const, align: 'center' as const },
+    { key: 'd', pt: pts.D, label: LABELS[3], labelSide: 'above' as const, align: 'center' as const },
   ]
 
   const links = [
@@ -83,7 +110,11 @@ export default function IntelligenceSignal({ anchorRef }: IntelligenceSignalProp
   ]
 
   return (
-    <div ref={wrapRef} className="relative w-full h-[340px] mt-4">
+    <div
+      ref={wrapRef}
+      className="relative w-full max-w-[900px] h-[340px] mt-4"
+      style={widthPx ? { width: `${widthPx}px` } : undefined}
+    >
       <svg viewBox={`0 0 ${box.w} ${box.h}`} preserveAspectRatio="none" className="absolute inset-0 w-full h-full overflow-visible">
         <defs>
           <filter id="node-glow" x="-80%" y="-80%" width="260%" height="260%">
@@ -120,18 +151,23 @@ export default function IntelligenceSignal({ anchorRef }: IntelligenceSignalProp
         ))}
       </svg>
 
-      {nodes.map(({ key, pt, label, labelSide }) => (
+      {nodes.map(({ key, pt, label, labelSide, align }) => (
         <span
           key={key}
-          className={`signal-label label-${key} absolute text-[10px] font-medium uppercase tracking-[0.14em] whitespace-nowrap`}
+          className={`signal-label label-${key} absolute text-[10px] font-medium uppercase tracking-[0.14em] ${align === 'left' ? '' : 'whitespace-nowrap'}`}
           style={{
             color: '#1A3024',
             left: pt.x,
             top: labelSide === 'below' ? pt.y + 20 : pt.y - 34,
-            transform: 'translateX(-50%)',
+            transform: align === 'left' ? 'none' : 'translateX(-50%)',
           }}
         >
-          {label}
+          {key === 'a' ? (
+            <>
+              <span className="block">Customer</span>
+              <span className="block whitespace-nowrap">expectation detected</span>
+            </>
+          ) : label}
         </span>
       ))}
 

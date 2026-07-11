@@ -90,6 +90,7 @@ export default function LandingPage() {
   const [displayedWord, setDisplayedWord] = useState<string>('');
 
   const nAnchorRef = useRef<HTMLSpanElement>(null);
+  const rightColRef = useRef<HTMLDivElement>(null);
 
   const [selectedPersona, setSelectedPersona] = useState<DashboardPersona>(DASHBOARD_PERSONAS[0]);
   const [streamingText, setStreamingText] = useState<string>('');
@@ -269,15 +270,15 @@ export default function LandingPage() {
             </h1>
 
             {/* Shifted up cleanly to fill the middle whitespace segment nicely */}
-            <div className="mt-4 mb-4 w-full max-w-[650px] bg-transparent overflow-visible">
-              <IntelligenceSignal anchorRef={nAnchorRef} />
+            <div className="mt-4 mb-4 w-full max-w-[900px] bg-transparent overflow-visible">
+              <IntelligenceSignal anchorRef={nAnchorRef} boundaryRef={rightColRef} />
             </div>
           </div>
 
           {/* RIGHT SIDE: self-start so it never stretches to match the left column's
               height — its position stays fixed regardless of how tall the node
               animation is */}
-          <div className="md:col-span-12 lg:col-span-5 lg:pt-64 flex flex-col justify-start lg:self-start">
+          <div ref={rightColRef} className="md:col-span-12 lg:col-span-5 lg:pt-64 flex flex-col justify-start lg:self-start">
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               
