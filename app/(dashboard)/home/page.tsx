@@ -9,7 +9,7 @@ import { BRIEFING_STALE_AFTER_MS } from '@/lib/anthropic/briefing-engine'
 import { buildTimelineEvents, type TimelineEventType } from '@/lib/utils/timeline'
 import { getTrendDirection, getMentionTrendPercent } from '@/lib/utils/signals'
 import { formatRelativeTime, CARD_SHADOW } from '@/lib/utils'
-import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
 import { BriefingCard } from '@/components/home/BriefingCard'
 import { StrategicFocus } from '@/components/home/StrategicFocus'
 import { PersonaSpotlight } from '@/components/home/PersonaSpotlight'
@@ -142,7 +142,7 @@ export default async function HomePage() {
   const additionalPersonaCount = Math.max(0, involvedPersonas.length - visibleInvolvedPersonas.length)
 
   return (
-    <div style={{ background: HOME_COLORS.surface }} className="min-h-full">
+    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
       {/* Hero — AI briefing */}
       <BriefingCard
         initialBriefing={cachedBriefing}
@@ -224,9 +224,9 @@ export default async function HomePage() {
                         <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center" style={{ background: i % 2 === 0 ? HOME_COLORS.primaryFixedDim : HOME_COLORS.secondaryContainer }}>
                           <Icon size={16} style={{ color: i % 2 === 0 ? HOME_COLORS.onPrimaryFixedVariant : HOME_COLORS.onSecondaryContainer }} />
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm" style={{ color: HOME_COLORS.onSurface }}>
-                            {e.title}{e.detail && <>: <span className="font-bold">{e.detail}</span></>}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm truncate" style={{ color: HOME_COLORS.onSurface }} title={e.detail ? `${e.title}: ${e.detail}` : e.title}>
+                            {e.title}{e.detail && <>: <span className="font-semibold">{e.detail}</span></>}
                           </p>
                           <p className="text-xs mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(e.timestamp)}</p>
                         </div>

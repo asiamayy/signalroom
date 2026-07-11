@@ -51,7 +51,7 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
     } catch {}
   }
 
-  const paragraph = briefing ? [briefing.summary, ...briefing.observations].join(' ') : ''
+  const paragraph = briefing ? briefing.observations.join(' ') : ''
 
   return (
     <section className="relative p-6 sm:p-10 overflow-hidden" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
@@ -60,7 +60,7 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
         <div className="lg:col-span-7">
           <div className="flex items-center gap-3 mb-6">
             <Sparkles size={16} style={{ color: HOME_COLORS.primaryFixedDim }} />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Executive Intelligence Briefing</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Executive Intelligence Briefing</span>
             {refreshing && <Loader2 size={12} className="animate-spin" style={{ color: HOME_COLORS.primaryFixedDim }} />}
           </div>
 
@@ -71,12 +71,14 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
             </div>
           ) : (
             <>
-              <h1 className="mb-6 leading-tight max-w-2xl text-[28px] sm:text-[40px]" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+              <h1 className="mb-6 leading-tight max-w-2xl text-2xl sm:text-3xl lg:text-[34px] line-clamp-3" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.25 }}>
                 {briefing.summary}
               </h1>
-              <p className="mb-8 max-w-xl opacity-90 text-sm sm:text-base leading-relaxed">
-                {paragraph}
-              </p>
+              {paragraph && (
+                <p className="mb-8 max-w-xl opacity-90 text-sm sm:text-base leading-relaxed line-clamp-4">
+                  {paragraph}
+                </p>
+              )}
             </>
           )}
 

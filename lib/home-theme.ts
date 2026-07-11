@@ -26,6 +26,9 @@ export const HOME_COLORS = {
   outlineVariant: '#c3c8c1',
   onSurface: '#1c1b1b',
   onSurfaceVariant: '#434843',
+  tertiary: '#232525',
+  onTertiary: '#ffffff',
+  error: '#ba1a1a',
 } as const
 
 export const HOME_FONT_DISPLAY = 'var(--nf-source-serif), Georgia, serif'

@@ -10,6 +10,7 @@ import {
   BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { HOME_COLORS, HOME_FONT_BODY } from '@/lib/home-theme'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect, useRef } from 'react'
 import type { Project } from '@/types'
@@ -136,7 +137,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     <>
       {/* Logo */}
       <div className="px-5 py-5 flex items-start justify-between">
-        <DashboardLogo width={165} />
+        <DashboardLogo width={128} />
         {/* Close button - mobile only */}
         <button
           onClick={() => setMobileNavOpen(false)}
@@ -148,7 +149,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto" style={{ fontFamily: HOME_FONT_BODY }}>
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
           return (
@@ -156,34 +157,34 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-2.5 px-3 py-2.5 md:py-2 rounded-lg text-sm font-semibold transition-all',
-                active ? '' : 'text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50'
+                'flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm transition-all',
+                active ? 'font-semibold shadow-sm' : 'font-medium hover:bg-[#eae7e7]'
               )}
-              style={active ? { background: '#CACFC6', color: '#1C3D2E' } : {}}
+              style={active ? { background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.onSecondaryContainer } : { color: HOME_COLORS.onSurfaceVariant }}
             >
-              <Icon size={15} strokeWidth={1.75} fill={active ? '#1C3D2E' : 'none'} />
+              <Icon size={18} strokeWidth={1.75} style={{ color: active ? HOME_COLORS.onSecondaryContainer : HOME_COLORS.onSurfaceVariant }} />
               {label}
             </Link>
           )
         })}
 
         {/* Recent projects */}
-        <div className="pt-4 mt-2" style={{ borderTop: '1px solid rgba(0,0,0,0.07)' }}>
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#757575' }}>
+        <div className="pt-4 mt-2" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
+          <p className="px-4 pb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
             Recent Projects
           </p>
           {recentProjects.length === 0 ? (
-            <p className="px-3 text-xs" style={{ color: '#9CA3AF' }}>No projects yet</p>
+            <p className="px-4 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>No projects yet</p>
           ) : (
             <div className="space-y-0.5">
               {recentProjects.map((project, i) => (
                 <Link
                   key={project.id}
                   href="/projects"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors hover:bg-neutral-50"
-                  style={{ color: i === 0 ? '#202124' : '#757575' }}
+                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm transition-colors hover:bg-[#eae7e7]"
+                  style={{ color: i === 0 ? HOME_COLORS.onSurface : HOME_COLORS.onSurfaceVariant }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: i === 0 ? '#1C3D2E' : '#DADCE0' }} />
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: i === 0 ? HOME_COLORS.primary : HOME_COLORS.outlineVariant }} />
                   <span className="truncate">{project.name}</span>
                 </Link>
               ))}
@@ -193,11 +194,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       </nav>
 
       {/* Footer — New Project */}
-      <div className="px-3 pb-4 pt-2" style={{ borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+      <div className="px-3 pb-4 pt-2" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}66`, fontFamily: HOME_FONT_BODY }}>
         <Link
           href="/projects"
-          className="w-full flex items-center gap-2 text-sm font-semibold px-3.5 py-2.5 rounded-lg transition-colors"
-          style={{ background: '#FFFFFF', border: '1px solid #DADCE0', color: '#202124' }}
+          className="w-full flex items-center gap-2 text-sm font-semibold px-3.5 py-2.5 rounded-lg transition-colors hover:bg-[#eae7e7]"
+          style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }}
         >
           <Plus size={15} />
           New Project
@@ -210,7 +211,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     <div className={cn('dashboard-shell flex h-screen overflow-hidden', inter.variable, playfair.variable, sourceSerif.variable, hanken.variable)} style={{ background: '#F9F9F9' }}>
 
       {/* Desktop sidebar — always visible at md+ */}
-      <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>
+      <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: HOME_COLORS.surfaceContainerLowest, borderRight: `1px solid ${HOME_COLORS.outlineVariant}` }}>
         {SidebarContent}
       </aside>
 
@@ -224,7 +225,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             onClick={() => setMobileNavOpen(false)}
           />
           {/* Drawer */}
-          <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col" style={{ background: 'white' }}>
+          <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-72 flex flex-col" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
             {SidebarContent}
           </aside>
         </>
@@ -244,7 +245,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             <Menu size={18} />
           </button>
           <div className="md:hidden">
-            <DashboardLogo width={125} />
+            <DashboardLogo width={100} />
           </div>
 
           {/* Search */}

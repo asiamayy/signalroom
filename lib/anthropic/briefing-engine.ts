@@ -60,7 +60,7 @@ ${trendsBlock || 'none available yet'}
 
 Return ONLY a JSON object with this exact shape, no preamble, no markdown fences:
 {
-  "summary": "One sentence framing what's been learned recently (e.g. 'Across your recent research, N consistent customer behaviors have emerged.')",
+  "summary": "One short headline-style sentence (under 18 words) framing what's been learned recently (e.g. 'Across your recent research, N consistent customer behaviors have emerged.') — this renders as a large display headline, so keep it tight",
   "observations": ["2-4 short, specific bullet observations grounded in the signals/reports above — prefer citing a trend percentage from the trend data when one exists for that observation, but never fabricate one"],
   "recommended_next_step": "One concrete, specific next action — a type of research to run or a decision to make"
 }`,

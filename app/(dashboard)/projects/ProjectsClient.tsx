@@ -7,7 +7,7 @@ import {
   Search, Plus, ArrowRight, Calendar, ArrowUp, ArrowDown, Briefcase,
   MoreVertical, ArchiveRestore, Trash2, Loader2, Database,
 } from 'lucide-react'
-import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
 import { CARD_SHADOW } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { useSearch } from '@/lib/search-context'
@@ -102,13 +102,13 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
   }
 
   return (
-    <div style={{ background: HOME_COLORS.surface }} className="min-h-full" onClick={() => openMenuId && setOpenMenuId(null)}>
+    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full" onClick={() => openMenuId && setOpenMenuId(null)}>
       {/* Header & primary action */}
       <section className="px-4 sm:px-10 pt-10 sm:pt-12 pb-12 sm:pb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="max-w-2xl">
           <div className="flex items-center gap-3 mb-4">
             <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Hub</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Hub</span>
           </div>
           <h1 className="text-[32px] sm:text-[40px] mb-4" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.15, color: HOME_COLORS.onSurface }}>Projects</h1>
           <p className="text-sm sm:text-base leading-relaxed max-w-xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
@@ -278,9 +278,6 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
           <div className="absolute inset-0 rounded-full animate-[spin_20s_linear_infinite]" style={{ border: `1px solid ${HOME_COLORS.primary}33` }} />
           <div className="absolute inset-6 rounded-full animate-[spin_15s_linear_infinite_reverse]" style={{ border: `1px solid ${HOME_COLORS.primary}1a` }} />
           <div className="absolute inset-12 rounded-full animate-[spin_30s_linear_infinite]" style={{ border: `1px solid ${HOME_COLORS.primary}0d` }} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[9px] uppercase tracking-[0.4em] rotate-90" style={{ color: HOME_COLORS.primary }}>Systems Active</span>
-          </div>
         </div>
       </div>
 
