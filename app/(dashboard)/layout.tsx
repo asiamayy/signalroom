@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Inter, Playfair_Display } from 'next/font/google'
+import { Inter, Playfair_Display, Source_Serif_4, Hanken_Grotesk } from 'next/font/google'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home, Briefcase, Users, MessageSquare, Settings, ArrowLeftRight, Menu, X,
@@ -37,6 +37,10 @@ function DashboardLogo({ width = 140 }: { width?: number }) {
 // marketing/landing page is never touched by this font.
 const inter = Inter({ subsets: ['latin'], variable: '--nf-inter', display: 'swap' })
 const playfair = Playfair_Display({ subsets: ['latin'], weight: ['500', '600'], variable: '--nf-playfair', display: 'swap' })
+// Home page only — its editorial redesign uses this serif/grotesk pairing
+// instead of Playfair/Inter, matching the reference mockup exactly.
+const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['600'], variable: '--nf-source-serif', display: 'swap' })
+const hanken = Hanken_Grotesk({ subsets: ['latin'], weight: ['400', '600', '700'], variable: '--nf-hanken', display: 'swap' })
 
 const NAV_ITEMS = [
   { href: '/home', label: 'Home', icon: Home },
@@ -203,7 +207,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <div className={cn('dashboard-shell flex h-screen overflow-hidden', inter.variable, playfair.variable)} style={{ background: '#F9F9F9' }}>
+    <div className={cn('dashboard-shell flex h-screen overflow-hidden', inter.variable, playfair.variable, sourceSerif.variable, hanken.variable)} style={{ background: '#F9F9F9' }}>
 
       {/* Desktop sidebar — always visible at md+ */}
       <aside className="hidden md:flex w-56 flex-shrink-0 flex-col" style={{ background: 'white', borderRight: '1px solid rgba(0,0,0,0.07)' }}>

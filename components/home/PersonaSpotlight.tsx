@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Quote } from 'lucide-react'
+import { HOME_COLORS } from '@/lib/home-theme'
+import { CARD_SHADOW } from '@/lib/utils'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Persona } from '@/types'
 
@@ -11,22 +12,19 @@ interface PersonaSpotlightProps {
 
 export function PersonaSpotlight({ persona, quote, interviewId }: PersonaSpotlightProps) {
   return (
-    <div className="rounded-2xl p-5" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-      <span className="text-[10px] font-semibold uppercase tracking-[0.2em] mb-3 block" style={{ color: '#1C3D2E' }}>Persona Spotlight</span>
-      <div className="flex items-center gap-3 mb-3">
-        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
+    <div className="rounded-2xl p-6" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+      <h4 className="text-[11px] font-semibold uppercase tracking-widest mb-6 opacity-60">Persona Spotlight</h4>
+      <div className="flex items-center gap-4 mb-6">
+        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg" className="ring-2 ring-[#b8ccba]" />
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-neutral-900 truncate">{persona.name}</p>
-          <p className="text-[11px] uppercase tracking-wide truncate" style={{ color: '#9CA3AF' }}>{persona.traits?.job_title || 'Persona'}</p>
+          <p className="text-sm font-semibold truncate">{persona.name}</p>
+          <p className="text-[11px] uppercase tracking-wider truncate" style={{ color: HOME_COLORS.primaryFixedDim }}>{persona.traits?.job_title || 'Persona'}</p>
         </div>
       </div>
-      <div className="flex items-start gap-2 mb-3">
-        <Quote size={13} className="flex-shrink-0 mt-0.5" style={{ color: '#D1D5DB' }} />
-        <p className="text-sm italic text-neutral-700 leading-relaxed">&ldquo;{quote}&rdquo;</p>
-      </div>
+      <p className="text-sm italic leading-relaxed mb-6 opacity-90">&ldquo;{quote}&rdquo;</p>
       {interviewId && (
-        <Link href={`/interviews/${interviewId}`} className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#1C3D2E' }}>
-          View interview highlights →
+        <Link href={`/interviews/${interviewId}`} className="w-full block text-center py-3 rounded-xl text-[11px] font-semibold uppercase tracking-widest transition-colors hover:bg-white/10" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimaryContainer }}>
+          View interview highlights
         </Link>
       )}
     </div>

@@ -9,6 +9,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// ─── Design tokens ────────────────────────────────────────────────────────────
+// Shared card elevation — used across Home's editorial sections so every
+// card reads as a distinct, lifted surface rather than a flat bordered box.
+export const CARD_SHADOW = '0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.06)'
+
 // ─── Plan helpers ─────────────────────────────────────────────────────────────
 
 export function getPlanLimits(plan: Plan): PlanLimits {

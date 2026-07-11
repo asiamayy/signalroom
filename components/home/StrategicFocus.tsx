@@ -1,5 +1,7 @@
 import Link from 'next/link'
-import { Target, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { BarChart3, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { HOME_COLORS } from '@/lib/home-theme'
+import { CARD_SHADOW } from '@/lib/utils'
 import type { Signal } from '@/types'
 
 const TREND_ICON = { strengthening: TrendingUp, weakening: TrendingDown, stable: Minus, new: Minus }
@@ -12,30 +14,39 @@ interface StrategicFocusProps {
 
 export function StrategicFocus({ projectId, projectName, signals }: StrategicFocusProps) {
   return (
-    <div className="rounded-2xl p-5" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-      <div className="flex items-center gap-2 mb-3">
-        <Target size={13} style={{ color: '#1C3D2E' }} />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#1C3D2E' }}>Strategic Focus</span>
+    <div className="rounded-2xl p-6 relative overflow-hidden" style={{ background: HOME_COLORS.surfaceContainer, boxShadow: CARD_SHADOW }}>
+      <div className="absolute -right-4 -top-4 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: `${HOME_COLORS.primary}0d` }} />
+
+      <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 relative" style={{ color: HOME_COLORS.onSurface }}>
+        <BarChart3 size={16} style={{ color: HOME_COLORS.primary }} />
+        Strategic Focus
+      </h4>
+
+      {/* Real confidence chart for this project's top signals — not decoration */}
+      <div className="rounded-lg mb-6 p-4 flex items-end gap-2 h-24" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
+        {signals.map(({ signal }) => (
+          <div key={signal.id} className="flex-1 flex flex-col items-center justify-end h-full gap-1" title={`${signal.title} — ${signal.confidence_score}%`}>
+            <div className="w-full rounded-t" style={{ height: `${Math.max(signal.confidence_score, 6)}%`, background: HOME_COLORS.primaryFixedDim }} />
+          </div>
+        ))}
       </div>
-      <p className="text-xs leading-relaxed mb-4" style={{ color: '#5F6368' }}>
-        Your current focus on <Link href={`/projects/${projectId}`} className="font-semibold" style={{ color: '#1C3D2E' }}>{projectName}</Link> has uncovered {signals.length} signal{signals.length === 1 ? '' : 's'} worth watching.
+
+      <p className="text-sm mb-6" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+        Your current focus on <Link href={`/projects/${projectId}`} className="font-semibold" style={{ color: HOME_COLORS.onSurface }}>{projectName}</Link> has uncovered {signals.length} overlapping signal{signals.length === 1 ? '' : 's'}.
       </p>
-      <ol className="space-y-2.5">
+
+      <div className="space-y-3">
         {signals.map(({ signal, direction }, i) => {
           const Icon = TREND_ICON[direction]
           return (
-            <li key={signal.id}>
-              <Link href={`/projects/${projectId}?tab=Signals`} className="flex items-center justify-between gap-2 text-xs group">
-                <span className="flex items-center gap-2 min-w-0">
-                  <span className="text-neutral-400 flex-shrink-0">{i + 1}.</span>
-                  <span className="font-medium text-neutral-800 uppercase tracking-wide truncate group-hover:text-neutral-900">{signal.title}</span>
-                </span>
-                <Icon size={12} className="flex-shrink-0" style={{ color: direction === 'strengthening' ? '#1C3D2E' : direction === 'weakening' ? '#B45309' : '#9CA3AF' }} />
-              </Link>
-            </li>
+            <Link key={signal.id} href={`/projects/${projectId}?tab=Signals`} className="flex items-center gap-3 p-3 rounded-xl transition-colors hover:brightness-95" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
+              <span className="font-bold text-sm" style={{ color: HOME_COLORS.primary }}>{i + 1}.</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wide truncate" style={{ color: HOME_COLORS.onSurface }}>{signal.title}</span>
+              <Icon size={16} className="ml-auto flex-shrink-0" style={{ color: direction === 'strengthening' ? HOME_COLORS.primary : direction === 'weakening' ? '#B45309' : HOME_COLORS.onSurfaceVariant }} />
+            </Link>
           )
         })}
-      </ol>
+      </div>
     </div>
   )
 }

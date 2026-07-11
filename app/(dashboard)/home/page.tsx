@@ -1,19 +1,19 @@
 import Link from 'next/link'
 import {
-  Briefcase, Users, MessageSquare, Activity, FileText, Gauge,
-  Plus, UserPlus, PlayCircle, FileBarChart, Upload,
-  TrendingUp, TrendingDown, UserPlus2, FileCheck, Sparkles as SignalIcon, Upload as UploadIcon,
+  FolderOpen, Users, Mic, Radar, ArrowRight, RefreshCw,
+  UserPlus2, FileCheck, Sparkles as SignalIcon, Upload as UploadIcon, MessageSquare,
+  AlertTriangle, ShieldAlert, Target, Lightbulb, Zap, TrendingUp, Sparkles, AlertOctagon,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { BRIEFING_STALE_AFTER_MS } from '@/lib/anthropic/briefing-engine'
 import { buildTimelineEvents, type TimelineEventType } from '@/lib/utils/timeline'
 import { getTrendDirection, getMentionTrendPercent } from '@/lib/utils/signals'
-import { formatRelativeTime } from '@/lib/utils'
-import { Greeting } from '@/components/home/Greeting'
+import { formatRelativeTime, CARD_SHADOW } from '@/lib/utils'
+import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
 import { BriefingCard } from '@/components/home/BriefingCard'
 import { StrategicFocus } from '@/components/home/StrategicFocus'
 import { PersonaSpotlight } from '@/components/home/PersonaSpotlight'
-import type { ExecutiveBriefing, Signal, Persona } from '@/types'
+import type { ExecutiveBriefing, Signal, Persona, SignalType } from '@/types'
 
 const ACTIVITY_ICONS: Record<TimelineEventType, typeof Users> = {
   persona_created: UserPlus2,
@@ -22,6 +22,17 @@ const ACTIVITY_ICONS: Record<TimelineEventType, typeof Users> = {
   report_generated: FileCheck,
   signal_discovered: SignalIcon,
   file_uploaded: UploadIcon,
+}
+
+const TYPE_ICON: Record<SignalType, typeof Users> = {
+  pain_point: AlertTriangle,
+  objection: ShieldAlert,
+  desired_outcome: Target,
+  feature_request: Lightbulb,
+  buying_trigger: Zap,
+  trend: TrendingUp,
+  opportunity: Sparkles,
+  risk: AlertOctagon,
 }
 
 // Home is read-only except for the AI briefing, which refreshes itself
@@ -60,29 +71,13 @@ export default async function HomePage() {
   const generatedAt = profile?.briefing_generated_at ? new Date(profile.briefing_generated_at).getTime() : 0
   const isStale = Date.now() - generatedAt > BRIEFING_STALE_AFTER_MS
 
-  // ── Stats ────────────────────────────────────────────────────────────────
-  const monthStart = new Date()
-  monthStart.setDate(1)
-  monthStart.setHours(0, 0, 0, 0)
-  const interviewsThisMonth = allInterviews.filter(iv => new Date(iv.created_at) >= monthStart).length
-
   const avgConfidence = allSignals.length > 0
     ? Math.round(allSignals.reduce((sum, s) => sum + s.confidence_score, 0) / allSignals.length)
     : 0
-
+  const validatedRatio = allSignals.length > 0
+    ? Math.round((allSignals.filter(s => s.status === 'validated').length / allSignals.length) * 100)
+    : 0
   const researchStatus = allSignals.length === 0 ? 'No data yet' : avgConfidence >= 80 ? 'Strong signal' : avgConfidence >= 60 ? 'Developing' : 'Early stage'
-
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
-
-  // ── Smart quick-action destinations ─────────────────────────────────────
-  // "Generate Report" and "Upload Research" used to both dead-end at
-  // /projects (redundant with "New Project"). Route to the actual next
-  // actionable place instead.
-  const reportableInterview = allInterviews.find(iv => iv.status === 'completed' && !iv.report_id)
-  const generateReportHref = reportableInterview ? `/interviews/${reportableInterview.id}` : '/interviews'
-
-  const uploadTargetProject = allProjects[0]
-  const uploadResearchHref = uploadTargetProject ? `/projects/${uploadTargetProject.id}?tab=Files` : '/projects'
 
   // ── Recent activity (cross-project) ─────────────────────────────────────
   const timelineEvents = buildTimelineEvents({
@@ -94,13 +89,9 @@ export default async function HomePage() {
   }).slice(0, 6)
 
   // ── Active projects with rollups ────────────────────────────────────────
-  const activeProjects = allProjects.slice(0, 6).map(project => {
-    const projectInterviews = allInterviews.filter(iv => iv.project_id === project.id)
+  const activeProjects = allProjects.map(project => {
     const projectSignals = allSignals.filter(s => s.project_id === project.id)
-    const projectConfidence = projectSignals.length > 0
-      ? Math.round(projectSignals.reduce((sum, s) => sum + s.confidence_score, 0) / projectSignals.length)
-      : null
-    return { project, interviewCount: projectInterviews.length, signalCount: projectSignals.length, confidence: projectConfidence }
+    return { project, signalCount: projectSignals.length }
   })
 
   // ── Trending signals — ranked by real mention growth, not a guess ───────
@@ -144,180 +135,169 @@ export default async function HomePage() {
     }
   }
 
+  // ── Involved personas — everyone behind the signals feeding the briefing ─
+  const involvedPersonaIds = Array.from(new Set(allSignals.slice(0, 12).flatMap(s => s.related_persona_ids)))
+  const involvedPersonas = involvedPersonaIds.map(id => allPersonas.find(p => p.id === id)).filter((p): p is Persona => !!p)
+  const visibleInvolvedPersonas = involvedPersonas.slice(0, 5)
+  const additionalPersonaCount = Math.max(0, involvedPersonas.length - visibleInvolvedPersonas.length)
+
   return (
-    <div style={{ background: '#F9F9F9', minHeight: '100%' }} className="p-4 sm:p-8">
-      {/* Header */}
-      <div className="mb-5">
-        <h1 className="heading-editorial text-2xl text-neutral-900">
-          <Greeting firstName={firstName} />
-        </h1>
-        <p className="text-sm mt-1" style={{ color: '#5F6368' }}>
-          {interviewsThisMonth > 0
-            ? `You've generated ${interviewsThisMonth} customer interview${interviewsThisMonth === 1 ? '' : 's'} this month.`
-            : "You haven't run any interviews this month yet."}
-        </p>
-      </div>
-
-      {/* Quick actions — compact utility strip */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
-        <QuickAction href="/projects" icon={Plus} label="New Project" />
-        <QuickAction href="/personas/new" icon={UserPlus} label="Create Persona" />
-        <QuickAction href="/interviews/new" icon={PlayCircle} label="Run Interview" />
-        <QuickAction href={generateReportHref} icon={FileBarChart} label="Generate Report" />
-        <QuickAction href={uploadResearchHref} icon={Upload} label="Upload Research" />
-      </div>
-
-      {/* 1. AI Briefing */}
+    <div style={{ background: HOME_COLORS.surface }} className="min-h-full">
+      {/* Hero — AI briefing */}
       <BriefingCard
         initialBriefing={cachedBriefing}
         isStale={isStale}
-        signalsDiscovered={allSignals.length}
         avgConfidence={avgConfidence}
-        researchStatus={researchStatus}
+        validatedRatio={validatedRatio}
+        involvedPersonas={visibleInvolvedPersonas}
+        additionalPersonaCount={additionalPersonaCount}
       />
 
-      {/* 2. Trending signals + Strategic focus */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-        <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-neutral-900">Trending Signals</h2>
-            <Link href="/signals" className="text-[11px] font-semibold" style={{ color: '#1C3D2E' }}>View all signals →</Link>
-          </div>
-          {trendingSignals.length === 0 ? (
-            <EmptyCard text="Signals will appear here once you generate reports from interviews inside a project." />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {trendingSignals.map(({ signal, direction, mentionTrendPercent }) => {
-                const TrendIcon = mentionTrendPercent !== null && mentionTrendPercent < 0 ? TrendingDown : TrendingUp
-                return (
-                  <Link key={signal.id} href={`/projects/${signal.project_id}?tab=Signals`} className="rounded-2xl p-5 block transition-all hover:border-neutral-300 hover:shadow-sm" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full" style={{ background: signal.status === 'validated' ? '#E8F3EF' : '#F4F6F8', color: signal.status === 'validated' ? '#1C3D2E' : '#6B7280' }}>
-                        {signal.status}
-                      </span>
-                      <span className="text-xs font-semibold" style={{ color: '#1C3D2E' }}>{signal.confidence_score}% confidence</span>
-                    </div>
-                    <p className="text-sm font-semibold text-neutral-900 mb-1.5 leading-snug">{signal.title}</p>
-                    <p className="text-xs text-neutral-500 leading-relaxed mb-3 line-clamp-2">{signal.summary}</p>
-                    <div className="flex items-center justify-between text-[11px]" style={{ color: '#9CA3AF' }}>
-                      <span>Detected in {signal.related_interview_ids.length} interview{signal.related_interview_ids.length === 1 ? '' : 's'}</span>
-                      {mentionTrendPercent !== null && mentionTrendPercent !== 0 && (
-                        <span className="flex items-center gap-1" style={{ color: mentionTrendPercent > 0 ? '#1C3D2E' : '#B45309' }}>
-                          <TrendIcon size={11} /> {Math.abs(mentionTrendPercent)}%
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
-        <div>
-          {focusProject ? (
-            <StrategicFocus projectId={focusProject.project.id} projectName={focusProject.project.name} signals={focusSignals} />
-          ) : (
-            <EmptyCard text="Strategic focus will surface here once a project has multiple signals." />
-          )}
-        </div>
-      </div>
+      {/* Metrics ribbon — overlaps the hero */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-10 -mt-8 relative z-20">
+        <RibbonStat icon={FolderOpen} label="Active Projects" value={allProjects.length} />
+        <RibbonStat icon={Users} label="Total Personas" value={allPersonas.length} />
+        <RibbonStat icon={Mic} label="Interviews" value={allInterviews.length} />
+        <RibbonStat icon={Radar} label="Market Signals" value={allSignals.length} />
+      </section>
 
-      {/* 3. Recent activity + Persona spotlight */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-        <div className="lg:col-span-2">
-          <h2 className="text-sm font-semibold text-neutral-900 mb-3">Recent Activity</h2>
-          {timelineEvents.length === 0 ? (
-            <EmptyCard text="Nothing yet — create a persona or run an interview to get started." />
-          ) : (
-            <div className="rounded-2xl p-5" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-              <ul className="space-y-4">
-                {timelineEvents.map((e, i) => {
-                  const Icon = ACTIVITY_ICONS[e.type]
+      {/* Content grid */}
+      <section className="px-4 sm:px-10 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Main column */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-xl sm:text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>Trending Signals</h3>
+              <Link href="/signals" className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider hover:underline" style={{ color: HOME_COLORS.primary }}>
+                View all signals <ArrowRight size={13} />
+              </Link>
+            </div>
+
+            {trendingSignals.length === 0 ? (
+              <EmptyCard text="Signals will appear here once you generate reports from interviews inside a project." />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {trendingSignals.map(({ signal }) => {
+                  const TypeIcon = TYPE_ICON[signal.type]
                   return (
-                    <li key={i} className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#E8F3EF' }}>
-                        <Icon size={13} style={{ color: '#1C3D2E' }} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="text-xs font-medium text-neutral-800">{e.title}</p>
-                          <span className="text-[10px] flex-shrink-0" style={{ color: '#9CA3AF' }}>{formatRelativeTime(e.timestamp)}</span>
+                    <Link key={signal.id} href={`/projects/${signal.project_id}?tab=Signals`} className="rounded-2xl overflow-hidden block group transition-transform hover:-translate-y-0.5" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}33`, boxShadow: CARD_SHADOW }}>
+                      <div className="h-40 relative flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
+                        <TypeIcon size={40} style={{ color: HOME_COLORS.primaryFixedDim }} strokeWidth={1.25} />
+                        <div className="absolute top-4 left-4 flex gap-2">
+                          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>
+                            {signal.status}
+                          </span>
+                          <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur" style={{ background: 'rgba(255,255,255,0.9)', color: HOME_COLORS.primary }}>
+                            {signal.confidence_score}% confidence
+                          </span>
                         </div>
-                        {e.detail && <p className="text-[11px] mt-0.5 truncate" style={{ color: '#5F6368' }}>{e.detail}</p>}
                       </div>
-                    </li>
+                      <div className="p-6">
+                        <h4 className="text-base font-semibold mb-2 transition-colors" style={{ color: HOME_COLORS.onSurface }}>{signal.title}</h4>
+                        <p className="text-sm leading-relaxed line-clamp-3 mb-6" style={{ color: HOME_COLORS.onSurfaceVariant }}>{signal.summary}</p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer }}>
+                            <TypeIcon size={14} style={{ color: HOME_COLORS.onSecondaryContainer }} />
+                          </div>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                            Detected in {signal.related_interview_ids.length} interview{signal.related_interview_ids.length === 1 ? '' : 's'}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
                   )
                 })}
-              </ul>
-            </div>
-          )}
-        </div>
-        <div>
-          {spotlight ? (
-            <PersonaSpotlight persona={spotlight.persona} quote={spotlight.quote} interviewId={spotlight.interviewId} />
-          ) : (
-            <EmptyCard text="A persona spotlight will appear here once a signal captures a notable quote." />
-          )}
-        </div>
-      </div>
+              </div>
+            )}
 
-      {/* 4. Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-        <StatTile icon={Briefcase} label="Projects" value={allProjects.length} />
-        <StatTile icon={Users} label="Personas" value={allPersonas.length} />
-        <StatTile icon={MessageSquare} label="Interviews" value={allInterviews.length} />
-        <StatTile icon={Activity} label="Signals" value={allSignals.length} />
-        <StatTile icon={FileText} label="Reports" value={allReports.length} />
-        <StatTile icon={Gauge} label="Avg Confidence" value={`${avgConfidence}%`} />
-      </div>
-
-      {/* 5. Active projects */}
-      <div>
-        <h2 className="text-sm font-semibold text-neutral-900 mb-3">Active Projects</h2>
-        {activeProjects.length === 0 ? (
-          <EmptyCard text="No projects yet — create one to start organizing your research." />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {activeProjects.map(({ project, interviewCount, signalCount, confidence }) => (
-              <Link key={project.id} href={`/projects/${project.id}`} className="rounded-2xl p-4 block transition-all hover:border-neutral-300 hover:shadow-sm" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-                <p className="text-sm font-semibold text-neutral-900 mb-2">{project.name}</p>
-                <div className="flex items-center gap-3 text-xs" style={{ color: '#5F6368' }}>
-                  <span>{interviewCount} interview{interviewCount === 1 ? '' : 's'}</span>
-                  <span>{signalCount} signal{signalCount === 1 ? '' : 's'}</span>
-                  {confidence !== null && <span style={{ color: '#1C3D2E', fontWeight: 600 }}>{confidence}% confidence</span>}
+            {/* Recent activity */}
+            <div className="rounded-2xl p-6 sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33`, boxShadow: CARD_SHADOW }}>
+              <h3 className="text-sm font-semibold mb-6" style={{ color: HOME_COLORS.onSurface }}>Recent Activity</h3>
+              {timelineEvents.length === 0 ? (
+                <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Nothing yet — create a persona or run an interview to get started.</p>
+              ) : (
+                <div className="space-y-6">
+                  {timelineEvents.map((e, i) => {
+                    const Icon = ACTIVITY_ICONS[e.type]
+                    return (
+                      <div key={i} className="flex gap-4">
+                        <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center" style={{ background: i % 2 === 0 ? HOME_COLORS.primaryFixedDim : HOME_COLORS.secondaryContainer }}>
+                          <Icon size={16} style={{ color: i % 2 === 0 ? HOME_COLORS.onPrimaryFixedVariant : HOME_COLORS.onSecondaryContainer }} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm" style={{ color: HOME_COLORS.onSurface }}>
+                            {e.title}{e.detail && <>: <span className="font-bold">{e.detail}</span></>}
+                          </p>
+                          <p className="text-xs mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(e.timestamp)}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-              </Link>
-            ))}
+              )}
+            </div>
           </div>
-        )}
+
+          {/* Sidebar */}
+          <div className="lg:col-span-4">
+            <div className="lg:sticky lg:top-24 space-y-6">
+              {focusProject ? (
+                <StrategicFocus projectId={focusProject.project.id} projectName={focusProject.project.name} signals={focusSignals} />
+              ) : (
+                <EmptyCard text="Strategic focus will surface here once a project has multiple signals." />
+              )}
+              {spotlight ? (
+                <PersonaSpotlight persona={spotlight.persona} quote={spotlight.quote} interviewId={spotlight.interviewId} />
+              ) : (
+                <EmptyCard text="A persona spotlight will appear here once a signal captures a notable quote." />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer meta bar */}
+      <footer className="px-4 sm:px-10 py-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research Output</span>
+            <span className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface }}>{allReports.length} report{allReports.length === 1 ? '' : 's'} generated</span>
+          </div>
+          <div className="w-px h-10" style={{ background: `${HOME_COLORS.outlineVariant}55` }} />
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>AI Confidence</span>
+            <span className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface }}>{avgConfidence}% {researchStatus}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          {profile?.briefing_generated_at && (
+            <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Last synced: {formatRelativeTime(profile.briefing_generated_at)}</span>
+          )}
+          <div className="p-2 rounded-full" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
+            <RefreshCw size={16} style={{ color: HOME_COLORS.onSurface }} />
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+function RibbonStat({ icon: Icon, label, value }: { icon: typeof Users; label: string; value: number }) {
+  return (
+    <div className="p-5 sm:p-6 rounded-xl group transition-transform hover:-translate-y-1" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+      <div className="flex justify-between items-start mb-3">
+        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</span>
+        <Icon size={18} style={{ color: HOME_COLORS.primary }} />
       </div>
+      <h2 className="text-2xl sm:text-3xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{value}</h2>
     </div>
-  )
-}
-
-function StatTile({ icon: Icon, label, value }: { icon: typeof Users; label: string; value: string | number }) {
-  return (
-    <div className="rounded-2xl p-4" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-      <Icon size={14} style={{ color: '#9CA3AF' }} className="mb-2" />
-      <p className="text-xl font-semibold text-neutral-900" style={{ fontFamily: "'Playfair Display', serif" }}>{value}</p>
-      <p className="text-[11px] mt-0.5" style={{ color: '#5F6368' }}>{label}</p>
-    </div>
-  )
-}
-
-function QuickAction({ href, icon: Icon, label }: { href: string; icon: typeof Users; label: string }) {
-  return (
-    <Link href={href} className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg transition-colors hover:bg-white" style={{ color: '#374151', border: '1px solid #E0E2E4' }}>
-      <Icon size={12} style={{ color: '#1C3D2E' }} />
-      {label}
-    </Link>
   )
 }
 
 function EmptyCard({ text }: { text: string }) {
   return (
-    <div className="rounded-2xl p-6 text-center h-full flex items-center justify-center" style={{ background: 'white', border: '1px dashed #E0E2E4' }}>
-      <p className="text-xs" style={{ color: '#5F6368' }}>{text}</p>
+    <div className="rounded-2xl p-8 text-center h-full flex items-center justify-center" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px dashed ${HOME_COLORS.outlineVariant}` }}>
+      <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>{text}</p>
     </div>
   )
 }
