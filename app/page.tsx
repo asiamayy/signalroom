@@ -89,6 +89,8 @@ export default function LandingPage() {
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0);
   const [displayedWord, setDisplayedWord] = useState<string>('');
 
+  const nAnchorRef = useRef<HTMLSpanElement>(null);
+
   const [selectedPersona, setSelectedPersona] = useState<DashboardPersona>(DASHBOARD_PERSONAS[0]);
   const [streamingText, setStreamingText] = useState<string>('');
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
@@ -263,12 +265,12 @@ export default function LandingPage() {
                   <span>.</span>
                 </span>
               </span>
-              <span className="block mt-1 lg:mt-2">Now you can ask.</span>
+              <span className="block mt-1 lg:mt-2"><span ref={nAnchorRef}>N</span>ow you can ask.</span>
             </h1>
 
             {/* Shifted up cleanly to fill the middle whitespace segment nicely */}
             <div className="mt-4 mb-4 w-full max-w-[650px] bg-transparent overflow-visible">
-              <IntelligenceSignal />
+              <IntelligenceSignal anchorRef={nAnchorRef} />
             </div>
           </div>
 
