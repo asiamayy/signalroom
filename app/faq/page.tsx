@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Plus, Minus } from 'lucide-react'
-import { Logo } from '@/components/ui/Logo'
 import { cn } from '@/lib/utils'
+import { SiteNav } from '@/components/SiteNav'
+import { SiteFooter } from '@/components/SiteFooter'
 
 const FAQS = [
   {
@@ -94,15 +95,15 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   return (
     <button
       onClick={() => setOpen(o => !o)}
-      className="w-full text-left py-4 border-b border-neutral-100 last:border-0"
+      className="w-full text-left py-4 border-b border-[#E3E5E3] last:border-0"
     >
       <div className="flex items-start justify-between gap-4">
-        <span className={cn('text-sm font-medium transition-colors', open ? 'text-neutral-900' : 'text-neutral-700')}>
+        <span className={cn('text-sm font-medium transition-colors', open ? 'text-[#121314]' : 'text-[#454947]')}>
           {q}
         </span>
         <span className="flex-shrink-0 mt-0.5">
           {open
-            ? <Minus size={14} className="text-neutral-400" />
+            ? <Minus size={14} className="text-[#1A3024]" />
             : <Plus size={14} className="text-neutral-400" />
           }
         </span>
@@ -118,26 +119,21 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="bg-white border-b border-neutral-200 px-6 py-4 flex items-center justify-between">
-        <Logo href="/" size="md" />
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors">Sign in</Link>
-          <Link href="/signup" className="bg-neutral-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-neutral-700 transition-colors">
-            Start free
-          </Link>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-[#FCFCFB] text-[#121314]">
+      <SiteNav />
 
-      <div className="max-w-2xl mx-auto px-6 py-16">
-        <h1 className="font-serif text-3xl tracking-tight text-neutral-900 mb-2">Frequently asked questions</h1>
+      <div className="max-w-2xl mx-auto px-6 pt-32 sm:pt-40 pb-16">
+        <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#5A7973] mb-4 block">Support</span>
+        <h1 className="text-[34px] sm:text-[44px] tracking-tighter font-normal text-[#121314] mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+          Frequently asked questions
+        </h1>
         <p className="text-sm text-neutral-500 mb-12">Everything you need to know about SignalRoom.</p>
 
         <div className="space-y-10">
           {FAQS.map(section => (
             <div key={section.category}>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">{section.category}</h2>
-              <div className="bg-white border border-neutral-200 rounded-xl px-5">
+              <h2 className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-500 mb-2">{section.category}</h2>
+              <div className="bg-white border border-[#E3E5E3] rounded-[8px] px-5">
                 {section.items.map(item => (
                   <FAQItem key={item.q} q={item.q} a={item.a} />
                 ))}
@@ -146,27 +142,19 @@ export default function FAQPage() {
           ))}
         </div>
 
-        <div className="mt-12 bg-neutral-900 rounded-2xl p-8 text-center">
-          <h3 className="font-serif text-xl text-white mb-2">Still have questions?</h3>
-          <p className="text-sm text-neutral-400 mb-5">We're happy to help. Reach out and we'll get back to you within 1 business day.</p>
-          <Link href="/contact" className="inline-flex items-center gap-2 bg-white text-neutral-900 text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-neutral-100 transition-colors">
+        <div className="mt-12 bg-[#1A3024] rounded-[8px] p-8 text-center">
+          <h3 className="text-xl text-white mb-2 tracking-tight font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Still have questions?</h3>
+          <p className="text-sm text-white/70 mb-5">We're happy to help. Reach out and we'll get back to you within 1 business day.</p>
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-2 bg-white text-[#1A3024] text-[11px] font-medium uppercase tracking-[0.2em] px-6 py-3 rounded-[4px] hover:bg-[#f0f2f0] transition-colors"
+          >
             Contact us
           </Link>
         </div>
       </div>
 
-      <footer className="border-t border-neutral-200 bg-white mt-8">
-        <div className="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
-          <Logo href="/" size="sm" />
-          <div className="flex gap-5">
-            <Link href="/privacy" className="text-xs text-neutral-400 hover:text-neutral-700">Privacy</Link>
-            <Link href="/terms" className="text-xs text-neutral-400 hover:text-neutral-700">Terms</Link>
-            <Link href="/faq" className="text-xs text-neutral-400 hover:text-neutral-700">FAQ</Link>
-            <Link href="/contact" className="text-xs text-neutral-400 hover:text-neutral-700">Contact</Link>
-          </div>
-          <p className="text-xs text-neutral-400">© 2026 SignalRoom</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

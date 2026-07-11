@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Check } from 'lucide-react'
-import { Logo } from '@/components/ui/Logo'
 
 const PERKS = [
   'Build AI personas in under 2 minutes',
@@ -55,18 +54,26 @@ export default function SignupPage() {
 
   if (confirmed) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4 py-8">
+      <div className="min-h-screen bg-[#FCFCFB] flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-sm text-center">
           <div className="mb-8">
-            <Logo href="/" size="lg" />
+            <Link href="/" className="inline-flex">
+              <img
+                src="/signalroom-logo.svg"
+                alt="SignalRoom Logo"
+                width="94"
+                height="55"
+                className="h-14 w-auto object-contain"
+              />
+            </Link>
           </div>
-          <div className="bg-white border border-neutral-200 rounded-2xl p-8">
-            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check size={20} className="text-emerald-600" />
+          <div className="bg-white border border-[#E3E5E3] rounded-[12px] p-8">
+            <div className="w-12 h-12 bg-[#E3E5E3] rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check size={20} className="text-[#1A3024]" />
             </div>
-            <h2 className="text-lg font-serif tracking-tight text-neutral-900 mb-2">Check your email</h2>
+            <h2 className="text-lg tracking-tight text-[#121314] mb-2 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Check your email</h2>
             <p className="text-sm text-neutral-500 leading-relaxed">
-              We sent a confirmation link to <span className="font-medium text-neutral-700">{email}</span>. Click it to activate your account.
+              We sent a confirmation link to <span className="font-medium text-[#121314]">{email}</span>. Click it to activate your account.
             </p>
           </div>
         </div>
@@ -75,26 +82,32 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[#FCFCFB] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm">
 
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex">
-            <Logo size="lg" />
+            <img
+              src="/signalroom-logo.svg"
+              alt="SignalRoom Logo"
+              width="94"
+              height="55"
+              className="h-14 w-auto object-contain"
+            />
           </Link>
         </div>
 
-        <div className="bg-white border border-neutral-200 rounded-2xl p-8">
-          <h1 className="text-lg font-serif tracking-tight text-neutral-900 mb-1">Start your free trial</h1>
+        <div className="bg-white border border-[#E3E5E3] rounded-[12px] p-8">
+          <h1 className="text-xl tracking-tight text-[#121314] mb-1 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Start your free trial</h1>
           <p className="text-sm text-neutral-500 mb-5">No credit card required</p>
 
           {/* Perks */}
-          <div className="space-y-2 mb-6 pb-6 border-b border-neutral-100">
+          <div className="space-y-2 mb-6 pb-6 border-b border-[#E3E5E3]">
             {PERKS.map(p => (
               <div key={p} className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <Check size={9} className="text-emerald-600" strokeWidth={3} />
+                <div className="w-4 h-4 rounded-full bg-[#E3E5E3] flex items-center justify-center flex-shrink-0">
+                  <Check size={9} className="text-[#1A3024]" strokeWidth={3} />
                 </div>
                 <span className="text-xs text-neutral-600">{p}</span>
               </div>
@@ -103,31 +116,31 @@ export default function SignupPage() {
 
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-neutral-700">Full name</label>
+              <label className="block text-sm font-medium text-[#121314]">Full name</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 required
                 placeholder="Maya Chen"
-                className="w-full px-3 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                className="w-full px-3 py-2.5 text-sm bg-white border border-[#E3E5E3] rounded-[8px] text-[#121314] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#1A3024] focus:border-transparent"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-neutral-700">Work email</label>
+              <label className="block text-sm font-medium text-[#121314]">Work email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="you@company.com"
-                className="w-full px-3 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                className="w-full px-3 py-2.5 text-sm bg-white border border-[#E3E5E3] rounded-[8px] text-[#121314] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#1A3024] focus:border-transparent"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-neutral-700">Password</label>
+              <label className="block text-sm font-medium text-[#121314]">Password</label>
               <input
                 type="password"
                 value={password}
@@ -135,7 +148,7 @@ export default function SignupPage() {
                 required
                 minLength={8}
                 placeholder="At least 8 characters"
-                className="w-full px-3 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                className="w-full px-3 py-2.5 text-sm bg-white border border-[#E3E5E3] rounded-[8px] text-[#121314] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#1A3024] focus:border-transparent"
               />
             </div>
 
@@ -148,7 +161,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-neutral-900 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-[#1A3024] text-white text-[11px] font-medium uppercase tracking-[0.2em] py-3 rounded-[4px] hover:bg-[#5A7973] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading && (
                 <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
@@ -161,16 +174,16 @@ export default function SignupPage() {
 
             <p className="text-xs text-neutral-400 text-center leading-relaxed">
               By creating an account you agree to our{' '}
-              <Link href="/terms" className="underline hover:text-neutral-700">Terms</Link>
+              <Link href="/terms" className="underline hover:text-[#1A3024] transition-colors">Terms</Link>
               {' '}and{' '}
-              <Link href="/privacy" className="underline hover:text-neutral-700">Privacy Policy</Link>
+              <Link href="/privacy" className="underline hover:text-[#1A3024] transition-colors">Privacy Policy</Link>
             </p>
           </form>
         </div>
 
         <p className="text-center text-sm text-neutral-500 mt-6">
           Already have an account?{' '}
-          <Link href="/login" className="text-neutral-900 font-medium hover:underline">
+          <Link href="/login" className="text-[#1A3024] font-medium hover:text-[#5A7973] transition-colors">
             Sign in
           </Link>
         </p>

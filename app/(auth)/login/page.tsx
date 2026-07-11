@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Logo } from '@/components/ui/Logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -31,37 +30,43 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[#FCFCFB] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm">
 
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex">
-            <Logo size="lg" />
+            <img
+              src="/signalroom-logo.svg"
+              alt="SignalRoom Logo"
+              width="94"
+              height="55"
+              className="h-14 w-auto object-contain"
+            />
           </Link>
         </div>
 
-        <div className="bg-white border border-neutral-200 rounded-2xl p-8">
-          <h1 className="text-lg font-serif tracking-tight text-neutral-900 mb-1">Welcome back</h1>
+        <div className="bg-white border border-[#E3E5E3] rounded-[12px] p-8">
+          <h1 className="text-xl tracking-tight text-[#121314] mb-1 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Welcome back</h1>
           <p className="text-sm text-neutral-500 mb-6">Sign in to your account</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-neutral-700">Email</label>
+              <label className="block text-sm font-medium text-[#121314]">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 placeholder="you@company.com"
-                className="w-full px-3 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                className="w-full px-3 py-2.5 text-sm bg-white border border-[#E3E5E3] rounded-[8px] text-[#121314] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#1A3024] focus:border-transparent"
               />
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-neutral-700">Password</label>
-                <Link href="/forgot-password" className="text-xs text-neutral-400 hover:text-neutral-700 transition-colors">
+                <label className="block text-sm font-medium text-[#121314]">Password</label>
+                <Link href="/forgot-password" className="text-xs text-neutral-400 hover:text-[#1A3024] transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -71,7 +76,7 @@ export default function LoginPage() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full px-3 py-2.5 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                className="w-full px-3 py-2.5 text-sm bg-white border border-[#E3E5E3] rounded-[8px] text-[#121314] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#1A3024] focus:border-transparent"
               />
             </div>
 
@@ -84,7 +89,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-neutral-900 text-white text-sm font-medium py-2.5 rounded-lg hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-[#1A3024] text-white text-[11px] font-medium uppercase tracking-[0.2em] py-3 rounded-[4px] hover:bg-[#5A7973] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading && (
                 <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
@@ -99,7 +104,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-neutral-500 mt-6">
           No account?{' '}
-          <Link href="/signup" className="text-neutral-900 font-medium hover:underline">
+          <Link href="/signup" className="text-[#1A3024] font-medium hover:text-[#5A7973] transition-colors">
             Start free trial
           </Link>
         </p>
