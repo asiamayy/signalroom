@@ -289,7 +289,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 {interview.persona?.name}
               </span>
-              <div className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] shadow-sm group-hover:shadow-md transition-shadow duration-300" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+              <div className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] shadow-sm group-hover:shadow-md transition-shadow duration-300" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
                 {streamingText
                   ? <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-sm">{streamingText}<span className="inline-block w-0.5 h-4 ml-0.5 animate-pulse align-middle bg-neutral-800" /></p>
                   : <div className="flex gap-1.5 py-1">
@@ -500,7 +500,7 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
       </span>
       <div
         className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] shadow-sm group-hover:shadow-md transition-shadow duration-300"
-        style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}
+        style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}
       >
         <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-sm">{message.content}</p>
       </div>
