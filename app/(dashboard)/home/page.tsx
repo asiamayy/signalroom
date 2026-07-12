@@ -162,7 +162,7 @@ export default async function HomePage() {
       </section>
 
       {/* Content grid */}
-      <section className="px-4 sm:px-10 py-12">
+      <section className="px-4 sm:px-10 py-12 isolate relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main column */}
           <div className="lg:col-span-8 space-y-6">
@@ -241,7 +241,7 @@ export default async function HomePage() {
 
           {/* Sidebar */}
           <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-24 space-y-6">
+            <div className="space-y-6">
               {focusProject ? (
                 <StrategicFocus projectId={focusProject.project.id} projectName={focusProject.project.name} signals={focusSignals} />
               ) : (
@@ -258,7 +258,7 @@ export default async function HomePage() {
       </section>
 
       {/* Footer meta bar */}
-      <footer className="px-4 sm:px-10 py-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+      <footer className="relative isolate px-4 sm:px-10 py-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}33`, background: HOME_COLORS.surface }}>
         <div className="flex items-center gap-6">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research Output</span>

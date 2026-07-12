@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Send, FileText, Loader2, ImagePlus, X, User, ArrowRight } from 'lucide-react'
-import { cn, formatRelativeTime, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
+import { cn, formatRelativeTime, INTERVIEW_TYPE_LABELS, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Interview, Message } from '@/types'
@@ -28,12 +28,6 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const color = interview.persona?.avatar_color
-    ? (typeof interview.persona.avatar_color === 'string'
-        ? JSON.parse(interview.persona.avatar_color)
-        : interview.persona.avatar_color)
-    : { bg: '#E1F5EE', text: '#0F6E56' }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -161,36 +155,24 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
   const educationMap: Record<string, string> = { high_school: 'High School', bachelors: "Bachelor's", masters: "Master's", phd: 'PhD' }
 
   return (
-    <div className="flex h-screen" style={{ background: '#F4F6F8' }}>
+    <div className="flex h-screen" style={{ background: HOME_COLORS.surface }}>
 
       {/* ── Main chat area ── */}
       <div className="flex flex-col flex-1 overflow-hidden">
 
-        {/* Top bar — editorial hero */}
-        <header className="relative px-4 sm:px-8 py-5 sm:py-6 flex-shrink-0 overflow-hidden" style={{ background: HOME_COLORS.surfaceContainerLowest, borderBottom: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
-          {/* Decorative persona photo — replaces the reference mockup's grey blob */}
-          <div className="absolute -top-3 right-4 sm:right-8 opacity-90 pointer-events-none hidden sm:block">
-            <PersonaAvatar
-              avatarUrl={interview.persona?.avatar_url}
-              avatarInitials={interview.persona?.avatar_initials}
-              avatarColor={interview.persona?.avatar_color}
-              name={interview.persona?.name}
-              size="3xl"
-              style={{ boxShadow: `0 0 0 4px ${HOME_COLORS.surfaceContainerLowest}` }}
-            />
-          </div>
-
-          <div className="relative z-10 flex items-start justify-between gap-4 flex-wrap">
+        {/* Top bar — editorial hero, matching the reference mockup's proportions */}
+        <header className="relative px-4 sm:px-8 lg:px-10 py-6 sm:py-9 flex-shrink-0" style={{ background: HOME_COLORS.surface, borderBottom: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+          <div className="flex items-start justify-between gap-6 flex-wrap">
             <div className="min-w-0 max-w-xl">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 <span className="w-8 h-px flex-shrink-0" style={{ background: HOME_COLORS.primary }} />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Research Simulation</span>
               </div>
-              <h1 className="leading-tight text-xl sm:text-2xl mb-1" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>
+              <h1 className="leading-tight text-2xl sm:text-3xl mb-2" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>
                 Interview with <span className="italic" style={{ fontWeight: 400 }}>{interview.persona?.name ?? 'Unknown'}</span>
               </h1>
-              <p className="text-sm italic truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{interview.title}</p>
-              <div className="flex items-center gap-2 mt-2 text-[11px] font-semibold uppercase tracking-wide flex-wrap" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <p className="text-sm sm:text-base italic" style={{ color: HOME_COLORS.onSurfaceVariant }}>{interview.title}</p>
+              <div className="flex items-center gap-2 mt-3 text-[11px] font-semibold uppercase tracking-wide flex-wrap" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 <span>{INTERVIEW_TYPE_LABELS[interview.type]}</span>
                 {interview.project && (
                   <>
@@ -203,36 +185,52 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-              <span className="hidden sm:inline text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{messages.length} messages</span>
+            <div className="flex items-start gap-4 flex-shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 pt-1">
+                {/* Persona panel toggle */}
+                <button
+                  onClick={() => setPanelOpen(o => !o)}
+                  title="View persona"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
+                  style={panelOpen
+                    ? { background: HOME_COLORS.secondaryContainer, border: `1px solid ${HOME_COLORS.primary}`, color: HOME_COLORS.primary }
+                    : { background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurfaceVariant }
+                  }
+                >
+                  <User size={15} />
+                </button>
 
-              {/* Persona panel toggle */}
-              <button
-                onClick={() => setPanelOpen(o => !o)}
-                title="View persona"
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
-                style={panelOpen
-                  ? { background: HOME_COLORS.secondaryContainer, border: `1px solid ${HOME_COLORS.primary}`, color: HOME_COLORS.primary }
-                  : { background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurfaceVariant }
-                }
-              >
-                <User size={15} />
-              </button>
+                <button
+                  onClick={handleGenerateReport}
+                  disabled={!canReport || generatingReport}
+                  className={cn('group relative flex items-center gap-1.5 text-xs sm:text-sm px-4 sm:px-5 py-2 rounded-full font-semibold transition-all duration-300 ease-out flex-shrink-0',
+                    canReport && !generatingReport ? 'text-white hover:pr-7 sm:hover:pr-9 hover:shadow-lg active:scale-95' : 'cursor-not-allowed'
+                  )}
+                  style={canReport && !generatingReport ? { background: HOME_COLORS.primary } : { background: HOME_COLORS.surfaceContainerHigh, color: HOME_COLORS.onSurfaceVariant }}
+                >
+                  {generatingReport ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
+                  <span className="hidden sm:inline">{generatingReport ? 'Generating...' : 'Get report'}</span>
+                  {canReport && !generatingReport && (
+                    <ArrowRight size={12} className="absolute right-2.5 sm:right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" />
+                  )}
+                </button>
+              </div>
 
-              <button
-                onClick={handleGenerateReport}
-                disabled={!canReport || generatingReport}
-                className={cn('group relative flex items-center gap-1.5 text-xs sm:text-sm px-4 sm:px-5 py-2 rounded-full font-semibold transition-all duration-300 ease-out flex-shrink-0',
-                  canReport && !generatingReport ? 'text-white hover:pr-7 sm:hover:pr-9 hover:shadow-lg active:scale-95' : 'cursor-not-allowed'
-                )}
-                style={canReport && !generatingReport ? { background: HOME_COLORS.primary } : { background: HOME_COLORS.surfaceContainerHigh, color: HOME_COLORS.onSurfaceVariant }}
-              >
-                {generatingReport ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
-                <span className="hidden sm:inline">{generatingReport ? 'Generating...' : 'Get report'}</span>
-                {canReport && !generatingReport && (
-                  <ArrowRight size={12} className="absolute right-2.5 sm:right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" />
-                )}
-              </button>
+              {/* Persona photo — replaces the reference mockup's decorative grey blob */}
+              <div className="relative hidden sm:block">
+                <PersonaAvatar
+                  avatarUrl={interview.persona?.avatar_url}
+                  avatarInitials={interview.persona?.avatar_initials}
+                  avatarColor={interview.persona?.avatar_color}
+                  name={interview.persona?.name}
+                  size="3xl"
+                  style={{ boxShadow: `0 0 0 4px ${HOME_COLORS.surfaceContainerLowest}` }}
+                />
+                <div className="absolute -bottom-2 -left-2 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, color: HOME_COLORS.onSurface }}>
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.primary }} />
+                  {messages.length} msg{messages.length === 1 ? '' : 's'}
+                </div>
+              </div>
             </div>
           </div>
         </header>
@@ -252,7 +250,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         )}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-6 space-y-5">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-10 py-6 sm:py-8 space-y-6">
           {messages.length === 0 && !streaming && (
             <div className="flex flex-col items-center justify-center h-full text-center max-w-sm mx-auto">
               <PersonaAvatar
@@ -263,11 +261,11 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
                 size="xl"
                 className="mb-4"
               />
-              <h3 className="text-sm font-semibold text-neutral-900 mb-1">Ready to meet {interview.persona?.name ?? 'your persona'}</h3>
-              <p className="text-sm text-neutral-500 leading-relaxed mb-4">Ask anything. Test your idea, your pricing, your pitch. They'll respond as themselves — with real opinions and honest pushback.</p>
+              <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Ready to meet {interview.persona?.name ?? 'your persona'}</h3>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Ask anything. Test your idea, your pricing, your pitch. They'll respond as themselves — with real opinions and honest pushback.</p>
               <div className="space-y-2 w-full">
                 {STARTER_QUESTIONS[interview.type]?.map(q => (
-                  <button key={q} onClick={() => setInput(q)} className="w-full text-left text-xs text-neutral-600 bg-white border border-neutral-200 rounded-xl px-3 py-2.5 hover:border-neutral-300 transition-colors" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+                  <button key={q} onClick={() => setInput(q)} className="w-full text-left text-xs rounded-xl px-3 py-2.5 transition-colors" style={{ color: HOME_COLORS.onSurfaceVariant, background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}4d`, boxShadow: CARD_SHADOW }}>
                     {q}
                   </button>
                 ))}
@@ -280,38 +278,28 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           ))}
 
           {streaming && (
-            <div className="flex gap-2.5 sm:gap-3 items-start">
-              <PersonaAvatar
-                avatarUrl={interview.persona?.avatar_url}
-                avatarInitials={interview.persona?.avatar_initials}
-                avatarColor={interview.persona?.avatar_color}
-                name={interview.persona?.name}
-                size="xs"
-                className="flex-shrink-0 mt-4"
-              />
-              <div className="flex flex-col gap-1.5 max-w-[85%] sm:max-w-[75%] min-w-0">
-                <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                  {interview.persona?.name}
-                </span>
-                <div className="rounded-2xl rounded-tl-sm px-4 py-3" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
-                  {streamingText
-                    ? <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onSurface }}>{streamingText}<span className="inline-block w-0.5 h-4 ml-0.5 animate-pulse align-middle" style={{ background: HOME_COLORS.onSurface }} /></p>
-                    : <div className="flex gap-1.5 py-1">
-                        <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '0ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '150ms' }} />
-                        <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '300ms' }} />
-                      </div>
-                  }
-                </div>
+            <div className="flex flex-col gap-1.5 items-start">
+              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                {interview.persona?.name}
+              </span>
+              <div className="rounded-2xl px-6 py-5 max-w-[92%] sm:max-w-[85%]" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+                {streamingText
+                  ? <p className="text-[15px] leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onSurface }}>{streamingText}<span className="inline-block w-0.5 h-4 ml-0.5 animate-pulse align-middle" style={{ background: HOME_COLORS.onSurface }} /></p>
+                  : <div className="flex gap-1.5 py-1">
+                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '300ms' }} />
+                    </div>
+                }
               </div>
             </div>
           )}
 
           {/* First interview tip — shows after first response */}
           {messages.length === 2 && !streaming && (
-            <div className="mx-auto max-w-lg rounded-xl px-4 py-3 text-center" style={{ background: '#E8F5F1', border: '1px solid #A7D9C8' }}>
-              <p className="text-xs font-medium" style={{ color: '#2A5C4E' }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A5C4E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', marginRight: '6px', marginBottom: '2px' }}>
+            <div className="mx-auto max-w-lg rounded-xl px-4 py-3 text-center" style={{ background: HOME_COLORS.secondaryContainer }}>
+              <p className="text-xs font-medium" style={{ color: HOME_COLORS.onSecondaryContainer }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={HOME_COLORS.onSecondaryContainer} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', marginRight: '6px', marginBottom: '2px' }}>
                   <path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.9 10.2 19 8.7 19 7a7 7 0 1 0-13.4 2.8c.7 1.2 1.8 2 2.4 2.7.6.7 1 1.5 1 2.5"/>
                   <path d="M9 18h6"/><path d="M10 22h4"/>
                 </svg>
@@ -326,58 +314,53 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         {/* Error */}
         {error && <div className="px-5 py-2 flex-shrink-0" style={{ background: '#FEF2F2', borderTop: '1px solid #FECACA' }}><p className="text-xs text-red-700">{error}</p></div>}
 
-        {/* Input bar */}
-        <div className="flex-shrink-0 px-3 sm:px-5 py-3 sm:py-4" style={{ background: 'white', borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+        {/* Input bar — pill-shaped, matching the reference mockup */}
+        <div className="flex-shrink-0 px-4 sm:px-8 lg:px-10 py-4 sm:py-6" style={{ background: HOME_COLORS.surface }}>
           {imagePreview && (
             <div className="relative inline-block mb-3">
-              <img src={imagePreview} alt="Upload preview" className="h-20 w-auto rounded-xl object-cover" style={{ border: '1px solid rgba(0,0,0,0.1)' }} />
-              <button onClick={clearImage} className="absolute -top-2 -right-2 w-5 h-5 text-white rounded-full flex items-center justify-center" style={{ background: '#2A5C4E' }}>
+              <img src={imagePreview} alt="Upload preview" className="h-20 w-auto rounded-xl object-cover" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
+              <button onClick={clearImage} className="absolute -top-2 -right-2 w-5 h-5 text-white rounded-full flex items-center justify-center" style={{ background: HOME_COLORS.primary }}>
                 <X size={11} />
               </button>
             </div>
           )}
-          <div className="flex gap-2 sm:gap-3 items-end">
+          <div className="flex items-center gap-1.5 rounded-full pl-2 pr-2 py-2" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={streaming}
-              className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all"
+              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-colors"
               style={imagePreview
-                ? { background: '#E8F5F1', border: '1.5px solid #2A5C4E', color: '#2A5C4E' }
-                : { background: 'white', border: '1.5px solid rgba(0,0,0,0.12)', color: '#9CA3AF' }
+                ? { background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }
+                : { background: 'transparent', color: HOME_COLORS.onSurfaceVariant }
               }
               title="Upload an image"
             >
               <ImagePlus size={16} />
             </button>
-            <div className="flex-1 rounded-xl" style={{ background: '#F3F4F6', border: '1.5px solid transparent', transition: 'all 0.15s' }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#2A5C4E'; e.currentTarget.style.background = 'white' }}
-              onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = '#F3F4F6' }}
-            >
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={imagePreview ? `Ask ${interview.persona?.name ?? 'your persona'} about this image...` : `Ask ${interview.persona?.name ?? 'your persona'} something...`}
-                rows={1}
-                className="w-full px-3 sm:px-4 py-3 text-sm bg-transparent text-neutral-900 placeholder:text-neutral-400 resize-none focus:outline-none"
-                style={{ minHeight: '44px', maxHeight: '160px' }}
-              />
-            </div>
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={imagePreview ? `Ask ${interview.persona?.name ?? 'your persona'} about this image...` : `Ask ${interview.persona?.name ?? 'your persona'} something...`}
+              rows={1}
+              className="flex-1 bg-transparent text-sm outline-none resize-none py-2 placeholder:opacity-60"
+              style={{ color: HOME_COLORS.onSurface, minHeight: '40px', maxHeight: '160px' }}
+            />
             <button
               onClick={handleSend}
               disabled={(!input.trim() && !imageData) || streaming}
-              className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-colors"
+              className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
               style={(input.trim() || imageData) && !streaming
-                ? { background: '#2A5C4E', color: 'white' }
-                : { background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' }
+                ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }
+                : { background: HOME_COLORS.surfaceContainerHigh, color: HOME_COLORS.onSurfaceVariant, cursor: 'not-allowed' }
               }
             >
               <Send size={15} />
             </button>
           </div>
-          <p className="hidden sm:block text-center text-xs text-neutral-400 mt-2">
+          <p className="hidden sm:block text-center text-xs mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>
             Enter to send · Shift+Enter for new line · <ImagePlus size={10} className="inline mb-0.5" /> to share an image
           </p>
         </div>
@@ -482,49 +465,37 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 
 // ─── Message bubble ───────────────────────────────────────────────────────────
 
-// Conventional chat layout: you (the researcher) on the right, the persona's
-// answers — the actual research output — on the left, so the transcript reads
-// top-to-bottom like a real conversation log.
+// Full-width editorial transcript blocks, not narrow chat bubbles — matches the
+// reference mockup's proportions. You (the researcher) sit on the right,
+// the persona's answers — the actual research output — sit on the left.
 function MessageBubble({ message, persona }: { message: Message; persona: any }) {
   const isUser = message.role === 'user'
 
   if (isUser) {
     return (
-      <div className="flex justify-end">
-        <div className="flex flex-col gap-1.5 items-end max-w-[88%] sm:max-w-[70%]">
-          <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            You · {formatRelativeTime(message.timestamp)}
-          </span>
-          {message.image_url && (
-            <img src={message.image_url} alt="Shared image" className="max-h-48 w-auto rounded-xl object-cover" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
-          )}
-          {message.content && (
-            <div className="rounded-2xl rounded-tr-sm px-4 py-3" style={{ background: HOME_COLORS.primary }}>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onPrimary }}>{message.content}</p>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-col gap-1.5 items-end">
+        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+          You · {formatRelativeTime(message.timestamp)}
+        </span>
+        {message.image_url && (
+          <img src={message.image_url} alt="Shared image" className="max-h-56 w-auto rounded-2xl object-cover" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
+        )}
+        {message.content && (
+          <div className="rounded-2xl px-6 py-5 max-w-[92%] sm:max-w-[85%]" style={{ background: HOME_COLORS.primary }}>
+            <p className="text-[15px] leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onPrimary }}>{message.content}</p>
+          </div>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="flex gap-2.5 sm:gap-3 items-start">
-      <PersonaAvatar
-        avatarUrl={persona?.avatar_url}
-        avatarInitials={persona?.avatar_initials}
-        avatarColor={persona?.avatar_color}
-        name={persona?.name}
-        size="xs"
-        className="flex-shrink-0 mt-4"
-      />
-      <div className="flex flex-col gap-1.5 max-w-[85%] sm:max-w-[75%] min-w-0">
-        <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-          {persona?.name} · {formatRelativeTime(message.timestamp)}
-        </span>
-        <div className="rounded-2xl rounded-tl-sm px-4 py-3" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
-          <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onSurface }}>{message.content}</p>
-        </div>
+    <div className="flex flex-col gap-1.5 items-start">
+      <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+        {persona?.name} · {formatRelativeTime(message.timestamp)}
+      </span>
+      <div className="rounded-2xl px-6 py-5 max-w-[92%] sm:max-w-[85%]" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+        <p className="text-[15px] leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onSurface }}>{message.content}</p>
       </div>
     </div>
   )
