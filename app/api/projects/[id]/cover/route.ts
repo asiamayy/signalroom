@@ -25,14 +25,20 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  // Deliberately never quote the project name in the prompt — diffusion
-  // models (including flux/schnell) tend to read a quoted string as text to
-  // literally render into the image, which is what was producing garbled
-  // lettering on generated covers. Describing the theme unquoted avoids that.
-  const prompt = `Abstract editorial cover art thematically inspired by the market research project ${project.name}, purely visual and non-literal. Minimalist geometric and organic shapes, sophisticated dark green and cream color palette, subtle gradient, high-end editorial magazine aesthetic, clean composition, professional business illustration style. Absolutely no text, no letters, no numbers, no words, no typography, no writing, no logos, no watermarks, no people anywhere in the image.`
+  // The word "cover" (as in "cover art"/"magazine cover") is what was
+  // biasing the model toward adding a title/masthead — real covers almost
+  // always carry typography. "Editorial illustration" alone doesn't carry
+  // that same expectation, so it's back in for the refined/sophisticated
+  // quality without the front-cover framing. Project name is still never
+  // quoted, since a quoted string reads as "render this text."
+  const prompt = `Sophisticated abstract editorial illustration, purely decorative and non-literal, inspired by the concept of ${project.name}. Refined geometric and organic shapes, curated dark green and cream color palette, elegant gradients, gallery-quality fine art composition, premium publication-style artwork. Absolutely no text, no letters, no numbers, no words, no typography, no writing, no logos, no watermarks, no signage, no people anywhere in the image.`
 
   try {
-    const response = await fetch('https://fal.run/fal-ai/flux/schnell', {
+    // flux/dev instead of flux/schnell — schnell is the fast/cheap
+    // distilled model and is noticeably worse at honoring "no text"
+    // instructions. dev costs more ($0.025/MP vs $0.003/MP, still a
+    // fraction of a cent per image) but follows prompts far more reliably.
+    const response = await fetch('https://fal.run/fal-ai/flux/dev', {
       method: 'POST',
       headers: {
         'Authorization': `Key ${process.env.FAL_API_KEY}`,
@@ -41,7 +47,7 @@ export async function POST(
       body: JSON.stringify({
         prompt,
         image_size: 'landscape_4_3',
-        num_inference_steps: 4,
+        num_inference_steps: 28,
         num_images: 1,
         enable_safety_checker: true,
       }),
