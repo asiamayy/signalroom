@@ -98,15 +98,19 @@ export default function LandingPage() {
 
   const wordsDataset = ["opinions", "objections", "blindspots", "expectations"];
 
-  const TRADITIONAL_COST_PER_INTERVIEW = 750;
-  const TRADITIONAL_HOURS_PER_INTERVIEW = 2;
-  const TRADITIONAL_WEEKS_TURNAROUND = 3;
+  // Adjusted numbers up to simulate high-end Enterprise Agency Consultation rates
+  const TRADITIONAL_COST_PER_INTERVIEW = 1250; 
+  const TRADITIONAL_HOURS_PER_INTERVIEW = 6; // Accounts for recruitment friction, transcription, and manual tagging
+  const TRADITIONAL_WEEKS_TURNAROUND = 4;
 
   const traditionalCost = roiValue * TRADITIONAL_COST_PER_INTERVIEW;
   const traditionalHours = roiValue * TRADITIONAL_HOURS_PER_INTERVIEW;
-  const savings = traditionalCost - 99;
+  
+  // Base savings calculated cleanly against the core $499 Professional 'Signal' plan value
+  const SIGNAL_PLAN_COST = 499;
+  const savings = Math.max(0, traditionalCost - SIGNAL_PLAN_COST);
   const annualSavings = savings * 12;
-  const calculatedReduction = Math.round((1 - (10 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
+  const calculatedReduction = Math.round((1 - (12 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
 
   useEffect(() => {
     setDisplayedWord(wordsDataset[currentWordIndex]);
@@ -275,14 +279,11 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* RIGHT SIDE: self-start so it never stretches to match the left column's
-              height — its position stays fixed regardless of how tall the node
-              animation is */}
+          {/* RIGHT SIDE */}
           <div ref={rightColRef} className="md:col-span-12 lg:col-span-5 lg:pt-64 flex flex-col justify-start lg:self-start">
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               
-              {/* Inherited exact style/sizing from old paragraph block for perfect cleanliness */}
               <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">
                 SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
               </p>
@@ -508,19 +509,19 @@ export default function LandingPage() {
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
               <h2 className="text-[30px] sm:text-[36px] mb-6 sm:mb-8 leading-[1.1] tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Quantify the Signal. Eliminate Waste.</h2>
               <p className="text-[14px] sm:text-[15px] text-[#454947] mb-6 max-w-sm leading-relaxed opacity-90">
-                Traditional research can cost thousands in software, recruiting, incentives, and analysis. SignalRoom replaces all of that for a flat monthly fee with no contracts.
+                Traditional enterprise research agencies can charge upwards of $15,000 for a single project context study. SignalRoom delivers continuous market telemetry for a fixed software allocation layer.
               </p>
             </div>
             <div className="lg:col-start-7 lg:col-span-6">
               <div className="border border-[#d1d5d3] p-5 sm:p-10 bg-white relative rounded-[4px]">
                 <div className="px-1 pb-4 mb-6 border-b border-[#d1d5d3]">
-                  <h3 className="text-lg text-neutral-900 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See your savings</h3>
-                  <p className="text-xs text-neutral-500 mt-1">Traditional tools charge $8,000+ for 6 months. Compare that to SignalRoom.</p>
+                  <h3 className="text-lg text-neutral-900 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See your strategic savings</h3>
+                  <p className="text-xs text-neutral-500 mt-1">Compare deep agency consultancies against localized SignalRoom deployment vectors.</p>
                 </div>
                 <div className="space-y-10">
                   <div>
                     <div className="flex justify-between items-center mb-4">
-                      <label className="text-[11px] font-medium uppercase tracking-[0.3em] text-neutral-700 block">Interviews per month</label>
+                      <label className="text-[11px] font-medium uppercase tracking-[0.3em] text-neutral-700 block">Simulated Inquiries / month</label>
                       <span className="text-neutral-900 font-normal text-xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{roiValue}</span>
                     </div>
                     <input 
@@ -535,38 +536,38 @@ export default function LandingPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
                     <div className="p-5 sm:p-6">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-600 block mb-2">Traditional</span>
+                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-600 block mb-2">Agency Procurement</span>
                       <span className="text-[28px] font-normal tracking-tighter text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>${traditionalCost.toLocaleString()}</span>
-                      <p className="text-[11px] text-neutral-600 font-medium mb-3">/month</p>
+                      <p className="text-[11px] text-neutral-600 font-medium mb-3">/ project cycle</p>
                       <div className="border-t border-[#d1d5d3] pt-3 space-y-1.5 text-[11px] text-neutral-600">
-                        <div className="flex justify-between"><span>Time</span><span className="font-medium text-neutral-800">3 weeks</span></div>
-                        <div className="flex justify-between"><span>Per interview</span><span className="font-medium text-neutral-800">$750</span></div>
-                        <div className="flex justify-between"><span>Hours</span><span className="font-medium text-neutral-800">{traditionalHours}h</span></div>
+                        <div className="flex justify-between"><span>Turnaround</span><span className="font-medium text-neutral-800">4 weeks</span></div>
+                        <div className="flex justify-between"><span>Per dialogue</span><span className="font-medium text-neutral-800">$1,250</span></div>
+                        <div className="flex justify-between"><span>Labor hours</span><span className="font-medium text-neutral-800">{traditionalHours}h</span></div>
                       </div>
                     </div>
                     <div className="p-5 sm:p-6 bg-[#e9edea]">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1A3024] block mb-2">SignalRoom</span>
-                      <span className="text-[28px] font-normal tracking-tighter text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
-                      <p className="text-[11px] text-[#1A3024] font-medium mb-3">unlimited/month</p>
+                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1A3024] block mb-2">SignalRoom Architecture</span>
+                      <span className="text-[28px] font-normal tracking-tighter text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$499</span>
+                      <p className="text-[11px] text-[#1A3024] font-medium mb-3">continuous / month</p>
                       <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1A3024]">
-                        <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
-                        <div className="flex justify-between"><span>Per interview</span><span className="font-medium">~$0</span></div>
-                        <div className="flex justify-between"><span>Hours</span><span className="font-medium">&lt; 1h</span></div>
+                        <div className="flex justify-between"><span>Turnaround</span><span className="font-medium">Instant</span></div>
+                        <div className="flex justify-between"><span>Per dialogue</span><span className="font-medium">~$0</span></div>
+                        <div className="flex justify-between"><span>Labor hours</span><span className="font-medium">&lt; 1h</span></div>
                       </div>
                     </div>
                   </div>
                   <div className="bg-[#1A3024] p-5 sm:p-6 grid grid-cols-2 gap-4 text-white rounded-[4px]">
                     <div>
-                      <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-300 block mb-1">You save</span>
+                      <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-300 block mb-1">Retained Budget</span>
                       <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                         ${savings.toLocaleString()}<span className="text-xs font-sans font-normal text-neutral-400">/mo</span>
                       </div>
                       <div className="text-[10px] text-neutral-300 mt-0.5">${annualSavings.toLocaleString()}/year</div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] font-medium uppercase tracking-[0.4em] text-neutral-400 block mb-1">Time saved</span>
+                      <span className="text-[9px] font-medium uppercase tracking-[0.4em] text-neutral-400 block mb-1">Telemetry Velocity</span>
                       <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{calculatedReduction}%</div>
-                      <div className="text-[10px] text-neutral-400 mt-0.5">faster</div>
+                      <div className="text-[10px] text-neutral-400 mt-0.5">faster synthesis</div>
                     </div>
                   </div>
                 </div>
@@ -580,57 +581,63 @@ export default function LandingPage() {
       <RevealSection>
         <section id="pricing" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
           <div className="text-center mb-12 sm:mb-20">
-            <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600">Subscription Models</span>
-            <h2 className="text-[30px] sm:text-[36px] mt-3 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simple pricing. No surprises.</h2>
+            <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600">Subscription Architecture</span>
+            <h2 className="text-[30px] sm:text-[36px] mt-3 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Predictable plans. Enterprise gravity.</h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden bg-white">
+            
+            {/* Pulse Tier */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">01 // Pulse</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Pulse</h3>
-              <p className="text-xs text-neutral-600 mb-4">For solo founders getting started</p>
+              <p className="text-xs text-neutral-600 mb-4">Before you invest months building, simulate deep customer dialogues to validate real demand metrics.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$49</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$199</span>
                 <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 3 personas</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 interviews/month</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Core templates</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Basic reports</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 3 active project architectures</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Baseline neural persona modeling</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Core simulated interview streams</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Automated intelligence summaries</li>
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
+
+            {/* Signal Tier */}
             <div className="p-6 sm:p-10 flex flex-col bg-[#e9edea] relative shadow-xl shadow-black/[0.01]">
-              <div className="absolute top-0 right-0 bg-[#1A3024] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
-              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1A3024] mb-8 sm:mb-10">02 // Core</span>
+              <div className="absolute top-0 right-0 bg-[#1A3024] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Professional</div>
+              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1A3024] mb-8 sm:mb-10">02 // Signal</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1A3024] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
-              <p className="text-xs text-[#1A3024] font-medium mb-4">For teams validating fast</p>
+              <p className="text-xs text-[#1A3024] font-medium mb-4">Replace slow user research cycles, accelerate discovery vectors, and continuously audit market blindspots.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$499</span>
                 <span className="text-[11px] text-[#1A3024] font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited personas</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited interviews</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ All templates</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Full reports</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona testing</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited project infrastructure</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Real-time signal velocity monitoring</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona comparative synthesis</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Complete executive-ready briefings</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Raw telemetry data stream exports</li>
               </ul>
               <Link href="/signup" className="w-full text-center bg-[#1A3024] text-white py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#5A7973] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
             </div>
+
+            {/* Broadcast Tier */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group thin-border">
-              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">03 // Scale</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">03 // Broadcast</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Broadcast</h3>
-              <p className="text-xs text-neutral-500 mb-4">For agencies and growing teams</p>
+              <p className="text-xs text-neutral-500 mb-4">Your organization-wide, always-on customer intelligence layer. Engineered for cross-functional scale.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$249</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$1,999</span>
                 <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in Signal</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 team seats</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label reports</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority support</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Multi-seat team collaboration panels</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label executive intelligence outputs</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Deep contextual custom ingestion pipelines</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority node infrastructure compute allocation</li>
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
