@@ -65,7 +65,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
         {/* Public header */}
         <div className="flex items-center justify-between mb-6">
           <Link href="https://getsignalroom.com" className="flex items-center transition-opacity hover:opacity-80">
-            <img src="/signalroom-logo.png" alt="SignalRoom" style={{ height: '48px', width: 'auto' }} />
+            <img src="/signalroom-logo.svg" alt="SignalRoom" width="94" height="55" className="h-12 w-auto object-contain" />
           </Link>
           <Link
             href="/signup"
