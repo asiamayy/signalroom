@@ -14,6 +14,7 @@ import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from
 import { CARD_SHADOW } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { useSearch } from '@/lib/search-context'
+import { ProjectCoverPattern, getProjectCoverPatternIndex } from '@/components/projects/ProjectCoverPattern'
 import type { Project } from '@/types'
 
 export interface ProjectRollup {
@@ -107,22 +108,6 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
       const { data } = await res.json()
       setRollups(prev => [{ project: data, interviewCount: 0, signalCount: 0, reportCount: 0, avgConfidence: 0, topSignalSummary: null }, ...prev])
       setShowCreateModal(false)
-      generateCoverInBackground(data.id)
-    }
-  }
-
-  // Fires automatically right after a project is created — no button, no
-  // user-facing loading/error state. The card just shows the deterministic
-  // keyword icon until the image arrives, then swaps it in. Failures are
-  // silent (logged only) since there's no retry affordance to show one for.
-  const generateCoverInBackground = async (id: string) => {
-    try {
-      const res = await fetch(`/api/projects/${id}/cover`, { method: 'POST' })
-      const json = await res.json()
-      if (!res.ok) { console.error('Cover generation failed:', json.error); return }
-      setRollups(prev => prev.map(r => r.project.id === id ? { ...r, project: { ...r.project, cover_image_url: json.data.cover_image_url } } : r))
-    } catch (e) {
-      console.error('Cover generation failed:', e)
     }
   }
 
@@ -357,6 +342,7 @@ function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; on
   const { project, interviewCount, signalCount, avgConfidence, topSignalSummary } = rollup
   const tier = confidenceTier(avgConfidence, signalCount)
   const CoverIcon = getProjectIcon(project.name)
+  const patternIndex = getProjectCoverPatternIndex(project.name)
 
   return (
     <motion.div
@@ -368,17 +354,12 @@ function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; on
       style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}00`, boxShadow: CARD_SHADOW }}
     >
       <Link href={`/projects/${project.id}`} className="relative h-40 sm:h-48 overflow-hidden block" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
-        {project.cover_image_url ? (
-          <img
-            src={project.cover_image_url}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
+        <div className="transition-transform duration-700 group-hover:scale-105 w-full h-full">
+          <ProjectCoverPattern index={patternIndex} />
+          <div className="absolute inset-0 flex items-center justify-center">
             <CoverIcon size={56} strokeWidth={1} style={{ color: `${HOME_COLORS.primaryFixedDim}66` }} />
           </div>
-        )}
+        </div>
         <button
           onClick={e => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete "${project.name}"? This cannot be undone. Personas and interviews inside it will become unassigned, not deleted.`)) onDelete() }}
           title="Delete project"

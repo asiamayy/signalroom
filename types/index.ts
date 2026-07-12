@@ -82,7 +82,6 @@ export interface Project {
   id: string
   user_id: string
   name: string
-  cover_image_url: string | null
   archived: boolean
   archived_at: string | null
   created_at: string
