@@ -99,7 +99,7 @@ export default function SignupPage() {
         </div>
 
         <div className="bg-white border border-[#E3E5E3] rounded-[12px] p-8">
-          <h1 className="text-xl tracking-tight text-[#121314] mb-1 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Start your free trial</h1>
+          <h1 className="text-xl tracking-tight text-[#121314] mb-1 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Start for free</h1>
           <p className="text-sm text-neutral-500 mb-5">No credit card required</p>
 
           {/* Perks */}
