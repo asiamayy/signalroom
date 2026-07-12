@@ -464,11 +464,11 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 
 // ─── Message bubble ───────────────────────────────────────────────────────────
 
-// Full-width editorial transcript blocks, not narrow chat bubbles — matches the
-// reference mockup's proportions and its light-card "inquiry" treatment:
-// rounded-xl, shadow-sm, hover:shadow-md, dark text on a light surface for
-// clean contrast. You (the researcher) sit on the right, the persona's
-// answers — the actual research output — sit on the left.
+// Full-width editorial transcript blocks, not narrow chat bubbles — matches
+// the reference mockup's card treatment: rounded-xl, shadow-sm at rest,
+// hover:shadow-md. You (the researcher) sit on the right in the primary
+// dark-green card; the persona's answers — the actual research output —
+// sit on the left in a light card.
 function MessageBubble({ message, persona }: { message: Message; persona: any }) {
   const isUser = message.role === 'user'
 
@@ -484,9 +484,9 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
         {message.content && (
           <div
             className="rounded-xl px-6 py-5 max-w-[92%] sm:max-w-[85%] shadow-sm hover:shadow-md transition-shadow"
-            style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}
+            style={{ background: HOME_COLORS.primary }}
           >
-            <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-[15px]">{message.content}</p>
+            <p className="font-sans font-normal tracking-normal leading-relaxed whitespace-pre-wrap text-[15px]" style={{ color: HOME_COLORS.onPrimary }}>{message.content}</p>
           </div>
         )}
       </div>
