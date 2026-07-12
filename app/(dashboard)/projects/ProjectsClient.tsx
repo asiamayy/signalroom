@@ -13,6 +13,7 @@ import {
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
+import { DuotoneFilterDefs, DuotoneImage } from '@/components/ui/DuotoneImage'
 import { useSearch } from '@/lib/search-context'
 import type { Project } from '@/types'
 
@@ -156,6 +157,7 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
 
   return (
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full" onClick={() => openMenuId && setOpenMenuId(null)}>
+      <DuotoneFilterDefs />
       {/* Header & primary action */}
       <section className="px-4 sm:px-10 pt-10 sm:pt-12 pb-12 sm:pb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="max-w-2xl">
@@ -369,7 +371,7 @@ function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; on
     >
       <Link href={`/projects/${project.id}`} className="relative h-40 sm:h-48 overflow-hidden block" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
         {project.cover_image_url ? (
-          <img
+          <DuotoneImage
             src={project.cover_image_url}
             alt=""
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
