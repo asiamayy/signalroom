@@ -3,11 +3,12 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
-  Activity, Filter, ArrowUp, ArrowDown, Gauge, Share2, Lightbulb, TrendingUp, TrendingDown, ChevronDown,
+  Activity, Filter, ArrowUp, ArrowDown, Gauge, Share2, Lightbulb, TrendingUp, TrendingDown,
 } from 'lucide-react'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW, formatRelativeTime } from '@/lib/utils'
 import { SignalFeedCard } from '@/components/signals/SignalFeedCard'
+import { Dropdown } from '@/components/ui/Dropdown'
 import { SIGNAL_TYPE_LABELS } from '@/types'
 import type { Signal, SignalType } from '@/types'
 
@@ -24,12 +25,6 @@ const DATE_RANGES = [
   { value: '30', label: 'Last 30 days' },
   { value: '90', label: 'Last 90 days' },
 ]
-
-const selectStyle = {
-  background: HOME_COLORS.surfaceContainerLowest,
-  border: `1px solid ${HOME_COLORS.outlineVariant}66`,
-  color: HOME_COLORS.onSurface,
-}
 
 export function SignalsClient({ initialSignals, projects, personas, interviews }: SignalsClientProps) {
   const [showFilters, setShowFilters] = useState(false)
@@ -101,9 +96,9 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
       {/* Hero */}
       <section className="relative px-4 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-16 overflow-hidden">
-        <div className="absolute -top-4 right-0 sm:right-8 pointer-events-none hidden sm:block" style={{ width: 320, height: 260 }}>
-          <div className="absolute rounded-full" style={{ width: 220, height: 220, top: 0, left: 0, background: HOME_COLORS.outlineVariant, opacity: 0.22 }} />
-          <div className="absolute rounded-full" style={{ width: 220, height: 220, top: 70, left: 130, background: HOME_COLORS.primary, opacity: 0.12 }} />
+        <div className="absolute -top-24 -right-24 pointer-events-none hidden sm:block" style={{ width: 460, height: 400 }}>
+          <div className="absolute rounded-full" style={{ width: 320, height: 320, top: 0, left: 0, background: HOME_COLORS.outlineVariant, opacity: 0.25 }} />
+          <div className="absolute rounded-full" style={{ width: 320, height: 320, top: 90, left: 180, background: HOME_COLORS.primary, opacity: 0.13 }} />
         </div>
         <div className="relative z-10 max-w-3xl">
           <div className="flex items-center gap-3 mb-4">
@@ -149,25 +144,31 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
 
           {showFilters && (
             <div className="flex flex-wrap items-center gap-2 -mt-2">
-              <FilterSelect value={projectId} onChange={e => setProjectId(e.target.value)}>
-                <option value="">All projects</option>
-                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </FilterSelect>
-              <FilterSelect value={personaId} onChange={e => setPersonaId(e.target.value)}>
-                <option value="">All personas</option>
-                {personas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </FilterSelect>
-              <FilterSelect value={interviewId} onChange={e => setInterviewId(e.target.value)}>
-                <option value="">All interviews</option>
-                {interviews.map(i => <option key={i.id} value={i.id}>{i.title}</option>)}
-              </FilterSelect>
-              <FilterSelect value={type} onChange={e => setType(e.target.value as SignalType | '')}>
-                <option value="">All types</option>
-                {Object.entries(SIGNAL_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-              </FilterSelect>
-              <FilterSelect value={dateRange} onChange={e => setDateRange(e.target.value)}>
-                {DATE_RANGES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </FilterSelect>
+              <Dropdown
+                value={projectId}
+                onChange={setProjectId}
+                placeholder="All projects"
+                options={[{ value: '', label: 'All projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
+              />
+              <Dropdown
+                value={personaId}
+                onChange={setPersonaId}
+                placeholder="All personas"
+                options={[{ value: '', label: 'All personas' }, ...personas.map(p => ({ value: p.id, label: p.name }))]}
+              />
+              <Dropdown
+                value={interviewId}
+                onChange={setInterviewId}
+                placeholder="All interviews"
+                options={[{ value: '', label: 'All interviews' }, ...interviews.map(i => ({ value: i.id, label: i.title }))]}
+              />
+              <Dropdown
+                value={type}
+                onChange={v => setType(v as SignalType | '')}
+                placeholder="All types"
+                options={[{ value: '', label: 'All types' }, ...Object.entries(SIGNAL_TYPE_LABELS).map(([value, label]) => ({ value, label }))]}
+              />
+              <Dropdown value={dateRange} onChange={setDateRange} options={DATE_RANGES} />
               <label className="flex items-center gap-2 text-xs ml-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 Min confidence
                 <input
@@ -280,22 +281,6 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
           </section>
         </aside>
       </div>
-    </div>
-  )
-}
-
-function FilterSelect({ value, onChange, children }: { value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; children: React.ReactNode }) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={onChange}
-        className="appearance-none text-xs rounded-lg pl-3 pr-8 py-2 outline-none cursor-pointer"
-        style={selectStyle}
-      >
-        {children}
-      </select>
-      <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: HOME_COLORS.onSurfaceVariant }} />
     </div>
   )
 }

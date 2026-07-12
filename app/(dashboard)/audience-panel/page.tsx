@@ -1,11 +1,13 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves } from 'lucide-react'
+import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves, Terminal, ArrowRight, CheckSquare, Square } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
+import { CARD_SHADOW } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan } from '@/types'
@@ -57,20 +59,19 @@ interface PanelResult {
   summary: PanelSummary
 }
 
-// ─── Color system ─────────────────────────────────────────────────────────────
+// ─── Color system — ported to the shared editorial palette ───────────────────
 
 const SENTIMENT_COLORS = {
-  positive: { bg: '#E8F5F1', text: '#2A5C4E', bar: '#2A5C4E', border: '#A7D9C8' },
-  neutral:  { bg: '#F3F4F6', text: '#4B5563', bar: '#9CA3AF', border: '#D1D5DB' },
-  negative: { bg: '#FEF2F2', text: '#991B1B', bar: '#EF4444', border: '#FECACA' },
-  mixed:    { bg: '#FFFBEB', text: '#92400E', bar: '#F59E0B', border: '#FDE68A' },
+  positive: { bg: HOME_COLORS.secondaryContainer, text: HOME_COLORS.primary, bar: HOME_COLORS.primary, border: `${HOME_COLORS.primary}4d` },
+  neutral: { bg: HOME_COLORS.surfaceContainerHigh, text: HOME_COLORS.onSurfaceVariant, bar: HOME_COLORS.outline, border: HOME_COLORS.outlineVariant },
+  negative: { bg: '#FFDAD6', text: HOME_COLORS.error, bar: HOME_COLORS.error, border: '#FFB4AB' },
+  mixed: { bg: '#FEF3C7', text: '#B45309', bar: '#D97706', border: '#FDE68A' },
 }
 
 function SentimentBadge({ sentiment }: { sentiment: string }) {
   const c = SENTIMENT_COLORS[sentiment as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
   return (
-    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0"
-      style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}` }}>
+    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0" style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}` }}>
       {sentiment}
     </span>
   )
@@ -82,17 +83,15 @@ function SentimentBar({ distribution, total }: { distribution: Record<string, nu
     key: k,
     count: distribution[k],
     pct: (distribution[k] / total) * 100,
-    color: SENTIMENT_COLORS[k as keyof typeof SENTIMENT_COLORS]?.bar ?? '#9CA3AF',
-    bg: SENTIMENT_COLORS[k as keyof typeof SENTIMENT_COLORS]?.bg ?? '#F3F4F6',
-    text: SENTIMENT_COLORS[k as keyof typeof SENTIMENT_COLORS]?.text ?? '#4B5563',
+    color: SENTIMENT_COLORS[k as keyof typeof SENTIMENT_COLORS]?.bar ?? HOME_COLORS.outline,
+    text: SENTIMENT_COLORS[k as keyof typeof SENTIMENT_COLORS]?.text ?? HOME_COLORS.onSurfaceVariant,
   }))
 
   return (
     <div>
       <div className="flex h-8 rounded-xl overflow-hidden gap-0.5 mb-4">
         {entries.map(e => (
-          <div key={e.key} className="flex items-center justify-center transition-all duration-700"
-            style={{ width: `${e.pct}%`, background: e.color, minWidth: e.pct > 5 ? undefined : '0' }}>
+          <div key={e.key} className="flex items-center justify-center transition-all duration-700" style={{ width: `${e.pct}%`, background: e.color, minWidth: e.pct > 5 ? undefined : '0' }}>
             {e.pct >= 15 && <span className="text-[10px] font-bold text-white">{Math.round(e.pct)}%</span>}
           </div>
         ))}
@@ -102,7 +101,7 @@ function SentimentBar({ distribution, total }: { distribution: Record<string, nu
           <div key={e.key} className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: e.color }} />
             <span className="text-xs capitalize" style={{ color: e.text }}>{e.key}</span>
-            <span className="text-xs font-semibold text-neutral-700">{e.count}</span>
+            <span className="text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{e.count}</span>
           </div>
         ))}
       </div>
@@ -110,26 +109,20 @@ function SentimentBar({ distribution, total }: { distribution: Record<string, nu
   )
 }
 
-// ─── Unanimous sentiment callout — shown when every persona lands on the same side ──
-
 function UnanimousSentiment({ sentiment, total }: { sentiment: string; total: number }) {
   const c = SENTIMENT_COLORS[sentiment as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
   const label = sentiment.charAt(0).toUpperCase() + sentiment.slice(1)
-
   return (
     <div className="flex flex-col items-center text-center py-3">
       <div className="w-16 h-16 rounded-full flex items-center justify-center mb-3" style={{ background: c.bg }}>
         <Waves size={24} style={{ color: c.bar }} />
       </div>
-      <p className="text-lg font-serif font-bold text-neutral-900 mb-1">All {label}</p>
-      <p className="text-xs text-neutral-500 leading-relaxed max-w-[220px] mb-3">
-        Every persona expressed {sentiment} sentiment about this question.
-      </p>
+      <p className="text-lg mb-1" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>All {label}</p>
+      <p className="text-xs leading-relaxed max-w-[220px] mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>Every persona expressed {sentiment} sentiment about this question.</p>
       <div className="flex items-center gap-1.5">
         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: c.bar }} />
         <span className="text-xs font-medium" style={{ color: c.text }}>{label}</span>
-        <span className="text-xs font-semibold text-neutral-700">{total}/{total}</span>
-        <span className="text-xs text-neutral-400">· All personas</span>
+        <span className="text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{total}/{total}</span>
       </div>
     </div>
   )
@@ -145,17 +138,13 @@ function ThemeList({ themes, total }: { themes: Theme[]; total: number }) {
           <div key={i}>
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: c.bar }} />
-              <span className="text-sm font-medium text-neutral-900 flex-1 truncate">{theme.title}</span>
-              <span className="text-[11px] font-semibold flex-shrink-0 px-2 py-0.5 rounded-full"
-                style={{ background: c.bg, color: c.text }}>
-                {pct}%
-              </span>
+              <span className="text-sm font-medium flex-1 truncate" style={{ color: HOME_COLORS.onSurface }}>{theme.title}</span>
+              <span className="text-[11px] font-semibold flex-shrink-0 px-2 py-0.5 rounded-full" style={{ background: c.bg, color: c.text }}>{pct}%</span>
             </div>
-            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: '#F3F4F6' }}>
-              <div className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${pct}%`, background: c.bar }} />
+            <div className="h-2 rounded-full overflow-hidden mb-1.5" style={{ background: HOME_COLORS.surfaceContainer }}>
+              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: c.bar }} />
             </div>
-            <p className="text-[11px] text-neutral-400">Mentioned by {theme.count}/{total} personas</p>
+            <p className="text-[11px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Mentioned by {theme.count}/{total} personas</p>
           </div>
         )
       })}
@@ -163,24 +152,19 @@ function ThemeList({ themes, total }: { themes: Theme[]; total: number }) {
   )
 }
 
-// ─── Purchase likelihood gauge ────────────────────────────────────────────────
-
 function PurchaseGauge({ value }: { value: number }) {
   const radius = 42
   const circumference = 2 * Math.PI * radius
   const offset = circumference - (Math.min(100, Math.max(0, value)) / 100) * circumference
-
   return (
     <div className="flex flex-col items-center flex-shrink-0">
       <div className="relative w-28 h-28">
         <svg viewBox="0 0 100 100" className="w-28 h-28 -rotate-90">
           <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="8" />
-          <circle cx="50" cy="50" r={radius} fill="none" stroke="white" strokeWidth="8"
-            strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke={HOME_COLORS.primaryFixedDim} strokeWidth="8" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-serif font-bold text-white">{value}%</span>
+          <span style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '24px', color: 'white' }}>{value}%</span>
         </div>
       </div>
       <p className="text-[11px] mt-2 font-medium text-center" style={{ color: 'rgba(255,255,255,0.7)' }}>Likelihood of Purchase</p>
@@ -188,117 +172,38 @@ function PurchaseGauge({ value }: { value: number }) {
   )
 }
 
-function ResponseCardBody({ result, onReadMore }: { result: PanelResponse; onReadMore?: () => void }) {
-  return (
-    <>
-      <div className="flex items-center gap-2.5 mb-2.5">
-        <PersonaAvatar
-          avatarUrl={result.avatar_url}
-          avatarInitials={result.avatar_initials}
-          avatarColor={result.avatar_color}
-          name={result.persona_name}
-          size="sm"
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-neutral-900 truncate">{result.persona_name}</p>
-          {result.job_title && (
-            <span className="inline-block text-[10px] px-1.5 py-0.5 rounded-full font-medium mt-0.5"
-              style={{ background: '#E8F5F1', color: '#2A5C4E' }}>
-              {result.job_title}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="mb-2.5">
-        <SentimentBadge sentiment={result.sentiment} />
-      </div>
-
-      {result.error ? (
-        <p className="text-xs text-red-500">{result.error}</p>
-      ) : (
-        <>
-          <p className="text-xs text-neutral-600 leading-relaxed flex-1 line-clamp-2">
-            {result.response}
-          </p>
-          {onReadMore ? (
-            <button onClick={onReadMore}
-              className="text-[11px] font-semibold mt-2 self-start transition-colors"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2A5C4E', padding: 0, fontFamily: 'inherit' }}>
-              Read more →
-            </button>
-          ) : (
-            <span className="text-[11px] font-semibold mt-2" style={{ color: '#2A5C4E' }}>Read more →</span>
-          )}
-        </>
-      )}
-    </>
-  )
-}
-
-function ResponseCard({ result, onOpen }: { result: PanelResponse; onOpen: () => void }) {
-  const c = SENTIMENT_COLORS[result.sentiment] ?? SENTIMENT_COLORS.neutral
-
-  return (
-    <motion.div
-      layoutId={`ap-response-${result.persona_id}`}
-      className="rounded-2xl p-4 flex flex-col h-full transition-all"
-      style={{ background: 'white', border: `1px solid ${c.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', borderRadius: 16 }}
-    >
-      <ResponseCardBody result={result} onReadMore={onOpen} />
-    </motion.div>
-  )
-}
-
-// ─── Quote highlight card ──────────────────────────────────────────────────────
-
-function QuoteCard({ label, quote, source, accent }: { label: string; quote: string; source: string; accent: { text: string; bar: string } }) {
-  return (
-    <div className="rounded-2xl p-5"
-      style={{ background: 'white', border: '1px solid rgba(0,0,0,0.05)', borderLeft: `4px solid ${accent.bar}`, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-      <div className="flex items-center gap-1.5 mb-3">
-        <Quote size={13} style={{ color: accent.bar }} />
-        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent.text }}>{label}</span>
-      </div>
-      <p className="text-sm text-neutral-800 leading-relaxed italic mb-2">"{quote}"</p>
-      <p className="text-xs font-semibold" style={{ color: accent.text }}>— {source}</p>
-    </div>
-  )
-}
-
-// ─── Full response modal content ─────────────────────────────────────────────
-
 function ResponseModalContent({ response }: { response: PanelResponse }) {
   return (
     <>
       <div className="flex items-center gap-3 mb-5 pr-8">
-        <PersonaAvatar
-          avatarUrl={response.avatar_url}
-          avatarInitials={response.avatar_initials}
-          avatarColor={response.avatar_color}
-          name={response.persona_name}
-          size="lg"
-        />
+        <PersonaAvatar avatarUrl={response.avatar_url} avatarInitials={response.avatar_initials} avatarColor={response.avatar_color} name={response.persona_name} size="lg" />
         <div className="min-w-0 flex-1">
           <p className="text-base font-semibold text-neutral-900 truncate">{response.persona_name}</p>
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {response.job_title && (
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
-                style={{ background: '#E8F5F1', color: '#2A5C4E' }}>
-                {response.job_title}
-              </span>
-            )}
+            {response.job_title && <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>{response.job_title}</span>}
             <SentimentBadge sentiment={response.sentiment} />
           </div>
         </div>
       </div>
-
       {response.error ? (
         <p className="text-sm text-red-500">{response.error}</p>
       ) : (
         <p className="text-sm text-neutral-700 leading-relaxed">{response.response}</p>
       )}
     </>
+  )
+}
+
+function QuoteCard({ label, quote, source, accent }: { label: string; quote: string; source: string; accent: { text: string; bar: string } }) {
+  return (
+    <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderLeft: `4px solid ${accent.bar}`, boxShadow: CARD_SHADOW }}>
+      <div className="flex items-center gap-1.5 mb-3">
+        <Quote size={13} style={{ color: accent.bar }} />
+        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent.text }}>{label}</span>
+      </div>
+      <p className="text-sm leading-relaxed italic mb-2" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{quote}&rdquo;</p>
+      <p className="text-xs font-semibold" style={{ color: accent.text }}>— {source}</p>
+    </div>
   )
 }
 
@@ -329,11 +234,7 @@ export default function AudiencePanelPage() {
   }, [])
 
   const togglePersona = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id)
-        ? prev.filter(p => p !== id)
-        : prev.length < maxPersonas ? [...prev, id] : prev
-    )
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : prev.length < maxPersonas ? [...prev, id] : prev)
   }
 
   const handleRun = async () => {
@@ -362,27 +263,23 @@ export default function AudiencePanelPage() {
 
   if (!loadingPersonas && !hasAccess) {
     return (
-      <div className="p-4 sm:p-8 max-w-2xl">
+      <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full p-4 sm:p-10 max-w-2xl">
         <div className="mb-8">
-          <h1 className="heading-editorial text-2xl flex items-center gap-2" style={{ color: '#171717' }}>
-            <BarChart3 size={22} className="text-neutral-400" />
+          <h1 className="flex items-center gap-2" style={{ ...DISPLAY_LG_STYLE, fontSize: '28px', lineHeight: '36px', color: HOME_COLORS.onSurface }}>
+            <BarChart3 size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
             Audience Panel
           </h1>
-          <p className="text-sm text-neutral-500 mt-1">Ask one question to 5–10 personas simultaneously and visualize the results</p>
+          <p className="text-sm mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Ask one question to 5–10 personas simultaneously and visualize the results</p>
         </div>
-        <div className="bg-white rounded-2xl p-10 text-center"
-          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.06)' }}>
-          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center"
-            style={{ background: '#F3F4F6' }}>
-            <Lock size={22} className="text-neutral-400" />
+        <div className="rounded-2xl p-10 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
+            <Lock size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
           </div>
-          <h2 className="text-lg font-bold text-neutral-900 mb-2">Signal or Broadcast plan required</h2>
-          <p className="text-sm text-neutral-500 mb-6 max-w-sm mx-auto leading-relaxed">
+          <h2 className="text-lg font-bold mb-2" style={{ color: HOME_COLORS.onSurface }}>Signal or Broadcast plan required</h2>
+          <p className="text-sm mb-6 max-w-sm mx-auto leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
             Run batch research across 5–10 personas simultaneously. Get sentiment analysis, theme extraction, AI recommendations, and decision-ready visualizations — all in one panel.
           </p>
-          <Link href="/settings"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-xl text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #2A5C4E 0%, #2A5C4E 100%)', boxShadow: '0 2px 10px rgba(26,140,106,0.3)' }}>
+          <Link href="/settings" className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-full text-white transition-colors" style={{ background: HOME_COLORS.primary }}>
             Upgrade plan →
           </Link>
         </div>
@@ -391,282 +288,262 @@ export default function AudiencePanelPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-6xl" style={{ background: '#FCF9F8', minHeight: '100%' }}>
-      <div className="mb-6">
-        <h1 className="heading-editorial text-2xl flex items-center gap-2" style={{ color: '#171717' }}>
-          <BarChart3 size={22} style={{ color: '#2A5C4E' }} />
-          Audience Panel
-        </h1>
-        <p className="text-sm text-neutral-500 mt-1">Ask one question — see how your entire audience responds, analyzed and visualized instantly</p>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-1 space-y-4">
-          <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-            <label className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-2 block">Your question</label>
-            <textarea
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              placeholder="e.g. Would you pay $49/month for an AI tool that runs customer interviews in minutes?"
-              rows={5}
-              className="w-full text-sm text-neutral-800 placeholder:text-neutral-400 resize-none focus:outline-none leading-relaxed"
-              style={{ background: 'none', border: 'none', fontFamily: 'inherit' }}
-            />
+    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
+      {/* Hero */}
+      <section className="relative px-4 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-12 overflow-hidden">
+        <div className="relative z-10 max-w-3xl">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Audience Intelligence</span>
           </div>
-          <div className="rounded-2xl p-5" style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Personas</label>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: selectedIds.length >= 5 ? '#E8F5F1' : '#F3F4F6', color: selectedIds.length >= 5 ? '#2A5C4E' : '#6B7280' }}>
+          <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
+            Synthesize market voice through <span className="italic" style={{ fontWeight: 400 }}>neural modeling</span>.
+          </h1>
+          <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+            Bridge the gap between raw data and human resonance. Ask one question, get real answers from every selected persona — analyzed, themed, and summarized instantly.
+          </p>
+        </div>
+        <div className="absolute right-4 sm:right-10 bottom-2 flex-col items-end opacity-20 hidden lg:flex pointer-events-none">
+          <span style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '84px', color: HOME_COLORS.primary, lineHeight: 1 }}>{String(personas.length).padStart(2, '0')}</span>
+          <span className="text-[11px] font-bold uppercase tracking-tight" style={{ color: HOME_COLORS.onSurface }}>Active Archetypes</span>
+        </div>
+      </section>
+
+      {/* Content grid */}
+      <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 pb-20">
+        {/* Sidebar */}
+        <aside className="lg:col-span-4 flex flex-col gap-6 order-2 lg:order-1">
+          <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Target Personas</h3>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: selectedIds.length >= 5 ? HOME_COLORS.secondaryContainer : HOME_COLORS.surfaceContainerHigh, color: selectedIds.length >= 5 ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant }}>
                 {selectedIds.length} / {maxPersonas}
               </span>
             </div>
             {loadingPersonas ? (
-              <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-10 rounded-xl animate-pulse" style={{ background: '#F3F4F6' }} />)}</div>
+              <div className="space-y-2">{[1, 2, 3].map(i => <div key={i} className="h-10 rounded-xl animate-pulse" style={{ background: HOME_COLORS.surfaceContainer }} />)}</div>
             ) : personas.length === 0 ? (
               <div className="text-center py-6">
-                <p className="text-sm text-neutral-500 mb-2">No personas yet</p>
-                <Link href="/personas/new" className="text-xs font-semibold transition-opacity hover:opacity-70" style={{ color: '#2A5C4E' }}>Create your first persona →</Link>
+                <p className="text-sm mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>No personas yet</p>
+                <Link href="/personas/new" className="text-xs font-semibold" style={{ color: HOME_COLORS.primary }}>Create your first persona →</Link>
               </div>
             ) : (
-              <div className="space-y-1.5 max-h-80 overflow-y-auto">
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {personas.map(persona => {
                   const isSelected = selectedIds.includes(persona.id)
                   const atLimit = selectedIds.length >= maxPersonas && !isSelected
                   return (
-                    <button key={persona.id}
+                    <button
+                      key={persona.id}
                       onClick={() => !atLimit && togglePersona(persona.id)}
                       disabled={atLimit}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left"
-                      style={{
-                        background: isSelected ? '#E8F5F1' : '#F9FAFB',
-                        border: isSelected ? '1.5px solid #2A5C4E' : '1.5px solid transparent',
-                        cursor: atLimit ? 'not-allowed' : 'pointer',
-                        opacity: atLimit ? 0.45 : 1,
-                        fontFamily: 'inherit',
-                      }}>
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{ background: isSelected ? HOME_COLORS.secondaryContainer : HOME_COLORS.surfaceContainerLow, border: isSelected ? `1.5px solid ${HOME_COLORS.primary}` : '1.5px solid transparent' }}
+                    >
                       <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-neutral-900 truncate">{persona.name}</p>
-                        <p className="text-[11px] text-neutral-400 truncate">{persona.traits?.job_title ?? 'No role'}</p>
+                        <p className="text-xs font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{persona.name}</p>
+                        <p className="text-[11px] truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{persona.traits?.job_title ?? 'No role'}</p>
                       </div>
-                      {isSelected && (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A5C4E" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                      )}
+                      {isSelected ? <CheckSquare size={16} style={{ color: HOME_COLORS.primary }} /> : <Square size={16} style={{ color: `${HOME_COLORS.onSurfaceVariant}66` }} />}
                     </button>
                   )
                 })}
               </div>
             )}
-          </div>
-          {selectedIds.length > 0 && selectedIds.length < 5 && (
-            <p className="text-xs text-amber-600 text-center font-medium">
-              Select {5 - selectedIds.length} more to run the panel
-            </p>
-          )}
-          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
-          <button onClick={handleRun} disabled={!canRun}
-            className="w-full flex items-center justify-center gap-2 text-sm font-semibold px-5 py-3 rounded-xl transition-all hover:enabled:opacity-90"
-            style={{
-              background: canRun ? 'linear-gradient(135deg, #2A5C4E 0%, #2A5C4E 100%)' : '#E5E7EB',
-              color: canRun ? 'white' : '#9CA3AF',
-              cursor: canRun ? 'pointer' : 'not-allowed',
-              border: 'none',
-              fontFamily: 'inherit',
-              boxShadow: canRun ? '0 4px 14px rgba(26,140,106,0.35)' : 'none',
-            }}>
-            {loading ? <><Loader2 size={15} className="animate-spin" />Analyzing panel...</> : <><BarChart3 size={15} />Run Audience Panel</>}
-          </button>
-          {loading && (
-            <p className="text-xs text-neutral-400 text-center">Interviewing {selectedIds.length} personas simultaneously...</p>
-          )}
+          </section>
 
-          {/* ── Quote highlights — filled in under the setup panel so this column isn't left empty ── */}
+          {/* Readiness / neural pulse — real status, not a fabricated insight */}
+          <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Panel Readiness</span>
+              <Sparkles size={16} style={{ color: HOME_COLORS.primaryFixedDim }} />
+            </div>
+            <p className="text-sm leading-relaxed opacity-90">
+              {selectedIds.length >= 5
+                ? `${selectedIds.length} personas selected — ready to run.`
+                : `Select ${5 - selectedIds.length} more persona${5 - selectedIds.length === 1 ? '' : 's'} to unlock the panel.`}
+              {result && ` Last run reached a ${result.consensus_score}% consensus score.`}
+            </p>
+          </section>
+
+          {/* Quote highlights */}
           {result && (
-            <div className="space-y-3 pt-1">
+            <div className="space-y-3">
               {result.summary.most_representative_quote && (
-                <QuoteCard
-                  label="Most Representative Quote"
-                  quote={result.summary.most_representative_quote}
-                  source={result.summary.most_representative_quote_persona}
-                  accent={SENTIMENT_COLORS.positive}
-                />
+                <QuoteCard label="Most Representative Quote" quote={result.summary.most_representative_quote} source={result.summary.most_representative_quote_persona} accent={SENTIMENT_COLORS.positive} />
               )}
               {result.summary.biggest_objection_quote && (
-                <QuoteCard
-                  label="Biggest Objection"
-                  quote={result.summary.biggest_objection_quote}
-                  source={result.summary.biggest_objection_quote_persona}
-                  accent={SENTIMENT_COLORS.negative}
-                />
+                <QuoteCard label="Biggest Objection" quote={result.summary.biggest_objection_quote} source={result.summary.biggest_objection_quote_persona} accent={SENTIMENT_COLORS.negative} />
               )}
-              {(() => {
-                const takeaway = result.summary.recommended_actions?.length > 1
-                  ? result.summary.recommended_actions[result.summary.recommended_actions.length - 1]
-                  : result.summary.recommended_actions?.[0] ?? result.summary.overall_recommendation
-                return takeaway ? (
-                  <QuoteCard
-                    label="Key Takeaway"
-                    quote={takeaway}
-                    source="Recommended next step"
-                    accent={SENTIMENT_COLORS.neutral}
-                  />
-                ) : null
-              })()}
             </div>
           )}
-        </div>
-        <div className="lg:col-span-2 space-y-5 min-w-0">
+        </aside>
+
+        {/* Main column */}
+        <main className="lg:col-span-8 flex flex-col gap-8 order-1 lg:order-2 min-w-0">
+          {/* AI Inquiry Engine */}
+          <section className="p-6 sm:p-8 rounded-xl relative overflow-hidden" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+            <div className="flex justify-between items-start mb-6 gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                  <Terminal size={18} style={{ color: HOME_COLORS.primaryFixedDim }} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">AI Inquiry Engine</h4>
+                  <p className="text-xs opacity-70">Querying <span className="font-bold" style={{ color: HOME_COLORS.primaryFixedDim }}>{selectedIds.length} selected persona{selectedIds.length === 1 ? '' : 's'}</span></p>
+                </div>
+              </div>
+            </div>
+            <textarea
+              value={question}
+              onChange={e => setQuestion(e.target.value)}
+              rows={4}
+              placeholder="e.g. Would you pay $49/month for an AI tool that runs customer interviews in minutes?"
+              className="w-full rounded-xl p-5 sm:p-6 text-base outline-none resize-none transition-colors mb-4"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: HOME_COLORS.onPrimary }}
+            />
+            {error && <p className="text-sm mb-4" style={{ color: '#FFB4AB' }}>{error}</p>}
+            {selectedIds.length > 0 && selectedIds.length < 5 && (
+              <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>Select {5 - selectedIds.length} more persona{5 - selectedIds.length === 1 ? '' : 's'} to run the panel.</p>
+            )}
+            <button
+              onClick={handleRun}
+              disabled={!canRun}
+              className="flex items-center gap-2 px-8 py-3 rounded-full text-sm font-semibold transition-all disabled:cursor-not-allowed"
+              style={{ background: canRun ? HOME_COLORS.primaryFixedDim : 'rgba(255,255,255,0.1)', color: canRun ? HOME_COLORS.onPrimaryFixedVariant : 'rgba(255,255,255,0.4)' }}
+            >
+              {loading ? <><Loader2 size={15} className="animate-spin" /> Analyzing panel...</> : <><BarChart3 size={15} /> Synthesize Intelligence</>}
+            </button>
+          </section>
+
           {!result && !loading && (
-            <div className="rounded-2xl p-14 text-center" style={{ background: 'white', border: '1.5px dashed #E5E7EB', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-              <BarChart3 size={32} className="mx-auto mb-3" style={{ color: '#D1D5DB' }} />
-              <h3 className="text-sm font-semibold text-neutral-700 mb-1">Results appear here</h3>
-              <p className="text-xs text-neutral-400 max-w-xs mx-auto leading-relaxed">
+            <div className="rounded-xl py-20 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px dashed ${HOME_COLORS.outlineVariant}` }}>
+              <BarChart3 size={28} className="mx-auto mb-3" style={{ color: HOME_COLORS.outlineVariant }} />
+              <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Results appear here</h3>
+              <p className="text-xs max-w-xs mx-auto leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 Select 5–{maxPersonas} personas, type your question, and run the panel to see responses, themes, and an AI recommendation.
               </p>
             </div>
           )}
           {loading && (
-            <div className="rounded-2xl p-14 text-center" style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-              <Loader2 size={32} className="mx-auto mb-3 animate-spin" style={{ color: '#2A5C4E' }} />
-              <h3 className="text-sm font-semibold text-neutral-900 mb-1">Running panel</h3>
-              <p className="text-xs text-neutral-400">Interviewing all {selectedIds.length} personas in parallel...</p>
+            <div className="rounded-xl py-20 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+              <Loader2 size={28} className="mx-auto mb-3 animate-spin" style={{ color: HOME_COLORS.primary }} />
+              <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Running panel</h3>
+              <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Interviewing all {selectedIds.length} personas in parallel...</p>
             </div>
           )}
+
           {result && (
             <>
-              {/* ── Stat cards ── */}
+              {/* Stat cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {([
-                  { Icon: Users, value: result.total_personas, label: 'Personas Interviewed', iconBg: '#E8F5F1', iconColor: '#2A5C4E' },
-                  { Icon: Sparkles, value: result.themes.length, label: 'Key Themes Identified', iconBg: '#FFFBEB', iconColor: '#D97706' },
-                  { Icon: Target, value: `${result.consensus_score}%`, label: 'Consensus Score', iconBg: '#EEF2FF', iconColor: '#6366F1' },
-                  { Icon: Clock, value: `${result.summary.completed_in_seconds}s`, label: 'Time to Complete', sublabel: "That's 3–4 weeks saved", iconBg: '#EFF6FF', iconColor: '#3B82F6' },
-                ] as { Icon: typeof Users; value: string | number; label: string; sublabel?: string; iconBg: string; iconColor: string }[]).map((s, i) => (
-                  <div key={i} className="rounded-2xl p-4"
-                    style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ background: s.iconBg }}>
-                      <s.Icon size={16} style={{ color: s.iconColor }} />
-                    </div>
-                    <p className="text-2xl font-serif font-bold text-neutral-900 leading-none">{s.value}</p>
-                    <p className="text-[11px] text-neutral-500 mt-1.5 font-medium">{s.label}</p>
-                    {s.sublabel && <p className="text-[10px] mt-1 font-semibold" style={{ color: '#2A5C4E' }}>{s.sublabel}</p>}
+                  { Icon: Users, value: result.total_personas, label: 'Personas Interviewed' },
+                  { Icon: Sparkles, value: result.themes.length, label: 'Key Themes Identified' },
+                  { Icon: Target, value: `${result.consensus_score}%`, label: 'Consensus Score' },
+                  { Icon: Clock, value: `${result.summary.completed_in_seconds}s`, label: 'Time to Complete' },
+                ] as { Icon: typeof Users; value: string | number; label: string }[]).map((s, i) => (
+                  <div key={i} className="rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+                    <s.Icon size={16} style={{ color: HOME_COLORS.primary }} className="mb-3" />
+                    <p className="text-2xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{s.value}</p>
+                    <p className="text-[11px] mt-1.5 font-medium" style={{ color: HOME_COLORS.onSurfaceVariant }}>{s.label}</p>
                   </div>
                 ))}
               </div>
 
-              {/* ── Executive Summary ── */}
-              <div className="rounded-2xl p-6" style={{ background: '#0A4F3A', boxShadow: '0 4px 20px rgba(10,79,58,0.25)' }}>
+              {/* Executive summary */}
+              <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles size={15} style={{ color: 'rgba(255,255,255,0.8)' }} />
                   <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.7)' }}>Executive Summary</span>
                 </div>
-                <p className="text-base font-semibold leading-relaxed text-white mb-5">{result.summary.overall_recommendation}</p>
-
+                <p className="text-lg leading-relaxed mb-5" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{result.summary.overall_recommendation}</p>
                 <div className="flex flex-col lg:flex-row gap-5">
                   <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
                       <div className="flex items-center gap-1.5 mb-1.5">
                         <TrendingUp size={13} style={{ color: 'rgba(255,255,255,0.8)' }} />
                         <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Top Opportunity</span>
                       </div>
-                      <p className="text-xs text-white leading-relaxed">{result.summary.top_opportunity}</p>
+                      <p className="text-xs leading-relaxed">{result.summary.top_opportunity}</p>
                     </div>
-                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
                       <div className="flex items-center gap-1.5 mb-1.5">
                         <AlertTriangle size={13} style={{ color: 'rgba(255,255,255,0.8)' }} />
                         <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Biggest Risk</span>
                       </div>
-                      <p className="text-xs text-white leading-relaxed">{result.summary.biggest_risk}</p>
+                      <p className="text-xs leading-relaxed">{result.summary.biggest_risk}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-center lg:pl-5 lg:border-l" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
                     <PurchaseGauge value={result.summary.likelihood_of_purchase} />
                   </div>
                 </div>
-
                 {result.summary.recommended_actions?.length > 0 && (
                   <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
                     <p className="text-[10px] font-bold uppercase tracking-wider mb-2.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Recommended Actions</p>
                     <div className="space-y-1.5">
                       {result.summary.recommended_actions.map((action, i) => (
                         <div key={i} className="flex items-start gap-2">
-                          <span className="text-xs font-bold mt-0.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
-                          <p className="text-xs text-white leading-relaxed">{action}</p>
+                          <ArrowRight size={12} className="mt-0.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.5)' }} />
+                          <p className="text-xs leading-relaxed">{action}</p>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-
-                <p className="text-[10px] mt-5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                  Completed in ~{result.summary.completed_in_seconds}s · {result.total_personas} personas interviewed
-                </p>
               </div>
 
-              {/* ── Sentiment / Themes ── */}
+              {/* Sentiment / Themes */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="rounded-2xl p-5"
-                  style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                  <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Sentiment Overall</p>
+                <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Sentiment Overall</p>
                   {Object.keys(result.sentiment_distribution).length === 1 ? (
-                    <UnanimousSentiment
-                      sentiment={Object.keys(result.sentiment_distribution)[0]}
-                      total={result.total_personas}
-                    />
+                    <UnanimousSentiment sentiment={Object.keys(result.sentiment_distribution)[0]} total={result.total_personas} />
                   ) : (
-                    <>
-                      <SentimentBar distribution={result.sentiment_distribution} total={result.total_personas} />
-                      {(() => {
-                        const dominant = Object.entries(result.sentiment_distribution).reduce(
-                          (max, cur) => (cur[1] > max[1] ? cur : max)
-                        )
-                        const [dominantKey, dominantCount] = dominant
-                        const c = SENTIMENT_COLORS[dominantKey as keyof typeof SENTIMENT_COLORS] ?? SENTIMENT_COLORS.neutral
-                        return (
-                          <div className="rounded-xl p-3.5 mt-4 flex items-start gap-2.5" style={{ background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
-                            <Sparkles size={14} className="flex-shrink-0 mt-0.5" style={{ color: c.bar }} />
-                            <p className="text-xs text-neutral-600 leading-relaxed">
-                              <span className="font-semibold text-neutral-900 capitalize">Overall Sentiment: {dominantKey}</span>
-                              {' — '}{dominantCount}/{result.total_personas} personas leaned {dominantKey}.
-                            </p>
-                          </div>
-                        )
-                      })()}
-                    </>
+                    <SentimentBar distribution={result.sentiment_distribution} total={result.total_personas} />
                   )}
                 </div>
-                <div className="rounded-2xl p-5"
-                  style={{ background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.05)' }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-neutral-400">Theme Frequency</p>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-300">Mentioned by · Confidence</p>
-                  </div>
+                <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Theme Frequency</p>
                   <ThemeList themes={result.themes} total={result.total_personas} />
                 </div>
               </div>
 
+              {/* Individual responses — editorial quote cards */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Individual Responses</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {result.responses.map(r => (
+                    <motion.article
+                      key={r.persona_id}
+                      layoutId={`ap-response-${r.persona_id}`}
+                      onClick={() => setOpenResponseId(r.persona_id)}
+                      className="rounded-xl p-5 cursor-pointer transition-all hover:shadow-xl flex flex-col"
+                      style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
+                    >
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <PersonaAvatar avatarUrl={r.avatar_url} avatarInitials={r.avatar_initials} avatarColor={r.avatar_color} name={r.persona_name} size="sm" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{r.persona_name}</p>
+                          {r.job_title && <p className="text-[10px] uppercase truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{r.job_title}</p>}
+                        </div>
+                        <SentimentBadge sentiment={r.sentiment} />
+                      </div>
+                      {r.error ? (
+                        <p className="text-xs" style={{ color: HOME_COLORS.error }}>{r.error}</p>
+                      ) : (
+                        <p className="text-sm leading-relaxed italic line-clamp-3" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{r.response}&rdquo;</p>
+                      )}
+                    </motion.article>
+                  ))}
+                </div>
+              </div>
             </>
           )}
-        </div>
+        </main>
       </div>
-
-      {/* ── Individual responses — full page width, not confined to the results column ── */}
-      {result && (
-        <div className="mt-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">Individual Responses</p>
-          <div className="overflow-x-auto -mx-1 px-1 pb-1">
-            <div className="grid gap-3" style={{ gridAutoFlow: 'column', gridAutoColumns: 'minmax(200px, 1fr)' }}>
-              {result.responses.map(r => (
-                <ResponseCard
-                  key={r.persona_id}
-                  result={r}
-                  onOpen={() => setOpenResponseId(r.persona_id)}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       <AnimatePresence>
         {openResponseId && (() => {

@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, FileText, Loader2, ImagePlus, X, User } from 'lucide-react'
+import { Send, FileText, Loader2, ImagePlus, X, User, Quote } from 'lucide-react'
 import { cn, formatRelativeTime, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
+import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Interview, Message } from '@/types'
 
@@ -256,23 +257,19 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
           ))}
 
           {streaming && (
-            <div className="flex gap-3 items-start">
-              <PersonaAvatar
-                avatarUrl={interview.persona?.avatar_url}
-                avatarInitials={interview.persona?.avatar_initials}
-                avatarColor={interview.persona?.avatar_color}
-                name={interview.persona?.name}
-                size="xs"
-                className="mt-0.5 flex-shrink-0"
-              />
-              <div className="flex-1">
-                <p className="text-xs text-neutral-400 mb-1 font-medium">{interview.persona?.name}</p>
-                <div className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[88%] sm:max-w-[85%]" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                  {streamingText
-                    ? <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">{streamingText}<span className="inline-block w-0.5 h-4 bg-neutral-400 ml-0.5 animate-pulse align-middle" /></p>
-                    : <div className="flex gap-1 py-1"><span className="w-1.5 h-1.5 bg-neutral-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} /><span className="w-1.5 h-1.5 bg-neutral-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} /><span className="w-1.5 h-1.5 bg-neutral-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} /></div>
-                  }
-                </div>
+            <div className="flex flex-col gap-2 items-end ml-auto max-w-[92%] sm:max-w-[85%]">
+              <span className="text-[10px] font-semibold uppercase tracking-widest pb-1 w-fit" style={{ color: HOME_COLORS.onSurfaceVariant, borderBottom: `1px solid ${HOME_COLORS.outlineVariant}` }}>
+                {interview.persona?.name}
+              </span>
+              <div className="rounded-2xl p-6 sm:p-7 shadow-xl w-full" style={{ background: HOME_COLORS.primaryContainer }}>
+                {streamingText
+                  ? <p className="leading-snug whitespace-pre-wrap" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '19px', color: HOME_COLORS.onPrimary }}>&ldquo;{streamingText}<span className="inline-block w-0.5 h-5 ml-0.5 animate-pulse align-middle" style={{ background: HOME_COLORS.onPrimary }} />&rdquo;</p>
+                  : <div className="flex gap-1.5 py-1">
+                      <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: HOME_COLORS.primaryFixedDim, animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: HOME_COLORS.primaryFixedDim, animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: HOME_COLORS.primaryFixedDim, animationDelay: '300ms' }} />
+                    </div>
+                }
               </div>
             </div>
           )}
@@ -368,35 +365,36 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         )}
         style={{
           transition: 'width 0.25s ease',
-          background: 'white',
-          borderLeft: panelOpen ? '1px solid rgba(0,0,0,0.07)' : 'none',
+          background: HOME_COLORS.surfaceContainerLow,
+          borderLeft: panelOpen ? `1px solid ${HOME_COLORS.outlineVariant}66` : 'none',
         }}
       >
         {panelOpen && (
           <>
-            <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
-              <span className="text-sm font-semibold text-neutral-900">Persona profile</span>
-              <button onClick={() => setPanelOpen(false)} className="w-6 h-6 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-700 hover:bg-[#E5E7EB] transition-colors bg-[#F3F4F6]">
+            <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
+              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>Persona profile</span>
+              <button onClick={() => setPanelOpen(false)} className="w-6 h-6 rounded-lg flex items-center justify-center transition-colors" style={{ color: HOME_COLORS.onSurfaceVariant, background: HOME_COLORS.surfaceContainerHigh }}>
                 <X size={12} />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="flex flex-col items-center text-center mb-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Identity card */}
+              <div className="rounded-xl p-5 flex flex-col items-center text-center" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary }}>
                 <PersonaAvatar
                   avatarUrl={interview.persona?.avatar_url}
                   avatarInitials={interview.persona?.avatar_initials}
                   avatarColor={interview.persona?.avatar_color}
                   name={interview.persona?.name}
-                  size="md"
-                  className="mb-2"
+                  size="lg"
+                  className="mb-3 ring-2 ring-white/20"
                 />
-                <h3 className="text-sm font-bold text-neutral-900">{interview.persona?.name}</h3>
-                <p className="text-xs text-neutral-400">{t?.job_title}</p>
+                <h3 className="text-lg leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{interview.persona?.name}</h3>
+                <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: HOME_COLORS.onPrimaryContainer }}>{t?.job_title}</p>
               </div>
 
               {/* Demographics */}
-              <div className="mb-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Demographics</h4>
+              <div className="rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
+                <h4 className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Demographics</h4>
                 <div className="space-y-1.5">
                   {[
                     { label: 'Age', value: t?.age },
@@ -406,8 +404,8 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
                     { label: 'Industry', value: t?.industry },
                   ].filter(r => r.value).map(({ label, value }) => (
                     <div key={label} className="flex justify-between text-xs">
-                      <dt className="text-neutral-400">{label}</dt>
-                      <dd className="font-medium text-neutral-700">{value}</dd>
+                      <dt style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</dt>
+                      <dd className="font-medium" style={{ color: HOME_COLORS.onSurface }}>{value}</dd>
                     </div>
                   ))}
                 </div>
@@ -415,19 +413,19 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 
               {/* Scores */}
               {(t?.tech_savviness || t?.risk_tolerance) && (
-                <div className="mb-4">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Profile scores</h4>
+                <div className="rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
+                  <h4 className="text-[10px] font-semibold uppercase tracking-widest mb-2.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Profile scores</h4>
                   <div className="space-y-2.5">
                     {t?.tech_savviness && (
                       <div>
-                        <div className="flex justify-between text-xs mb-1"><span className="text-neutral-500">Tech savviness</span><span className="font-medium text-neutral-700">{t.tech_savviness}/5</span></div>
-                        <div className="h-1.5 rounded-full" style={{ background: '#F3F4F6' }}><div className="h-1.5 rounded-full" style={{ background: '#2A5C4E', width: `${(t.tech_savviness / 5) * 100}%` }} /></div>
+                        <div className="flex justify-between text-xs mb-1"><span style={{ color: HOME_COLORS.onSurfaceVariant }}>Tech savviness</span><span className="font-medium" style={{ color: HOME_COLORS.onSurface }}>{t.tech_savviness}/5</span></div>
+                        <div className="h-1.5 rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-1.5 rounded-full" style={{ background: HOME_COLORS.primary, width: `${(t.tech_savviness / 5) * 100}%` }} /></div>
                       </div>
                     )}
                     {t?.risk_tolerance && (
                       <div>
-                        <div className="flex justify-between text-xs mb-1"><span className="text-neutral-500">Risk tolerance</span><span className="font-medium text-neutral-700">{t.risk_tolerance}/5</span></div>
-                        <div className="h-1.5 rounded-full" style={{ background: '#F3F4F6' }}><div className="h-1.5 rounded-full" style={{ background: '#2A5C4E', width: `${(t.risk_tolerance / 5) * 100}%` }} /></div>
+                        <div className="flex justify-between text-xs mb-1"><span style={{ color: HOME_COLORS.onSurfaceVariant }}>Risk tolerance</span><span className="font-medium" style={{ color: HOME_COLORS.onSurface }}>{t.risk_tolerance}/5</span></div>
+                        <div className="h-1.5 rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-1.5 rounded-full" style={{ background: HOME_COLORS.primary, width: `${(t.risk_tolerance / 5) * 100}%` }} /></div>
                       </div>
                     )}
                   </div>
@@ -436,9 +434,9 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 
               {/* Buying behavior */}
               {t?.buying_behavior && (
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">Buying behavior</h4>
-                  <p className="text-xs text-neutral-600 leading-relaxed">{t.buying_behavior}</p>
+                <div className="rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
+                  <h4 className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Buying behavior</h4>
+                  <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{t.buying_behavior}</p>
                 </div>
               )}
             </div>
@@ -451,45 +449,41 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 
 // ─── Message bubble ───────────────────────────────────────────────────────────
 
+// Researcher (you) reads as the plain, secondary voice — left-aligned, light
+// card. The persona's answer is the actual research output, so it gets the
+// prominent right-aligned, dark editorial quote treatment instead — inverted
+// from the usual "me on the right" chat convention on purpose.
 function MessageBubble({ message, persona }: { message: Message; persona: any }) {
   const isUser = message.role === 'user'
 
   if (isUser) {
     return (
-      <div className="flex justify-end">
-        <div className="max-w-[88%] sm:max-w-[70%]">
-          {message.image_url && (
-            <div className="mb-2 flex justify-end">
-              <img src={message.image_url} alt="Shared image" className="max-h-48 w-auto rounded-xl object-cover" style={{ border: '1px solid rgba(0,0,0,0.1)' }} />
-            </div>
-          )}
-          {message.content && (
-            <div className="rounded-2xl rounded-tr-sm px-4 py-3" style={{ background: '#2A5C4E' }}>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap text-white">{message.content}</p>
-            </div>
-          )}
-          <p className="text-xs text-neutral-400 text-right mt-1">{formatRelativeTime(message.timestamp)}</p>
-        </div>
+      <div className="flex flex-col gap-2 max-w-[88%] sm:max-w-[70%]">
+        <span className="text-[10px] font-semibold uppercase tracking-widest pb-1 w-fit" style={{ color: HOME_COLORS.primary, borderBottom: `1px solid ${HOME_COLORS.primary}33` }}>
+          You · {formatRelativeTime(message.timestamp)}
+        </span>
+        {message.image_url && (
+          <img src={message.image_url} alt="Shared image" className="max-h-48 w-auto rounded-xl object-cover" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
+        )}
+        {message.content && (
+          <div className="rounded-xl px-5 py-4" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onSurface }}>{message.content}</p>
+          </div>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="flex gap-3 items-start">
-      <PersonaAvatar
-        avatarUrl={persona?.avatar_url}
-        avatarInitials={persona?.avatar_initials}
-        avatarColor={persona?.avatar_color}
-        name={persona?.name}
-        size="xs"
-        className="mt-0.5 flex-shrink-0"
-      />
-      <div className="flex-1">
-        <p className="text-xs text-neutral-400 mb-1 font-medium">{persona?.name}</p>
-        <div className="rounded-2xl rounded-tl-sm px-4 py-3 max-w-[88%] sm:max-w-[85%]" style={{ background: 'white', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">{message.content}</p>
-        </div>
-        <p className="text-xs text-neutral-400 mt-1">{formatRelativeTime(message.timestamp)}</p>
+    <div className="flex flex-col gap-2 items-end ml-auto max-w-[92%] sm:max-w-[85%]">
+      <span className="text-[10px] font-semibold uppercase tracking-widest pb-1 w-fit" style={{ color: HOME_COLORS.onSurfaceVariant, borderBottom: `1px solid ${HOME_COLORS.outlineVariant}` }}>
+        {persona?.name} · {formatRelativeTime(message.timestamp)}
+      </span>
+      <div className="rounded-2xl p-6 sm:p-7 shadow-xl relative overflow-hidden w-full" style={{ background: HOME_COLORS.primaryContainer }}>
+        <Quote size={64} className="absolute top-2 right-3 opacity-10 pointer-events-none" style={{ color: HOME_COLORS.onPrimary }} />
+        <p className="relative z-10 leading-snug whitespace-pre-wrap" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '19px', color: HOME_COLORS.onPrimary }}>
+          &ldquo;{message.content}&rdquo;
+        </p>
       </div>
     </div>
   )

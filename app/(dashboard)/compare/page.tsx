@@ -1,21 +1,16 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitCompare, Loader2, Plus, X, ChevronDown, Check } from 'lucide-react'
+import { GitCompare, Loader2, Radar, Compass, CheckSquare, Square } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
-import { cn, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
+import { Dropdown } from '@/components/ui/Dropdown'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
+import { CARD_SHADOW, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import type { Persona, InterviewType } from '@/types'
 
-const INTERVIEW_TYPES: { value: InterviewType; label: string }[] = [
-  { value: 'concept_testing', label: 'Concept testing' },
-  { value: 'pricing_discovery', label: 'Pricing discovery' },
-  { value: 'message_testing', label: 'Message testing' },
-  { value: 'competitive_positioning', label: 'Competitive positioning' },
-  { value: 'feature_prioritization', label: 'Feature prioritization' },
-  { value: 'custom', label: 'Custom' },
-]
+const INTERVIEW_TYPE_OPTIONS = Object.entries(INTERVIEW_TYPE_LABELS).map(([value, label]) => ({ value, label }))
 
 interface CompareResult {
   persona_id: string
@@ -29,59 +24,16 @@ interface CompareResult {
   error: string | null
 }
 
-// ─── Shared response content — used for both the real card and the modal ─────
-
-function CompareResponseCardBody({ result }: { result: CompareResult }) {
-  return (
-    <>
-      <div className="flex items-center gap-3 mb-4">
-        <PersonaAvatar
-          avatarUrl={result.avatar_url}
-          avatarInitials={result.avatar_initials}
-          avatarColor={result.avatar_color}
-          name={result.persona_name}
-          size="md"
-        />
-        <div>
-          <p className="text-sm font-medium text-neutral-900">{result.persona_name}</p>
-          <p className="text-xs text-neutral-500">
-            {result.job_title}{result.location ? ` · ${result.location}` : ''}
-          </p>
-        </div>
-      </div>
-
-      {result.error ? (
-        <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{result.error}</p>
-      ) : (
-        <div className="bg-neutral-50 rounded-xl px-5 py-4">
-          <p className="text-sm text-neutral-800 leading-relaxed whitespace-pre-wrap">
-            {result.response}
-          </p>
-        </div>
-      )}
-    </>
-  )
-}
-
 function CompareResponseModalBody({ result }: { result: CompareResult }) {
   return (
     <>
       <div className="flex items-center gap-3 mb-5 pr-8">
-        <PersonaAvatar
-          avatarUrl={result.avatar_url}
-          avatarInitials={result.avatar_initials}
-          avatarColor={result.avatar_color}
-          name={result.persona_name}
-          size="lg"
-        />
+        <PersonaAvatar avatarUrl={result.avatar_url} avatarInitials={result.avatar_initials} avatarColor={result.avatar_color} name={result.persona_name} size="lg" />
         <div className="min-w-0 flex-1">
           <p className="text-base font-semibold text-neutral-900 truncate">{result.persona_name}</p>
-          <p className="text-sm text-neutral-500">
-            {result.job_title}{result.location ? ` · ${result.location}` : ''}
-          </p>
+          <p className="text-sm text-neutral-500">{result.job_title}{result.location ? ` · ${result.location}` : ''}</p>
         </div>
       </div>
-
       {result.error ? (
         <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{result.error}</p>
       ) : (
@@ -99,26 +51,10 @@ export default function ComparePage() {
   const [interviewType, setInterviewType] = useState<InterviewType>('concept_testing')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<CompareResult[]>([])
-  const [activeTab, setActiveTab] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
-  const [showTypeMenu, setShowTypeMenu] = useState(false)
-  const typeMenuRef = useRef<HTMLDivElement>(null)
-
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!showTypeMenu) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (typeMenuRef.current && !typeMenuRef.current.contains(e.target as Node)) {
-        setShowTypeMenu(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showTypeMenu])
-
-  // Load personas
   useEffect(() => {
     fetch('/api/personas')
       .then(r => r.json())
@@ -127,40 +63,45 @@ export default function ComparePage() {
   }, [])
 
   const togglePersona = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id)
-        ? prev.filter(p => p !== id)
-        : prev.length < 4
-          ? [...prev, id]
-          : prev
-    )
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : prev.length < 4 ? [...prev, id] : prev)
   }
+
+  const selectedPersonas = useMemo(() => personas.filter(p => selectedIds.includes(p.id)), [personas, selectedIds])
+
+  // Real, computed overlap — shared tags across every selected persona —
+  // not an AI estimate. Only meaningful once 2+ personas are selected.
+  const overlap = useMemo(() => {
+    if (selectedPersonas.length < 2) return null
+    const tagSets = selectedPersonas.map(p => new Set(p.tags ?? []))
+    const shared = [...tagSets[0]].filter(tag => tagSets.every(set => set.has(tag)))
+    const totalUnique = new Set(selectedPersonas.flatMap(p => p.tags ?? [])).size
+    const pct = totalUnique > 0 ? Math.round((shared.length / totalUnique) * 100) : 0
+    return { shared, pct }
+  }, [selectedPersonas])
+
+  const divergentNeeds = useMemo(() =>
+    selectedPersonas.map(p => ({
+      persona: p,
+      need: p.traits?.frustrations?.[0] ?? p.traits?.goals?.[0] ?? null,
+    })).filter(d => d.need),
+    [selectedPersonas]
+  )
 
   const handleCompare = async () => {
     if (selectedIds.length < 2) { setError('Select at least 2 personas'); return }
     if (!question.trim()) { setError('Enter a question to ask'); return }
-
     setLoading(true)
     setError('')
     setResults([])
-    setActiveTab(null)
-
     try {
       const res = await fetch('/api/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          persona_ids: selectedIds,
-          question,
-          context,
-          interview_type: interviewType,
-        }),
+        body: JSON.stringify({ persona_ids: selectedIds, question, context, interview_type: interviewType }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
-
       setResults(json.data)
-      setActiveTab(json.data[0]?.persona_id ?? null)
     } catch (e: any) {
       setError(e.message ?? 'Failed to run comparison')
     } finally {
@@ -168,255 +109,198 @@ export default function ComparePage() {
     }
   }
 
-  const activeResult = results.find(r => r.persona_id === activeTab)
-
   return (
-    <div className="p-4 sm:p-8 max-w-5xl">
-      {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className="heading-editorial text-2xl text-neutral-900">Compare</h1>
-        <p className="text-sm text-neutral-500 mt-0.5">Ask the same question to multiple personas and compare responses</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── Left: Setup ── */}
-        <div className="lg:col-span-1 space-y-5">
-
-          {/* Persona selection */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Select personas <span className="text-neutral-400 font-normal">(2–4)</span>
-            </label>
-
-            {loadingPersonas && <p className="text-sm text-neutral-400">Loading...</p>}
-
-            {!loadingPersonas && personas.length === 0 && (
-              <p className="text-sm text-neutral-400">No personas yet. Create some first.</p>
-            )}
-
-            {!loadingPersonas && personas.length > 0 && (
-              <div className="space-y-1.5">
-                {personas.map(persona => {
-                  const selected = selectedIds.includes(persona.id)
-                  const disabled = !selected && selectedIds.length >= 4
-                  return (
-                    <button
-                      key={persona.id}
-                      onClick={() => !disabled && togglePersona(persona.id)}
-                      className={cn(
-                        'w-full flex items-center gap-2.5 p-2.5 rounded-lg border text-left transition-all',
-                        selected
-                          ? 'border-neutral-900 bg-neutral-900'
-                          : disabled
-                            ? 'border-neutral-100 bg-neutral-50 opacity-40 cursor-not-allowed'
-                            : 'border-neutral-200 bg-white hover:border-neutral-300'
-                      )}
-                    >
-                      <PersonaAvatar
-                        avatarUrl={persona.avatar_url}
-                        avatarInitials={persona.avatar_initials}
-                        avatarColor={selected ? null : persona.avatar_color}
-                        name={persona.name}
-                        size="xs"
-                        className={selected ? 'ring-1 ring-white/20' : ''}
-                      />
-                      <div className="min-w-0">
-                        <p className={cn('text-xs font-medium truncate', selected ? 'text-white' : 'text-neutral-900')}>
-                          {persona.name}
-                        </p>
-                        <p className={cn('text-[11px] truncate', selected ? 'text-neutral-400' : 'text-neutral-500')}>
-                          {persona.traits?.job_title ?? 'No role'}
-                        </p>
-                      </div>
-                      {selected && (
-                        <div className="ml-auto w-4 h-4 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[10px] text-white font-medium">
-                            {selectedIds.indexOf(persona.id) + 1}
-                          </span>
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
+    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
+      {/* Hero */}
+      <section className="px-4 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-12">
+        <div className="max-w-3xl">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Stream</span>
           </div>
+          <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
+            Persona <span className="italic" style={{ fontWeight: 400 }}>Synthesis</span>
+          </h1>
+          <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+            Ask the same question to 2–4 personas and see how their real answers diverge. Select personas from the panel, then run the synthesis.
+          </p>
+        </div>
+      </section>
 
-          {/* Interview type */}
-          <div className="relative" ref={typeMenuRef}>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Interview type</label>
+      {/* Content grid */}
+      <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 pb-20">
+        {/* Left column — setup + results */}
+        <div className="lg:col-span-8 flex flex-col gap-6 sm:gap-8">
+          <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Interview type</label>
+                <Dropdown value={interviewType} onChange={v => setInterviewType(v as InterviewType)} options={INTERVIEW_TYPE_OPTIONS} className="w-full" />
+              </div>
+            </div>
+            <div className="mb-5">
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Context <span className="normal-case font-normal">(optional)</span></label>
+              <textarea
+                value={context}
+                onChange={e => setContext(e.target.value)}
+                rows={2}
+                placeholder="Briefly describe what you're testing..."
+                className="w-full px-4 py-3 text-sm rounded-lg outline-none resize-none"
+                style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }}
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Question</label>
+              <textarea
+                value={question}
+                onChange={e => setQuestion(e.target.value)}
+                rows={3}
+                placeholder="What question do you want to ask all personas?"
+                className="w-full px-4 py-3 text-sm rounded-lg outline-none resize-none"
+                style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }}
+              />
+            </div>
+            {error && <p className="text-sm rounded-lg px-3 py-2 mb-4" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{error}</p>}
             <button
-              type="button"
-              onClick={() => setShowTypeMenu(o => !o)}
-              className="w-full flex items-center justify-between gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors bg-white hover:bg-neutral-50"
-              style={{ border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+              onClick={handleCompare}
+              disabled={loading || selectedIds.length < 2 || !question.trim()}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-sm font-semibold transition-all disabled:cursor-not-allowed"
+              style={{ background: (!loading && selectedIds.length >= 2 && question.trim()) ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: (!loading && selectedIds.length >= 2 && question.trim()) ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}
             >
-              {INTERVIEW_TYPES.find(t => t.value === interviewType)?.label}
-              <ChevronDown size={13} className={cn('transition-transform duration-200', showTypeMenu ? 'rotate-180' : '')} style={{ color: '#9CA3AF' }} />
+              {loading ? <><Loader2 size={14} className="animate-spin" /> Running synthesis...</> : <><GitCompare size={14} /> Generate comparison</>}
             </button>
-            {showTypeMenu && (
-              <div className="absolute left-0 top-full mt-2 rounded-xl overflow-hidden z-50 w-full" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)' }}>
-                {INTERVIEW_TYPES.map(t => (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => { setInterviewType(t.value); setShowTypeMenu(false) }}
-                    className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center justify-between ${interviewType === t.value ? '' : 'bg-white hover:bg-neutral-50 hover:text-neutral-800'}`}
-                    style={{ background: interviewType === t.value ? '#CACFC6' : undefined, color: interviewType === t.value ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                  >
-                    {t.label}
-                    {interviewType === t.value && <Check size={13} style={{ color: '#1C3D2E' }} />}
-                  </button>
-                ))}
+          </div>
+
+          {/* Results — one editorial "vector" card per persona response */}
+          {results.length > 0 && (
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center justify-between pb-3" style={{ borderBottom: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
+                <h2 className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface }}>Synthesis Results</h2>
+                <span className="text-[11px] uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>&ldquo;{question}&rdquo;</span>
               </div>
-            )}
-          </div>
-
-          {/* Context */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Context <span className="text-neutral-400 font-normal">(optional)</span>
-            </label>
-            <textarea
-              value={context}
-              onChange={e => setContext(e.target.value)}
-              rows={3}
-              placeholder="Briefly describe what you're testing..."
-              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-neutral-900"
-            />
-          </div>
-
-          {/* Question */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Question</label>
-            <textarea
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              rows={4}
-              placeholder="What question do you want to ask all personas?"
-              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg text-neutral-900 placeholder:text-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-neutral-900"
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
+              {results.map((result, i) => (
+                <motion.article
+                  key={result.persona_id}
+                  layoutId={`compare-response-${result.persona_id}`}
+                  onClick={() => setOpenResponseId(result.persona_id)}
+                  className="rounded-xl p-6 sm:p-8 cursor-pointer transition-all hover:shadow-xl"
+                  style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
+                >
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+                        Vector {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <PersonaAvatar avatarUrl={result.avatar_url} avatarInitials={result.avatar_initials} avatarColor={result.avatar_color} name={result.persona_name} size="sm" />
+                        <div>
+                          <p className="text-sm font-semibold leading-tight" style={{ color: HOME_COLORS.onSurface }}>{result.persona_name}</p>
+                          <p className="text-[10px] uppercase" style={{ color: HOME_COLORS.onSurfaceVariant }}>{result.job_title}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {result.error ? (
+                    <p className="text-sm rounded-lg p-3" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{result.error}</p>
+                  ) : (
+                    <p className="leading-relaxed" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '19px', color: HOME_COLORS.onSurface }}>
+                      &ldquo;{result.response}&rdquo;
+                    </p>
+                  )}
+                </motion.article>
+              ))}
+            </div>
           )}
-
-          <button
-            onClick={handleCompare}
-            disabled={loading || selectedIds.length < 2 || !question.trim()}
-            className={cn(
-              'w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors',
-              !loading && selectedIds.length >= 2 && question.trim()
-                ? 'bg-neutral-900 text-white hover:bg-neutral-700'
-                : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-            )}
-          >
-            {loading
-              ? <><Loader2 size={14} className="animate-spin" /> Running comparison...</>
-              : <><GitCompare size={14} /> Compare {selectedIds.length > 0 ? `${selectedIds.length} personas` : 'personas'}</>
-            }
-          </button>
         </div>
 
-        {/* ── Right: Results ── */}
-        <div className="lg:col-span-2 min-w-0">
-          {results.length === 0 && !loading && (
-            <div className="h-full flex items-center justify-center border border-dashed border-neutral-200 rounded-xl">
-              <div className="text-center p-12">
-                <GitCompare size={24} className="text-neutral-300 mx-auto mb-3" />
-                <p className="text-sm font-medium text-neutral-500 mb-1">No results yet</p>
-                <p className="text-xs text-neutral-400">Select personas and ask a question to compare responses</p>
+        {/* Right column — sidebar */}
+        <aside className="lg:col-span-4">
+          <div className="lg:sticky lg:top-24 space-y-6">
+            {/* Persona selection */}
+            <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerHigh, boxShadow: CARD_SHADOW }}>
+              <div className="flex items-center justify-between mb-5">
+                <h4 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Persona Selection</h4>
+                <span className="text-xs font-bold" style={{ color: HOME_COLORS.primary }}>{selectedIds.length} / 4 selected</span>
               </div>
-            </div>
-          )}
-
-          {loading && (
-            <div className="h-full flex items-center justify-center border border-dashed border-neutral-200 rounded-xl">
-              <div className="text-center p-12">
-                <Loader2 size={24} className="text-neutral-300 mx-auto mb-3 animate-spin" />
-                <p className="text-sm text-neutral-500">Asking {selectedIds.length} personas...</p>
-                <p className="text-xs text-neutral-400 mt-1">This takes about {selectedIds.length * 3} seconds</p>
-              </div>
-            </div>
-          )}
-
-          {results.length > 0 && !loading && (
-            <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden h-full flex flex-col">
-              {/* Question recap */}
-              <div className="px-5 py-3.5 border-b border-neutral-100 bg-neutral-50">
-                <p className="text-xs text-neutral-500 font-medium mb-0.5">Question asked</p>
-                <p className="text-sm text-neutral-800">{question}</p>
-              </div>
-
-              {/* Tabs */}
-              <div className="flex border-b border-neutral-100 overflow-x-auto">
-                {results.map(result => (
-                  <button
-                    key={result.persona_id}
-                    onClick={() => setActiveTab(result.persona_id)}
-                    className={cn(
-                      'flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap border-b-2 transition-colors flex-shrink-0',
-                      activeTab === result.persona_id
-                        ? 'border-neutral-900 text-neutral-900 font-medium'
-                        : 'border-transparent text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50'
-                    )}
-                  >
-                    <PersonaAvatar
-                      avatarUrl={result.avatar_url}
-                      avatarInitials={result.avatar_initials}
-                      avatarColor={result.avatar_color}
-                      name={result.persona_name}
-                      size="xs"
-                    />
-                    {result.persona_name}
-                  </button>
-                ))}
-              </div>
-
-              {/* Active response */}
-              {activeResult && (
-                <div className="flex-1 p-5">
-                  <motion.div
-                    layoutId={`compare-response-${activeResult.persona_id}`}
-                    onClick={() => setOpenResponseId(activeResult.persona_id)}
-                    className="-m-2 p-2 rounded-xl cursor-pointer transition-colors hover:bg-neutral-50"
-                    style={{ borderRadius: 16 }}
-                  >
-                    <CompareResponseCardBody result={activeResult} />
-                  </motion.div>
-
-                  {/* Nav between tabs */}
-                  <div className="flex justify-between mt-4 pt-4 border-t border-neutral-100">
-                    <button
-                      onClick={() => {
-                        const idx = results.findIndex(r => r.persona_id === activeTab)
-                        if (idx > 0) setActiveTab(results[idx - 1].persona_id)
-                      }}
-                      disabled={results.findIndex(r => r.persona_id === activeTab) === 0}
-                      className="text-xs text-neutral-500 hover:text-neutral-900 disabled:opacity-30 transition-colors"
-                    >
-                      ← Previous
-                    </button>
-                    <span className="text-xs text-neutral-400">
-                      {results.findIndex(r => r.persona_id === activeTab) + 1} of {results.length}
-                    </span>
-                    <button
-                      onClick={() => {
-                        const idx = results.findIndex(r => r.persona_id === activeTab)
-                        if (idx < results.length - 1) setActiveTab(results[idx + 1].persona_id)
-                      }}
-                      disabled={results.findIndex(r => r.persona_id === activeTab) === results.length - 1}
-                      className="text-xs text-neutral-500 hover:text-neutral-900 disabled:opacity-30 transition-colors"
-                    >
-                      Next →
-                    </button>
-                  </div>
+              {loadingPersonas ? (
+                <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading...</p>
+              ) : personas.length === 0 ? (
+                <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>No personas yet.</p>
+              ) : (
+                <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                  {personas.map(persona => {
+                    const selected = selectedIds.includes(persona.id)
+                    const disabled = !selected && selectedIds.length >= 4
+                    return (
+                      <button
+                        key={persona.id}
+                        onClick={() => !disabled && togglePersona(persona.id)}
+                        disabled={disabled}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                        style={{ background: HOME_COLORS.surfaceContainerLowest, border: selected ? `2px solid ${HOME_COLORS.primary}` : '2px solid transparent', boxShadow: selected ? CARD_SHADOW : undefined }}
+                      >
+                        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{persona.name}</p>
+                          <p className="text-[10px] uppercase" style={{ color: selected ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant }}>{selected ? 'Selected' : (persona.traits?.job_title ?? 'Available')}</p>
+                        </div>
+                        {selected ? <CheckSquare size={20} style={{ color: HOME_COLORS.primary }} /> : <Square size={20} style={{ color: `${HOME_COLORS.onSurfaceVariant}66` }} />}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
-            </div>
-          )}
-        </div>
+            </section>
+
+            {/* Overlap analysis — real, from shared persona tags */}
+            <section className="p-6 sm:p-8 rounded-xl" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">Overlap Analysis</h4>
+                  <p className="text-[11px] opacity-70">Shared tags across selection</p>
+                </div>
+                <Radar size={18} style={{ color: HOME_COLORS.onPrimaryContainer }} />
+              </div>
+              {overlap ? (
+                <>
+                  <div className="flex flex-col items-center py-2">
+                    <GaugeRing percent={overlap.pct} />
+                  </div>
+                  <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                    <p className="text-sm opacity-80 leading-relaxed">
+                      {overlap.shared.length > 0
+                        ? `Shared tags: ${overlap.shared.join(', ')}.`
+                        : 'No shared tags between the selected personas — their profiles diverge structurally.'}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm opacity-70">Select at least 2 personas to see overlap.</p>
+              )}
+            </section>
+
+            {/* Divergent needs — real, from each persona's own traits */}
+            <section className="p-6 sm:p-8 rounded-xl" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+              <h4 className="text-sm font-semibold mb-6 flex items-center gap-2">
+                <Compass size={16} style={{ color: HOME_COLORS.primaryFixedDim }} />
+                Divergent Needs
+              </h4>
+              {divergentNeeds.length === 0 ? (
+                <p className="text-sm opacity-70">Select personas to see what sets them apart.</p>
+              ) : (
+                <div className="space-y-5">
+                  {divergentNeeds.map(({ persona, need }) => (
+                    <div key={persona.id} className="relative pl-5" style={{ borderLeft: `2px solid rgba(255,255,255,0.25)` }}>
+                      <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full" style={{ background: HOME_COLORS.primaryFixedDim }} />
+                      <span className="text-xs font-bold block mb-1" style={{ color: HOME_COLORS.primaryFixedDim }}>{persona.name}</span>
+                      <p className="text-sm opacity-80 leading-relaxed">{need}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </aside>
       </div>
 
       <AnimatePresence>
@@ -430,6 +314,24 @@ export default function ComparePage() {
           )
         })()}
       </AnimatePresence>
+    </div>
+  )
+}
+
+function GaugeRing({ percent }: { percent: number }) {
+  const radius = 45
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (percent / 100) * circumference
+  return (
+    <div className="relative w-40 h-40 flex items-center justify-center">
+      <svg viewBox="0 0 100 100" className="w-40 h-40 -rotate-90">
+        <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
+        <circle cx="50" cy="50" r={radius} fill="none" stroke={HOME_COLORS.primaryFixedDim} strokeWidth="8" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '32px' }}>{percent}%</span>
+        <span className="text-[10px] uppercase opacity-70">Shared tags</span>
+      </div>
     </div>
   )
 }
