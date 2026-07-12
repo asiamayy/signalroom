@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, Plus, ArrowRight, Calendar, ArrowUp, ArrowDown, Briefcase,
-  MoreVertical, ArchiveRestore, Trash2, Loader2, Database,
+  MoreVertical, ArchiveRestore, Trash2, Loader2, Database, ImagePlus,
   Code2, ShoppingBag, HeartPulse, Landmark, UtensilsCrossed, GraduationCap,
   Plane, Home as HomeIcon, Shirt, Car, Film, Zap, Truck, Sparkles,
   PawPrint, Leaf, ShieldCheck, Music, Gamepad2, type LucideIcon,
@@ -78,6 +78,8 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
   const [showAllArchive, setShowAllArchive] = useState(false)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [generatingCoverId, setGeneratingCoverId] = useState<string | null>(null)
+  const [coverError, setCoverError] = useState<string | null>(null)
 
   const matchesSearch = (r: ProjectRollup) => r.project.name.toLowerCase().includes(search.toLowerCase())
 
@@ -134,6 +136,21 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
     } finally {
       setActionLoading(null)
       setOpenMenuId(null)
+    }
+  }
+
+  const handleGenerateCover = async (id: string) => {
+    setCoverError(null)
+    setGeneratingCoverId(id)
+    try {
+      const res = await fetch(`/api/projects/${id}/cover`, { method: 'POST' })
+      const json = await res.json()
+      if (!res.ok) { setCoverError(json.error ?? 'Failed to generate cover'); return }
+      setRollups(prev => prev.map(r => r.project.id === id ? { ...r, project: { ...r.project, cover_image_url: json.data.cover_image_url } } : r))
+    } catch {
+      setCoverError('Failed to generate cover — please try again.')
+    } finally {
+      setGeneratingCoverId(null)
     }
   }
 
@@ -202,6 +219,11 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
       </section>
 
       {/* Main project grid */}
+      {coverError && (
+        <div className="px-4 sm:px-10 mb-4">
+          <p className="text-xs rounded-lg px-3 py-2 inline-block" style={{ background: '#FFDAD6', color: HOME_COLORS.error }}>{coverError}</p>
+        </div>
+      )}
       <section className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
         {gridRollups.length === 0 ? (
           <div className="lg:col-span-2 rounded-2xl py-16 flex items-center justify-center" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px dashed ${HOME_COLORS.outlineVariant}` }}>
@@ -221,6 +243,8 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
               rollup={rollup}
               onDelete={() => handleDelete(rollup.project.id, rollup.project.name)}
               deleting={actionLoading === rollup.project.id}
+              onGenerateCover={() => handleGenerateCover(rollup.project.id)}
+              generatingCover={generatingCoverId === rollup.project.id}
             />
           ))
         )}
@@ -336,7 +360,7 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
   )
 }
 
-function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; onDelete: () => void; deleting: boolean }) {
+function ProjectCard({ rollup, onDelete, deleting, onGenerateCover, generatingCover }: { rollup: ProjectRollup; onDelete: () => void; deleting: boolean; onGenerateCover: () => void; generatingCover: boolean }) {
   const { project, interviewCount, signalCount, avgConfidence, topSignalSummary } = rollup
   const tier = confidenceTier(avgConfidence, signalCount)
   const CoverIcon = getProjectIcon(project.name)
@@ -351,17 +375,36 @@ function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; on
       style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}00`, boxShadow: CARD_SHADOW }}
     >
       <Link href={`/projects/${project.id}`} className="relative h-40 sm:h-48 overflow-hidden block" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
-        <div className="absolute inset-0 flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
-          <CoverIcon size={56} strokeWidth={1} style={{ color: `${HOME_COLORS.primaryFixedDim}66` }} />
+        {project.cover_image_url ? (
+          <img
+            src={project.cover_image_url}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
+            <CoverIcon size={56} strokeWidth={1} style={{ color: `${HOME_COLORS.primaryFixedDim}66` }} />
+          </div>
+        )}
+        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); if (!generatingCover) onGenerateCover() }}
+            title={project.cover_image_url ? 'Regenerate cover with AI' : 'Generate cover with AI'}
+            disabled={generatingCover}
+            className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md"
+            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
+          >
+            {generatingCover ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
+          </button>
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete "${project.name}"? This cannot be undone. Personas and interviews inside it will become unassigned, not deleted.`)) onDelete() }}
+            title="Delete project"
+            className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md"
+            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
+          >
+            {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+          </button>
         </div>
-        <button
-          onClick={e => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete "${project.name}"? This cannot be undone. Personas and interviews inside it will become unassigned, not deleted.`)) onDelete() }}
-          title="Delete project"
-          className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md"
-          style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
-        >
-          {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-        </button>
         <div className="absolute bottom-5 left-5 right-5 flex justify-between items-end">
           <div className="px-3 py-1 rounded text-white text-[10px] font-bold uppercase tracking-widest backdrop-blur-md" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}>
             {tier}
