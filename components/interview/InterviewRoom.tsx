@@ -3,11 +3,21 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Send, FileText, Loader2, ImagePlus, X, Speech, ArrowRight } from 'lucide-react'
+import { Send, FileText, Loader2, ImagePlus, X, ArrowRight } from 'lucide-react'
 import { cn, formatRelativeTime, INTERVIEW_TYPE_LABELS, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Interview, Message } from '@/types'
+
+// Material Symbols Outlined — "record_voice_over" (not in lucide-react, so
+// rendered as an inline SVG using the exact glyph path from Google Fonts).
+function RecordVoiceOverIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 -960 960 960" fill="currentColor">
+      <path d="m798-322-62-62q44-41 69-97t25-119q0-63-25-118t-69-96l62-64q56 53 89 125t33 153q0 81-33 153t-89 125ZM670-450l-64-64q18-17 29-38.5t11-47.5q0-26-11-47.5T606-686l64-64q32 29 50 67.5t18 82.5q0 44-18 82.5T670-450Zm-310 10q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-120v-112q0-33 17-62t47-44q51-26 115-44t141-18q77 0 141 18t115 44q30 15 47 44t17 62v112H40Zm80-80h480v-32q0-11-5.5-20T580-266q-36-18-92.5-36T360-320q-71 0-127.5 18T140-266q-9 5-14.5 14t-5.5 20v32Zm296.5-343.5Q440-567 440-600t-23.5-56.5Q393-680 360-680t-56.5 23.5Q280-633 280-600t23.5 56.5Q327-520 360-520t56.5-23.5ZM360-600Zm0 400Z" />
+    </svg>
+  )
+}
 
 interface InterviewRoomProps {
   interview: Interview & { persona: any; project?: { id: string; name: string } | null }
@@ -211,7 +221,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
                   : { background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurfaceVariant }
                 }
               >
-                <Speech size={16} />
+                <RecordVoiceOverIcon size={16} />
               </button>
 
               <button
