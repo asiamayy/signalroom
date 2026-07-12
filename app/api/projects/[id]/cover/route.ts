@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { HOME_COLORS } from '@/lib/home-theme'
 
 export async function POST(
   request: NextRequest,
@@ -37,11 +36,7 @@ export async function POST(
   // models honor short imperative lists more reliably than long sentences.
   // Project name is still never quoted (a quoted string reads as "render
   // this text").
-  // Named colors ("dark green and cream") left too much room for the model
-  // to pick its own shade. Pinning to the app's actual hex values keeps
-  // generated covers visually consistent with the rest of the product
-  // instead of a plausible-but-off-brand green.
-  const prompt = `Abstract minimal line diagram in the style of a network graph or data visualization, sparse and geometric, inspired by the concept of ${project.name}. Thin connecting lines between a few small circular nodes, one or two soft overlapping geometric shapes, generous empty negative space, flat vector style, no shading, no depth, no photorealism. Use exactly this color palette: deep forest green ${HOME_COLORS.primary}, muted sage green ${HOME_COLORS.primaryContainer}, pale mint ${HOME_COLORS.primaryFixed}, warm cream ${HOME_COLORS.surface}, soft gray-green ${HOME_COLORS.outlineVariant}. No other colors. This is a technical diagram, not an illustration or artwork.
+  const prompt = `Abstract minimal line diagram in the style of a network graph or data visualization, sparse and geometric, inspired by the concept of ${project.name}. Thin connecting lines between a few small circular nodes, one or two soft overlapping geometric shapes, generous empty negative space, dark green and cream color palette, flat vector style, no shading, no depth, no photorealism. This is a technical diagram, not an illustration or artwork.
 
 Strictly forbidden: text, letters, numbers, words, typography, logos, watermarks, signage.
 Strictly forbidden: people, human figures, faces, hands, body parts, animals, characters.
