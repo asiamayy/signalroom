@@ -5,7 +5,9 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-05-27.dahlia',
 })
 
-export const PRICE_IDS: Record<Plan, string> = {
+// 'free' is intentionally excluded — it has no Stripe product, since it's
+// the no-payment default rather than something a user checks out for.
+export const PRICE_IDS: Record<Exclude<Plan, 'free'>, string> = {
   starter: process.env.STRIPE_STARTER_PRICE_ID!,
   pro: process.env.STRIPE_PRO_PRICE_ID!,
   agency: process.env.STRIPE_AGENCY_PRICE_ID!,
@@ -14,7 +16,7 @@ export const PRICE_IDS: Record<Plan, string> = {
 export async function createCheckoutSession(
   userId: string,
   userEmail: string,
-  plan: Plan
+  plan: Exclude<Plan, 'free'>
 ) {
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',

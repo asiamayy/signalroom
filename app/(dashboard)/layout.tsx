@@ -180,7 +180,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
               {recentProjects.map((project, i) => (
                 <Link
                   key={project.id}
-                  href="/projects"
+                  href={`/projects/${project.id}`}
                   className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm transition-colors hover:bg-[#eae7e7]"
                   style={{ color: i === 0 ? HOME_COLORS.onSurface : HOME_COLORS.onSurfaceVariant }}
                 >

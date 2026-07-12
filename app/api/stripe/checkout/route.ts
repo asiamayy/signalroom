@@ -13,6 +13,10 @@ export async function POST(request: NextRequest) {
 
   const { plan } = await request.json() as { plan: Plan }
 
+  if (plan === 'free') {
+    return NextResponse.json({ error: 'The free plan has no checkout — cancel your subscription from the billing portal to downgrade to it.' }, { status: 400 })
+  }
+
   try {
     const session = await createCheckoutSession(user.id, user.email!, plan)
     return NextResponse.json({ url: session.url })

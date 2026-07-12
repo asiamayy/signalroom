@@ -13,7 +13,7 @@ export default async function PersonasPage() {
     supabase.from('projects').select('id, name').eq('user_id', user!.id).eq('archived', false).order('name'),
   ])
 
-  const plan = (profile?.plan ?? 'starter') as Plan
+  const plan = (profile?.plan ?? 'free') as Plan
   const limit = PLAN_LIMITS[plan].personas
   // All personas (active + archived) count toward limit
   const totalCount = (personas ?? []).length

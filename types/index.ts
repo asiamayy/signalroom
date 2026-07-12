@@ -1,6 +1,6 @@
 // ─── User & Auth ────────────────────────────────────────────────────────────
 
-export type Plan = 'starter' | 'pro' | 'agency'
+export type Plan = 'free' | 'starter' | 'pro' | 'agency'
 
 export interface UserProfile {
   id: string
@@ -297,6 +297,17 @@ export interface PlanLimits {
 }
 
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
+  free: {
+    personas: 1,
+    interviews_per_month: 1,
+    reports: false,
+    templates: false,
+    multi_persona: false,
+    audience_panel: false,
+    audience_panel_max: 0,
+    team_seats: 1,
+    white_label: false,
+  },
   starter: {
     personas: 3,
     interviews_per_month: 10,
@@ -333,7 +344,8 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
 }
 
 export const PLAN_PRICES: Record<Plan, number> = {
-  starter: 49,
-  pro: 99,
-  agency: 249,
+  free: 0,
+  starter: 199,
+  pro: 499,
+  agency: 1999,
 }

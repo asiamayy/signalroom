@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Zap, Users, Building2, ExternalLink, LogOut } from 'lucide-react'
+import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import type { Plan } from '@/types'
@@ -21,10 +21,22 @@ const PLANS: {
   highlight?: boolean
 }[] = [
   {
+    id: 'free',
+    name: 'Free',
+    tagline: 'Try it before you commit',
+    price: 0,
+    icon: Sparkles,
+    features: [
+      '1 persona',
+      '1 interview per month',
+      'No credit card required',
+    ],
+  },
+  {
     id: 'starter',
     name: 'Pulse',
     tagline: 'For solo founders getting started',
-    price: 49,
+    price: 199,
     icon: Zap,
     features: [
       '3 personas',
@@ -38,7 +50,7 @@ const PLANS: {
     id: 'pro',
     name: 'Signal',
     tagline: 'For teams validating fast',
-    price: 99,
+    price: 499,
     icon: Users,
     highlight: true,
     features: [
@@ -54,7 +66,7 @@ const PLANS: {
     id: 'agency',
     name: 'Broadcast',
     tagline: 'For agencies and growing teams',
-    price: 249,
+    price: 1999,
     icon: Building2,
     features: [
       'Everything in Signal',
@@ -80,7 +92,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const [openingPortal, setOpeningPortal] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
-  const currentPlan = profile?.plan ?? 'starter'
+  const currentPlan = profile?.plan ?? 'free'
   const currentPlanData = PLANS.find(p => p.id === currentPlan)
   const personaLimit = PLAN_LIMITS[currentPlan as Plan].personas
   const interviewLimit = PLAN_LIMITS[currentPlan as Plan].interviews_per_month
@@ -120,7 +132,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   }
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8 max-w-5xl">
       <div className="mb-8">
         <h1 className="heading-editorial text-2xl text-neutral-900">Settings</h1>
         <p className="text-sm text-neutral-500 mt-0.5">Manage your account and billing</p>
@@ -204,9 +216,11 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
               )}
               <div>
                 <p className="text-sm font-semibold text-neutral-900">
-                  {currentPlanData?.name ?? 'Pulse'} plan
+                  {currentPlanData?.name ?? 'Free'} plan
                 </p>
-                <p className="text-xs text-neutral-500">${currentPlanData?.price ?? 49}/month</p>
+                <p className="text-xs text-neutral-500">
+                  {currentPlanData && currentPlanData.price === 0 ? 'No cost' : `$${currentPlanData?.price ?? 0}/month`}
+                </p>
               </div>
             </div>
             {profile?.stripe_subscription_id && (
@@ -226,7 +240,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
       {/* ── Plans ────────────────────────────────────────────────────────── */}
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">Plans</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PLANS.map(plan => {
             const isCurrent = plan.id === currentPlan
             const isUpgrade = PLANS.findIndex(p => p.id === plan.id) > PLANS.findIndex(p => p.id === currentPlan)
@@ -266,8 +280,14 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
 
                 {/* Price */}
                 <div className="mb-4">
-                  <span className="text-3xl font-serif font-semibold text-neutral-900">${plan.price}</span>
-                  <span className="text-xs text-neutral-400 ml-1">/month</span>
+                  {plan.price === 0 ? (
+                    <span className="text-3xl font-serif font-semibold text-neutral-900">Free</span>
+                  ) : (
+                    <>
+                      <span className="text-3xl font-serif font-semibold text-neutral-900">${plan.price}</span>
+                      <span className="text-xs text-neutral-400 ml-1">/month</span>
+                    </>
+                  )}
                 </div>
 
                 <hr className="border-neutral-100 mb-4" />
@@ -282,10 +302,16 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                   ))}
                 </ul>
 
-                {/* CTA */}
+                {/* CTA — the Free plan has no Stripe checkout, so downgrading to
+                    it means canceling the active subscription via the billing
+                    portal instead (the webhook then drops plan back to 'free') */}
                 <button
-                  onClick={() => !isCurrent && handleUpgrade(plan.id)}
-                  disabled={isCurrent || isLoading}
+                  onClick={() => {
+                    if (isCurrent) return
+                    if (plan.id === 'free') handleManageBilling()
+                    else handleUpgrade(plan.id)
+                  }}
+                  disabled={isCurrent || isLoading || (plan.id === 'free' && openingPortal)}
                   className={cn(
                     'w-full text-sm py-2 rounded-lg font-medium transition-colors',
                     isCurrent
@@ -295,7 +321,9 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                       : 'border border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:text-neutral-900'
                   )}
                 >
-                  {isLoading ? 'Redirecting...'
+                  {plan.id === 'free' && !isCurrent
+                    ? (openingPortal ? 'Opening...' : 'Cancel to downgrade')
+                    : isLoading ? 'Redirecting...'
                     : isCurrent ? 'Current plan'
                     : isUpgrade ? `Upgrade to ${plan.name}`
                     : `Switch to ${plan.name}`}

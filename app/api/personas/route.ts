@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     .eq('id', user.id)
     .single()
 
-  const plan = (profile?.plan ?? 'starter') as Plan
+  const plan = (profile?.plan ?? 'free') as Plan
   const limit = PLAN_LIMITS[plan].personas
 
   if (limit !== Infinity) {

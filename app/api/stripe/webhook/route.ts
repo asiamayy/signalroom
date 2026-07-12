@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     case 'customer.subscription.updated': {
       const subscription = event.data.object as Stripe.Subscription
       const priceId = subscription.items.data[0]?.price.id
-      const plan = PRICE_TO_PLAN[priceId] ?? 'starter'
+      const plan = PRICE_TO_PLAN[priceId] ?? 'free'
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       if (profile) {
         await supabase
           .from('profiles')
-          .update({ plan: 'starter', stripe_subscription_id: null })
+          .update({ plan: 'free', stripe_subscription_id: null })
           .eq('id', profile.id)
       }
       break

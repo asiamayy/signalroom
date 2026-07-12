@@ -501,7 +501,7 @@ const STARTER_QUESTIONS: Record<string, string[]> = {
   pricing_discovery: [
     "If a tool like this existed, what would you expect to pay for it per month?",
     "At what price would this feel like an obvious yes? At what price would you walk away?",
-    "What would you need to see to justify $99/month for something like this?",
+    "What would you need to see to justify $499/month for something like this?",
   ],
   message_testing: [
     "I'll share a headline — tell me what you think it means and if it resonates.",

@@ -180,7 +180,7 @@ function NewInterviewForm() {
               onChange={e => setTitle(e.target.value)}
               placeholder={
                 type === 'concept_testing' ? 'e.g. Testing SignalRoom concept with early-stage founders'
-                : type === 'pricing_discovery' ? 'e.g. $99/month pricing test — startup founders'
+                : type === 'pricing_discovery' ? 'e.g. $499/month pricing test — startup founders'
                 : type === 'message_testing' ? 'e.g. Landing page headline A/B'
                 : 'Interview title'
               }

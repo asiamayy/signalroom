@@ -215,7 +215,7 @@ export default function AudiencePanelPage() {
   const [result, setResult] = useState<PanelResult | null>(null)
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
-  const [plan, setPlan] = useState<Plan>('starter')
+  const [plan, setPlan] = useState<Plan>('free')
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
 
   const maxPersonas = PLAN_LIMITS[plan].audience_panel_max
@@ -228,7 +228,7 @@ export default function AudiencePanelPage() {
       supabase.from('profiles').select('plan').single(),
     ]).then(([{ data: p }, { data: profile }]) => {
       setPersonas(p ?? [])
-      setPlan((profile?.plan ?? 'starter') as Plan)
+      setPlan((profile?.plan ?? 'free') as Plan)
       setLoadingPersonas(false)
     })
   }, [])
@@ -399,7 +399,7 @@ export default function AudiencePanelPage() {
               value={question}
               onChange={e => setQuestion(e.target.value)}
               rows={4}
-              placeholder="e.g. Would you pay $49/month for an AI tool that runs customer interviews in minutes?"
+              placeholder="e.g. Would you pay $199/month for an AI tool that runs customer interviews in minutes?"
               className="w-full rounded-xl p-5 sm:p-6 text-base outline-none resize-none transition-colors mb-4"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: HOME_COLORS.onPrimary }}
             />
@@ -422,7 +422,7 @@ export default function AudiencePanelPage() {
               <BarChart3 size={28} className="mx-auto mb-3" style={{ color: HOME_COLORS.outlineVariant }} />
               <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Results appear here</h3>
               <p className="text-xs max-w-xs mx-auto leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                Select 5–{maxPersonas} personas, type your question, and run the panel to see responses, themes, and an AI recommendation.
+                {maxPersonas > 5 ? `Select 5–${maxPersonas} personas` : 'Select exactly 5 personas'}, type your question, and run the panel to see responses, themes, and an AI recommendation.
               </p>
             </div>
           )}
