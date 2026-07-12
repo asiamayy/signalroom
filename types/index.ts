@@ -347,5 +347,5 @@ export const PLAN_PRICES: Record<Plan, number> = {
   free: 0,
   starter: 199,
   pro: 499,
-  agency: 1999,
+  agency: 999,
 }

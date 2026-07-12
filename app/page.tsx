@@ -594,7 +594,7 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 3 active research projects</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 simulated customer personas</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 AI customer personas</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Core simulation dialogue templates</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Automated intelligence summaries</li>
               </ul>
@@ -612,10 +612,12 @@ export default function LandingPage() {
                 <span className="text-[11px] text-[#1A3024] font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited customer personas</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited research projects</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited AI customer personas</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited simulated interviews</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Advanced analysis briefs</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona overlap testing</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Executive-ready research reports</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona comparative analysis</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Advanced insight synthesis</li>
               </ul>
               <Link href="/signup" className="w-full text-center bg-[#1A3024] text-white py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#5A7973] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
             </div>
@@ -626,14 +628,16 @@ export default function LandingPage() {
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Broadcast</h3>
               <p className="text-xs text-neutral-500 mb-4">For agencies and growing teams requiring comprehensive organization-wide research scaling.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$1,999</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$999</span>
                 <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in the core Signal tier</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 included collaborative team seats</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label client insight reports</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Custom contextual ingestion pipelines</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in Signal</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 collaborative team seats</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label executive reports</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Shared research workspace</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Organization-wide project management</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority feature access</li>
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>

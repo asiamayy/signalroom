@@ -67,7 +67,7 @@ const PLANS: {
     id: 'agency',
     name: 'Broadcast',
     tagline: 'For agencies and growing teams',
-    price: 1999,
+    price: 999,
     icon: Building2,
     features: [
       'Everything in Signal',
@@ -114,8 +114,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
       })
       const json = await res.json()
       if (json.url) { window.location.href = json.url; return }
-      setBillingError(json.error ?? 'Failed to start checkout — please try again.')
-    } catch {
+      console.error('Stripe checkout did not return a url:', res.status, json)
+      setBillingError(json.error ?? `Failed to start checkout (status ${res.status}) — please try again.`)
+    } catch (e) {
+      console.error('Stripe checkout request failed:', e)
       setBillingError('Failed to start checkout — please try again.')
     } finally {
       setUpgrading(null)
@@ -129,8 +131,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
       const res = await fetch('/api/stripe/portal', { method: 'POST' })
       const json = await res.json()
       if (json.url) { window.location.href = json.url; return }
-      setBillingError(json.error ?? 'Failed to open billing portal — please try again.')
-    } catch {
+      console.error('Stripe portal did not return a url:', res.status, json)
+      setBillingError(json.error ?? `Failed to open billing portal (status ${res.status}) — please try again.`)
+    } catch (e) {
+      console.error('Stripe portal request failed:', e)
       setBillingError('Failed to open billing portal — please try again.')
     } finally {
       setOpeningPortal(false)
