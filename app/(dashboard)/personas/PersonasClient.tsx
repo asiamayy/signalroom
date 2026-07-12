@@ -360,7 +360,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
           {/* ── Grid view ── */}
           {filtered.length > 0 && viewMode === 'grid' && filterTab !== 'Archived' && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-4">
-              {filtered.map((persona: Persona, index: number) => {
+              {filtered.map((persona: Persona) => {
                 const isSelected = selectedId === persona.id
                 return (
                   <motion.div
@@ -378,13 +378,6 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                       borderRadius: 16,
                     }}
                   >
-                    {/* Large faded index number — fades in on hover */}
-                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity pointer-events-none">
-                      <span className="heading-editorial select-none italic" style={{ fontSize: 56, color: 'rgba(28,61,46,0.15)' }}>
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                    </div>
-
                     {/* "Selected" pill badge */}
                     {isSelected && (
                       <div className="absolute top-5 right-5 z-10 flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'white', border: '1px solid #E3E3DA', color: '#202124', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
@@ -396,8 +389,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                     )}
 
                     <div className="p-5">
-                      {/* Photo left, name/title/location right — pr-20 keeps text clear of the large hover-reveal index number in the top-right corner */}
-                      <div className="flex items-start gap-3.5 pr-20">
+                      {/* Photo left, name/title/location right — pr-16 keeps text clear of the "Selected" badge */}
+                      <div className="flex items-start gap-3.5 pr-16">
                         <PersonaAvatar
                           avatarUrl={persona.avatar_url}
                           avatarInitials={persona.avatar_initials}

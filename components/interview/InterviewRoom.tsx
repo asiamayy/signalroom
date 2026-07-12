@@ -3,9 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Send, FileText, Loader2, ImagePlus, X, User, ArrowRight } from 'lucide-react'
+import { Send, FileText, Loader2, ImagePlus, X, Speech, ArrowRight } from 'lucide-react'
 import { cn, formatRelativeTime, INTERVIEW_TYPE_LABELS, CARD_SHADOW } from '@/lib/utils'
-import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Interview, Message } from '@/types'
 
@@ -205,13 +205,13 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               <button
                 onClick={() => setPanelOpen(o => !o)}
                 title="View persona"
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 hover:scale-110 hover:shadow-md"
                 style={panelOpen
                   ? { background: HOME_COLORS.secondaryContainer, border: `1px solid ${HOME_COLORS.primary}`, color: HOME_COLORS.primary }
                   : { background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurfaceVariant }
                 }
               >
-                <User size={15} />
+                <Speech size={16} />
               </button>
 
               <button
@@ -385,16 +385,16 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         {panelOpen && (
           <>
             <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
-              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>Persona Preview</span>
+              <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant, fontFamily: HOME_FONT_BODY }}>Persona Preview</span>
               <button onClick={() => setPanelOpen(false)} className="w-6 h-6 rounded-lg flex items-center justify-center transition-colors" style={{ color: HOME_COLORS.onSurfaceVariant, background: HOME_COLORS.surfaceContainerHigh }}>
                 <X size={12} />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {/* Role card — secondaryContainer (not the dark primary green used in chat bubbles) to avoid a color clash */}
-              <div className="rounded-xl p-4" style={{ background: HOME_COLORS.secondaryContainer }}>
-                <h4 className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: HOME_COLORS.onSecondaryContainer, opacity: 0.7 }}>Role</h4>
-                <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSecondaryContainer }}>{t?.job_title || 'No role specified'}</p>
+              {/* Role card — same white treatment as the cards below it */}
+              <div className="rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
+                <h4 className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Role</h4>
+                <p className="text-sm font-medium" style={{ color: HOME_COLORS.onSurface }}>{t?.job_title || 'No role specified'}</p>
               </div>
 
               {/* Demographics */}
