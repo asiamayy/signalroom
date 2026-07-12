@@ -513,7 +513,7 @@ export default function LandingPage() {
               <div className="border border-[#d1d5d3] p-5 sm:p-10 bg-white relative rounded-[4px]">
                 <div className="px-1 pb-4 mb-6 border-b border-[#d1d5d3]">
                   <h3 className="text-lg text-neutral-900 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See your savings</h3>
-                  <p className="text-xs text-neutral-500 mt-1">Traditional tools charge $8,000+ for 6 months. Compare that to SignalRoom.</p>
+                  <p className="text-xs text-neutral-500 mt-1">Traditional research costs thousands. See how SignalRoom compares.</p>
                 </div>
                 <div className="space-y-10">
                   <div>
@@ -643,9 +643,9 @@ export default function LandingPage() {
           {/* Enterprise Anchor Notice */}
           <div className="mt-8 text-center">
             <p className="text-xs text-neutral-500">
-              Need custom volume nodes or advanced governance? For bespoke corporate requirements,{' '}
+              For teams scaling customer intelligence across the organization,{' '}
               <Link href="/contact" className="text-[#1A3024] font-medium underline hover:text-[#5A7973] transition-colors">
-                contact our strategy architecture team for enterprise arrangements
+                contact us for tailored enterprise solutions
               </Link>.
             </p>
           </div>
