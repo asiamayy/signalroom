@@ -289,9 +289,9 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 {interview.persona?.name}
               </span>
-              <div className="rounded-2xl px-6 py-5 max-w-[92%] sm:max-w-[85%]" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+              <div className="rounded-xl px-6 py-5 max-w-[92%] sm:max-w-[85%] shadow-sm hover:shadow-md transition-shadow" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
                 {streamingText
-                  ? <p className="text-[15px] leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onSurface }}>{streamingText}<span className="inline-block w-0.5 h-4 ml-0.5 animate-pulse align-middle" style={{ background: HOME_COLORS.onSurface }} /></p>
+                  ? <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-[15px]">{streamingText}<span className="inline-block w-0.5 h-4 ml-0.5 animate-pulse align-middle bg-neutral-800" /></p>
                   : <div className="flex gap-1.5 py-1">
                       <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '0ms' }} />
                       <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '150ms' }} />
@@ -465,8 +465,10 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 // ─── Message bubble ───────────────────────────────────────────────────────────
 
 // Full-width editorial transcript blocks, not narrow chat bubbles — matches the
-// reference mockup's proportions. You (the researcher) sit on the right,
-// the persona's answers — the actual research output — sit on the left.
+// reference mockup's proportions and its light-card "inquiry" treatment:
+// rounded-xl, shadow-sm, hover:shadow-md, dark text on a light surface for
+// clean contrast. You (the researcher) sit on the right, the persona's
+// answers — the actual research output — sit on the left.
 function MessageBubble({ message, persona }: { message: Message; persona: any }) {
   const isUser = message.role === 'user'
 
@@ -477,11 +479,14 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
           You · {formatRelativeTime(message.timestamp)}
         </span>
         {message.image_url && (
-          <img src={message.image_url} alt="Shared image" className="max-h-56 w-auto rounded-2xl object-cover" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
+          <img src={message.image_url} alt="Shared image" className="max-h-56 w-auto rounded-xl object-cover" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
         )}
         {message.content && (
-          <div className="rounded-2xl px-6 py-5 max-w-[92%] sm:max-w-[85%]" style={{ background: HOME_COLORS.primary }}>
-            <p className="text-[15px] leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onPrimary }}>{message.content}</p>
+          <div
+            className="rounded-xl px-6 py-5 max-w-[92%] sm:max-w-[85%] shadow-sm hover:shadow-md transition-shadow"
+            style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}
+          >
+            <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-[15px]">{message.content}</p>
           </div>
         )}
       </div>
@@ -493,8 +498,11 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
       <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
         {persona?.name} · {formatRelativeTime(message.timestamp)}
       </span>
-      <div className="rounded-2xl px-6 py-5 max-w-[92%] sm:max-w-[85%]" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
-        <p className="text-[15px] leading-relaxed whitespace-pre-wrap" style={{ color: HOME_COLORS.onSurface }}>{message.content}</p>
+      <div
+        className="rounded-xl px-6 py-5 max-w-[92%] sm:max-w-[85%] shadow-sm hover:shadow-md transition-shadow"
+        style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}
+      >
+        <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-[15px]">{message.content}</p>
       </div>
     </div>
   )
