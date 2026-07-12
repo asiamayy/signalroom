@@ -8,6 +8,7 @@ interface PersonaAvatarProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
   shape?: 'circle' | 'square'
   className?: string
+  style?: React.CSSProperties
 }
 
 const SIZES = {
@@ -28,6 +29,7 @@ export function PersonaAvatar({
   size = 'md',
   shape = 'circle',
   className,
+  style,
 }: PersonaAvatarProps) {
   const color = typeof avatarColor === 'string'
     ? (() => { try { return JSON.parse(avatarColor) } catch { return { bg: '#E1F5EE', text: '#0F6E56' } } })()
@@ -42,6 +44,7 @@ export function PersonaAvatar({
         src={avatarUrl}
         alt={name ?? 'Persona avatar'}
         className={cn(shapeClass, 'object-cover flex-shrink-0', sizeClass, className)}
+        style={style}
       />
     )
   }
@@ -49,7 +52,7 @@ export function PersonaAvatar({
   return (
     <div
       className={cn(shapeClass, 'flex items-center justify-center font-medium flex-shrink-0', sizeClass, className)}
-      style={{ background: color.bg, color: color.text }}
+      style={{ background: color.bg, color: color.text, ...style }}
     >
       {avatarInitials ?? '?'}
     </div>

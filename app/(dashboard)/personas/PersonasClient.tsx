@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Check, LayoutGrid, List, ChevronDown, Eye, SlidersHorizontal, Search, MapPin } from 'lucide-react'
+import { Plus, Check, LayoutGrid, List, ChevronDown, Eye, SlidersHorizontal, Search, MapPin, ArrowRight } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { OnboardingModal } from '@/components/ui/OnboardingModal'
 import { Modal } from '@/components/ui/Modal'
+import { Dropdown } from '@/components/ui/Dropdown'
+import { HOME_COLORS } from '@/lib/home-theme'
 import type { Persona, Plan, FunnelStage } from '@/types'
 import { FUNNEL_STAGE_LABELS } from '@/types'
 import { useSearch } from '@/lib/search-context'
@@ -189,15 +191,20 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
             <p className="text-sm mt-1 leading-relaxed" style={{ color: '#5F6368' }}>AI-generated personas built from real research. Explore beliefs, behaviors, needs, and motivations.</p>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center flex-wrap gap-2 sm:flex-shrink-0">
             {atLimit ? (
               <Link href="/settings" className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg whitespace-nowrap" style={{ background: '#E8F3EF', color: '#1C3D2E', border: '1px solid #BFD6CB' }}>
                 Upgrade plan
               </Link>
             ) : (
-              <Link href="/personas/new" className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg text-white whitespace-nowrap transition-opacity hover:opacity-90" style={{ background: '#243329' }}>
+              <Link
+                href="/personas/new"
+                className="group relative flex items-center gap-1.5 text-xs font-semibold pl-3.5 pr-3.5 py-2 rounded-full text-white whitespace-nowrap transition-all duration-300 ease-out hover:pr-7 hover:shadow-lg active:scale-95"
+                style={{ background: HOME_COLORS.primary }}
+              >
                 <Plus size={13} />
                 Create Persona
+                <ArrowRight size={12} className="absolute right-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" />
               </Link>
             )}
 
@@ -205,34 +212,34 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
             <div className="relative" ref={filtersMenuRef}>
               <button
                 onClick={() => setShowFiltersMenu(o => !o)}
-                className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap bg-white hover:bg-neutral-50"
-                style={{ border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+                className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap hover:bg-black/[0.03]"
+                style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface, cursor: 'pointer', fontFamily: 'inherit' }}
               >
-                <SlidersHorizontal size={13} style={{ color: '#5F6368' }} />
+                <SlidersHorizontal size={13} style={{ color: HOME_COLORS.onSurfaceVariant }} />
                 Filters
               </button>
               {showFiltersMenu && (
-                <div className="absolute right-0 top-full mt-2 rounded-xl z-50 p-4" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', width: '260px' }}>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: '#202124' }}>Search</label>
-                  <div className="flex items-center gap-2 rounded-lg px-3 py-2 mb-4" style={{ background: '#F9F9F9', border: '1px solid #E0E2E4' }}>
-                    <Search size={13} style={{ color: '#9CA3AF' }} />
+                <div className="absolute right-0 top-full mt-2 rounded-xl z-50 p-4" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: `1px solid ${HOME_COLORS.outlineVariant}66`, width: '260px' }}>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: HOME_COLORS.onSurface }}>Search</label>
+                  <div className="flex items-center gap-2 rounded-lg px-3 py-2 mb-4" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
+                    <Search size={13} style={{ color: HOME_COLORS.onSurfaceVariant }} />
                     <input
                       type="text"
                       placeholder="Search by name or role"
                       value={search}
                       onChange={e => setSearch(e.target.value)}
                       className="text-sm bg-transparent outline-none w-full placeholder:text-neutral-400"
-                      style={{ color: '#202124' }}
+                      style={{ color: HOME_COLORS.onSurface }}
                     />
                   </div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: '#202124' }}>Status</label>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: HOME_COLORS.onSurface }}>Status</label>
                   <div className="space-y-1">
                     {FILTER_TABS.map(tab => (
                       <button
                         key={tab}
                         onClick={() => { setFilterTab(tab); setSelectedId(null) }}
-                        className={`w-full flex items-center justify-between text-left text-xs px-3 py-2 rounded-lg transition-colors ${filterTab === tab ? '' : 'hover:bg-neutral-50 hover:text-neutral-800'}`}
-                        style={{ background: filterTab === tab ? '#CACFC6' : undefined, color: filterTab === tab ? '#1C3D2E' : '#5F6368', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: filterTab === tab ? 600 : 500 }}
+                        className={`w-full flex items-center justify-between text-left text-xs px-3 py-2 rounded-lg transition-colors ${filterTab === tab ? '' : 'hover:bg-black/[0.04]'}`}
+                        style={{ background: filterTab === tab ? HOME_COLORS.secondaryContainer : undefined, color: filterTab === tab ? HOME_COLORS.onSecondaryContainer : HOME_COLORS.onSurfaceVariant, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: filterTab === tab ? 600 : 500 }}
                       >
                         {tab === 'All Personas' ? 'All' : tab} {tab === 'Archived' ? `(${archived.length})` : `(${active.length})`}
                         {filterTab === tab && <Check size={13} strokeWidth={3} />}
@@ -241,17 +248,17 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                   </div>
                   {projects.length > 0 && (
                     <>
-                      <label className="block text-xs font-semibold mb-1.5 mt-4" style={{ color: '#202124' }}>Project</label>
-                      <select
+                      <label className="block text-xs font-semibold mb-1.5 mt-4" style={{ color: HOME_COLORS.onSurface }}>Project</label>
+                      <Dropdown
                         value={projectFilter}
-                        onChange={e => setProjectFilter(e.target.value)}
-                        className="w-full text-xs rounded-lg px-3 py-2"
-                        style={{ background: '#F9F9F9', border: '1px solid #E0E2E4', color: '#202124' }}
-                      >
-                        <option value="all">All projects</option>
-                        <option value="unassigned">Unassigned</option>
-                        {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      </select>
+                        onChange={setProjectFilter}
+                        className="w-full"
+                        options={[
+                          { value: 'all', label: 'All projects' },
+                          { value: 'unassigned', label: 'Unassigned' },
+                          ...projects.map(p => ({ value: p.id, label: p.name })),
+                        ]}
+                      />
                     </>
                   )}
                 </div>
@@ -262,23 +269,23 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
             <div className="relative" ref={sortMenuRef}>
               <button
                 onClick={() => setShowSortMenu(o => !o)}
-                className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap bg-white hover:bg-neutral-50"
-                style={{ border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+                className="flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap hover:bg-black/[0.03]"
+                style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface, cursor: 'pointer', fontFamily: 'inherit' }}
               >
-                <span style={{ color: '#5F6368' }}>Sort by</span> {sortBy}
-                <ChevronDown size={12} style={{ color: '#9CA3AF' }} />
+                <span style={{ color: HOME_COLORS.onSurfaceVariant }}>Sort by</span> {sortBy}
+                <ChevronDown size={12} style={{ color: HOME_COLORS.onSurfaceVariant }} />
               </button>
               {showSortMenu && (
-                <div className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-50" style={{ background: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.08)', minWidth: '190px' }}>
+                <div className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-50" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: '0 4px 20px rgba(0,0,0,0.12)', border: `1px solid ${HOME_COLORS.outlineVariant}66`, minWidth: '190px' }}>
                   {SORT_OPTIONS.map(opt => (
                     <button
                       key={opt}
                       onClick={() => { setSortBy(opt); setShowSortMenu(false) }}
-                      className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center justify-between ${sortBy === opt ? '' : 'bg-white hover:bg-neutral-50 hover:text-neutral-800'}`}
-                      style={{ background: sortBy === opt ? '#CACFC6' : undefined, color: sortBy === opt ? '#1C3D2E' : '#374151', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                      className={`w-full text-left px-4 py-2.5 text-xs font-medium transition-colors flex items-center justify-between ${sortBy === opt ? '' : 'hover:bg-black/[0.04]'}`}
+                      style={{ background: sortBy === opt ? HOME_COLORS.secondaryContainer : undefined, color: sortBy === opt ? HOME_COLORS.onSecondaryContainer : HOME_COLORS.onSurfaceVariant, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
                       {opt}
-                      {sortBy === opt && <Check size={13} style={{ color: '#1C3D2E' }} />}
+                      {sortBy === opt && <Check size={13} style={{ color: HOME_COLORS.onSecondaryContainer }} />}
                     </button>
                   ))}
                 </div>
@@ -358,7 +365,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                 return (
                   <motion.div
                     key={persona.id}
-                    layoutId={`persona-card-${persona.id}`}
+                    layoutId={`persona-card-grid-${persona.id}`}
                     className="relative group rounded-2xl overflow-hidden cursor-pointer"
                     onClick={() => setSelectedId(persona.id)}
                     whileHover={!isSelected ? { y: -4, boxShadow: '0 10px 24px -8px rgba(0,0,0,0.14)' } : undefined}
@@ -389,8 +396,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                     )}
 
                     <div className="p-5">
-                      {/* Photo left, name/title/location right */}
-                      <div className="flex items-start gap-3.5 pr-6">
+                      {/* Photo left, name/title/location right — pr-20 keeps text clear of the large hover-reveal index number in the top-right corner */}
+                      <div className="flex items-start gap-3.5 pr-20">
                         <PersonaAvatar
                           avatarUrl={persona.avatar_url}
                           avatarInitials={persona.avatar_initials}
@@ -498,7 +505,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                 return (
                   <motion.div
                     key={persona.id}
-                    layoutId={`persona-card-${persona.id}`}
+                    layoutId={`persona-card-list-${persona.id}`}
                     className="flex items-center gap-2 sm:gap-4 px-3 py-3 sm:px-5 sm:py-3.5 rounded-2xl cursor-pointer group"
                     onClick={() => setSelectedId(persona.id)}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -557,7 +564,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                     return (
                       <motion.div
                         key={persona.id}
-                        layoutId={`persona-card-${persona.id}`}
+                        layoutId={`persona-card-archived-${persona.id}`}
                         className="relative group rounded-2xl overflow-hidden cursor-pointer"
                         onClick={(e) => {
                           const target = e.target as HTMLElement
@@ -663,7 +670,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
 
       <AnimatePresence>
         {modalPersona && (
-          <Modal key="persona-modal" onClose={closePersonaModal} maxWidth={560} layoutId={`persona-card-${modalPersona.id}`}>
+          <Modal key="persona-modal" onClose={closePersonaModal} maxWidth={560} layoutId={`persona-card-${filterTab === 'Archived' ? 'archived' : viewMode}-${modalPersona.id}`}>
             <PersonaModalBody persona={modalPersona} />
           </Modal>
         )}

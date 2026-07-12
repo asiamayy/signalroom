@@ -61,7 +61,7 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
         <div className="lg:col-span-7">
           <div className="flex items-center gap-3 mb-6">
             <Sparkles size={16} style={{ color: HOME_COLORS.primaryFixedDim }} />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Executive Intelligence Briefing</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Intelligence Briefing</span>
             {refreshing && <Loader2 size={12} className="animate-spin" style={{ color: HOME_COLORS.primaryFixedDim }} />}
           </div>
 
@@ -107,7 +107,7 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
         <div className="lg:col-span-5">
           <div className="rounded-2xl p-6 backdrop-blur-md" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="flex justify-between items-start mb-6">
-              <h3 className="text-sm font-semibold">Research Pulse</h3>
+              <h3 className="text-sm font-semibold">Confidence Snapshot</h3>
               <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimaryContainer }}>Live data</span>
             </div>
             <div className="space-y-4">

@@ -90,7 +90,7 @@ function NewInterviewForm() {
           <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
           <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Stream</span>
         </div>
-        <h1 className="mb-3 leading-tight" style={{ ...DISPLAY_LG_STYLE, fontSize: '32px', lineHeight: '40px', color: HOME_COLORS.onSurface }}>New Dialogue</h1>
+        <h1 className="mb-3 leading-tight" style={{ ...DISPLAY_LG_STYLE, fontSize: '32px', lineHeight: '40px', color: HOME_COLORS.onSurface }}>New Interview</h1>
         <p className="text-sm mb-10" style={{ color: HOME_COLORS.onSurfaceVariant }}>Set up your session before entering the room.</p>
 
         <div className="space-y-8">

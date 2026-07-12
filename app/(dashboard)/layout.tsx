@@ -275,7 +275,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
             </Link>
             <Link
               href="/settings"
-              className="hidden sm:flex w-9 h-9 rounded-full items-center justify-center transition-colors hover:bg-neutral-50"
+              className="flex w-9 h-9 rounded-full items-center justify-center transition-colors hover:bg-neutral-50 flex-shrink-0"
               style={{ border: '1px solid #E0E2E4', color: '#5F6368' }}
               title="Settings"
             >

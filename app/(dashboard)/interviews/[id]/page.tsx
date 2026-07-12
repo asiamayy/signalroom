@@ -8,7 +8,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
 
   const { data: interview, error } = await supabase
     .from('interviews')
-    .select('*, persona:personas(*)')
+    .select('*, persona:personas(*), project:projects(id, name)')
     .eq('id', id)
     .single()
 

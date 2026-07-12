@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, Plus, ArrowRight, Calendar, ArrowUp, ArrowDown, Briefcase,
   MoreVertical, ArchiveRestore, Trash2, Loader2, Database,
+  Code2, ShoppingBag, HeartPulse, Landmark, UtensilsCrossed, GraduationCap,
+  Plane, Home as HomeIcon, Shirt, Car, Film, Zap, Truck, Sparkles,
+  PawPrint, Leaf, ShieldCheck, Music, Gamepad2, type LucideIcon,
 } from 'lucide-react'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW } from '@/lib/utils'
@@ -31,6 +34,39 @@ function confidenceTier(avgConfidence: number, signalCount: number) {
 
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Keyword-matched cover icon — no image generation, just a deterministic
+// mapping from the project's real name to a relevant Lucide icon so cards
+// aren't all the same generic briefcase.
+const PROJECT_ICON_RULES: [RegExp, LucideIcon][] = [
+  [/health|medical|clinic|wellness|therap|pharma/i, HeartPulse],
+  [/fitness|gym|workout|athlet/i, HeartPulse],
+  [/financ|banking|invest|fintech|payment|money|budget/i, Landmark],
+  [/food|restaurant|recipe|kitchen|culinary|grocery|meal/i, UtensilsCrossed],
+  [/educat|learn|school|course|university|tutor|student/i, GraduationCap],
+  [/travel|flight|hotel|trip|vacation|tour/i, Plane],
+  [/real estate|housing|property|apartment|mortgage/i, HomeIcon],
+  [/fashion|apparel|clothing|style|wear/i, Shirt],
+  [/mobility|transport|vehicle|ride|auto|car\b/i, Car],
+  [/media|entertainment|film|video|streaming|studio/i, Film],
+  [/energy|solar|power|electric(?!s)/i, Zap],
+  [/logistic|shipping|delivery|supply chain|freight/i, Truck],
+  [/beauty|cosmetic|skincare|makeup/i, Sparkles],
+  [/pet|animal|dog|cat\b/i, PawPrint],
+  [/environ|sustain|climate|eco[- ]?friendly|green/i, Leaf],
+  [/security|privacy|cyber|fraud/i, ShieldCheck],
+  [/music|audio|sound|podcast/i, Music],
+  [/game|gaming|esport/i, Gamepad2],
+  [/retail|shop|store|ecommerce|e-commerce|marketplace/i, ShoppingBag],
+  [/software|app|saas|platform|api|tech\b|developer/i, Code2],
+]
+
+function getProjectIcon(name: string): LucideIcon {
+  for (const [pattern, icon] of PROJECT_ICON_RULES) {
+    if (pattern.test(name)) return icon
+  }
+  return Briefcase
 }
 
 export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRollup[] }) {
@@ -303,6 +339,7 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
 function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; onDelete: () => void; deleting: boolean }) {
   const { project, interviewCount, signalCount, avgConfidence, topSignalSummary } = rollup
   const tier = confidenceTier(avgConfidence, signalCount)
+  const CoverIcon = getProjectIcon(project.name)
 
   return (
     <motion.div
@@ -315,7 +352,7 @@ function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; on
     >
       <Link href={`/projects/${project.id}`} className="relative h-40 sm:h-48 overflow-hidden block" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
         <div className="absolute inset-0 flex items-center justify-center transition-transform duration-700 group-hover:scale-105">
-          <Briefcase size={56} strokeWidth={1} style={{ color: `${HOME_COLORS.primaryFixedDim}66` }} />
+          <CoverIcon size={56} strokeWidth={1} style={{ color: `${HOME_COLORS.primaryFixedDim}66` }} />
         </div>
         <button
           onClick={e => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete "${project.name}"? This cannot be undone. Personas and interviews inside it will become unassigned, not deleted.`)) onDelete() }}

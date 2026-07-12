@@ -55,7 +55,7 @@ export default async function HomePage() {
     supabase.from('personas').select('*').eq('user_id', user.id),
     supabase.from('interviews').select('*').eq('user_id', user.id),
     supabase.from('signals').select('*').eq('user_id', user.id).order('confidence_score', { ascending: false }),
-    supabase.from('reports').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('reports').select('*, interview:interviews(title)').eq('user_id', user.id).order('created_at', { ascending: false }),
   ])
 
   const allProjects = projects ?? []
@@ -220,11 +220,11 @@ export default async function HomePage() {
                   {timelineEvents.map((e, i) => {
                     const Icon = ACTIVITY_ICONS[e.type]
                     return (
-                      <div key={i} className="flex items-start gap-4">
+                      <div key={i} className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center" style={{ background: i % 2 === 0 ? HOME_COLORS.primaryFixedDim : HOME_COLORS.secondaryContainer }}>
                           <Icon size={16} style={{ color: i % 2 === 0 ? HOME_COLORS.onPrimaryFixedVariant : HOME_COLORS.onSecondaryContainer }} />
                         </div>
-                        <div className="min-w-0 flex-1 flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1 flex items-center justify-between gap-4">
                           <div className="min-w-0">
                             <p className="text-sm font-medium truncate" style={{ color: HOME_COLORS.onSurface }}>{e.title}</p>
                             {e.detail && <p className="text-xs truncate mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{e.detail}</p>}
