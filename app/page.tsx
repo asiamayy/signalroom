@@ -98,17 +98,15 @@ export default function LandingPage() {
 
   const wordsDataset = ["opinions", "objections", "blindspots", "expectations"];
 
-  const TRADITIONAL_COST_PER_INTERVIEW = 1250; 
-  const TRADITIONAL_HOURS_PER_INTERVIEW = 6; 
-  const TRADITIONAL_WEEKS_TURNAROUND = 4;
+  const TRADITIONAL_COST_PER_INTERVIEW = 750;
+  const TRADITIONAL_HOURS_PER_INTERVIEW = 2;
+  const TRADITIONAL_WEEKS_TURNAROUND = 3;
 
   const traditionalCost = roiValue * TRADITIONAL_COST_PER_INTERVIEW;
   const traditionalHours = roiValue * TRADITIONAL_HOURS_PER_INTERVIEW;
-  
-  const SIGNAL_PLAN_COST = 499;
-  const savings = Math.max(0, traditionalCost - SIGNAL_PLAN_COST);
+  const savings = traditionalCost - 99;
   const annualSavings = savings * 12;
-  const calculatedReduction = Math.round((1 - (12 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
+  const calculatedReduction = Math.round((1 - (10 / (TRADITIONAL_WEEKS_TURNAROUND * 5 * 8))) * 100);
 
   useEffect(() => {
     setDisplayedWord(wordsDataset[currentWordIndex]);
@@ -248,7 +246,7 @@ export default function LandingPage() {
             <div className="hidden sm:block h-px w-20 bg-[#1A3024]/10" />
           </div>
 
-          {/* LEFT SIDE */}
+          {/* LEFT SIDE: Main Title + Transparent Node Animation Whitespace */}
           <div className="md:col-span-12 lg:col-span-7 flex flex-col justify-between min-h-[350px] overflow-visible">
             <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               <span className="block lg:whitespace-nowrap">
@@ -271,16 +269,20 @@ export default function LandingPage() {
               <span className="block mt-1 lg:mt-2"><span ref={nAnchorRef}>N</span>ow you can ask.</span>
             </h1>
 
+            {/* Shifted up cleanly to fill the middle whitespace segment nicely */}
             <div className="mt-4 mb-4 w-full max-w-[900px] bg-transparent overflow-visible">
               <IntelligenceSignal anchorRef={nAnchorRef} boundaryRef={rightColRef} />
             </div>
           </div>
 
-          {/* RIGHT SIDE */}
+          {/* RIGHT SIDE: self-start so it never stretches to match the left column's
+              height — its position stays fixed regardless of how tall the node
+              animation is */}
           <div ref={rightColRef} className="md:col-span-12 lg:col-span-5 lg:pt-64 flex flex-col justify-start lg:self-start">
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
               <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
               
+              {/* Inherited exact style/sizing from old paragraph block for perfect cleanliness */}
               <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">
                 SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
               </p>
@@ -506,7 +508,7 @@ export default function LandingPage() {
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
               <h2 className="text-[30px] sm:text-[36px] mb-6 sm:mb-8 leading-[1.1] tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Quantify the Signal. Eliminate Waste.</h2>
               <p className="text-[14px] sm:text-[15px] text-[#454947] mb-6 max-w-sm leading-relaxed opacity-90">
-                Traditional research engagements can cost $15,000+ for a single study. SignalRoom gives teams continuous customer intelligence at a predictable monthly cost.
+                Traditional research can cost thousands in software, recruiting, incentives, and analysis. SignalRoom replaces all of that for a flat monthly fee with no contracts.
               </p>
             </div>
             <div className="lg:col-start-7 lg:col-span-6">
@@ -533,18 +535,18 @@ export default function LandingPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
                     <div className="p-5 sm:p-6">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-700 block mb-2">Traditional</span>
+                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-600 block mb-2">Traditional</span>
                       <span className="text-[28px] font-normal tracking-tighter text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>${traditionalCost.toLocaleString()}</span>
                       <p className="text-[11px] text-neutral-600 font-medium mb-3">/month</p>
                       <div className="border-t border-[#d1d5d3] pt-3 space-y-1.5 text-[11px] text-neutral-600">
-                        <div className="flex justify-between"><span>Time</span><span className="font-medium text-neutral-800">4 weeks</span></div>
-                        <div className="flex justify-between"><span>Per interview</span><span className="font-medium text-neutral-800">$1,250</span></div>
+                        <div className="flex justify-between"><span>Time</span><span className="font-medium text-neutral-800">3 weeks</span></div>
+                        <div className="flex justify-between"><span>Per interview</span><span className="font-medium text-neutral-800">$750</span></div>
                         <div className="flex justify-between"><span>Hours</span><span className="font-medium text-neutral-800">{traditionalHours}h</span></div>
                       </div>
                     </div>
                     <div className="p-5 sm:p-6 bg-[#e9edea]">
                       <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1A3024] block mb-2">SignalRoom</span>
-                      <span className="text-[28px] font-normal tracking-tighter text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$499</span>
+                      <span className="text-[28px] font-normal tracking-tighter text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
                       <p className="text-[11px] text-[#1A3024] font-medium mb-3">unlimited/month</p>
                       <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1A3024]">
                         <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
@@ -579,77 +581,60 @@ export default function LandingPage() {
         <section id="pricing" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
           <div className="text-center mb-12 sm:mb-20">
             <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600">Subscription Models</span>
-            <h2 className="text-[30px] sm:text-[36px] mt-3 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Built for validation. Designed for scale.</h2>
+            <h2 className="text-[30px] sm:text-[36px] mt-3 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simple pricing. No surprises.</h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden bg-white">
-            
-            {/* 01 // Pulse */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">01 // Pulse</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Pulse</h3>
-              <p className="text-xs text-neutral-600 mb-4">Validate ideas before investing months of engineering time. Simulate customer conversations and uncover demand signals early.</p>
+              <p className="text-xs text-neutral-600 mb-4">For solo founders getting started</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$199</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$49</span>
                 <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 3 active research projects</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 simulated customer personas</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Core simulation dialogue templates</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Automated intelligence summaries</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 3 personas</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 interviews/month</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Core templates</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Basic reports</li>
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/20 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
-
-            {/* 02 // Signal */}
             <div className="p-6 sm:p-10 flex flex-col bg-[#e9edea] relative shadow-xl shadow-black/[0.01]">
               <div className="absolute top-0 right-0 bg-[#1A3024] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1A3024] mb-8 sm:mb-10">02 // Core</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1A3024] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
-              <p className="text-xs text-[#1A3024] font-medium mb-4">Replace slow research cycles with continuous customer intelligence for faster product decisions.</p>
+              <p className="text-xs text-[#1A3024] font-medium mb-4">For teams validating fast</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$499</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$99</span>
                 <span className="text-[11px] text-[#1A3024] font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited customer personas</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited simulated interviews</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Advanced analysis briefs</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona overlap testing</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited personas</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited interviews</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ All templates</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Full reports</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona testing</li>
               </ul>
               <Link href="/signup" className="w-full text-center bg-[#1A3024] text-white py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#5A7973] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
             </div>
-
-            {/* 03 // Broadcast */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group thin-border">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">03 // Scale</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Broadcast</h3>
-              <p className="text-xs text-neutral-500 mb-4">For agencies and growing teams requiring comprehensive organization-wide research scaling.</p>
+              <p className="text-xs text-neutral-500 mb-4">For agencies and growing teams</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
-                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$1,999</span>
+                <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$249</span>
                 <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in the core Signal tier</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 included collaborative team seats</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label client insight reports</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Custom contextual ingestion pipelines</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in Signal</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 team seats</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label reports</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority support</li>
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>
-
           </div>
-
-          {/* Enterprise Anchor Notice */}
-          <div className="mt-8 text-center">
-            <p className="text-xs text-neutral-500">
-              Need custom volume nodes or advanced governance? For bespoke corporate requirements,{' '}
-              <Link href="/contact" className="text-[#1A3024] font-medium underline hover:text-[#5A7973] transition-colors">
-                contact our strategy architecture team for enterprise arrangements
-              </Link>.
-            </p>
-          </div>
-
         </section>
       </RevealSection>
 
