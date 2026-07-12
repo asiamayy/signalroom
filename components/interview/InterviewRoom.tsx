@@ -160,77 +160,74 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
       {/* ── Main chat area ── */}
       <div className="flex flex-col flex-1 overflow-hidden">
 
-        {/* Top bar — editorial hero, matching the reference mockup's proportions */}
-        <header className="relative px-4 sm:px-8 lg:px-10 py-6 sm:py-9 flex-shrink-0" style={{ background: HOME_COLORS.surface, borderBottom: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
-          <div className="flex items-start justify-between gap-6 flex-wrap">
-            <div className="min-w-0 max-w-xl">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-8 h-px flex-shrink-0" style={{ background: HOME_COLORS.primary }} />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Research Simulation</span>
-              </div>
-              <h1 className="leading-tight text-2xl sm:text-3xl mb-2" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>
-                Interview with <span className="italic" style={{ fontWeight: 400 }}>{interview.persona?.name ?? 'Unknown'}</span>
-              </h1>
-              <p className="text-sm sm:text-base italic" style={{ color: HOME_COLORS.onSurfaceVariant }}>{interview.title}</p>
-              <div className="flex items-center gap-2 mt-3 text-[11px] font-semibold uppercase tracking-wide flex-wrap" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                <span>{INTERVIEW_TYPE_LABELS[interview.type]}</span>
-                {interview.project && (
-                  <>
-                    <span style={{ opacity: 0.4 }}>·</span>
-                    <Link href={`/projects/${interview.project.id}`} className="hover:underline" style={{ color: HOME_COLORS.primary }}>
-                      {interview.project.name}
-                    </Link>
-                  </>
-                )}
+        {/* Top bar — compact editorial header */}
+        <header className="relative px-4 sm:px-8 lg:px-10 py-4 sm:py-5 flex-shrink-0" style={{ background: HOME_COLORS.surface, borderBottom: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0">
+              {/* Persona photo — replaces the reference mockup's decorative grey blob */}
+              <PersonaAvatar
+                avatarUrl={interview.persona?.avatar_url}
+                avatarInitials={interview.persona?.avatar_initials}
+                avatarColor={interview.persona?.avatar_color}
+                name={interview.persona?.name}
+                size="lg"
+                className="flex-shrink-0 hidden sm:flex"
+                style={{ boxShadow: `0 0 0 3px ${HOME_COLORS.surfaceContainerLowest}` }}
+              />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-6 h-px flex-shrink-0" style={{ background: HOME_COLORS.primary }} />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Research Simulation</span>
+                </div>
+                <h1 className="leading-tight text-lg sm:text-xl truncate" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>
+                  Interview with <span className="italic" style={{ fontWeight: 400 }}>{interview.persona?.name ?? 'Unknown'}</span>
+                </h1>
+                <p className="text-xs sm:text-sm truncate mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                  <span className="italic">{interview.title}</span>
+                  <span className="mx-1.5" style={{ opacity: 0.4 }}>|</span>
+                  <span>{INTERVIEW_TYPE_LABELS[interview.type]}</span>
+                  {interview.project && (
+                    <>
+                      <span className="mx-1.5" style={{ opacity: 0.4 }}>|</span>
+                      <Link href={`/projects/${interview.project.id}`} className="hover:underline" style={{ color: HOME_COLORS.primary }}>
+                        {interview.project.name}
+                      </Link>
+                    </>
+                  )}
+                </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 flex-shrink-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 pt-1">
-                {/* Persona panel toggle */}
-                <button
-                  onClick={() => setPanelOpen(o => !o)}
-                  title="View persona"
-                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
-                  style={panelOpen
-                    ? { background: HOME_COLORS.secondaryContainer, border: `1px solid ${HOME_COLORS.primary}`, color: HOME_COLORS.primary }
-                    : { background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurfaceVariant }
-                  }
-                >
-                  <User size={15} />
-                </button>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <span className="hidden lg:inline text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{messages.length} msg{messages.length === 1 ? '' : 's'}</span>
 
-                <button
-                  onClick={handleGenerateReport}
-                  disabled={!canReport || generatingReport}
-                  className={cn('group relative flex items-center gap-1.5 text-xs sm:text-sm px-4 sm:px-5 py-2 rounded-full font-semibold transition-all duration-300 ease-out flex-shrink-0',
-                    canReport && !generatingReport ? 'text-white hover:pr-7 sm:hover:pr-9 hover:shadow-lg active:scale-95' : 'cursor-not-allowed'
-                  )}
-                  style={canReport && !generatingReport ? { background: HOME_COLORS.primary } : { background: HOME_COLORS.surfaceContainerHigh, color: HOME_COLORS.onSurfaceVariant }}
-                >
-                  {generatingReport ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
-                  <span className="hidden sm:inline">{generatingReport ? 'Generating...' : 'Get report'}</span>
-                  {canReport && !generatingReport && (
-                    <ArrowRight size={12} className="absolute right-2.5 sm:right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" />
-                  )}
-                </button>
-              </div>
+              {/* Persona panel toggle */}
+              <button
+                onClick={() => setPanelOpen(o => !o)}
+                title="View persona"
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
+                style={panelOpen
+                  ? { background: HOME_COLORS.secondaryContainer, border: `1px solid ${HOME_COLORS.primary}`, color: HOME_COLORS.primary }
+                  : { background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurfaceVariant }
+                }
+              >
+                <User size={15} />
+              </button>
 
-              {/* Persona photo — replaces the reference mockup's decorative grey blob */}
-              <div className="relative hidden sm:block">
-                <PersonaAvatar
-                  avatarUrl={interview.persona?.avatar_url}
-                  avatarInitials={interview.persona?.avatar_initials}
-                  avatarColor={interview.persona?.avatar_color}
-                  name={interview.persona?.name}
-                  size="3xl"
-                  style={{ boxShadow: `0 0 0 4px ${HOME_COLORS.surfaceContainerLowest}` }}
-                />
-                <div className="absolute -bottom-2 -left-2 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, color: HOME_COLORS.onSurface }}>
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.primary }} />
-                  {messages.length} msg{messages.length === 1 ? '' : 's'}
-                </div>
-              </div>
+              <button
+                onClick={handleGenerateReport}
+                disabled={!canReport || generatingReport}
+                className={cn('group relative flex items-center gap-1.5 text-xs sm:text-sm px-4 sm:px-5 py-2 rounded-full font-semibold transition-all duration-300 ease-out flex-shrink-0',
+                  canReport && !generatingReport ? 'text-white hover:pr-7 sm:hover:pr-9 hover:shadow-lg active:scale-95' : 'cursor-not-allowed'
+                )}
+                style={canReport && !generatingReport ? { background: HOME_COLORS.primary } : { background: HOME_COLORS.surfaceContainerHigh, color: HOME_COLORS.onSurfaceVariant }}
+              >
+                {generatingReport ? <Loader2 size={13} className="animate-spin" /> : <FileText size={13} />}
+                <span className="hidden sm:inline">{generatingReport ? 'Generating...' : 'Get report'}</span>
+                {canReport && !generatingReport && (
+                  <ArrowRight size={12} className="absolute right-2.5 sm:right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" />
+                )}
+              </button>
             </div>
           </div>
         </header>
@@ -244,8 +241,8 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
 
         {/* Context banner */}
         {interview.context && (
-          <div className="px-3 sm:px-5 py-2.5 flex-shrink-0" style={{ background: '#FFFBEB', borderBottom: '1px solid #FDE68A' }}>
-            <span className="text-xs text-amber-800"><span className="font-medium">Context: </span>{interview.context}</span>
+          <div className="px-3 sm:px-5 py-2.5 flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer, borderBottom: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
+            <span className="text-xs" style={{ color: HOME_COLORS.onSecondaryContainer }}><span className="font-semibold">Context: </span>{interview.context}</span>
           </div>
         )}
 
@@ -324,7 +321,7 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               </button>
             </div>
           )}
-          <div className="flex items-center gap-1.5 rounded-full pl-2 pr-2 py-2" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
+          <div className="flex items-center gap-1.5 rounded-full pl-2 pr-2 py-2" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}4d`, boxShadow: CARD_SHADOW }}>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -394,18 +391,10 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {/* Identity card */}
-              <div className="rounded-xl p-5 flex flex-col items-center text-center" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary }}>
-                <PersonaAvatar
-                  avatarUrl={interview.persona?.avatar_url}
-                  avatarInitials={interview.persona?.avatar_initials}
-                  avatarColor={interview.persona?.avatar_color}
-                  name={interview.persona?.name}
-                  size="lg"
-                  className="mb-3 ring-2 ring-white/20"
-                />
-                <h3 className="text-lg leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{interview.persona?.name}</h3>
-                <p className="text-[11px] uppercase tracking-wider mt-1" style={{ color: HOME_COLORS.onPrimaryContainer }}>{t?.job_title}</p>
+              {/* Role card — secondaryContainer (not the dark primary green used in chat bubbles) to avoid a color clash */}
+              <div className="rounded-xl p-4" style={{ background: HOME_COLORS.secondaryContainer }}>
+                <h4 className="text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: HOME_COLORS.onSecondaryContainer, opacity: 0.7 }}>Role</h4>
+                <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSecondaryContainer }}>{t?.job_title || 'No role specified'}</p>
               </div>
 
               {/* Demographics */}
