@@ -2,9 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronRight, MessageSquare, Swords } from 'lucide-react'
-import { Button, Input, Textarea, Select, Card } from '@/components/ui'
-import { cn, INTERVIEW_TYPE_LABELS, getAvatarColor } from '@/lib/utils'
+import { ChevronRight, MessageSquare, Swords, Loader2, Plus } from 'lucide-react'
+import { HOME_COLORS, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
+import { CARD_SHADOW } from '@/lib/utils'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Persona, InterviewType } from '@/types'
 
@@ -40,7 +40,6 @@ function NewInterviewForm() {
 
   const handleTypeChange = (newType: InterviewType) => {
     setType(newType)
-    // Only auto-populate if context is empty or still matches a template
     const isTemplate = Object.values(CONTEXT_TEMPLATES).includes(context)
     if (!context.trim() || isTemplate) {
       setContext(CONTEXT_TEMPLATES[newType])
@@ -51,7 +50,6 @@ function NewInterviewForm() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  // Load personas
   useEffect(() => {
     setLoading(true)
     fetch('/api/personas')
@@ -59,8 +57,6 @@ function NewInterviewForm() {
       .then(json => setPersonas(json.data ?? []))
       .finally(() => setLoading(false))
   }, [])
-
-  const selectedPersona = personas.find(p => p.id === personaId)
 
   const handleStart = async () => {
     if (!personaId) { setError('Select a persona to interview'); return }
@@ -85,195 +81,182 @@ function NewInterviewForm() {
     }
   }
 
+  const inputStyle = { background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }
+
   return (
-    <div className="p-8 max-w-2xl">
-      <div className="mb-8">
-        <h1 className="heading-editorial text-2xl text-neutral-900">New interview</h1>
-        <p className="text-sm text-neutral-500 mt-0.5">Set up your session before entering the room</p>
-      </div>
+    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
+      <div className="px-4 sm:px-10 pt-10 sm:pt-16 pb-16 max-w-2xl">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
+          <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Stream</span>
+        </div>
+        <h1 className="mb-3 leading-tight" style={{ ...DISPLAY_LG_STYLE, fontSize: '32px', lineHeight: '40px', color: HOME_COLORS.onSurface }}>New Dialogue</h1>
+        <p className="text-sm mb-10" style={{ color: HOME_COLORS.onSurfaceVariant }}>Set up your session before entering the room.</p>
 
-      <div className="space-y-7">
+        <div className="space-y-8">
+          {/* Persona selection */}
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>Who are you interviewing?</label>
 
-        {/* ── Persona selection ─────────────────────────────────────────── */}
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Who are you interviewing?
-          </label>
+            {loading && <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading personas...</p>}
 
-          {loading && (
-            <p className="text-sm text-neutral-400">Loading personas...</p>
-          )}
+            {!loading && personas.length === 0 && (
+              <div className="rounded-xl p-6 text-center" style={{ border: `1px dashed ${HOME_COLORS.outlineVariant}` }}>
+                <p className="text-sm mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>No personas yet. Create one first.</p>
+                <button
+                  type="button"
+                  onClick={() => router.push('/personas/new')}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full"
+                  style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}
+                >
+                  <Plus size={13} /> Create a persona
+                </button>
+              </div>
+            )}
 
-          {!loading && personas.length === 0 && (
-            <div className="border border-dashed border-neutral-200 rounded-xl p-6 text-center">
-              <p className="text-sm text-neutral-500 mb-3">No personas yet. Create one first.</p>
-              <Button variant="secondary" size="sm" onClick={() => router.push('/personas/new')}>
-                Create a persona
-              </Button>
-            </div>
-          )}
+            {!loading && personas.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {personas.map(persona => {
+                  const selected = persona.id === personaId
+                  return (
+                    <button
+                      key={persona.id}
+                      type="button"
+                      onClick={() => setPersonaId(persona.id)}
+                      className="flex items-center gap-3 p-3 rounded-xl text-left transition-all"
+                      style={{
+                        background: selected ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerLowest,
+                        border: selected ? `1.5px solid ${HOME_COLORS.primary}` : `1.5px solid ${HOME_COLORS.outlineVariant}33`,
+                        boxShadow: CARD_SHADOW,
+                      }}
+                    >
+                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" className="flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: selected ? HOME_COLORS.onPrimary : HOME_COLORS.onSurface }}>{persona.name}</p>
+                        <p className="text-xs truncate" style={{ color: selected ? 'rgba(255,255,255,0.7)' : HOME_COLORS.onSurfaceVariant }}>{persona.traits?.job_title ?? 'No role'}</p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
 
-          {!loading && personas.length > 0 && (
-            <div className="grid grid-cols-2 gap-2">
-              {personas.map(persona => {
-                const selected = persona.id === personaId
-
+          {/* Interview type */}
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>What kind of interview?</label>
+            <div className="space-y-2">
+              {INTERVIEW_TYPES.map(t => {
+                const selected = type === t.value
                 return (
                   <button
-                    key={persona.id}
+                    key={t.value}
                     type="button"
-                    onClick={() => setPersonaId(persona.id)}
-                    className={cn(
-                      'flex items-center gap-3 p-3 rounded-xl border text-left transition-all',
-                      selected
-                        ? 'border-neutral-900 bg-neutral-900 text-white'
-                        : 'border-neutral-200 bg-white hover:border-neutral-300'
-                    )}
+                    onClick={() => handleTypeChange(t.value)}
+                    className="w-full flex items-center justify-between p-3.5 rounded-xl text-left transition-all"
+                    style={{
+                      background: selected ? HOME_COLORS.secondaryContainer : HOME_COLORS.surfaceContainerLowest,
+                      border: selected ? `1.5px solid ${HOME_COLORS.primary}` : `1.5px solid ${HOME_COLORS.outlineVariant}33`,
+                      boxShadow: CARD_SHADOW,
+                    }}
                   >
-                  <PersonaAvatar
-                      avatarUrl={persona.avatar_url}
-                      avatarInitials={persona.avatar_initials}
-                      avatarColor={persona.avatar_color}
-                      name={persona.name}
-                      size="sm"
-                      className="flex-shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <p className={cn('text-sm font-medium truncate', selected ? 'text-white' : 'text-neutral-900')}>
-                        {persona.name}
-                      </p>
-                      <p className={cn('text-xs truncate', selected ? 'text-neutral-300' : 'text-neutral-500')}>
-                        {persona.traits?.job_title ?? 'No role'}
-                      </p>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{t.label}</p>
+                      <p className="text-xs mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{t.description}</p>
                     </div>
+                    <div className="w-4 h-4 rounded-full flex-shrink-0 ml-3" style={{ border: `2px solid ${selected ? HOME_COLORS.primary : HOME_COLORS.outlineVariant}`, background: selected ? HOME_COLORS.primary : 'transparent' }} />
                   </button>
                 )
               })}
             </div>
-          )}
-        </div>
-
-        {/* ── Interview type ────────────────────────────────────────────── */}
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            What kind of interview?
-          </label>
-          <div className="space-y-1.5">
-            {INTERVIEW_TYPES.map(t => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => handleTypeChange(t.value)}
-                className={cn(
-                  'w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all',
-                  type === t.value
-                    ? 'border-neutral-900 bg-neutral-50'
-                    : 'border-neutral-200 bg-white hover:border-neutral-300'
-                )}
-              >
-                <div>
-                  <p className={cn('text-sm font-medium', type === t.value ? 'text-neutral-900' : 'text-neutral-700')}>
-                    {t.label}
-                  </p>
-                  <p className="text-xs text-neutral-500 mt-0.5">{t.description}</p>
-                </div>
-                <div className={cn(
-                  'w-4 h-4 rounded-full border-2 flex-shrink-0 ml-3 transition-colors',
-                  type === t.value ? 'border-neutral-900 bg-neutral-900' : 'border-neutral-300'
-                )} />
-              </button>
-            ))}
           </div>
-        </div>
 
-        {/* ── Title ─────────────────────────────────────────────────────── */}
-        <Input
-          label="Interview title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder={
-            type === 'concept_testing' ? 'e.g. Testing SignalRoom concept with early-stage founders'
-            : type === 'pricing_discovery' ? 'e.g. $99/month pricing test — startup founders'
-            : type === 'message_testing' ? 'e.g. Landing page headline A/B'
-            : 'Interview title'
-          }
-          hint="Give it a name you'll recognize later"
-        />
-
-        {/* ── Context ───────────────────────────────────────────────────── */}
-        <Textarea
-          label="What are you testing?"
-          value={context}
-          onChange={e => setContext(e.target.value)}
-          placeholder={
-            type === 'concept_testing'
-              ? 'Describe your idea in 2-3 sentences. The more specific, the better the feedback.'
-              : type === 'pricing_discovery'
-              ? 'Describe the product and the price point(s) you want to test.'
-              : type === 'message_testing'
-              ? 'Paste the headline, copy, or message you want to test.'
-              : 'Give context for what you want to learn from this session.'
-          }
-          rows={4}
-          hint="This gives the persona context for the session — they'll respond in light of it."
-        />
-
-        {/* ── Devil's Advocate ──────────────────────────────────────────── */}
-        <button
-          type="button"
-          onClick={() => setDevilsAdvocate(d => !d)}
-          className={cn(
-            'w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all',
-            devilsAdvocate
-              ? 'border-red-300 bg-red-50'
-              : 'border-neutral-200 bg-white hover:border-neutral-300'
-          )}
-        >
-          <div className={cn(
-            'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5',
-            devilsAdvocate ? 'bg-red-100' : 'bg-neutral-100'
-          )}>
-            <Swords size={15} className={devilsAdvocate ? 'text-red-600' : 'text-neutral-500'} />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <p className={cn('text-sm font-medium', devilsAdvocate ? 'text-red-800' : 'text-neutral-900')}>
-                Devil's Advocate mode
-              </p>
-              <div className={cn(
-                'w-8 h-4 rounded-full transition-colors flex-shrink-0',
-                devilsAdvocate ? 'bg-red-500' : 'bg-neutral-200'
-              )}>
-                <div className={cn(
-                  'w-3 h-3 bg-white rounded-full shadow transition-transform mt-0.5',
-                  devilsAdvocate ? 'translate-x-4 ml-0.5' : 'translate-x-0.5'
-                )} />
-              </div>
-            </div>
-            <p className={cn('text-xs mt-0.5', devilsAdvocate ? 'text-red-700' : 'text-neutral-500')}>
-              {devilsAdvocate
-                ? 'On — persona will lead with skepticism and challenge your assumptions before engaging'
-                : 'Off — persona responds naturally. Turn on to stress-test your idea against hard pushback.'
+          {/* Title */}
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Interview title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder={
+                type === 'concept_testing' ? 'e.g. Testing SignalRoom concept with early-stage founders'
+                : type === 'pricing_discovery' ? 'e.g. $99/month pricing test — startup founders'
+                : type === 'message_testing' ? 'e.g. Landing page headline A/B'
+                : 'Interview title'
               }
-            </p>
+              className="w-full px-4 py-3 text-sm rounded-lg outline-none"
+              style={inputStyle}
+            />
+            <p className="text-xs mt-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Give it a name you&apos;ll recognize later.</p>
           </div>
-        </button>
 
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
-            {error}
-          </p>
-        )}
+          {/* Context */}
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>What are you testing?</label>
+            <textarea
+              value={context}
+              onChange={e => setContext(e.target.value)}
+              rows={4}
+              placeholder={
+                type === 'concept_testing' ? 'Describe your idea in 2-3 sentences. The more specific, the better the feedback.'
+                : type === 'pricing_discovery' ? 'Describe the product and the price point(s) you want to test.'
+                : type === 'message_testing' ? 'Paste the headline, copy, or message you want to test.'
+                : 'Give context for what you want to learn from this session.'
+              }
+              className="w-full px-4 py-3 text-sm rounded-lg outline-none resize-none"
+              style={inputStyle}
+            />
+            <p className="text-xs mt-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>This gives the persona context for the session — they&apos;ll respond in light of it.</p>
+          </div>
 
-        <div className="flex justify-between pt-2 border-t border-neutral-100">
-          <Button variant="secondary" onClick={() => router.back()}>
-            Cancel
-          </Button>
-          <Button onClick={handleStart} loading={saving}>
-            <MessageSquare size={14} />
-            Enter the room
-            <ChevronRight size={14} />
-          </Button>
+          {/* Devil's Advocate */}
+          <button
+            type="button"
+            onClick={() => setDevilsAdvocate(d => !d)}
+            className="w-full flex items-start gap-3 p-4 rounded-xl text-left transition-all"
+            style={{
+              background: devilsAdvocate ? '#FFDAD6' : HOME_COLORS.surfaceContainerLowest,
+              border: `1.5px solid ${devilsAdvocate ? '#FFB4AB' : `${HOME_COLORS.outlineVariant}33`}`,
+              boxShadow: CARD_SHADOW,
+            }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: devilsAdvocate ? '#FFB4AB' : HOME_COLORS.surfaceContainerHigh }}>
+              <Swords size={15} style={{ color: devilsAdvocate ? HOME_COLORS.error : HOME_COLORS.onSurfaceVariant }} />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold" style={{ color: devilsAdvocate ? HOME_COLORS.error : HOME_COLORS.onSurface }}>Devil&apos;s Advocate mode</p>
+                <div className="w-8 h-4 rounded-full transition-colors flex-shrink-0" style={{ background: devilsAdvocate ? HOME_COLORS.error : HOME_COLORS.outlineVariant }}>
+                  <div className="w-3 h-3 bg-white rounded-full shadow transition-transform mt-0.5" style={{ transform: devilsAdvocate ? 'translateX(18px)' : 'translateX(2px)' }} />
+                </div>
+              </div>
+              <p className="text-xs mt-0.5" style={{ color: devilsAdvocate ? '#7A0000' : HOME_COLORS.onSurfaceVariant }}>
+                {devilsAdvocate
+                  ? 'On — persona will lead with skepticism and challenge your assumptions before engaging'
+                  : 'Off — persona responds naturally. Turn on to stress-test your idea against hard pushback.'}
+              </p>
+            </div>
+          </button>
+
+          {error && (
+            <p className="text-sm rounded-lg px-3 py-2" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{error}</p>
+          )}
+
+          <div className="flex justify-between items-center pt-4" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
+            <button type="button" onClick={() => router.back()} className="text-sm font-semibold px-5 py-2.5 rounded-full transition-colors" style={{ color: HOME_COLORS.onSurfaceVariant, border: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
+              Cancel
+            </button>
+            <button
+              onClick={handleStart}
+              disabled={saving}
+              className="flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-full transition-all disabled:opacity-60"
+              style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}
+            >
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <MessageSquare size={14} />}
+              Enter the room
+              {!saving && <ChevronRight size={14} />}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -282,7 +265,7 @@ function NewInterviewForm() {
 
 export default function NewInterviewPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-neutral-500">Loading...</div>}>
+    <Suspense fallback={<div className="p-8 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading...</div>}>
       <NewInterviewForm />
     </Suspense>
   )

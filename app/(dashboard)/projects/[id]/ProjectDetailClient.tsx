@@ -10,7 +10,8 @@ import {
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { SignalCard } from '@/components/signals/SignalCard'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
-import { formatDate, formatRelativeTime } from '@/lib/utils'
+import { formatDate, formatRelativeTime, CARD_SHADOW } from '@/lib/utils'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { buildTimelineEvents, type TimelineEvent } from '@/lib/utils/timeline'
 import { FUNNEL_STAGE_LABELS } from '@/types'
 import type { Project, Persona, Interview, Signal, Report, ProjectFile } from '@/types'
@@ -18,7 +19,7 @@ import type { Project, Persona, Interview, Signal, Report, ProjectFile } from '@
 const TABS = ['Overview', 'Personas', 'Interviews', 'Signals', 'Reports', 'Files', 'Timeline', 'Settings'] as const
 type Tab = typeof TABS[number]
 
-const cardStyle = { background: 'white', boxShadow: '0 1px 2px rgba(31,36,32,0.04)', border: '1px solid #E0E2E4' }
+const cardStyle = { background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }
 
 interface ProjectDetailClientProps {
   project: Project
@@ -55,37 +56,37 @@ export function ProjectDetailClient({ project: initialProject, allPersonas, allI
   const healthScore = Math.round(0.7 * avgConfidence + 0.3 * Math.min(projectInterviews.length / 10, 1) * 100)
 
   return (
-    <div style={{ background: '#FCF9F8', minHeight: '100%' }} className="p-4 sm:p-8">
-      <Link href="/projects" className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-900 mb-6 transition-colors w-fit">
+    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, minHeight: '100%' }} className="p-4 sm:p-8">
+      <Link href="/projects" className="flex items-center gap-1.5 text-sm mb-6 transition-colors w-fit" style={{ color: HOME_COLORS.onSurfaceVariant }}>
         <ArrowLeft size={14} /> All projects
       </Link>
 
       <div className="rounded-2xl p-5 sm:p-6 mb-6" style={cardStyle}>
         <div className="flex items-start gap-4">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#E8F3EF' }}>
-            <Briefcase size={20} style={{ color: '#1C3D2E' }} />
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer }}>
+            <Briefcase size={20} style={{ color: HOME_COLORS.primary }} />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="heading-editorial text-2xl text-neutral-900 truncate">{project.name}</h1>
+              <h1 className="truncate" style={{ ...DISPLAY_LG_STYLE, fontSize: '26px', lineHeight: '32px', color: HOME_COLORS.onSurface }}>{project.name}</h1>
               {project.archived && (
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Archived</span>
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.surfaceContainerHigh, color: HOME_COLORS.onSurfaceVariant }}>Archived</span>
               )}
             </div>
-            <p className="text-sm mt-0.5" style={{ color: '#5F6368' }}>Created {formatDate(project.created_at)}</p>
+            <p className="text-sm mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Created {formatDate(project.created_at)}</p>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 overflow-x-auto mb-6" style={{ borderBottom: '1px solid #E0E2E4' }}>
+      <div className="flex items-center gap-1 overflow-x-auto mb-6" style={{ borderBottom: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
         {TABS.map(tabName => (
           <button
             key={tabName}
             onClick={() => setTab(tabName)}
-            className="px-4 py-2.5 text-xs font-medium transition-colors flex-shrink-0"
+            className="px-4 py-2.5 text-xs font-semibold transition-colors flex-shrink-0"
             style={{
-              color: tab === tabName ? '#1C3D2E' : '#757575',
-              borderBottom: tab === tabName ? '2px solid #1C3D2E' : '2px solid transparent',
+              color: tab === tabName ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant,
+              borderBottom: tab === tabName ? `2px solid ${HOME_COLORS.primary}` : '2px solid transparent',
               background: 'none', border: 'none', borderBottomWidth: '2px', cursor: 'pointer', fontFamily: 'inherit',
             }}
           >
@@ -188,8 +189,8 @@ export function ProjectDetailClient({ project: initialProject, allPersonas, allI
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-2xl p-4" style={cardStyle}>
-      <p className="text-2xl font-semibold text-neutral-900" style={{ fontFamily: "'Playfair Display', serif" }}>{value}</p>
-      <p className="text-xs mt-1" style={{ color: '#5F6368' }}>{label}</p>
+      <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>{value}</p>
+      <p className="text-xs mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</p>
     </div>
   )
 }
@@ -207,15 +208,15 @@ function OverviewTab({ healthScore, interviewCount, signalCount, avgConfidence, 
       </div>
 
       <div className="rounded-2xl p-5" style={cardStyle}>
-        <h2 className="text-sm font-semibold text-neutral-900 mb-4">Recent activity</h2>
+        <h2 className="text-sm font-semibold mb-4" style={{ color: HOME_COLORS.onSurface }}>Recent activity</h2>
         {events.length === 0 ? (
-          <p className="text-xs" style={{ color: '#5F6368' }}>Nothing yet — create a persona or run an interview to get started.</p>
+          <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Nothing yet — create a persona or run an interview to get started.</p>
         ) : (
           <ul className="space-y-3">
             {events.map((e, i) => (
               <li key={i} className="flex items-center justify-between gap-3 text-xs">
-                <span className="text-neutral-700">{e.title}{e.detail ? ` — ${e.detail}` : ''}</span>
-                <span className="text-neutral-400 flex-shrink-0">{formatRelativeTime(e.timestamp)}</span>
+                <span style={{ color: HOME_COLORS.onSurface }}>{e.title}{e.detail ? ` — ${e.detail}` : ''}</span>
+                <span className="flex-shrink-0" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(e.timestamp)}</span>
               </li>
             ))}
           </ul>
@@ -242,10 +243,10 @@ function PersonasTab({ project, projectPersonas, availablePersonas, onLink, onUn
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowPicker(v => !v)} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg" style={{ background: 'white', border: '1px solid #E0E2E4', color: '#1C3D2E' }}>
+          <button onClick={() => setShowPicker(v => !v)} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full transition-colors" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.primary }}>
             <Plus size={13} /> Add existing
           </button>
-          <Link href={`/personas/new?project_id=${project.id}`} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg text-white" style={{ background: '#1C3D2E' }}>
+          <Link href={`/personas/new?project_id=${project.id}`} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full transition-colors" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
             <Plus size={13} /> Create persona
           </Link>
         </div>
@@ -253,15 +254,15 @@ function PersonasTab({ project, projectPersonas, availablePersonas, onLink, onUn
 
       {showPicker && (
         <div className="rounded-2xl p-4 mb-4" style={cardStyle}>
-          <p className="text-xs font-semibold text-neutral-700 mb-2">Link an existing persona</p>
+          <p className="text-xs font-semibold mb-2" style={{ color: HOME_COLORS.onSurface }}>Link an existing persona</p>
           {availablePersonas.length === 0 ? (
-            <p className="text-xs" style={{ color: '#5F6368' }}>No other personas to add.</p>
+            <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>No other personas to add.</p>
           ) : (
             <div className="space-y-1.5">
               {availablePersonas.map(p => (
                 <div key={p.id} className="flex items-center justify-between gap-2 text-xs">
-                  <span className="text-neutral-700">{p.name}</span>
-                  <button onClick={() => onLink(p.id)} className="text-[11px] font-semibold px-2 py-1 rounded-md" style={{ background: '#E8F3EF', color: '#1C3D2E' }}>Add</button>
+                  <span style={{ color: HOME_COLORS.onSurface }}>{p.name}</span>
+                  <button onClick={() => onLink(p.id)} className="text-[11px] font-semibold px-2 py-1 rounded-md" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>Add</button>
                 </div>
               ))}
             </div>
@@ -278,15 +279,15 @@ function PersonasTab({ project, projectPersonas, availablePersonas, onLink, onUn
               <div className="flex items-start gap-3 mb-3">
                 <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-neutral-900 truncate">{persona.name}</p>
-                  {persona.funnel_stage && <p className="text-[11px] text-neutral-400">{FUNNEL_STAGE_LABELS[persona.funnel_stage]}</p>}
+                  <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{persona.name}</p>
+                  {persona.funnel_stage && <p className="text-[11px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{FUNNEL_STAGE_LABELS[persona.funnel_stage]}</p>}
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                <Link href={`/personas/${persona.id}`} className="flex-1 text-center text-[11px] font-semibold px-2 py-1.5 rounded-lg" style={{ background: '#F4F6F8', color: '#374151' }}>Open</Link>
-                <button onClick={() => onDuplicate(persona)} title="Duplicate" className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#F4F6F8', color: '#374151' }}><Copy size={12} /></button>
-                <button onClick={() => onUnlink(persona.id)} title="Remove from project" className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#F4F6F8', color: '#374151' }}><Folder size={12} /></button>
-                <button onClick={() => onDelete(persona.id)} title="Delete" className="w-7 h-7 flex items-center justify-center rounded-lg text-red-500" style={{ background: '#FEF2F2' }}><Trash2 size={12} /></button>
+                <Link href={`/personas/${persona.id}`} className="flex-1 text-center text-[11px] font-semibold px-2 py-1.5 rounded-lg" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.onSurface }}>Open</Link>
+                <button onClick={() => onDuplicate(persona)} title="Duplicate" className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.onSurface }}><Copy size={12} /></button>
+                <button onClick={() => onUnlink(persona.id)} title="Remove from project" className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.onSurface }}><Folder size={12} /></button>
+                <button onClick={() => onDelete(persona.id)} title="Delete" className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#FFDAD6', color: HOME_COLORS.error }}><Trash2 size={12} /></button>
               </div>
             </div>
           ))}
@@ -299,9 +300,9 @@ function PersonasTab({ project, projectPersonas, availablePersonas, onLink, onUn
 // ─── Interviews ───────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
-  active: { bg: '#E8F5F1', color: '#2A5C4E' },
-  completed: { bg: '#F3F4F6', color: '#6B7280' },
-  draft: { bg: '#FFFBEB', color: '#92400E' },
+  active: { bg: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary },
+  completed: { bg: HOME_COLORS.surfaceContainerHigh, color: HOME_COLORS.onSurfaceVariant },
+  draft: { bg: '#FEF3C7', color: '#B45309' },
 }
 
 function InterviewsTab({ project, projectInterviews, availableInterviews, onLink, onDelete }: {
@@ -320,14 +321,14 @@ function InterviewsTab({ project, projectInterviews, availableInterviews, onLink
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search interviews…" className="pl-8 pr-3 py-2 text-xs rounded-lg w-full sm:w-56" style={{ background: 'white', border: '1px solid #E0E2E4' }} />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: HOME_COLORS.onSurfaceVariant }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search interviews…" className="pl-8 pr-3 py-2 text-xs rounded-lg w-full sm:w-56 outline-none" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }} />
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowPicker(v => !v)} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg" style={{ background: 'white', border: '1px solid #E0E2E4', color: '#1C3D2E' }}>
+          <button onClick={() => setShowPicker(v => !v)} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full transition-colors" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.primary }}>
             <Plus size={13} /> Add existing
           </button>
-          <Link href={`/interviews/new?project_id=${project.id}`} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg text-white" style={{ background: '#1C3D2E' }}>
+          <Link href={`/interviews/new?project_id=${project.id}`} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full transition-colors" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
             <Plus size={13} /> Run interview
           </Link>
         </div>
@@ -335,15 +336,15 @@ function InterviewsTab({ project, projectInterviews, availableInterviews, onLink
 
       {showPicker && (
         <div className="rounded-2xl p-4 mb-4" style={cardStyle}>
-          <p className="text-xs font-semibold text-neutral-700 mb-2">Link an existing interview</p>
+          <p className="text-xs font-semibold mb-2" style={{ color: HOME_COLORS.onSurface }}>Link an existing interview</p>
           {availableInterviews.length === 0 ? (
-            <p className="text-xs" style={{ color: '#5F6368' }}>No other interviews to add.</p>
+            <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>No other interviews to add.</p>
           ) : (
             <div className="space-y-1.5">
               {availableInterviews.map(iv => (
                 <div key={iv.id} className="flex items-center justify-between gap-2 text-xs">
-                  <span className="text-neutral-700">{iv.title}</span>
-                  <button onClick={() => onLink(iv.id)} className="text-[11px] font-semibold px-2 py-1 rounded-md" style={{ background: '#E8F3EF', color: '#1C3D2E' }}>Add</button>
+                  <span style={{ color: HOME_COLORS.onSurface }}>{iv.title}</span>
+                  <button onClick={() => onLink(iv.id)} className="text-[11px] font-semibold px-2 py-1 rounded-md" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>Add</button>
                 </div>
               ))}
             </div>
@@ -359,16 +360,16 @@ function InterviewsTab({ project, projectInterviews, availableInterviews, onLink
             const statusStyle = STATUS_STYLES[iv.status] ?? STATUS_STYLES.completed
             return (
               <div key={iv.id} className="relative group">
-                <Link href={`/interviews/${iv.id}`} className="flex items-center gap-3 px-4 py-3.5 rounded-2xl block hover:border-neutral-300 transition-colors" style={cardStyle}>
+                <Link href={`/interviews/${iv.id}`} className="flex items-center gap-3 px-4 py-3.5 rounded-2xl block transition-all hover:shadow-xl" style={cardStyle}>
                   <PersonaAvatar avatarUrl={iv.persona?.avatar_url} avatarInitials={iv.persona?.avatar_initials} avatarColor={iv.persona?.avatar_color} name={iv.persona?.name} size="sm" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-neutral-900 truncate">{iv.title}</p>
-                    <p className="text-xs text-neutral-400 truncate">{iv.persona?.name ?? 'Unknown'}</p>
+                    <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{iv.title}</p>
+                    <p className="text-xs truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{iv.persona?.name ?? 'Unknown'}</p>
                   </div>
                   <span className="text-xs px-2.5 py-1 rounded-full font-semibold flex-shrink-0" style={statusStyle}>{iv.status}</span>
-                  <span className="text-xs text-neutral-400 flex-shrink-0 hidden sm:inline pr-8">{formatRelativeTime(iv.updated_at)}</span>
+                  <span className="text-xs flex-shrink-0 hidden sm:inline pr-8" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(iv.updated_at)}</span>
                 </Link>
-                <button onClick={() => onDelete(iv.id)} className="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-red-500" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
+                <button onClick={() => onDelete(iv.id)} className="absolute right-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: HOME_COLORS.surfaceContainerLowest, color: HOME_COLORS.onSurfaceVariant, boxShadow: CARD_SHADOW }}>
                   <Trash2 size={12} />
                 </button>
               </div>
@@ -404,11 +405,11 @@ function ReportsTab({ reports }: { reports: (Report & { interview: Interview })[
       {reports.map(report => (
         <div key={report.id} className="rounded-2xl p-4 flex items-center justify-between gap-3" style={cardStyle}>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-neutral-900 truncate">{report.interview?.title ?? 'Untitled interview'}</p>
-            <p className="text-xs text-neutral-400 mt-0.5 truncate">{report.executive_summary}</p>
+            <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{report.interview?.title ?? 'Untitled interview'}</p>
+            <p className="text-xs mt-0.5 truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{report.executive_summary}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-xs font-semibold" style={{ color: '#1C3D2E' }}>{report.confidence_score}%</span>
+            <span className="text-xs font-semibold" style={{ color: HOME_COLORS.primary }}>{report.confidence_score}%</span>
             <DownloadReportButton />
           </div>
         </div>
@@ -462,10 +463,10 @@ function FilesTab({ project, files, onUploaded, onDeleted }: {
 
   return (
     <div>
-      <label className="flex flex-col items-center justify-center rounded-2xl py-10 mb-6 cursor-pointer transition-colors hover:border-neutral-300" style={{ background: 'white', border: '2px dashed #E0E2E4' }}>
-        <Upload size={20} className="mb-2" style={{ color: uploading ? '#1C3D2E' : '#9CA3AF' }} />
-        <p className="text-sm font-semibold text-neutral-800">{uploading ? 'Uploading…' : 'Upload a file'}</p>
-        <p className="text-xs mt-1" style={{ color: '#5F6368' }}>PDFs, notes, competitor docs, images — anything supporting this research</p>
+      <label className="flex flex-col items-center justify-center rounded-2xl py-10 mb-6 cursor-pointer transition-colors" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `2px dashed ${HOME_COLORS.outlineVariant}` }}>
+        <Upload size={20} className="mb-2" style={{ color: uploading ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant }} />
+        <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{uploading ? 'Uploading…' : 'Upload a file'}</p>
+        <p className="text-xs mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>PDFs, notes, competitor docs, images — anything supporting this research</p>
         <input type="file" className="hidden" disabled={uploading} onChange={e => handleUpload(e.target.files)} />
       </label>
 
@@ -476,15 +477,15 @@ function FilesTab({ project, files, onUploaded, onDeleted }: {
           {files.map(file => (
             <div key={file.id} className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3" style={cardStyle}>
               <div className="min-w-0 flex items-center gap-3">
-                <FileText size={16} style={{ color: '#9CA3AF' }} className="flex-shrink-0" />
+                <FileText size={16} style={{ color: HOME_COLORS.onSurfaceVariant }} className="flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-neutral-900 truncate">{file.name}</p>
-                  <p className="text-[11px] text-neutral-400">{formatBytes(file.size_bytes)} · {formatRelativeTime(file.created_at)}</p>
+                  <p className="text-sm font-medium truncate" style={{ color: HOME_COLORS.onSurface }}>{file.name}</p>
+                  <p className="text-[11px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatBytes(file.size_bytes)} · {formatRelativeTime(file.created_at)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <button onClick={() => handleDownload(file)} className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#F4F6F8', color: '#374151' }}><Download size={12} /></button>
-                <button onClick={() => handleDelete(file.id)} className="w-7 h-7 flex items-center justify-center rounded-lg text-red-500" style={{ background: '#FEF2F2' }}><Trash2 size={12} /></button>
+                <button onClick={() => handleDownload(file)} className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.onSurface }}><Download size={12} /></button>
+                <button onClick={() => handleDelete(file.id)} className="w-7 h-7 flex items-center justify-center rounded-lg" style={{ background: '#FFDAD6', color: HOME_COLORS.error }}><Trash2 size={12} /></button>
               </div>
             </div>
           ))}
@@ -505,13 +506,13 @@ function TimelineTab({ events }: { events: TimelineEvent[] }) {
       <ul className="space-y-4">
         {events.map((e, i) => (
           <li key={i} className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: '#1C3D2E' }} />
+            <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: HOME_COLORS.primary }} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-neutral-800">{e.title}</p>
-                <span className="text-[11px] text-neutral-400 flex-shrink-0">{formatRelativeTime(e.timestamp)}</span>
+                <p className="text-sm" style={{ color: HOME_COLORS.onSurface }}>{e.title}</p>
+                <span className="text-[11px] flex-shrink-0" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(e.timestamp)}</span>
               </div>
-              {e.detail && <p className="text-xs text-neutral-400 mt-0.5">{e.detail}</p>}
+              {e.detail && <p className="text-xs mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{e.detail}</p>}
             </div>
           </li>
         ))}
@@ -569,10 +570,10 @@ function SettingsTab({ project, onRenamed, onArchiveToggled, onDeleted }: {
   return (
     <div className="max-w-lg space-y-4">
       <div className="rounded-2xl p-5" style={cardStyle}>
-        <label className="block text-xs font-semibold text-neutral-700 mb-1.5">Project name</label>
+        <label className="block text-xs font-semibold mb-1.5" style={{ color: HOME_COLORS.onSurface }}>Project name</label>
         <div className="flex gap-2">
-          <input value={name} onChange={e => setName(e.target.value)} className="flex-1 px-3 py-2 text-sm rounded-lg" style={{ background: 'white', border: '1px solid #E0E2E4' }} />
-          <button onClick={handleRename} disabled={saving || !name.trim() || name === project.name} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg text-white disabled:opacity-50" style={{ background: '#1C3D2E' }}>
+          <input value={name} onChange={e => setName(e.target.value)} className="flex-1 px-3 py-2 text-sm rounded-lg outline-none" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }} />
+          <button onClick={handleRename} disabled={saving || !name.trim() || name === project.name} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full disabled:opacity-50" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
             <Pencil size={12} /> Save
           </button>
         </div>
@@ -580,21 +581,21 @@ function SettingsTab({ project, onRenamed, onArchiveToggled, onDeleted }: {
 
       <div className="rounded-2xl p-5 flex items-center justify-between gap-3" style={cardStyle}>
         <div>
-          <p className="text-sm font-semibold text-neutral-900">{project.archived ? 'Archived' : 'Archive this project'}</p>
-          <p className="text-xs mt-0.5" style={{ color: '#5F6368' }}>{project.archived ? 'Restore it to make it active again.' : 'Hide it from the active projects list without deleting anything.'}</p>
+          <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{project.archived ? 'Archived' : 'Archive this project'}</p>
+          <p className="text-xs mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{project.archived ? 'Restore it to make it active again.' : 'Hide it from the active projects list without deleting anything.'}</p>
         </div>
-        <button onClick={handleArchiveToggle} disabled={archiving} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg flex-shrink-0" style={{ background: '#F4F6F8', color: '#374151' }}>
+        <button onClick={handleArchiveToggle} disabled={archiving} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.onSurface }}>
           {project.archived ? <ArchiveRestore size={13} /> : <Archive size={13} />}
           {project.archived ? 'Restore' : 'Archive'}
         </button>
       </div>
 
-      <div className="rounded-2xl p-5 flex items-center justify-between gap-3" style={{ background: '#FEF2F2', border: '1px solid #FEE2E2' }}>
+      <div className="rounded-2xl p-5 flex items-center justify-between gap-3" style={{ background: '#FFDAD6' }}>
         <div>
-          <p className="text-sm font-semibold text-red-700">Delete this project</p>
-          <p className="text-xs mt-0.5 text-red-500">Permanent. Linked personas/interviews are unassigned, not deleted.</p>
+          <p className="text-sm font-semibold" style={{ color: HOME_COLORS.error }}>Delete this project</p>
+          <p className="text-xs mt-0.5" style={{ color: HOME_COLORS.error }}>Permanent. Linked personas/interviews are unassigned, not deleted.</p>
         </div>
-        <button onClick={handleDelete} disabled={deleting} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg text-white flex-shrink-0" style={{ background: '#DC2626' }}>
+        <button onClick={handleDelete} disabled={deleting} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full text-white flex-shrink-0" style={{ background: HOME_COLORS.error }}>
           <Trash2 size={13} /> Delete
         </button>
       </div>
@@ -606,13 +607,13 @@ function SettingsTab({ project, onRenamed, onArchiveToggled, onDeleted }: {
 
 function EmptyState({ icon: Icon, title, description }: { icon: typeof Users; title: string; description: string }) {
   return (
-    <div className="flex items-center justify-center rounded-2xl py-16" style={{ background: 'white', border: '1px dashed #E0E2E4' }}>
+    <div className="flex items-center justify-center rounded-2xl py-16" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px dashed ${HOME_COLORS.outlineVariant}` }}>
       <div className="text-center max-w-sm px-6">
-        <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: '#E8F3EF' }}>
-          <Icon size={20} style={{ color: '#1C3D2E' }} />
+        <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: HOME_COLORS.secondaryContainer }}>
+          <Icon size={20} style={{ color: HOME_COLORS.primary }} />
         </div>
-        <p className="text-sm font-semibold" style={{ color: '#202124' }}>{title}</p>
-        <p className="text-xs mt-1" style={{ color: '#5F6368' }}>{description}</p>
+        <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{title}</p>
+        <p className="text-xs mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>{description}</p>
       </div>
     </div>
   )
