@@ -55,7 +55,7 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
   const paragraph = briefing ? briefing.observations.join(' ') : ''
 
   return (
-    <section className="relative p-6 sm:p-10 overflow-hidden" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+    <section className="relative p-6 sm:p-10 pb-16 sm:pb-20 overflow-hidden" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left — headline */}
         <div className="lg:col-span-7">
@@ -72,20 +72,20 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
             </div>
           ) : (
             <>
-              <h1 className="mb-6 leading-tight max-w-2xl text-2xl sm:text-3xl lg:text-[34px] line-clamp-3" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.25 }}>
+              <h1 className="mb-4 leading-snug max-w-2xl text-xl sm:text-2xl lg:text-[26px] line-clamp-3" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, letterSpacing: '-0.02em' }}>
                 {briefing.summary}
               </h1>
               {paragraph && (
                 <div className="mb-8 max-w-xl">
-                  <p className={`text-sm sm:text-base leading-relaxed ${expanded ? '' : 'line-clamp-4'}`} style={{ color: '#859585' }}>
+                  <p className={`text-sm leading-relaxed ${expanded ? '' : 'line-clamp-3'}`} style={{ color: '#859585' }}>
                     {paragraph}
                   </p>
                   <button
                     onClick={() => setExpanded(e => !e)}
-                    className="mt-2 text-xs font-semibold uppercase tracking-wide underline underline-offset-2 bg-transparent"
-                    style={{ color: HOME_COLORS.primaryFixedDim, border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
+                    className="mt-1.5 text-xs bg-transparent text-white/45 hover:text-white/80 transition-colors"
+                    style={{ border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit' }}
                   >
-                    {expanded ? 'Read less' : 'Read more'}
+                    {expanded ? 'Show less' : 'Read more'} →
                   </button>
                 </div>
               )}
@@ -93,7 +93,7 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
           )}
 
           <div className="flex flex-wrap gap-4">
-            <Link href="/signals" className="px-8 py-3 rounded-full text-sm font-semibold transition-colors" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>
+            <Link href="/signals" className="px-8 py-3 rounded-full text-sm font-semibold bg-[#d4e8d5] hover:bg-[#fcf9f8] hover:shadow-xl transition-all" style={{ color: HOME_COLORS.onPrimaryFixed }}>
               Deep dive into signals
             </Link>
             <button onClick={handleShare} className="flex items-center gap-1.5 px-8 py-3 rounded-full text-sm font-semibold bg-transparent transition-colors hover:bg-white/10" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}55`, color: HOME_COLORS.onPrimary }}>

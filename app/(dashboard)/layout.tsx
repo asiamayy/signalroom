@@ -40,7 +40,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--nf-inter', display: 'swap
 const playfair = Playfair_Display({ subsets: ['latin'], weight: ['500', '600'], variable: '--nf-playfair', display: 'swap' })
 // Home page only — its editorial redesign uses this serif/grotesk pairing
 // instead of Playfair/Inter, matching the reference mockup exactly.
-const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['600'], variable: '--nf-source-serif', display: 'swap' })
+const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['600'], style: ['normal', 'italic'], variable: '--nf-source-serif', display: 'swap' })
 const hanken = Hanken_Grotesk({ subsets: ['latin'], weight: ['400', '600', '700'], variable: '--nf-hanken', display: 'swap' })
 
 const NAV_ITEMS = [

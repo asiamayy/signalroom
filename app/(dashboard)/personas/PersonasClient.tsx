@@ -360,13 +360,8 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                     key={persona.id}
                     layoutId={`persona-card-${persona.id}`}
                     className="relative group rounded-2xl overflow-hidden cursor-pointer"
-                    onClick={(e) => {
-                      // Don't change selection if clicking archive button area
-                      const target = e.target as HTMLElement
-                      if (target.closest('[data-archive-btn]')) return
-                      setSelectedId(persona.id)
-                    }}
-                    whileHover={!isSelected ? { y: -6, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' } : undefined}
+                    onClick={() => setSelectedId(persona.id)}
+                    whileHover={!isSelected ? { y: -4, boxShadow: '0 10px 24px -8px rgba(0,0,0,0.14)' } : undefined}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     style={{
                       background: isSelected ? '#F2F3EE' : 'white',
@@ -390,28 +385,6 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                           <Check size={10} color="white" strokeWidth={3.5} />
                         </span>
                         Selected
-                      </div>
-                    )}
-
-                    {/* Archive button — always visible on mobile, hover-only on desktop */}
-                    {!isSelected && (
-                      <div
-                        data-archive-btn="true"
-                        className="absolute top-5 right-5 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={(e) => handleArchive(e, persona.id)}
-                          disabled={archiving === persona.id}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-neutral-400 hover:text-amber-500 transition-colors"
-                          style={{ background: 'white', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
-                          title="Archive persona"
-                        >
-                          {archiving === persona.id
-                            ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                            : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-                          }
-                        </button>
                       </div>
                     )}
 
@@ -473,6 +446,20 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                       >
                         Start Interview
                       </Link>
+                      {!isSelected && (
+                        <button
+                          onClick={(e) => handleArchive(e, persona.id)}
+                          disabled={archiving === persona.id}
+                          className="w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-neutral-400 hover:text-amber-500 transition-colors"
+                          style={{ background: 'white', border: '1px solid #DADCE0' }}
+                          title="Archive persona"
+                        >
+                          {archiving === persona.id
+                            ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                            : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                          }
+                        </button>
+                      )}
                     </div>
 
                     {/* Subtle "Show preview" link — always visible when selected, hover-reveal otherwise */}

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
-  Activity, Filter, ArrowUp, ArrowDown, Gauge, Share2, Lightbulb, TrendingUp, TrendingDown,
+  Activity, Filter, ArrowUp, ArrowDown, Gauge, Share2, Lightbulb, TrendingUp, TrendingDown, ChevronDown,
 } from 'lucide-react'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW, formatRelativeTime } from '@/lib/utils'
@@ -101,9 +101,9 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
       {/* Hero */}
       <section className="relative px-4 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-16 overflow-hidden">
-        <div className="absolute top-10 right-8 sm:right-16 flex items-center pointer-events-none hidden sm:flex">
-          <div className="w-20 h-20 rounded-full" style={{ background: HOME_COLORS.outlineVariant }} />
-          <div className="w-20 h-20 rounded-full -ml-10" style={{ background: HOME_COLORS.surfaceContainerHigh, border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
+        <div className="absolute -top-4 right-0 sm:right-8 pointer-events-none hidden sm:block" style={{ width: 320, height: 260 }}>
+          <div className="absolute rounded-full" style={{ width: 220, height: 220, top: 0, left: 0, background: HOME_COLORS.outlineVariant, opacity: 0.22 }} />
+          <div className="absolute rounded-full" style={{ width: 220, height: 220, top: 70, left: 130, background: HOME_COLORS.primary, opacity: 0.12 }} />
         </div>
         <div className="relative z-10 max-w-3xl">
           <div className="flex items-center gap-3 mb-4">
@@ -111,7 +111,7 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
             <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Stream</span>
           </div>
           <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
-            Market <span className="italic" style={{ fontWeight: 400 }}>Signals</span>
+            Market <span className="italic">Signals</span>
           </h1>
           <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
             {initialSignals.length > 0
@@ -149,25 +149,25 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
 
           {showFilters && (
             <div className="flex flex-wrap items-center gap-2 -mt-2">
-              <select value={projectId} onChange={e => setProjectId(e.target.value)} className="text-xs rounded-lg px-3 py-2" style={selectStyle}>
+              <FilterSelect value={projectId} onChange={e => setProjectId(e.target.value)}>
                 <option value="">All projects</option>
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-              <select value={personaId} onChange={e => setPersonaId(e.target.value)} className="text-xs rounded-lg px-3 py-2" style={selectStyle}>
+              </FilterSelect>
+              <FilterSelect value={personaId} onChange={e => setPersonaId(e.target.value)}>
                 <option value="">All personas</option>
                 {personas.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-              <select value={interviewId} onChange={e => setInterviewId(e.target.value)} className="text-xs rounded-lg px-3 py-2" style={selectStyle}>
+              </FilterSelect>
+              <FilterSelect value={interviewId} onChange={e => setInterviewId(e.target.value)}>
                 <option value="">All interviews</option>
                 {interviews.map(i => <option key={i.id} value={i.id}>{i.title}</option>)}
-              </select>
-              <select value={type} onChange={e => setType(e.target.value as SignalType | '')} className="text-xs rounded-lg px-3 py-2" style={selectStyle}>
+              </FilterSelect>
+              <FilterSelect value={type} onChange={e => setType(e.target.value as SignalType | '')}>
                 <option value="">All types</option>
                 {Object.entries(SIGNAL_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-              </select>
-              <select value={dateRange} onChange={e => setDateRange(e.target.value)} className="text-xs rounded-lg px-3 py-2" style={selectStyle}>
+              </FilterSelect>
+              <FilterSelect value={dateRange} onChange={e => setDateRange(e.target.value)}>
                 {DATE_RANGES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </select>
+              </FilterSelect>
               <label className="flex items-center gap-2 text-xs ml-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 Min confidence
                 <input
@@ -280,6 +280,22 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
           </section>
         </aside>
       </div>
+    </div>
+  )
+}
+
+function FilterSelect({ value, onChange, children }: { value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; children: React.ReactNode }) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={onChange}
+        className="appearance-none text-xs rounded-lg pl-3 pr-8 py-2 outline-none cursor-pointer"
+        style={selectStyle}
+      >
+        {children}
+      </select>
+      <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: HOME_COLORS.onSurfaceVariant }} />
     </div>
   )
 }

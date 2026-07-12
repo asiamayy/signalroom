@@ -14,7 +14,7 @@ interface StrategicFocusProps {
 
 export function StrategicFocus({ projectId, projectName, signals }: StrategicFocusProps) {
   return (
-    <div className="rounded-2xl p-6 relative overflow-hidden" style={{ background: HOME_COLORS.surfaceContainer, boxShadow: CARD_SHADOW }}>
+    <div className="rounded-2xl p-6 relative overflow-hidden" style={{ background: '#ECEAE9', boxShadow: CARD_SHADOW }}>
       <div className="absolute -right-4 -top-4 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: `${HOME_COLORS.primary}0d` }} />
 
       <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 relative" style={{ color: HOME_COLORS.onSurface }}>

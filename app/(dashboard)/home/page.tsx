@@ -154,7 +154,7 @@ export default async function HomePage() {
       />
 
       {/* Metrics ribbon — overlaps the hero */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-10 -mt-8 relative z-20">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-10 -mt-6 relative z-20">
         <RibbonStat icon={FolderOpen} label="Active Projects" value={allProjects.length} />
         <RibbonStat icon={Users} label="Total Personas" value={allPersonas.length} />
         <RibbonStat icon={Mic} label="Interviews" value={allInterviews.length} />
@@ -220,15 +220,16 @@ export default async function HomePage() {
                   {timelineEvents.map((e, i) => {
                     const Icon = ACTIVITY_ICONS[e.type]
                     return (
-                      <div key={i} className="flex gap-4">
+                      <div key={i} className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center" style={{ background: i % 2 === 0 ? HOME_COLORS.primaryFixedDim : HOME_COLORS.secondaryContainer }}>
                           <Icon size={16} style={{ color: i % 2 === 0 ? HOME_COLORS.onPrimaryFixedVariant : HOME_COLORS.onSecondaryContainer }} />
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm truncate" style={{ color: HOME_COLORS.onSurface }} title={e.detail ? `${e.title}: ${e.detail}` : e.title}>
-                            {e.title}{e.detail && <>: <span className="font-semibold">{e.detail}</span></>}
-                          </p>
-                          <p className="text-xs mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(e.timestamp)}</p>
+                        <div className="min-w-0 flex-1 flex items-baseline justify-between gap-4">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate" style={{ color: HOME_COLORS.onSurface }}>{e.title}</p>
+                            {e.detail && <p className="text-xs truncate mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{e.detail}</p>}
+                          </div>
+                          <span className="text-xs flex-shrink-0 whitespace-nowrap" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(e.timestamp)}</span>
                         </div>
                       </div>
                     )

@@ -117,12 +117,12 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="group relative flex items-center gap-3 px-8 py-4 rounded-full transition-all hover:pr-10 hover:shadow-xl active:scale-95 flex-shrink-0"
+          className="group relative flex items-center gap-3 px-8 py-4 rounded-full transition-all duration-300 ease-out hover:pr-10 hover:shadow-xl active:scale-95 flex-shrink-0"
           style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}
         >
           <Plus size={20} />
           <span className="text-sm font-semibold">Create New Project</span>
-          <ArrowRight size={18} className="absolute right-4 opacity-0 group-hover:opacity-100 transition-all" />
+          <ArrowRight size={18} className="absolute right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out" />
         </button>
       </section>
 
