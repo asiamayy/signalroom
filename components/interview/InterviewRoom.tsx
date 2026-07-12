@@ -289,9 +289,9 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
               <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 {interview.persona?.name}
               </span>
-              <div className="rounded-xl px-6 py-5 max-w-[92%] sm:max-w-[85%] shadow-sm group-hover:shadow-md transition-shadow" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
+              <div className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] shadow-sm group-hover:shadow-md transition-shadow duration-300" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}>
                 {streamingText
-                  ? <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-[15px]">{streamingText}<span className="inline-block w-0.5 h-4 ml-0.5 animate-pulse align-middle bg-neutral-800" /></p>
+                  ? <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-sm">{streamingText}<span className="inline-block w-0.5 h-4 ml-0.5 animate-pulse align-middle bg-neutral-800" /></p>
                   : <div className="flex gap-1.5 py-1">
                       <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '0ms' }} />
                       <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: HOME_COLORS.onSurfaceVariant, animationDelay: '150ms' }} />
@@ -483,10 +483,10 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
         )}
         {message.content && (
           <div
-            className="rounded-xl px-6 py-5 max-w-[92%] sm:max-w-[85%] shadow-sm hover:shadow-md transition-shadow"
+            className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] shadow-sm hover:shadow-md transition-shadow duration-300"
             style={{ background: HOME_COLORS.primary }}
           >
-            <p className="font-sans font-normal tracking-normal leading-relaxed whitespace-pre-wrap text-[15px]" style={{ color: HOME_COLORS.onPrimary }}>{message.content}</p>
+            <p className="font-sans font-normal tracking-normal leading-relaxed whitespace-pre-wrap text-sm" style={{ color: HOME_COLORS.onPrimary }}>{message.content}</p>
           </div>
         )}
       </div>
@@ -499,10 +499,10 @@ function MessageBubble({ message, persona }: { message: Message; persona: any })
         {persona?.name} · {formatRelativeTime(message.timestamp)}
       </span>
       <div
-        className="rounded-xl px-6 py-5 max-w-[92%] sm:max-w-[85%] shadow-sm group-hover:shadow-md transition-shadow"
+        className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] shadow-sm group-hover:shadow-md transition-shadow duration-300"
         style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}33` }}
       >
-        <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-[15px]">{message.content}</p>
+        <p className="font-sans font-normal text-neutral-800 tracking-normal leading-relaxed whitespace-pre-wrap text-sm">{message.content}</p>
       </div>
     </div>
   )
