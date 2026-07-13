@@ -25,14 +25,13 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const prompt = `An elegant, premium minimalist editorial graphic conceptually abstracting the theme: ${project.name}.
+  const prompt = `An elegant, premium minimalist editorial tech graphic conceptually abstracting the theme: ${project.name}, focused on network connectivity.
 
-The composition features a sophisticated, asymmetric balance of clean geometric structures, sweeping vector lines, and smooth, understated gradients set against a vast background. Reminiscent of a high-end print magazine layout or a contemporary gallery exhibition poster.
+The composition features a sophisticated, asymmetric vector mesh network of delicate interconnected nodes, fine data lines, and crisp digital constellations. Sharp, razor-thin intersecting lines create a premium abstract node topology across the frame, seamlessly balancing technical precision with a high-end contemporary gallery layout.
 
-Color Palette & Texture: The palette is masterfully anchored by Deep Forest Shadow—a heavy botanical green with strong charcoal undertones bordering on off-black. It transitions fluidly into Muted Willow Olive—a dry, earthy mid-tone olive reminiscent of dried sage leaves and weathered river stones. Accent elements are rendered in Pale Khaki Mist—a highly diluted, translucent grey-green tint resembling warm alabaster. The entire layout is structured against a clean, expansive background of muted gallery taupe and soft stone-tinted chalky plaster, with sharp line work in Slate Charcoal Grey and Cool Pebble Grey for crisp editorial contrast.
+Color Palette & Texture: The background is masterfully anchored by Deep Forest Shadow—a heavy botanical green with strong charcoal undertones bordering on off-black. It features ultra-subtle, flat digital color transitions into Muted Willow Olive. The nodes and fine connectivity lines are rendered in sharp, high-contrast Pale Khaki Mist and Cool Pebble Grey, making the network grid pop with crisp, clean editorial precision. Absolutely flat 2D graphic execution, devoid of 3D depth, shading, or organic sculpting.
 
-Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, grids, wireframes, graphs, mockup windows.
-Strictly Forbidden: humans, faces, hands, animals, literal photographic objects, photorealism, busy patterns, crowded layouts.`
+Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, mockup windows, claymation, 3D rendering, plastic, clay texture, depth of field, blur, smooth 3D shading, realistic objects, humans, faces, hands, animals.`
 
   async function callFal() {
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
