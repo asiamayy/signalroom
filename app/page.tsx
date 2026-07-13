@@ -604,7 +604,7 @@ export default function LandingPage() {
             {/* 02 // Signal */}
             <div className="p-6 sm:p-10 flex flex-col bg-[#e9edea] relative shadow-xl shadow-black/[0.01]">
               <div className="absolute top-0 right-0 bg-[#1A3024] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
-              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1A3024] mb-8 sm:mb-10">02 // Core</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1A3024] mb-8 sm:mb-10">02 // Signal</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1A3024] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
               <p className="text-xs text-[#1A3024] font-medium mb-4">Replace slow research cycles with continuous customer intelligence for faster product decisions.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
@@ -624,7 +624,7 @@ export default function LandingPage() {
 
             {/* 03 // Broadcast */}
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group thin-border">
-              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">03 // Scale</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">03 // Broadcast</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Broadcast</h3>
               <p className="text-xs text-neutral-500 mb-4">For agencies and growing teams requiring comprehensive organization-wide research scaling.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
