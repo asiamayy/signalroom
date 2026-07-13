@@ -25,20 +25,14 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  // The prior "technical diagram" framing was deliberately sparse (a
-  // couple of thin lines and one shape on empty white) to dodge earlier
-  // failure modes (masthead text from "cover art" framing, generic people
-  // from "illustration" framing). That sparseness reads as broken/empty at
-  // card thumbnail size. This version keeps the same two hard bans (no
-  // text, no people) but asks for a genuinely fuller, richer composition,
-  // and describes the brand palette in plain color language instead of
-  // hex — hex codes aren't something these models parse reliably and
-  // previously caused the output to degenerate into flat color blocks.
-  const prompt = `Abstract geometric editorial artwork inspired by the concept of ${project.name}. A rich, confident composition of bold overlapping organic and geometric shapes filling the frame, layered depth, soft gradients, subtle paper-like texture — sophisticated modern-art aesthetic reminiscent of premium print design and gallery posters. Color palette: deep forest green, warm editorial cream and clay, muted sage green, charcoal — a cohesive, elegant, editorial color story with real contrast and visual weight, not a flat empty layout. Flat illustration style, no photorealism, no 3D rendering.
+  const prompt = `An elegant, premium minimalist editorial graphic conceptually abstracting the theme: ${project.name}.
 
-Strictly forbidden: text, letters, numbers, words, typography, logos, watermarks, signage, UI elements, charts, screens.
-Strictly forbidden: people, human figures, faces, hands, body parts, animals, characters.
-Strictly forbidden: photorealistic scenes, literal objects, stock-photo imagery.`
+The composition features a sophisticated, asymmetric balance of clean geometric structures, sweeping vector lines, and smooth, understated gradients set against a vast background. Reminiscent of a high-end print magazine or a contemporary gallery exhibition poster.
+
+Color Palette: Masterfully dominated by a rich, deep estate forest green, set against an elegant, clean background of warm editorial cream and text-weight raw linen, with delicate accents of muted silver-sage green and crisp charcoal black. The design utilizes your precise brand tones with high-end editorial contrast.
+
+Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, grids, wireframes, graphs, mockup windows.
+Strictly Forbidden: humans, faces, hands, animals, literal photographic objects, photorealism, busy patterns, crowded layouts.`
 
   async function callFal() {
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
