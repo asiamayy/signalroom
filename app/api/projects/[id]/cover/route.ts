@@ -25,13 +25,13 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const prompt = `An elegant, premium minimalist editorial tech graphic conceptually abstracting the theme: ${project.name}, focused on network connectivity.
+  const prompt = `An elegant, minimalist 2D corporate tech illustration conceptually abstracting the theme: ${project.name}.
 
-The composition features a sophisticated, asymmetric vector mesh network of delicate interconnected nodes, fine data lines, and crisp digital constellations. Sharp, razor-thin intersecting lines create a premium abstract node topology across the frame, seamlessly balancing technical precision with a high-end contemporary gallery layout.
+The design is clean, flat, and professional, perfectly suited for a high-end SaaS application card. The composition relies on clean negative space and flat vector elements, varying naturally based on the project theme. The execution is strictly 2D with clean lines, avoiding heavy 3D rendering, realistic textures, or thick organic shading.
 
-Color Palette & Texture: The background is masterfully anchored by Deep Forest Shadow—a heavy botanical green with strong charcoal undertones bordering on off-black. It features ultra-subtle, flat digital color transitions into Muted Willow Olive. The nodes and fine connectivity lines are rendered in sharp, high-contrast Pale Khaki Mist and Cool Pebble Grey, making the network grid pop with crisp, clean editorial precision. Absolutely flat 2D graphic execution, devoid of 3D depth, shading, or organic sculpting.
+Color Palette: The dominant background is a clean, light gallery taupe or soft off-white to maintain a bright, premium aesthetic. Accent shapes, flat vectors, and fine lines utilize a sophisticated corporate mix of Muted Willow Olive, Deep Forest Shadow, and Slate Charcoal Grey.
 
-Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, mockup windows, claymation, 3D rendering, plastic, clay texture, depth of field, blur, smooth 3D shading, realistic objects, humans, faces, hands, animals.`
+Strictly Forbidden: claymation, heavy 3D rendering, plastic or clay textures, glowing neon lights, dark sci-fi space backgrounds, heavy camera blur, depth of field, out-of-focus elements, text, typography, UI windows.`
 
   async function callFal() {
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
