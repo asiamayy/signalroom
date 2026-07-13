@@ -27,9 +27,9 @@ export async function POST(
 
   const prompt = `An elegant, premium minimalist editorial graphic conceptually abstracting the theme: ${project.name}.
 
-The composition features a sophisticated, asymmetric balance of clean geometric structures, sweeping vector lines, and smooth, understated gradients set against a vast background. Reminiscent of a high-end print magazine or a contemporary gallery exhibition poster.
+The composition features a sophisticated, asymmetric balance of clean geometric structures, sweeping vector lines, and smooth, understated gradients set against a vast background. Reminiscent of a high-end print magazine layout or a contemporary gallery exhibition poster.
 
-Color Palette: Masterfully dominated by a rich, deep estate forest green, set against an elegant, clean background of warm editorial cream and text-weight raw linen, with delicate accents of muted silver-sage green and crisp charcoal black. The design utilizes your precise brand tones with high-end editorial contrast.
+Color Palette & Texture: The palette is masterfully anchored by Deep Forest Shadow—a heavy botanical green with strong charcoal undertones bordering on off-black. It transitions fluidly into Muted Willow Olive—a dry, earthy mid-tone olive reminiscent of dried sage leaves and weathered river stones. Accent elements are rendered in Pale Khaki Mist—a highly diluted, translucent grey-green tint resembling warm alabaster. The entire layout is structured against a clean, expansive background of muted gallery taupe and soft stone-tinted chalky plaster, with sharp line work in Slate Charcoal Grey and Cool Pebble Grey for crisp editorial contrast.
 
 Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, grids, wireframes, graphs, mockup windows.
 Strictly Forbidden: humans, faces, hands, animals, literal photographic objects, photorealism, busy patterns, crowded layouts.`
