@@ -25,12 +25,11 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const prompt = `An elegant, premium minimalist corporate 2D vector graphic conceptually abstracting the theme: ${project.name}.
-The composition features a sophisticated, completely flat 2D layout composed of large, smooth overlapping curved shapes and clean, minimalist geometric color blocks. The design uses an abundance of clean, empty negative space to maintain a premium digital layout. The execution is strictly a flat 2D graphic, entirely devoid of perspective, depth, texture, horizons, sky, land, or environmental elements.
-Color Palette: The palette is masterfully anchored by a heavy dark charcoal-green color bordering on off-black. It transitions cleanly into a dry, muted earthy mid-tone olive green color. Accent elements are rendered in a highly diluted, translucent pale mint-grey tint. The entire layout is structured against a completely flat, monochromatic, expansive 2D background of cool minimalist light grey and muted grey-white tones, with clean line work in dark charcoal grey for crisp contrast.
-Strictly Forbidden: text, typography, words, letters, labels, numbers, gibberish, logos, watermarks, UI components, mockups, data boxes, charts, grids, wireframes, graphs, mockup windows, circuit lines, data lines, HUD elements.
-Strictly Forbidden: mountains, hills, terrain, horizons, scenery, nature, water, rivers, forests, trees, landscapes, moss, stone texture, DNA strands, waves, plants, leaves, animals, humans.
-Strictly Forbidden: 3D rendering, claymation, paper-cut style, shadows, realistic textures, physical objects, depth of field, blur, out-of-focus elements, sci-fi glowing effects.`
+  const prompt = `An elegant, premium minimalist editorial 2D vector graphic conceptually and dramatically abstracting the theme: ${project.name}.
+The composition features a sophisticated, dramatic conceptual metaphor interpreting the project title. The style relies on sweeping vector lines, bold geometric color blocking, and a powerful asymmetric balance of shapes set against a vast background, reminiscent of a high-end conceptual magazine illustration. Depending on the theme, this interpretation might utilize solitary human silhouettes to convey scale or emotion, or it might translate technical concepts into clean, monolithic geometric structures and sharp frameworks.
+Color Palette: The palette is masterfully anchored by Deep Forest Shadow—a heavy dark charcoal-green bordering on off-black. It transitions fluidly into Muted Willow Olive—a dry, mid-tone olive. Accent elements utilize Pale Khaki Mist—a altamente diluted translucent grey-green. The layout is structured against a completely flat, expansive 2D background of gallery taupe and soft stone-tinted chalky matte tones, with clean line work in Slate Charcoal Grey and Cool Pebble Grey.
+Strictly Forbidden: text, typography, words, letters, labels, numbers, gibberish, logos, watermarks, UI components, data boxes, charts, grids, wireframes, graphs, mockup windows, flowers, messy botanical elements.
+Strictly Forbidden: heavy 3D rendering, claymation, plastic or clay textures, glowing neon lights, dark sci-fi space backgrounds, heavy camera blur, depth of field, out-of-focus elements, realistic photo objects, photorealism.`
 
   async function callFal() {
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
