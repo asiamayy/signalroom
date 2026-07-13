@@ -58,7 +58,7 @@ const SURPRISE_TRAITS = [
 
 function buildSurprisePrompt(): string {
   const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
-  return `${pick(SURPRISE_SENIORITIES)} ${pick(SURPRISE_ROLES)} ${pick(SURPRISE_ORG_CONTEXTS)}, ${pick(SURPRISE_TRAITS)}. Make this a specific, sophisticated, nuanced individual — not a generic archetype.`
+  return `${pick(SURPRISE_SENIORITIES)} ${pick(SURPRISE_ROLES)} ${pick(SURPRISE_ORG_CONTEXTS)}, ${pick(SURPRISE_TRAITS)}.`
 }
 
 // ─── Default state ────────────────────────────────────────────────────────────
@@ -167,11 +167,17 @@ export default function PersonaBuilder() {
     }
   }
 
+  const [surprising, setSurprising] = useState(false)
   const handleGenerate = () => runGenerate(aiPrompt)
-  const handleSurpriseMe = () => {
+  const handleSurpriseMe = async () => {
     const prompt = buildSurprisePrompt()
     setAiPrompt(prompt)
-    runGenerate(prompt)
+    setSurprising(true)
+    try {
+      await runGenerate(prompt)
+    } finally {
+      setSurprising(false)
+    }
   }
 
   // ─── Avatar generation ───────────────────────────────────────────────────────
@@ -554,11 +560,20 @@ export default function PersonaBuilder() {
               <button
                 onClick={handleSurpriseMe}
                 disabled={generating}
-                className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-lg transition-colors"
-                style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+                className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-lg transition-colors disabled:opacity-60"
+                style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: surprising ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
               >
-                Surprise me
-                <Sparkles size={12} style={{ color: '#1C3D2E' }} />
+                {surprising ? (
+                  <>
+                    Generating…
+                    <Loader2 size={12} className="animate-spin" style={{ color: '#1C3D2E' }} />
+                  </>
+                ) : (
+                  <>
+                    Surprise me
+                    <Sparkles size={12} style={{ color: '#1C3D2E' }} />
+                  </>
+                )}
               </button>
 
               <p className="text-[11px] italic leading-relaxed mt-4" style={{ color: '#9CA3AF' }}>

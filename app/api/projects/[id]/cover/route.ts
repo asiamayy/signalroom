@@ -25,14 +25,8 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  // Neither named colors ("dark green and cream") nor literal hex codes got
-  // the exact brand palette reliably — these models read color language
-  // approximately at best, and hex strings just confused it into flat
-  // color blocks. So color is no longer the model's job at all: it
-  // generates pure black-and-white line art (compositionally, these models
-  // are actually good at that), and DuotoneImage (components/ui/DuotoneImage.tsx)
-  // remaps black->primary green and white->cream via an SVG filter in the
-  // browser, which is exact because it's applied by CSS, not the AI.
+  // Monochrome line-diagram art, shown as the AI generated it — no brand
+  // color remap applied on top.
   const prompt = `Abstract minimal line diagram in the style of a network graph or data visualization, sparse and geometric, inspired by the concept of ${project.name}. Thin connecting lines between a few small circular nodes, one or two soft overlapping geometric shapes, generous empty negative space, flat vector style, no shading, no gradients, no depth, no photorealism. Pure black and white line art, monochrome, high contrast, black ink on a white background. This is a technical diagram, not an illustration or artwork.
 
 Strictly forbidden: any color other than black and white.

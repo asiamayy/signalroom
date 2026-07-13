@@ -13,7 +13,6 @@ import {
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
-import { DuotoneFilterDefs, DuotoneImage } from '@/components/ui/DuotoneImage'
 import { useSearch } from '@/lib/search-context'
 import type { Project } from '@/types'
 
@@ -182,7 +181,6 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
 
   return (
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full" onClick={() => openMenuId && setOpenMenuId(null)}>
-      <DuotoneFilterDefs />
       {/* Header & primary action */}
       <section className="px-4 sm:px-10 pt-10 sm:pt-12 pb-12 sm:pb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="max-w-2xl">
@@ -398,7 +396,8 @@ function ProjectCard({ rollup, onDelete, deleting, onRegenerateCover, regenerati
     >
       <Link href={`/projects/${project.id}`} className="relative h-40 sm:h-48 overflow-hidden block" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
         {project.cover_image_url ? (
-          <DuotoneImage
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={project.cover_image_url}
             alt=""
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -424,7 +423,7 @@ function ProjectCard({ rollup, onDelete, deleting, onRegenerateCover, regenerati
             <RefreshCw size={14} className={regenerating ? 'animate-spin' : undefined} />
           </button>
           <button
-            onClick={e => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete "${project.name}"? This cannot be undone. Personas and interviews inside it will become unassigned, not deleted.`)) onDelete() }}
+            onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
             title="Delete project"
             className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md"
             style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
