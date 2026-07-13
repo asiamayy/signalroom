@@ -125,14 +125,17 @@ export default function LandingPage() {
   useEffect(() => {
     setStreamingText('');
     setIsSimulating(true);
-    let charIdx = 0;
     const targetPayload = selectedPersona.interviewQuote;
+    let charCount = 0;
 
+    // Recompute the substring from scratch each tick (rather than
+    // accumulating via prev + char) so this stays correct even under
+    // React Strict Mode's dev-only double effect invocation, which
+    // otherwise risks losing the first character or two.
     const stream = setInterval(() => {
-      if (charIdx < targetPayload.length) {
-        setStreamingText((prev) => prev + targetPayload.charAt(charIdx));
-        charIdx++;
-      } else {
+      charCount++;
+      setStreamingText(targetPayload.slice(0, charCount));
+      if (charCount >= targetPayload.length) {
         clearInterval(stream);
         setIsSimulating(false);
       }
@@ -142,7 +145,7 @@ export default function LandingPage() {
   }, [selectedPersona]);
 
   return (
-    <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased">
+    <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCF9F8] text-[#121314] antialiased">
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
       <div 
