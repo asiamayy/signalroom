@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, Plus, ArrowRight, Calendar, ArrowUp, ArrowDown, Briefcase,
-  MoreVertical, ArchiveRestore, Trash2, Loader2, Database,
+  MoreVertical, ArchiveRestore, Trash2, Loader2, Database, RefreshCw,
   Code2, ShoppingBag, HeartPulse, Landmark, UtensilsCrossed, GraduationCap,
   Plane, Home as HomeIcon, Shirt, Car, Film, Zap, Truck, Sparkles,
   PawPrint, Leaf, ShieldCheck, Music, Gamepad2, type LucideIcon,
@@ -79,6 +79,7 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
   const [showAllArchive, setShowAllArchive] = useState(false)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null)
 
   const matchesSearch = (r: ProjectRollup) => r.project.name.toLowerCase().includes(search.toLowerCase())
 
@@ -124,6 +125,30 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
       setRollups(prev => prev.map(r => r.project.id === id ? { ...r, project: { ...r.project, cover_image_url: json.data.cover_image_url } } : r))
     } catch (e) {
       console.error('Cover generation failed:', e)
+    }
+  }
+
+  // Cover generation previously only fired at creation time, so every
+  // project made before this feature existed (or where the fire-and-forget
+  // call above silently failed) was permanently stuck on the fallback icon
+  // with no way to ever get one. Backfill once per project on load.
+  const backfilledRef = useRef(new Set<string>())
+  useEffect(() => {
+    for (const r of rollups) {
+      if (!r.project.cover_image_url && !r.project.archived && !backfilledRef.current.has(r.project.id)) {
+        backfilledRef.current.add(r.project.id)
+        generateCoverInBackground(r.project.id)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleRegenerateCover = async (id: string) => {
+    setRegeneratingId(id)
+    try {
+      await generateCoverInBackground(id)
+    } finally {
+      setRegeneratingId(null)
     }
   }
 
@@ -240,6 +265,8 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
               rollup={rollup}
               onDelete={() => handleDelete(rollup.project.id, rollup.project.name)}
               deleting={actionLoading === rollup.project.id}
+              onRegenerateCover={() => handleRegenerateCover(rollup.project.id)}
+              regenerating={regeneratingId === rollup.project.id}
             />
           ))
         )}
@@ -355,7 +382,7 @@ export function ProjectsClient({ initialRollups }: { initialRollups: ProjectRoll
   )
 }
 
-function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; onDelete: () => void; deleting: boolean }) {
+function ProjectCard({ rollup, onDelete, deleting, onRegenerateCover, regenerating }: { rollup: ProjectRollup; onDelete: () => void; deleting: boolean; onRegenerateCover: () => void; regenerating: boolean }) {
   const { project, interviewCount, signalCount, avgConfidence, topSignalSummary } = rollup
   const tier = confidenceTier(avgConfidence, signalCount)
   const CoverIcon = getProjectIcon(project.name)
@@ -381,14 +408,30 @@ function ProjectCard({ rollup, onDelete, deleting }: { rollup: ProjectRollup; on
             <CoverIcon size={56} strokeWidth={1} style={{ color: `${HOME_COLORS.primaryFixedDim}66` }} />
           </div>
         )}
-        <button
-          onClick={e => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete "${project.name}"? This cannot be undone. Personas and interviews inside it will become unassigned, not deleted.`)) onDelete() }}
-          title="Delete project"
-          className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md"
-          style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
-        >
-          {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-        </button>
+        {regenerating && (
+          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.25)' }}>
+            <Loader2 size={32} className="animate-spin" style={{ color: 'white' }} />
+          </div>
+        )}
+        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); onRegenerateCover() }}
+            title="Regenerate cover image"
+            disabled={regenerating}
+            className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md"
+            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
+          >
+            <RefreshCw size={14} className={regenerating ? 'animate-spin' : undefined} />
+          </button>
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); if (confirm(`Delete "${project.name}"? This cannot be undone. Personas and interviews inside it will become unassigned, not deleted.`)) onDelete() }}
+            title="Delete project"
+            className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md"
+            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
+          >
+            {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+          </button>
+        </div>
         <div className="absolute bottom-5 left-5 right-5 flex justify-between items-end">
           <div className="px-3 py-1 rounded text-white text-[10px] font-bold uppercase tracking-widest backdrop-blur-md" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}>
             {tier}

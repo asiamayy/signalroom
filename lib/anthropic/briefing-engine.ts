@@ -77,4 +77,11 @@ Return ONLY a JSON object with this exact shape, no preamble, no markdown fences
   }))
 }
 
-export const BRIEFING_STALE_AFTER_MS = 24 * 60 * 60 * 1000
+// A flat rolling 24h window drifts across times of day (generate at 11pm,
+// still "fresh" at 10am the next day) instead of reliably refreshing each
+// morning. Compare calendar dates instead, so the first Home load after
+// midnight always triggers a regeneration.
+export function isBriefingStale(generatedAt: string | number | null | undefined): boolean {
+  if (!generatedAt) return true
+  return new Date(generatedAt).toDateString() !== new Date().toDateString()
+}

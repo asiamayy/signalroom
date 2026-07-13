@@ -5,7 +5,7 @@ import {
   AlertTriangle, ShieldAlert, Target, Lightbulb, Zap, TrendingUp, Sparkles, AlertOctagon,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { BRIEFING_STALE_AFTER_MS } from '@/lib/anthropic/briefing-engine'
+import { isBriefingStale } from '@/lib/anthropic/briefing-engine'
 import { buildTimelineEvents, type TimelineEventType } from '@/lib/utils/timeline'
 import { getTrendDirection, getMentionTrendPercent } from '@/lib/utils/signals'
 import { formatRelativeTime, CARD_SHADOW } from '@/lib/utils'
@@ -68,8 +68,7 @@ export default async function HomePage() {
   // client-side, in BriefingCard. Previously this awaited a Claude call on
   // every stale/cold page load, which is what made Home slow to open.
   const cachedBriefing: ExecutiveBriefing | null = profile?.briefing ?? null
-  const generatedAt = profile?.briefing_generated_at ? new Date(profile.briefing_generated_at).getTime() : 0
-  const isStale = Date.now() - generatedAt > BRIEFING_STALE_AFTER_MS
+  const isStale = isBriefingStale(profile?.briefing_generated_at)
 
   const avgConfidence = allSignals.length > 0
     ? Math.round(allSignals.reduce((sum, s) => sum + s.confidence_score, 0) / allSignals.length)

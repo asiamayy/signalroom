@@ -26,6 +26,41 @@ const EXAMPLE_PROMPTS = [
   'A B2B marketer in a scale-up',
 ]
 
+// "Surprise me" used to just pick one of the three EXAMPLE_PROMPTS above,
+// so real variety topped out at 3 possible seed personas. Instead, compose
+// a fresh combination from much larger pools each click, so the AI gets a
+// genuinely different, specific seed to build a "sophisticated" persona
+// from rather than one of a handful of recycled starting points.
+const SURPRISE_SENIORITIES = [
+  'a senior', 'a mid-career', 'a newly-promoted', 'a veteran', 'an up-and-coming',
+]
+const SURPRISE_ROLES = [
+  'operations director', 'procurement manager', 'VP of finance', 'clinical research coordinator',
+  'supply chain analyst', 'compliance officer', 'creative director', 'IT infrastructure lead',
+  'people operations manager', 'commercial real estate broker', 'independent management consultant',
+  'director of customer success', 'plant operations manager', 'nonprofit program director',
+  'university admissions director', 'restaurant group general manager', 'insurance underwriter',
+]
+const SURPRISE_ORG_CONTEXTS = [
+  'at a fast-growing mid-market company', 'at a century-old family-owned business',
+  'at a private equity-backed rollup', 'at a regional healthcare system',
+  'at a unionized manufacturing plant', 'running her own small consultancy',
+  'at a public sector agency', 'at a Fortune 500 division', 'at a bootstrapped startup',
+  'at a multinational nonprofit', 'at a franchise operation with a dozen locations',
+]
+const SURPRISE_TRAITS = [
+  'known for being deeply skeptical of new tools until proven', 'juggling the role with primary caregiving duties',
+  'recently burned by a bad vendor decision', 'under pressure to cut costs this quarter',
+  'the most tech-forward person on an otherwise old-school team', 'quietly job-hunting',
+  'new to the industry after a career change', 'managing a team through a recent reorg',
+  'balancing the job with a side business', 'the primary decision-maker for tooling purchases',
+]
+
+function buildSurprisePrompt(): string {
+  const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
+  return `${pick(SURPRISE_SENIORITIES)} ${pick(SURPRISE_ROLES)} ${pick(SURPRISE_ORG_CONTEXTS)}, ${pick(SURPRISE_TRAITS)}. Make this a specific, sophisticated, nuanced individual — not a generic archetype.`
+}
+
 // ─── Default state ────────────────────────────────────────────────────────────
 
 const DEFAULT_TRAITS: PersonaTraits = {
@@ -134,9 +169,9 @@ export default function PersonaBuilder() {
 
   const handleGenerate = () => runGenerate(aiPrompt)
   const handleSurpriseMe = () => {
-    const pick = EXAMPLE_PROMPTS[Math.floor(Math.random() * EXAMPLE_PROMPTS.length)]
-    setAiPrompt(pick)
-    runGenerate(pick)
+    const prompt = buildSurprisePrompt()
+    setAiPrompt(prompt)
+    runGenerate(prompt)
   }
 
   // ─── Avatar generation ───────────────────────────────────────────────────────

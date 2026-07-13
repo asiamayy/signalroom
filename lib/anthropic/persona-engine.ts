@@ -265,6 +265,20 @@ export async function suggestPersonaTraits(description: string) {
   // Rotate through name pools to avoid repetition
   const nameContext = `Choose a name that reflects realistic demographic diversity — vary across ethnicities, backgrounds, and regions. Examples of diverse name pools to draw from: Latino/Hispanic (Sofia Ramirez, Miguel Torres, Lucia Herrera), East Asian (Jenny Park, David Kim, Mei Chen), South Asian (Priya Patel, Arjun Sharma, Ananya Singh), Black/African American (Marcus Johnson, Jasmine Williams, DeShawn Carter), Middle Eastern (Layla Hassan, Omar Khalil, Nadia Aoun), European (Anna Kowalski, James O'Brien, Elena Rossi), and others. Do NOT default to generic American names like Marcus Chen, Tyler Brooks, or similar. Pick something specific and varied based on the persona's location and background.`
 
+  // LLMs asked for "a City, State" with no other constraint gravitate hard
+  // toward a small set of trending-tech-hub defaults (Austin chief among
+  // them) — the same failure mode the name pool above was written to avoid.
+  // Force the same kind of explicit rotation for location.
+  const locationPool = [
+    'Portland, OR', 'Columbus, OH', 'Raleigh, NC', 'Minneapolis, MN', 'Pittsburgh, PA',
+    'Salt Lake City, UT', 'Tampa, FL', 'Kansas City, MO', 'Albuquerque, NM', 'Boise, ID',
+    'Richmond, VA', 'Milwaukee, WI', 'Sacramento, CA', 'Providence, RI', 'Tucson, AZ',
+    'Chattanooga, TN', 'Des Moines, IA', 'Spokane, WA', 'New Orleans, LA', 'Buffalo, NY',
+    'Louisville, KY', 'Omaha, NE', 'Charleston, SC', 'Grand Rapids, MI', 'Reno, NV',
+  ]
+  const shuffledLocations = [...locationPool].sort(() => Math.random() - 0.5).slice(0, 8)
+  const locationContext = `Pick a specific, realistic city that fits this persona's job, income, and lifestyle. Vary city size and region — small/mid-size cities and suburbs are just as realistic as major metros, and most Americans don't live in famous tech hubs. Draw inspiration from cities like: ${shuffledLocations.join(', ')} (or another real US city that fits the persona) — but do NOT default to Austin, TX, San Francisco, or New York unless the persona's specific job genuinely requires that market.`
+
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 800,
@@ -278,7 +292,7 @@ Generate realistic, specific persona traits as JSON with this shape:
   "name": "Full name — ${nameContext}",
   "age": number,
   "gender": "male" | "female" | "non-binary",
-  "location": "City, State",
+  "location": "City, State — ${locationContext}",
   "job_title": "Specific job title",
   "industry": "Industry",
   "income": "under_50k" | "50k_100k" | "100k_200k" | "over_200k",
