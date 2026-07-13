@@ -25,12 +25,11 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const prompt = `An elegant, premium minimalist corporate 2D vector graphic conceptually abstracting the theme: ${project.name}.
-The composition features a sophisticated, flat technical layout composed entirely of crisp intersecting angular vectors, sharp geometric shapes, and clean data-inspired blocks. The design uses empty negative space to maintain a premium digital layout. The execution is strictly a flat 2D graphic, entirely devoid of perspective, depth, horizons, sky, land, or environmental elements.
-Color Palette: The palette is masterfully anchored by a heavy dark charcoal-green color bordering on off-black. It transitions cleanly into a dry, muted earthy mid-tone green color. Accent elements are rendered in a highly diluted, translucent pale mint-grey tint. The entire layout is structured against a completely flat, monochromatic, expansive 2D background of cool minimalist light grey and muted slate tones, with sharp line work in Slate Charcoal Grey and Cool Pebble Grey for crisp contrast.
-Strictly Forbidden: sun, moon, sky, horizon, mountains, hills, landscape, scenery, water, rivers, trees, plants, leaves, flowers, feathers, buildings, castles, skyscrapers, architecture, cities, people, silhouettes, orange, yellow, terracotta, tan, beige, cream, warm colors.
-Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, grids, wireframes, graphs, mockup windows.
-Strictly Forbidden: 3D rendering, claymation, paper-cut style, shadows, realistic textures, physical objects, depth of field, blur, out-of-focus elements, sci-fi glowing effects.`
+  const prompt = `An elegant, premium minimalist corporate tech graphic conceptually abstracting the theme: ${project.name}.
+The composition features a sophisticated, asymmetric flat-design schematic composed of intersecting technical circuit lines, sparse vector nodes, clean geometric data blocks, and subtle blueprint grids, set against a vast background. Reminiscent of a high-end digital blueprint, a data flow diagram, or an abstract technical gallery poster.
+Color Palette & Texture: The palette is masterfully anchored by a heavy dark charcoal-green color bordering on off-black. It transitions fluidly into a dry, muted earthy mid-tone olive green color. Accent elements are rendered in a highly diluted, translucent warm grey-green tint. The entire layout is structured against a completely flat, expansive 2D background of clean gallery taupe and soft stone-tinted chalky matte tones, with sharp, crisp line work in dark charcoal grey and pebble grey for editorial contrast.
+Strictly Forbidden: blue, teal, cyan, indigo, slate blue, mountains, hills, terrain, horizons, scenery, nature, water, forests, trees, low-poly landscapes, plants, leaves, animals, humans, literal photographic objects, photorealism, busy patterns, crowded layouts, 3D rendering, claymation, paper-cut style, realistic textures.
+Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, wireframes, mockup windows.`
 
   async function callFal() {
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
