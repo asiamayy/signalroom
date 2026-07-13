@@ -25,11 +25,11 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const prompt = `An elegant, premium minimalist editorial 2D vector graphic conceptually abstracting the theme: ${project.name}.
-The composition features a sophisticated, asymmetric balance of completely flat geometric structures, sweeping 2D vector lines, and subtle flat color blocking set against a vast background. Reminiscent of a high-end flat vector print magazine layout or a contemporary digital gallery poster.
-Color Palette: The palette is masterfully anchored by a heavy dark charcoal-green color bordering on off-black. It transitions into a dry, muted earthy mid-tone green color. Accent elements are rendered in a highly diluted, translucent pale mint-grey tint. The entire layout is structured against a completely flat, expansive 2D background of cool gallery taupe and soft minimalist light grey tones, with sharp line work in Slate Charcoal Grey and Cool Pebble Grey for crisp editorial contrast.
-Strictly Forbidden: warm colors, orange, sand, terracotta, tan, brown, beige, cream, yellow, sun, horizon, text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, grids, wireframes, graphs, mockup windows.
-Strictly Forbidden: humans, human silhouettes, faces, hands, animals, plants, leaves, trees, grass, flowers, stems, petals, botanical elements, feathers, branches, foliage, furniture, vases, literal photographic objects, photorealism, busy patterns, crowded layouts.
+  const prompt = `An elegant, premium minimalist corporate 2D vector graphic conceptually abstracting the theme: ${project.name}.
+The composition features a sophisticated, flat technical layout composed entirely of crisp intersecting angular vectors, sharp geometric shapes, and clean data-inspired blocks. The design uses empty negative space to maintain a premium digital layout. The execution is strictly a flat 2D graphic, entirely devoid of perspective, depth, horizons, sky, land, or environmental elements.
+Color Palette: The palette is masterfully anchored by a heavy dark charcoal-green color bordering on off-black. It transitions cleanly into a dry, muted earthy mid-tone green color. Accent elements are rendered in a highly diluted, translucent pale mint-grey tint. The entire layout is structured against a completely flat, monochromatic, expansive 2D background of cool minimalist light grey and muted slate tones, with sharp line work in Slate Charcoal Grey and Cool Pebble Grey for crisp contrast.
+Strictly Forbidden: sun, moon, sky, horizon, mountains, hills, landscape, scenery, water, rivers, trees, plants, leaves, flowers, feathers, buildings, castles, skyscrapers, architecture, cities, people, silhouettes, orange, yellow, terracotta, tan, beige, cream, warm colors.
+Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, grids, wireframes, graphs, mockup windows.
 Strictly Forbidden: 3D rendering, claymation, paper-cut style, shadows, realistic textures, physical objects, depth of field, blur, out-of-focus elements, sci-fi glowing effects.`
 
   async function callFal() {
