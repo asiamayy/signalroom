@@ -25,20 +25,22 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  // Monochrome line-diagram art, shown as the AI generated it — no brand
-  // color remap applied on top.
-  const prompt = `Abstract minimal line diagram in the style of a network graph or data visualization, sparse and geometric, inspired by the concept of ${project.name}. Thin connecting lines between a few small circular nodes, one or two soft overlapping geometric shapes, generous empty negative space, flat vector style, no shading, no gradients, no depth, no photorealism. Pure black and white line art, monochrome, high contrast, black ink on a white background. This is a technical diagram, not an illustration or artwork.
+  // The prior "technical diagram" framing was deliberately sparse (a
+  // couple of thin lines and one shape on empty white) to dodge earlier
+  // failure modes (masthead text from "cover art" framing, generic people
+  // from "illustration" framing). That sparseness reads as broken/empty at
+  // card thumbnail size. This version keeps the same two hard bans (no
+  // text, no people) but asks for a genuinely fuller, richer composition,
+  // and describes the brand palette in plain color language instead of
+  // hex — hex codes aren't something these models parse reliably and
+  // previously caused the output to degenerate into flat color blocks.
+  const prompt = `Abstract geometric editorial artwork inspired by the concept of ${project.name}. A rich, confident composition of bold overlapping organic and geometric shapes filling the frame, layered depth, soft gradients, subtle paper-like texture — sophisticated modern-art aesthetic reminiscent of premium print design and gallery posters. Color palette: deep forest green, warm editorial cream and clay, muted sage green, charcoal — a cohesive, elegant, editorial color story with real contrast and visual weight, not a flat empty layout. Flat illustration style, no photorealism, no 3D rendering.
 
-Strictly forbidden: any color other than black and white.
-Strictly forbidden: text, letters, numbers, words, typography, logos, watermarks, signage.
+Strictly forbidden: text, letters, numbers, words, typography, logos, watermarks, signage, UI elements, charts, screens.
 Strictly forbidden: people, human figures, faces, hands, body parts, animals, characters.
-Strictly forbidden: realistic or literal depictions of objects, scenes, or environments.`
+Strictly forbidden: photorealistic scenes, literal objects, stock-photo imagery.`
 
-  try {
-    // flux/dev instead of flux/schnell — schnell is the fast/cheap
-    // distilled model and is noticeably worse at honoring "no text"
-    // instructions. dev costs more ($0.025/MP vs $0.003/MP, still a
-    // fraction of a cent per image) but follows prompts far more reliably.
+  async function callFal() {
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
       method: 'POST',
       headers: {
@@ -56,15 +58,24 @@ Strictly forbidden: realistic or literal depictions of objects, scenes, or envir
 
     if (!response.ok) {
       const err = await response.text()
-      console.error('Fal error:', err)
-      return NextResponse.json({ error: 'Cover generation failed' }, { status: 500 })
+      throw new Error(`Fal error (${response.status}): ${err}`)
     }
 
     const result = await response.json()
     const imageUrl = result?.images?.[0]?.url
+    if (!imageUrl) throw new Error('No image returned from Fal')
+    return imageUrl as string
+  }
 
-    if (!imageUrl) {
-      return NextResponse.json({ error: 'No image returned' }, { status: 500 })
+  try {
+    // A single transient failure (timeout, momentary fal.ai error) used to
+    // permanently leave a project with no cover — retry once before giving up.
+    let imageUrl: string
+    try {
+      imageUrl = await callFal()
+    } catch (firstError) {
+      console.error('Cover generation failed, retrying once:', firstError)
+      imageUrl = await callFal()
     }
 
     const { data, error } = await supabase
