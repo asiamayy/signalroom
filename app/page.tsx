@@ -145,7 +145,7 @@ export default function LandingPage() {
   }, [selectedPersona]);
 
   return (
-    <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCF9F8] text-[#121314] antialiased">
+    <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased">
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
       <div 
@@ -308,7 +308,7 @@ export default function LandingPage() {
       {/* DASHBOARD PREVIEW WORKSPACE */}
       <RevealSection>
         <section id="dashboard-replica" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20 z-10 relative">
-          <div className="bg-[#F4F5F4] border border-[#E3E5E3] rounded-[12px] shadow-xs min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
+          <div className="bg-[#FCF9F8] border border-[#E3E5E3] rounded-[12px] shadow-xs min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
             
             <div className="md:col-span-3 lg:col-span-2 bg-white border-r border-[#E3E5E3] p-5 flex flex-col justify-between hidden md:flex">
               <div className="space-y-8">
@@ -345,7 +345,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-10 flex flex-col justify-between bg-[#F4F5F4] relative">
+            <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-10 flex flex-col justify-between bg-[#FCF9F8] relative">
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 mb-6">
                   <div>
@@ -393,7 +393,7 @@ export default function LandingPage() {
                           </div>
                           <div className="flex flex-wrap gap-1.5 mb-5">
                             {persona.tags.map((tag, tIdx) => (
-                              <span key={tIdx} className="bg-[#F4F5F4] text-neutral-600 text-[10px] px-2.5 py-0.5 rounded-[4px] border border-[#E3E5E3]/60 font-light">
+                              <span key={tIdx} className="bg-[#FCF9F8] text-neutral-600 text-[10px] px-2.5 py-0.5 rounded-[4px] border border-[#E3E5E3]/60 font-light">
                                 {tag}
                               </span>
                             ))}
