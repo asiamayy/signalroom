@@ -47,6 +47,7 @@ interface DashboardPersona {
   imgUrl: string;
   tags: string[];
   bio: string;
+  question: string;
   interviewQuote: string;
 }
 
@@ -59,7 +60,8 @@ const DASHBOARD_PERSONAS: DashboardPersona[] = [
     imgUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80',
     tags: ['freelancer', 'solopreneur', 'growth-focused', 'developer'],
     bio: 'Arjun moved from Bangalore to Austin three years ago and built his freelance business from scratch with no local network. He tracks his business metrics obsessively in a Notion...',
-    interviewQuote: "I track my metrics closely, but my biggest blindspot is positioning. Traditional tools charge thousands just to tell me what keywords to target. With SignalRoom, I simulated a discovery call with three local tech founders and unraveled exactly why they hesitate to hire external agency contractors within twenty minutes."
+    question: "What's your honest first reaction to a tool that simulates customer interviews instead of running real ones?",
+    interviewQuote: "I track my metrics closely, but my biggest blindspot is positioning. Traditional research firms charge thousands just to tell me what keywords to target. Something like this — where I could talk through my pitch with a few realistic founder personas before I ever cold-email someone — would've saved me a lot of guessing early on."
   },
   {
     id: 'priya',
@@ -69,7 +71,8 @@ const DASHBOARD_PERSONAS: DashboardPersona[] = [
     imgUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80',
     tags: ['startup', 'product management', 'SaaS', 'time-pressed'],
     bio: 'Priya loves the startup density but misses the slower pace of her hometown. She manages complex multi-tenant system backlogs and cross-functional user pipelines...',
-    interviewQuote: "We won't buy proprietary analytical infrastructure unless it integrates natively. I am highly allergic to client-side scripts wrapper layers that degrade performance funnel metrics."
+    question: "Would a $499/month research tool actually replace what your team does today for user testing?",
+    interviewQuote: "Honestly, I'd be skeptical at first — my team is already stretched thin, and I don't want to babysit one more tool. But if it got me a directionally-useful read in an afternoon instead of waiting three weeks for a research firm, I'd run it in parallel on one feature before trusting it with something bigger."
   },
   {
     id: 'marisol',
@@ -79,7 +82,8 @@ const DASHBOARD_PERSONAS: DashboardPersona[] = [
     imgUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80',
     tags: ['stay-at-home mom', 'budget-conscious', 'caregiver', 'family-first'],
     bio: 'Marisol holds a bachelor\'s degree in Communications but left a marketing coordinator job when her second child was born with a mild developmental delay requiring extra therapeutic attention...',
-    interviewQuote: "Our activation drop-off is entirely structural micro-friction. Forcing user profile registration prior to experiencing the actual utility core cuts conversion metrics by exactly 34%."
+    question: "If a company asked you to try a new budgeting app, what would actually make you trust it enough to use it?",
+    interviewQuote: "I'd want to see exactly how it helps before I hand over my email just to find out. Between the kids and our budget, I don't have patience for another app that makes me sign up first and figure out later if it's even useful — let me try it, then ask for my info."
   }
 ];
 
@@ -412,28 +416,36 @@ export default function LandingPage() {
                   })}
                 </div>
 
-                <div className="mt-8 bg-white border border-[#E3E5E3] p-6 rounded-[8px] relative transition-all">
-                  <div className="flex items-center justify-between border-b border-[#E3E5E3]/60 pb-3 mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[#1A3024] animate-pulse" />
-                      <h4 className="text-[16px] font-normal text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                        Simulated Dialogue Panel // Response from {selectedPersona.name}
-                      </h4>
+                <div className="mt-8 space-y-4">
+                  {/* Researcher question — mirrors the real Interview Chat's "You" bubble */}
+                  <div className="flex flex-col gap-1.5 items-end">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">You</span>
+                    <div className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] bg-[#1A3024] shadow-sm">
+                      <p className="text-sm font-light leading-relaxed text-white">{selectedPersona.question}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-neutral-400">STATUS: PIPELINE_ACTIVE</span>
                   </div>
-                  <p className="text-[13px] text-neutral-700 font-light leading-relaxed italic">
-                    "{streamingText}"
-                    {isSimulating && (
-                      <span className="inline-block w-1 h-3.5 bg-[#1A3024] ml-1 editorial-stream-cursor align-middle" />
-                    )}
-                  </p>
+
+                  {/* Persona response — mirrors the real Interview Chat's persona bubble */}
+                  <div className="flex flex-col gap-1.5 items-start group">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 flex items-center gap-1.5">
+                      <img src={selectedPersona.imgUrl} alt="" className="w-4 h-4 rounded-full object-cover" />
+                      {selectedPersona.name}
+                    </span>
+                    <div className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] bg-white border border-[#E3E5E3] shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                      <p className="text-[13px] text-neutral-700 font-light leading-relaxed">
+                        {streamingText}
+                        {isSimulating && (
+                          <span className="inline-block w-1 h-3.5 bg-[#1A3024] ml-1 editorial-stream-cursor align-middle" />
+                        )}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-[#E3E5E3] mt-8 flex justify-between items-center text-neutral-400 text-[11px] font-light">
-                <span>Interactive Sandboxed Preview Engine</span>
-                <span className="text-[#1A3024] font-medium uppercase tracking-wider text-[10px]">Select cards above to alternate streams</span>
+                <span>Example persona exchange</span>
+                <span className="text-[#1A3024] font-medium uppercase tracking-wider text-[10px]">Click a card above to preview another persona</span>
               </div>
             </div>
           </div>
