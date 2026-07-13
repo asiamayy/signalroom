@@ -515,7 +515,7 @@ export default function LandingPage() {
 
       {/* ROI Calculator */}
       <RevealSection>
-        <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#fafbfa] border-b border-[#1A3024]/10 relative overflow-hidden scroll-mt-16 z-10">
+        <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#FCF9F8] border-b border-[#1A3024]/10 relative overflow-hidden scroll-mt-16 z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-start">
             <div className="lg:col-span-5">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
@@ -697,7 +697,7 @@ export default function LandingPage() {
       </RevealSection>
 
       {/* Footer */}
-      <footer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-6 px-6 sm:px-12 py-16 sm:py-20 w-full bg-white relative z-10">
+      <footer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-6 px-6 sm:px-12 py-16 sm:py-20 w-full bg-[#FCF9F8] relative z-10">
         <div className="sm:col-span-2 md:col-span-4">
           <div className="flex items-center gap-3 mb-6">
             <img
