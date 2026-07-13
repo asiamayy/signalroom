@@ -25,12 +25,12 @@ export async function POST(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 })
   }
 
-  const prompt = `An elegant, premium minimalist editorial graphic conceptually abstracting the theme: ${project.name}.
-The composition features a sophisticated, asymmetric balance of clean geometric structures, sweeping vector lines, and smooth, understated gradients set against a vast background. Reminiscent of a high-end print magazine layout or a contemporary gallery exhibition poster.
-Color Palette & Texture: The palette is masterfully anchored by Deep Forest Shadow—a heavy botanical green with strong charcoal undertones bordering on off-black. It transitions fluidly into Muted Willow Olive—a dry, earthy mid-tone olive reminiscent of dried sage leaves and weathered river stones. Accent elements are rendered in Pale Khaki Mist—a highly diluted, translucent grey-green tint resembling warm alabaster. The entire layout is structured against a clean, expansive background of muted gallery taupe and soft stone-tinted chalky plaster, with sharp line work in Slate Charcoal Grey and Cool Pebble Grey for crisp editorial contrast.
+  const prompt = `An elegant, premium minimalist editorial 2D vector graphic conceptually abstracting the theme: ${project.name}.
+The composition features a sophisticated, asymmetric balance of completely flat geometric structures, sweeping 2D vector lines, and subtle flat color blocking set against a vast background. Reminiscent of a high-end flat vector print magazine layout or a contemporary digital gallery poster.
+Color Palette: The palette is masterfully anchored by Deep Forest Shadow—a heavy botanical green with strong charcoal undertones bordering on off-black. It transitions into Muted Willow Olive—a dry, earthy mid-tone olive. Accent elements are rendered in Pale Khaki Mist—a highly diluted, translucent grey-green tint. The entire layout is structured against a completely flat, expansive 2D background of muted gallery taupe and soft stone-tinted chalky plaster tones, with sharp line work in Slate Charcoal Grey and Cool Pebble Grey for crisp editorial contrast.
 Strictly Forbidden: text, typography, words, letters, labels, numbers, logos, watermarks, UI components, charts, grids, wireframes, graphs, mockup windows.
-Strictly Forbidden: humans, faces, hands, animals, literal photographic objects, photorealism, busy patterns, crowded layouts.
-Strictly Forbidden: claymation, heavy 3D rendering, plastic or clay textures, glowing neon lights, dark sci-fi space backgrounds, heavy camera blur, depth of field, out-of-focus elements.`
+Strictly Forbidden: humans, human silhouettes, faces, hands, animals, plants, leaves, trees, grass, furniture, vases, literal photographic objects, photorealism, busy patterns, crowded layouts.
+Strictly Forbidden: 3D rendering, claymation, paper-cut style, shadows, realistic textures, physical objects, depth of field, blur, out-of-focus elements, sci-fi glowing effects.`
 
   async function callFal() {
     const response = await fetch('https://fal.run/fal-ai/flux/dev', {
