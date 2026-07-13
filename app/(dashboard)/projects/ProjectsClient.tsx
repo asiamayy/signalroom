@@ -413,24 +413,24 @@ function ProjectCard({ rollup, onDelete, deleting, onRegenerateCover, regenerati
           </div>
         )}
         <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={e => { e.preventDefault(); e.stopPropagation(); onRegenerateCover() }}
-            title="Regenerate cover image"
-            disabled={regenerating}
-            className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md"
-            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
-          >
-            <RefreshCw size={14} className={regenerating ? 'animate-spin' : undefined} />
-          </button>
-          <button
-            onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
-            title="Delete project"
-            className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md"
-            style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
-          >
-            {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-          </button>
-        </div>
+  <button
+    onClick={e => { e.preventDefault(); e.stopPropagation(); onRegenerateCover() }}
+    title="Regenerate cover image"
+    disabled={regenerating}
+    className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md bg-black/25 hover:bg-black/50 disabled:opacity-50 transition-colors"
+    style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
+  >
+    <RefreshCw size={14} className={regenerating ? 'animate-spin' : undefined} />
+  </button>
+  <button
+    onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
+    title="Delete project"
+    className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md bg-black/25 hover:bg-black/50 transition-colors"
+    style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'white' }}
+  >
+    {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+  </button>
+</div>
         <div className="absolute bottom-5 left-5 right-5 flex justify-between items-end">
           <div className="px-3 py-1 rounded text-white text-[10px] font-bold uppercase tracking-widest backdrop-blur-md" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}>
             {tier}
