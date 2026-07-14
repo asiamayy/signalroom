@@ -512,6 +512,107 @@ export default function LandingPage() {
           </div>
         </section>
       </RevealSection>
+{/* NEW SECTION: Confidence Score Calibration */}
+      <RevealSection>
+        <section id="calibration" className="px-6 sm:px-12 py-20 bg-[#FCF9F8] border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left Column: Title and 3 Pillars */}
+            <div className="lg:col-span-7 space-y-8">
+              <div>
+                <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">01 // Calibration Engine</span>
+                <h2 className="text-[28px] sm:text-[36px] mt-2 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                  Quantify the Signal. Stop Guessing.
+                </h2>
+                <p className="text-[13px] sm:text-[14px] text-neutral-500 font-light mt-2 max-w-xl">
+                  SignalRoom doesn't just synthesize words; it evaluates structural integrity. Move forward knowing exactly how much weight to put behind an insight before writing code.
+                </p>
+              </div>
+              
+              <div className="space-y-6 border-l-2 border-[#5A7973]/20 pl-4">
+                <div>
+                  <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Depth of Responses</h4>
+                  <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Analyzes conversational depth and vocabulary density to filter out superficial, one-word feedback.</p>
+                </div>
+                <div>
+                  <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Persona Specificity</h4>
+                  <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Verifies alignment with your exact market demographic variables, guarding against diluted datasets.</p>
+                </div>
+                <div>
+                  <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Theme Consistency</h4>
+                  <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Cross-references anomalies across multiple internal pipelines to quickly map out isolated noise from persistent trends.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Premium Animated Metric Gauge */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center">
+              <div className="relative w-64 h-64 flex items-center justify-center bg-white rounded-full border border-[#E3E5E3] shadow-sm group hover:shadow-md transition-shadow duration-500">
+                
+                {/* SVG Radial Progress Ring */}
+                <svg className="absolute transform -rotate-90 w-56 h-56">
+                  {/* Track Circle */}
+                  <circle
+                    cx="112"
+                    cy="112"
+                    r="98"
+                    stroke="#E3E5E3"
+                    strokeWidth="3"
+                    fill="transparent"
+                    strokeOpacity="0.6"
+                  />
+                  {/* Animated Active Ring */}
+                  <circle
+                    cx="112"
+                    cy="112"
+                    r="98"
+                    stroke="#1A3024"
+                    strokeWidth="4"
+                    fill="transparent"
+                    strokeDasharray="615.75" /* 2 * PI * r */
+                    style={{
+                      // We calculate the remaining offset length dynamically for 95% completion
+                      strokeDashoffset: "calc(615.75 - (615.75 * 95) / 100)",
+                      animation: "premiumRingFill 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                    }}
+                    strokeLinecap="round"
+                  />
+                </svg>
+
+                {/* Internal Center Typography Panel */}
+                <div className="text-center z-10 flex flex-col items-center justify-center">
+                  <span className="text-[56px] font-normal leading-none text-[#121314] tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    95
+                  </span>
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#1A3024] mt-1 bg-[#e9edea] px-2.5 py-0.5 rounded-[4px]">
+                    High Confidence
+                  </span>
+                  <span className="text-[10px] font-mono tracking-wider text-neutral-400 mt-2">
+                    Calibration Score
+                  </span>
+                </div>
+
+              </div>
+              
+              <div className="mt-4 text-center">
+                <span className="text-[10px] text-neutral-400 italic font-light">
+                  *Engine parameter calculated based on structural source alignment
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        {/* Global Embedded Stylesheet Extension for the Radial Arc Animation */}
+        <style jsx global>{`
+          @keyframes premiumRingFill {
+            from {
+              stroke-dashoffset: 615.75;
+            }
+          }
+        `}</style>
+      </RevealSection>
 
       {/* ROI Calculator */}
       <RevealSection>
