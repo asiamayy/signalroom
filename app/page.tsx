@@ -542,7 +542,7 @@ export default function LandingPage() {
               <section 
                 ref={elementRef}
                 id="calibration" 
-                className="px-6 sm:px-12 py-20 bg-[#FCF9F8] border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative"
+                className="px-6 sm:px-12 py-20 bg-[#F5F2F0] border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative"
               >
                 <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                   
@@ -650,7 +650,7 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="lg:col-start-7 lg:col-span-6">
-              <div className="border border-[#d1d5d3] p-5 sm:p-10 bg-[#FCF9F8] relative rounded-[4px]">
+              <div className="border border-[#d1d5d3] p-5 sm:p-10 bg-[#F5F2F0] relative rounded-[4px]">
                 <div className="px-1 pb-4 mb-6 border-b border-[#d1d5d3]">
                   <h3 className="text-lg text-neutral-900 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See your savings</h3>
                   <p className="text-xs text-neutral-500 mt-1">Traditional research costs thousands. See how SignalRoom compares.</p>
@@ -822,7 +822,7 @@ export default function LandingPage() {
       </RevealSection>
 
       {/* Footer */}
-      <footer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-6 px-6 sm:px-12 py-16 sm:py-20 w-full bg-[#FCF9F8] relative z-10">
+      <footer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-6 px-6 sm:px-12 py-16 sm:py-20 w-full bg-[#ECE9E6] relative z-10">
         <div className="sm:col-span-2 md:col-span-4">
           <div className="flex items-center gap-3 mb-6">
             <img
