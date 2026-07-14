@@ -561,7 +561,7 @@ export default function LandingPage() {
                     fill="transparent"
                     strokeOpacity="0.6"
                   />
-                  {/* Animated Active Ring */}
+                  {/* Animated Active Ring via explicit transition fallback */}
                   <circle
                     cx="112"
                     cy="112"
@@ -569,13 +569,12 @@ export default function LandingPage() {
                     stroke="#1A3024"
                     strokeWidth="4"
                     fill="transparent"
-                    strokeDasharray="615.75" /* 2 * PI * r */
-                    style={{
-                      // We calculate the remaining offset length dynamically for 95% completion
-                      strokeDashoffset: "calc(615.75 - (615.75 * 95) / 100)",
-                      animation: "premiumRingFill 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-                    }}
+                    strokeDasharray="615.75"
                     strokeLinecap="round"
+                    style={{
+                      strokeDashoffset: "calc(615.75 - (615.75 * 95) / 100)",
+                      transition: "stroke-dashoffset 2.2s cubic-bezier(0.16, 1, 0.3, 1)"
+                    }}
                   />
                 </svg>
 
@@ -603,15 +602,6 @@ export default function LandingPage() {
 
           </div>
         </section>
-
-        {/* Global Embedded Stylesheet Extension for the Radial Arc Animation */}
-        <style jsx global>{`
-          @keyframes premiumRingFill {
-            from {
-              stroke-dashoffset: 615.75;
-            }
-          }
-        `}</style>
       </RevealSection>
 
       {/* ROI Calculator */}
