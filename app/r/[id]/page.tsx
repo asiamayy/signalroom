@@ -13,6 +13,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Info,
+  Sparkles,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
@@ -52,7 +53,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
   const score = report.confidence_score
   const scoreColor = score >= 75 ? HOME_COLORS.primary : score >= 50 ? '#B45309' : HOME_COLORS.error
   const scoreBg = score >= 75 ? HOME_COLORS.secondaryContainer : score >= 50 ? '#FEF3C7' : '#FFDAD6'
-  const scoreLabel = score >= 75 ? 'High confidence' : score >= 50 ? 'Moderate confidence' : 'Low confidence'
+  const scoreLabel = score >= 75 ? 'Strong Signal' : score >= 50 ? 'Moderate Signal' : 'Weak Signal'
 
   const themes: ReportTheme[] = report.key_themes ?? []
   const recommendations: ReportRecommendation[] = report.recommendations ?? []
@@ -101,7 +102,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
             <div className="flex-shrink-0 text-center rounded-xl px-4 py-3 self-start sm:self-auto" style={{ background: scoreBg }}>
               <p className="text-3xl font-semibold leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, color: scoreColor }}>{score}</p>
               <p className="text-[11px] font-semibold mt-1 uppercase tracking-wider" style={{ color: scoreColor }}>{scoreLabel}</p>
-              <p className="text-[10px] mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence score</p>
+              <p className="text-[10px] mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Signal Strength</p>
             </div>
           </div>
 
@@ -125,6 +126,27 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
             </div>
           </div>
         </div>
+
+        {/* AI Verdict */}
+        {report.ai_verdict && (
+          <div className="rounded-2xl p-5 mb-6" style={{ background: HOME_COLORS.primaryFixed }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles size={15} style={{ color: HOME_COLORS.onPrimaryFixed }} />
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onPrimaryFixed }}>
+                AI Verdict
+              </h2>
+            </div>
+            <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>{report.ai_verdict.summary}</p>
+            <div className="mt-4 pt-4 space-y-2" style={{ borderTop: `1px solid ${HOME_COLORS.onPrimaryFixedVariant}33` }}>
+              <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>
+                <span className="font-semibold">Validate next: </span>{report.ai_verdict.validate_next}
+              </p>
+              <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>
+                <span className="font-semibold">Ask real users: </span>&ldquo;{report.ai_verdict.follow_up_question}&rdquo;
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-5">

@@ -138,6 +138,7 @@ export async function POST(
         key_themes: reportData.key_themes,
         recommendations: reportData.recommendations,
         confidence_score: reportData.confidence_score,
+        ai_verdict: reportData.ai_verdict,
       })
       .select()
       .single()

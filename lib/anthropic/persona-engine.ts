@@ -200,7 +200,12 @@ Produce a structured research report as a JSON object with this exact shape:
     - Subtract 10 if the transcript has fewer than 3 exchanges
     - Subtract 10 if the persona's responses were vague or generic
     - Subtract 5 if the context/concept being tested was unclear or undefined
-    Final score must be between 20 and 95.
+    Final score must be between 20 and 95.,
+  "ai_verdict": {
+    "summary": "2-3 sentence summary of how the persona responded to the core idea, pricing, or messaging being tested",
+    "validate_next": "One specific thing to validate with real customers next",
+    "follow_up_question": "A suggested follow-up question to ask real users"
+  }
 }
 
 Return ONLY the JSON. No preamble, no markdown fences.`,
@@ -244,6 +249,11 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
           }
         ],
         confidence_score: 50,
+        ai_verdict: {
+          summary: 'The structured report could not be fully generated from this interview.',
+          validate_next: 'Review the full interview transcript for detailed feedback.',
+          follow_up_question: 'What was the single most important factor in your reaction to this?',
+        },
       }
     },
   ]

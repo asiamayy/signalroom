@@ -170,6 +170,12 @@ export interface ReportRecommendation {
   priority: 'high' | 'medium' | 'low'
 }
 
+export interface AIVerdict {
+  summary: string
+  validate_next: string
+  follow_up_question: string
+}
+
 export interface Report {
   id: string
   user_id: string
@@ -179,6 +185,7 @@ export interface Report {
   key_themes: ReportTheme[]
   recommendations: ReportRecommendation[]
   confidence_score: number
+  ai_verdict: AIVerdict | null
   created_at: string
 }
 

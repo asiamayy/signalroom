@@ -615,7 +615,7 @@ export default function LandingPage() {
                           95
                         </span>
                         <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#1A3024] mt-1 bg-[#e9edea] px-2.5 py-0.5 rounded-[4px]">
-                          High Confidence
+                          Strong Signal
                         </span>
                         <span className="text-[10px] font-mono tracking-wider text-neutral-400 mt-2">
                           Calibration Score
