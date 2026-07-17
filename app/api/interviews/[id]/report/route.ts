@@ -157,14 +157,13 @@ export async function POST(
     // Signals require a project (see supabase-migration-projects-signals.sql
     // — project_id is not-null on the signals table), so interviews that
     // aren't assigned to a project simply don't generate signals yet. This
-    // is a secondary effect of report generation — failures here shouldn't
-    // fail the report response, which has already succeeded.
+    // is a secondary effect of report generation — an extra Claude call the
+    // user shouldn't have to wait on, so it's fired without awaiting it here.
+    // Failures here shouldn't (and now can't) fail the report response,
+    // which has already succeeded.
     if (interview.project_id) {
-      try {
-        await syncSignalsForInterview(supabase, user.id, interview.project_id, interview, id, interview.persona_id, interview.persona, reportData)
-      } catch (e: any) {
-        console.error('Signal generation error:', e?.message ?? e)
-      }
+      syncSignalsForInterview(supabase, user.id, interview.project_id, interview, id, interview.persona_id, interview.persona, reportData)
+        .catch((e: any) => console.error('Signal generation error:', e?.message ?? e))
     }
 
     return NextResponse.json({ data: report }, { status: 201 })

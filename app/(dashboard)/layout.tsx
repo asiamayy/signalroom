@@ -232,7 +232,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="dashboard-main-col flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Top bar — search, help, settings, profile (desktop + mobile) */}
         <div className="flex items-center gap-3 px-4 sm:px-6 py-3 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>

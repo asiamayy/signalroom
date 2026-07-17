@@ -72,11 +72,21 @@ body {
   .flex.h-screen {
     display: block !important;
     height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Nested flex column wrapper (topbar + main) — also fixed height/overflow,
+     so without this it still clips content to one viewport's worth on print. */
+  .dashboard-main-col {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   main {
     display: block !important;
     width: 100% !important;
+    height: auto !important;
     overflow: visible !important;
   }
 

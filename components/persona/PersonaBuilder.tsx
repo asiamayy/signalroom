@@ -32,7 +32,7 @@ const EXAMPLE_PROMPTS = [
 // genuinely different, specific seed to build a "sophisticated" persona
 // from rather than one of a handful of recycled starting points.
 const SURPRISE_SENIORITIES = [
-  'a senior', 'a mid-career', 'a newly-promoted', 'a veteran', 'an up-and-coming',
+  'a senior', 'a mid-career', 'a newly-promoted', 'a veteran', 'a first-time',
 ]
 const SURPRISE_ROLES = [
   'operations director', 'procurement manager', 'VP of finance', 'clinical research coordinator',
@@ -80,6 +80,7 @@ const DEFAULT_TRAITS: PersonaTraits = {
   motivations: [''],
   preferred_tools: [''],
   key_quote: '',
+  ethnicity: '',
 }
 
 // ─── Options ──────────────────────────────────────────────────────────────────
@@ -159,6 +160,7 @@ export default function PersonaBuilder() {
         motivations: s.motivations ?? [''],
         preferred_tools: s.preferred_tools ?? [''],
         key_quote: s.key_quote ?? '',
+        ethnicity: s.ethnicity ?? '',
       })
     } catch (e: any) {
       setError(e.message ?? 'Failed to generate persona')
@@ -195,6 +197,7 @@ export default function PersonaBuilder() {
           gender: traits.gender,
           job_title: traits.job_title,
           additional_context: traits.additional_context,
+          ethnicity: traits.ethnicity,
         }),
       })
       const json = await res.json()
@@ -383,6 +386,12 @@ export default function PersonaBuilder() {
                   value={traits.location}
                   onChange={e => updateTrait('location', e.target.value)}
                   placeholder="e.g. Austin, TX"
+                />
+                <Input
+                  label="Ethnicity / heritage"
+                  value={traits.ethnicity ?? ''}
+                  onChange={e => updateTrait('ethnicity', e.target.value)}
+                  placeholder="e.g. Chinese-American — guides the AI avatar to match the name"
                 />
                 <TagInput
                   label="Tags"

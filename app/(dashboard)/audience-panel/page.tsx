@@ -305,7 +305,7 @@ export default function AudiencePanelPage() {
         </div>
         <div className="absolute right-4 sm:right-10 bottom-2 flex-col items-end opacity-20 hidden lg:flex pointer-events-none">
           <span style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '84px', color: HOME_COLORS.primary, lineHeight: 1 }}>{String(personas.length).padStart(2, '0')}</span>
-          <span className="text-[11px] font-bold uppercase tracking-tight" style={{ color: HOME_COLORS.onSurface }}>Total Personas</span>
+          <span className="text-[11px] font-bold uppercase tracking-tight" style={{ color: HOME_COLORS.onSurface }}>Active Personas</span>
         </div>
       </section>
 

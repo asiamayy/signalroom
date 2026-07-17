@@ -57,6 +57,7 @@ export interface PersonaTraits {
   motivations?: string[]
   preferred_tools?: string[]
   key_quote?: string
+  ethnicity?: string
 }
 
 export interface Persona {

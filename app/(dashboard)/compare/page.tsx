@@ -189,7 +189,7 @@ export default function ComparePage() {
                   <div className="flex justify-between items-start mb-6">
                     <div className="flex items-center gap-3">
                       <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
-                        Vector {String(i + 1).padStart(2, '0')}
+                        Response {String(i + 1).padStart(2, '0')}
                       </span>
                       <div className="flex items-center gap-2">
                         <PersonaAvatar avatarUrl={result.avatar_url} avatarInitials={result.avatar_initials} avatarColor={result.avatar_color} name={result.persona_name} size="sm" />

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
-  const { name, age, gender, job_title, additional_context } = await request.json()
+  const { name, age, gender, job_title, additional_context, ethnicity } = await request.json()
 
   const genderDesc = gender === 'female' ? 'woman' : gender === 'male' ? 'man' : 'person'
   const ageDesc = age ? `${age}-year-old` : 'adult'
+  const ethnicityDesc = ethnicity ? `${ethnicity} ` : ''
   const jobDesc = job_title ? `, ${job_title}` : ''
   const contextDesc = additional_context ? `. ${additional_context}` : ''
 
-  const prompt = `Professional headshot portrait of a ${ageDesc} ${genderDesc}${jobDesc}${contextDesc}. Natural lighting, slightly smiling, confident expression, blurred neutral background, high quality photography, realistic, professional LinkedIn-style photo, sharp focus on face, clean background`
+  const prompt = `Professional headshot portrait of a ${ageDesc} ${ethnicityDesc}${genderDesc}${jobDesc}${contextDesc}. Natural lighting, slightly smiling, confident expression, blurred neutral background, high quality photography, realistic, professional LinkedIn-style photo, sharp focus on face, clean background`
 
   try {
     const response = await fetch('https://fal.run/fal-ai/flux/schnell', {

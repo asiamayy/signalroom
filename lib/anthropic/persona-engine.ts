@@ -56,7 +56,8 @@ CRITICAL RULES — never break these:
 7. Keep responses conversational — 3 to 6 sentences. Not too short, not an essay.
 8. Occasionally reference your personal context (your job, your budget, a past experience) to make answers feel lived-in.
 9. Never give a generic answer that anyone could give. Every answer should only make sense coming from you.
-10. If you genuinely don't have enough information to form an opinion, ask a clarifying question — that's what a real research participant would do.${devilsAdvocate ? `
+10. If you genuinely don't have enough information to form an opinion, ask a clarifying question — that's what a real research participant would do.
+11. Vary how you start each response. Do NOT default to opening with "Honestly," — that's a crutch. Mix it up: jump straight into the reaction, lead with a question, reference something specific, or start mid-thought, the way real conversation actually sounds.${devilsAdvocate ? `
 
 ## DEVIL'S ADVOCATE MODE — ACTIVE
 You are in Devil's Advocate mode. This means:
@@ -273,7 +274,7 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
 
 export async function suggestPersonaTraits(description: string) {
   // Rotate through name pools to avoid repetition
-  const nameContext = `Choose a name that reflects realistic demographic diversity — vary across ethnicities, backgrounds, and regions. Examples of diverse name pools to draw from: Latino/Hispanic (Sofia Ramirez, Miguel Torres, Lucia Herrera), East Asian (Jenny Park, David Kim, Mei Chen), South Asian (Priya Patel, Arjun Sharma, Ananya Singh), Black/African American (Marcus Johnson, Jasmine Williams, DeShawn Carter), Middle Eastern (Layla Hassan, Omar Khalil, Nadia Aoun), European (Anna Kowalski, James O'Brien, Elena Rossi), and others. Do NOT default to generic American names like Marcus Chen, Tyler Brooks, or similar. Pick something specific and varied based on the persona's location and background.`
+  const nameContext = `Choose a name that reflects realistic demographic diversity — vary across ethnicities, backgrounds, and regions. Examples of diverse name pools to draw from: Latino/Hispanic (Sofia Ramirez, Miguel Torres, Lucia Herrera), East Asian (Jenny Park, David Kim, Mei Chen), South Asian (Priya Patel, Arjun Sharma, Ananya Singh), Black/African American (Marcus Johnson, Jasmine Williams, DeShawn Carter), Middle Eastern (Layla Hassan, Omar Khalil, Nadia Aoun), European (Anna Kowalski, James O'Brien, Elena Rossi), and others. Do NOT default to generic American names like Marcus Chen, Tyler Brooks, or similar. Pick something specific and varied based on the persona's location and background. Whatever name you choose, it must be internally consistent — a name like "Sarah Chen" (an English first name with a Chinese surname) implies a specific, real background (e.g. a Chinese-American woman, possibly from a mixed or adoptive family), not a generic/default ethnicity — the "ethnicity" field below must match the heritage the name actually implies, not be picked independently of it.`
 
   // LLMs asked for "a City, State" with no other constraint gravitate hard
   // toward a small set of trending-tech-hub defaults (Austin chief among
@@ -300,6 +301,7 @@ export async function suggestPersonaTraits(description: string) {
 Generate realistic, specific persona traits as JSON with this shape:
 {
   "name": "Full name — ${nameContext}",
+  "ethnicity": "The specific ethnicity/heritage implied by the name above (e.g. 'Chinese-American', 'Nigerian-American', 'Mexican-American', 'Polish-American') — used to generate a visually consistent avatar, so it must match the name, not be generic",
   "age": number,
   "gender": "male" | "female" | "non-binary",
   "location": "City, State — ${locationContext}",
