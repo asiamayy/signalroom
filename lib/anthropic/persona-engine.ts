@@ -43,7 +43,7 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
     over_200k: 'over $200,000',
   }
 
-  // Step 3: Dynamically derive user priorities and attention profiles directly from data
+  // Dynamically derive user priorities and attention profiles directly from data
   const highestGoal = traits.goals[0] || 'Not specified'
   const largestFrustration = traits.frustrations[0] || 'Not specified'
   const buyingBehavior = traits.buying_behavior
@@ -89,13 +89,13 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
 - Biggest fear: ${largestFrustration}
 - Default buying style: ${buyingBehavior}
 
-## Your Decision Lens (Step 1)
+## Your Decision Lens
 Before you evaluate anything, determine what YOU naturally pay attention to first. Your profession, personality, frustrations, goals, and buying behavior should determine what matters most.
 
 You naturally notice and evaluate:
 ${derivedAttentionProfile}
 
-CRITICAL ATTENTION FILTER RULES (Step 5):
+CRITICAL ATTENTION FILTER RULES:
 - Do NOT attempt to evaluate everything equally.
 - Focus heavily on the few things someone like you would naturally notice first.
 - Ignore details that your personality or profession would not realistically prioritize. Real people notice only a handful of things immediately.
@@ -119,9 +119,9 @@ CRITICAL RULES — never break these:
 9. Never give a generic answer that anyone could give. Every answer should only make sense coming from you.
 10. If you genuinely don't have enough information to form an opinion, ask a clarifying question.
 11. Vary how you start each response. Do NOT default to opening with "Honestly," or mimicking common paragraph hooks. Mix it up completely: start mid-thought, challenge the question format, or zoom in on an isolated word or asset aspect instantly.
-12. Real consumers rarely agree (Step 4). Do not try to produce the objectively correct analysis. Produce YOUR analysis. If another persona might love something you dislike, that is expected. Do not soften your opinion simply because another reasonable person could disagree.
+12. Real consumers rarely agree. Do not try to produce the objectively correct analysis. Produce YOUR analysis. If another persona might love something you dislike, that is expected. Do not soften your opinion simply because another reasonable person could disagree.
 
-## Rules for Numeric Scoring (Step 2)
+## Rules for Numeric Scoring
 If you are explicitly asked to provide a numeric rating, score, or percentage:
 - Do NOT calculate it using a rigid mathematical formula or arithmetic point delta. 
 - Instead, follow this human choice sequence:
@@ -455,4 +455,87 @@ Make it specific and believable. Return ONLY the JSON.`,
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
 
   try {
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    return JSON.parse(cleaned)
+  } catch {
+    throw new Error('Failed to parse persona suggestion JSON')
+  }
+}
+
+// ─── Generate a persona user-journey map ─────────────────────────────────────
+
+export async function generatePersonaJourney(persona: Persona, journeyTitle: string): Promise<{ title: string; steps: JourneyStep[] }> {
+  const { traits } = persona
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 2000,
+    messages: [
+      {
+        role: 'user',
+        content: `You are a senior UX researcher mapping a customer journey for "${journeyTitle}".
+
+Persona: ${persona.name}, ${traits.age}, ${traits.job_title} in ${traits.industry}
+Goals: ${traits.goals.filter(Boolean).join('; ') || 'not specified'}
+Frustrations: ${traits.frustrations.filter(Boolean).join('; ') || 'not specified'}
+Tech savviness: ${traits.tech_savviness}/5, Risk tolerance: ${traits.risk_tolerance}/5
+Additional context: ${traits.additional_context || 'none'}
+
+Generate a realistic 5-7 step user journey for this persona experiencing "${journeyTitle}". Each step must reflect this specific person's psychology and context — not a generic journey.
+
+Return ONLY a JSON object with this exact shape:
+{
+  "title": "${journeyTitle}",
+  "steps": [
+    {
+      "step_order": 0,
+      "phase_name": "Short phase name (2-4 words, e.g. 'Discovery', 'Evaluation', 'First Use')",
+      "user_action": "What the persona concretely does in this step",
+      "internal_thoughts": "What the persona is thinking/feeling internally, in first person",
+      "emotional_score": -5 to 5 (integer, -5 = very frustrated, 0 = neutral, 5 = delighted),
+      "friction_point": "A specific obstacle or pain point at this step, or null if this step is smooth"
+    }
+  ]
+}
+
+Return ONLY the JSON. No preamble, no markdown fences.`,
+      },
+    ],
+  })
+
+  const raw = response.content[0].type === 'text' ? response.content[0].text : ''
+
+  const attempts = [
+    () => {
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      return JSON.parse(cleaned)
+    },
+    () => {
+      const start = raw.indexOf('{')
+      const end = raw.lastIndexOf('}')
+      if (start === -1 || end === -1) throw new Error('No JSON object found')
+      return JSON.parse(raw.slice(start, end + 1))
+    },
+  ]
+
+  for (const attempt of attempts) {
+    try {
+      const parsed = attempt()
+      return {
+        title: parsed.title ?? journeyTitle,
+        steps: (parsed.steps ?? []).map((s: any, i: number) => ({
+          step_order: s.step_order ?? i,
+          phase_name: s.phase_name ?? `Step ${i + 1}`,
+          user_action: s.user_action ?? '',
+          internal_thoughts: s.internal_thoughts ?? '',
+          emotional_score: Math.max(-5, Math.min(5, Math.round(s.emotional_score ?? 0))),
+          friction_point: s.friction_point || null,
+        })),
+      }
+    } catch {
+      continue
+    }
+  }
+
+  throw new Error('Failed to parse journey JSON from AI response')
+}
