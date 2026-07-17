@@ -65,6 +65,10 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
     derivedAttentionProfile = "• cost value\n• risk assessment\n• pricing strategy\n• transparent trade-offs and baseline ROI"
   } else if (jobLower.match(/(medical|doctor|nurse|health|clinical)/)) {
     derivedAttentionProfile = "• safety\n• clinical trust\n• evidence-backed claims\n• institutional authority"
+  } else if (jobLower.match(/(mom|dad|parent|stay-at-home)/)) {
+    derivedAttentionProfile = "• family routine fit\n• household budget impact\n• instant physical convenience\n• zero-fluff reliability under stress"
+  } else if (jobLower.match(/(deli|shop|retail|restaurant|small business)/)) {
+    derivedAttentionProfile = "• razor-thin margin value\n• immediate practical utility\n• waste reduction\n• speed and straightforward positioning"
   } else {
     derivedAttentionProfile = "• real-world convenience\n• everyday reliability\n• immediate sensory or physical friction\n• workflow routine integration"
   }
@@ -123,13 +127,16 @@ CRITICAL RULES — never break these:
 
 ## Rules for Numeric Scoring
 If you are explicitly asked to provide a numeric rating, score, or percentage:
-- Do NOT calculate it using a rigid mathematical formula or arithmetic point delta. 
-- Instead, follow this human choice sequence:
+- Do NOT calculate it using a rigid mathematical formula or arithmetic point delta.
+- Do NOT output a generic, average, or middle-ground milestone number.
+- You have no knowledge of other participants, but because your background as a ${traits.job_title} gives you an entirely unique worldview, your score MUST reflect that perspective. If your profile is highly price-sensitive or skeptical (like a small business owner watching margins or a busy parent protecting budget), dive deep into the 20s, 30s, or 40s if the concept misses your priorities. If you lean positive, commit to it.
+- Never default to common "safe" anchor points, milestone numbers, or repeating double digits (like 50, 60, 62, or 65).
+- Follow this human choice sequence:
   1. Form your genuine qualitative opinion first.
   2. Decide how strongly you trust what you're seeing.
   3. Decide how well it fits YOUR specific priorities.
   4. Decide how likely YOU would be to purchase, recommend, or continue evaluating it.
-  5. Convert that overall feeling into one single number between 0 and 100.
+  5. Convert that overall feeling into one single, precise, uneven number between 0 and 100 (e.g., 37, 49, 56, 71, 83).
 - Your score is the consequence of your reaction—not the mathematical starting point.
 - Different people often disagree dramatically. Two personas evaluating the exact same concept may naturally differ by 30–50 points. Never try to converge toward the middle simply because another reasonable person might disagree.
 - State your number first, then explain why in the ordinary language of someone justifying a gut reaction — never walk through or explain the math out loud.${devilsAdvocate ? `
@@ -193,19 +200,17 @@ export async function streamPersonaResponse(
     }
   })
 
-  // Jitter and calculate target sampling parameters dynamically based on personality metrics 
-  // to completely isolate parallel generation paths from matching up.
-  let targetTemperature = 1.0
-  const baselineVarianceFactor = (persona.traits.risk_tolerance + persona.traits.tech_savviness) / 2
-  if (baselineVarianceFactor <= 2) {
-    targetTemperature = 0.82 // Skeptical or low-tech personas behave with rigid precision
-  } else if (baselineVarianceFactor >= 4) {
-    targetTemperature = 1.15 // Visionary/Erratic profiles sample rarer choices
-  } else {
-    // Generate an index or string-hash-driven distinct jitter profile offset
-    const seedValue = persona.name.charCodeAt(0) + (persona.traits.age || 30)
-    targetTemperature = 0.90 + ((seedValue % 20) / 100) // Ranges smoothly from 0.90 to 1.10
-  }
+  // Dynamically generate a highly volatile temperature unique to this exact persona's name string
+  // This physically shatters parallel path token anchoring by forcing the model to sample different probability distributions.
+  const nameSeed = persona.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const rawJitter = (nameSeed % 30) / 100; // Yields a precise decimal variance between 0.00 and 0.29
+  
+  let targetTemperature = 0.85 + rawJitter; 
+  if (persona.traits.risk_tolerance <= 2) targetTemperature -= 0.15;
+  if (persona.traits.risk_tolerance >= 4) targetTemperature += 0.15;
+  
+  // Clamp between safe LLM bounds
+  targetTemperature = Math.max(0.75, Math.min(1.25, targetTemperature));
 
   let fullResponse = ''
 
@@ -441,7 +446,7 @@ Generate realistic, specific persona traits as JSON with this shape:
   "tech_savviness": 1-5,
   "risk_tolerance": 1-5,
   "additional_context": "2-3 sentences of rich personal context that makes this person feel real",
-  "motivations": ["motivation 1", "motivation 2", "motivation 3", "motivation 4"],
+  "motivations": ["motivation 1", "motivation 2", "motivation 3", "motivation 四"],
   "preferred_tools": ["tool or product 1", "tool or product 2", "tool or product 3"],
   "key_quote": "A single first-person sentence that captures this person's core outlook or philosophy",
   "tags": ["tag1", "tag2", "tag3"]
