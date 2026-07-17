@@ -43,14 +43,30 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
     over_200k: 'over $200,000',
   }
 
-  // Assign distinct speaking templates structurally based on demographic profile
-  let archetypalBehaviorDirective = ""
-  if (traits.risk_tolerance <= 2 || traits.buying_behavior.toLowerCase().includes('skeptic')) {
-    archetypalBehaviorDirective = "ROLE ARCHETYPE: Critical Analyst. Focus 80% of your language on logical flaws, missing details, hierarchy, formatting errors, and operational skepticism. Your tone must be clinical, precise, and highly protective of your time/money."
-  } else if (traits.tech_savviness >= 4 && traits.job_title.toLowerCase().match(/(founder|ceo|engineer|developer|pm|product)/)) {
-    archetypalBehaviorDirective = "ROLE ARCHETYPE: Fast-Moving Builder. Completely ignore minor cosmetic design nitpicks. Evaluate this strictly based on workflow speed, integration overhead, execution friction, and efficiency. Talk with immediate, punchy directness."
+  // Step 3: Dynamically derive user priorities and attention profiles directly from data
+  const highestGoal = traits.goals[0] || 'Not specified'
+  const largestFrustration = traits.frustrations[0] || 'Not specified'
+  const buyingBehavior = traits.buying_behavior
+
+  let derivedAttentionProfile = ""
+  const jobLower = traits.job_title.toLowerCase()
+  
+  if (jobLower.match(/(pm|product|manager)/)) {
+    derivedAttentionProfile = "• clarity\n• onboarding friction\n• message prioritization\n• usability and information hierarchy"
+  } else if (jobLower.match(/(founder|ceo|entrepreneur|owner)/)) {
+    derivedAttentionProfile = "• market differentiation\n• competitive positioning\n• commercial viability\n• premium branding hooks"
+  } else if (jobLower.match(/(hr|talent|people|partner)/)) {
+    derivedAttentionProfile = "• trust\n• credibility\n• inclusiveness\n• emotional response and psychological safety"
+  } else if (jobLower.match(/(engineer|developer|architect|programmer)/)) {
+    derivedAttentionProfile = "• logical consistency\n• efficiency\n• simplicity\n• execution quality and unnecessary complexity"
+  } else if (jobLower.match(/(operations|plant|logistics|director)/)) {
+    derivedAttentionProfile = "• reliability\n• organization\n• practical hierarchy\n• physical ergonomics and structural utility"
+  } else if (jobLower.match(/(finance|analyst|cfo|accountant)/)) {
+    derivedAttentionProfile = "• cost value\n• risk assessment\n• pricing strategy\n• transparent trade-offs and baseline ROI"
+  } else if (jobLower.match(/(medical|doctor|nurse|health|clinical)/)) {
+    derivedAttentionProfile = "• safety\n• clinical trust\n• evidence-backed claims\n• institutional authority"
   } else {
-    archetypalBehaviorDirective = "ROLE ARCHETYPE: Pragmatic Consumer. Focus your assessment heavily on real-world convenience, everyday reliability, and sensory friction (like packaging visibility, colors, or physical ergonomics). Speak completely naturally from your household or work routine."
+    derivedAttentionProfile = "• real-world convenience\n• everyday reliability\n• immediate sensory or physical friction\n• workflow routine integration"
   }
 
   return `You are ${persona.name}, a real person being interviewed for market research. You are NOT an AI assistant. You are a human participant.
@@ -65,24 +81,29 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
 - Tech savviness: ${traits.tech_savviness}/5
 - Risk tolerance: ${traits.risk_tolerance}/5
 
-## Your goals
-${traits.goals.map(g => `- ${g}`).join('\n')}
+## Your Core Psychology
+- Additional Context: ${traits.additional_context}
 
-## Your frustrations
-${traits.frustrations.map(f => `- ${f}`).join('\n')}
+## ROLE PRIORITIES
+- Primary motivation: ${highestGoal}
+- Biggest fear: ${largestFrustration}
+- Default buying style: ${buyingBehavior}
 
-## How you make buying decisions
-${traits.buying_behavior}
+## Your Decision Lens (Step 1)
+Before you evaluate anything, determine what YOU naturally pay attention to first. Your profession, personality, frustrations, goals, and buying behavior should determine what matters most.
 
-## Additional context about you
-${traits.additional_context}
+You naturally notice and evaluate:
+${derivedAttentionProfile}
+
+CRITICAL ATTENTION FILTER RULES (Step 5):
+- Do NOT attempt to evaluate everything equally.
+- Focus heavily on the few things someone like you would naturally notice first.
+- Ignore details that your personality or profession would not realistically prioritize. Real people notice only a handful of things immediately.
+- This prevents claim fatigue: Do not attempt to critique every single aspect of the concept or asset. One persona must talk almost entirely about trust, another about positioning, another about convenience, and another about premium feel.
 
 ## Interview context
 Type: ${interviewType.replace('_', ' ')}
 What's being tested: ${context}
-
-## Your Persona Guardrails
-${archetypalBehaviorDirective}
 
 ## How you must respond
 
@@ -91,24 +112,27 @@ CRITICAL RULES — never break these:
 2. Respond ONLY as ${persona.name} would — from your specific life, job, income, and experience.
 3. Be honest and specific. If something doesn't appeal to you, say so and explain why from your perspective.
 4. Show real tension. Real people are ambivalent. You can be interested AND skeptical at the same time.
-5. Use "I" language grounded in YOUR context. "As a ${traits.job_title}, I'd worry about..."
+5. Use "I" language grounded in YOUR context. "As a ${traits.job_title}, I'd immediately notice..."
 6. Push back when warranted. Don't just validate. If a price seems high or a concept is unclear, say so.
 7. Keep responses conversational — 3 to 6 sentences. Not too short, not an essay.
 8. Occasionally reference your personal context (your job, your budget, a past experience) to make answers feel lived-in.
 9. Never give a generic answer that anyone could give. Every answer should only make sense coming from you.
-10. If you genuinely don't have enough information to form an opinion, ask a clarifying question — that's what a real research participant would do.
+10. If you genuinely don't have enough information to form an opinion, ask a clarifying question.
 11. Vary how you start each response. Do NOT default to opening with "Honestly," or mimicking common paragraph hooks. Mix it up completely: start mid-thought, challenge the question format, or zoom in on an isolated word or asset aspect instantly.
-12. Before giving any numeric rating, score, or percentage, calculate your own honest baseline first, using YOUR specific traits above:
-   - Start at 50
-   - Tech savviness 4-5: add 15. Tech savviness 1-2: subtract 15
-   - Risk tolerance 4-5: add 10. Risk tolerance 1-2: subtract 10
-   - High income (over $100,000/year): add 5. Under $50,000/year: subtract 10
-   - Your goals mention cost savings or a tight budget: subtract 10
-   - Your buying behavior is skeptical or research-heavy: subtract 8
-   - Your frustrations mention pricing or value concerns: subtract 12
-   - Add your own random personality noise: -8 to +8, whatever feels true to who you specifically are
-   This calculation is silent, internal reasoning — never narrate it. Do NOT say things like "starting at 50," "adding 15 for tech savviness," or otherwise walk through the math or name-check this rule; a real person doesn't think in point deltas out loud. Your score MUST reflect these traits — a budget-conscious, risk-averse persona should land 20-35 points below a high-income, risk-tolerant persona answering the exact same question. Do not round toward 50-70. Do not hedge. If your honest calculation lands on 22 or 91, say 22 or 91. State your number first, then explain why in the ordinary language of someone justifying a gut reaction — your budget, your skepticism, a past experience — never the arithmetic that produced it.
-   Your numeric answers will naturally differ significantly from other personas because you have fundamentally different life experiences, budgets, and risk tolerances. You have no way of knowing what other personas are answering, but assume they'll be spread across the full 0-100 range based on their own very different traits — realistic consumer research shows 40-60 point spreads between different demographic groups on pricing and product questions. A score within 10 points of another persona with very different traits would be unrealistic and wrong. Your job is to represent your specific demographic honestly, not to cluster near the middle.${devilsAdvocate ? `
+12. Real consumers rarely agree (Step 4). Do not try to produce the objectively correct analysis. Produce YOUR analysis. If another persona might love something you dislike, that is expected. Do not soften your opinion simply because another reasonable person could disagree.
+
+## Rules for Numeric Scoring (Step 2)
+If you are explicitly asked to provide a numeric rating, score, or percentage:
+- Do NOT calculate it using a rigid mathematical formula or arithmetic point delta. 
+- Instead, follow this human choice sequence:
+  1. Form your genuine qualitative opinion first.
+  2. Decide how strongly you trust what you're seeing.
+  3. Decide how well it fits YOUR specific priorities.
+  4. Decide how likely YOU would be to purchase, recommend, or continue evaluating it.
+  5. Convert that overall feeling into one single number between 0 and 100.
+- Your score is the consequence of your reaction—not the mathematical starting point.
+- Different people often disagree dramatically. Two personas evaluating the exact same concept may naturally differ by 30–50 points. Never try to converge toward the middle simply because another reasonable person might disagree.
+- State your number first, then explain why in the ordinary language of someone justifying a gut reaction — never walk through or explain the math out loud.${devilsAdvocate ? `
 
 ## DEVIL'S ADVOCATE MODE — ACTIVE
 You are in Devil's Advocate mode. This means:
@@ -431,87 +455,4 @@ Make it specific and believable. Return ONLY the JSON.`,
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
 
   try {
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    return JSON.parse(cleaned)
-  } catch {
-    throw new Error('Failed to parse persona suggestion JSON')
-  }
-}
-
-// ─── Generate a persona user-journey map ─────────────────────────────────────
-
-export async function generatePersonaJourney(persona: Persona, journeyTitle: string): Promise<{ title: string; steps: JourneyStep[] }> {
-  const { traits } = persona
-
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 2000,
-    messages: [
-      {
-        role: 'user',
-        content: `You are a senior UX researcher mapping a customer journey for "${journeyTitle}".
-
-Persona: ${persona.name}, ${traits.age}, ${traits.job_title} in ${traits.industry}
-Goals: ${traits.goals.filter(Boolean).join('; ') || 'not specified'}
-Frustrations: ${traits.frustrations.filter(Boolean).join('; ') || 'not specified'}
-Tech savviness: ${traits.tech_savviness}/5, Risk tolerance: ${traits.risk_tolerance}/5
-Additional context: ${traits.additional_context || 'none'}
-
-Generate a realistic 5-7 step user journey for this persona experiencing "${journeyTitle}". Each step must reflect this specific person's psychology and context — not a generic journey.
-
-Return ONLY a JSON object with this exact shape:
-{
-  "title": "${journeyTitle}",
-  "steps": [
-    {
-      "step_order": 0,
-      "phase_name": "Short phase name (2-4 words, e.g. 'Discovery', 'Evaluation', 'First Use')",
-      "user_action": "What the persona concretely does in this step",
-      "internal_thoughts": "What the persona is thinking/feeling internally, in first person",
-      "emotional_score": -5 to 5 (integer, -5 = very frustrated, 0 = neutral, 5 = delighted),
-      "friction_point": "A specific obstacle or pain point at this step, or null if this step is smooth"
-    }
-  ]
-}
-
-Return ONLY the JSON. No preamble, no markdown fences.`,
-      },
-    ],
-  })
-
-  const raw = response.content[0].type === 'text' ? response.content[0].text : ''
-
-  const attempts = [
-    () => {
-      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      return JSON.parse(cleaned)
-    },
-    () => {
-      const start = raw.indexOf('{')
-      const end = raw.lastIndexOf('}')
-      if (start === -1 || end === -1) throw new Error('No JSON object found')
-      return JSON.parse(raw.slice(start, end + 1))
-    },
-  ]
-
-  for (const attempt of attempts) {
-    try {
-      const parsed = attempt()
-      return {
-        title: parsed.title ?? journeyTitle,
-        steps: (parsed.steps ?? []).map((s: any, i: number) => ({
-          step_order: s.step_order ?? i,
-          phase_name: s.phase_name ?? `Step ${i + 1}`,
-          user_action: s.user_action ?? '',
-          internal_thoughts: s.internal_thoughts ?? '',
-          emotional_score: Math.max(-5, Math.min(5, Math.round(s.emotional_score ?? 0))),
-          friction_point: s.friction_point || null,
-        })),
-      }
-    } catch {
-      continue
-    }
-  }
-
-  throw new Error('Failed to parse journey JSON from AI response')
-}
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/
