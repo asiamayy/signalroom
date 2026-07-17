@@ -391,7 +391,7 @@ export default function PersonaBuilder() {
                   label="Ethnicity / heritage"
                   value={traits.ethnicity ?? ''}
                   onChange={e => updateTrait('ethnicity', e.target.value)}
-                  placeholder="e.g. Chinese-American — guides the AI avatar to match the name"
+                  placeholder="e.g. Chinese-American"
                 />
                 <TagInput
                   label="Tags"

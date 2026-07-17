@@ -272,9 +272,47 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
 
 // ─── Generate persona suggestions ────────────────────────────────────────────
 
+// Name pools by background, each with several first/last names — a call
+// builds one random first+last combo per category rather than always
+// showing the same fixed examples. Static example lists in the prompt were
+// the actual cause of repeat names (the same failure mode fixed below for
+// locations): shown the same handful of names every time, the model just
+// kept reusing them verbatim regardless of the "vary it" instruction.
+const NAME_POOLS: Record<string, { first: string[]; last: string[] }> = {
+  'Latino/Hispanic': {
+    first: ['Sofia', 'Camila', 'Valentina', 'Mateo', 'Diego', 'Lucia', 'Miguel', 'Ana', 'Carlos', 'Gabriela', 'Renata', 'Joaquin'],
+    last: ['Ramirez', 'Torres', 'Herrera', 'Morales', 'Castillo', 'Reyes', 'Flores', 'Vargas', 'Delgado', 'Nunez'],
+  },
+  'East Asian': {
+    first: ['Jenny', 'David', 'Mei', 'Wei', 'Grace', 'Kevin', 'Yuki', 'Haruto', 'Soo-ah', 'Minjun', 'Ling', 'Akira'],
+    last: ['Park', 'Kim', 'Chen', 'Wang', 'Nguyen', 'Tanaka', 'Suzuki', 'Lin', 'Zhang', 'Yamamoto'],
+  },
+  'South Asian': {
+    first: ['Priya', 'Arjun', 'Ananya', 'Rohan', 'Divya', 'Karan', 'Neha', 'Vikram', 'Ishaan', 'Meera'],
+    last: ['Patel', 'Sharma', 'Singh', 'Gupta', 'Iyer', 'Rao', 'Mehta', 'Reddy', 'Kapoor', 'Chowdhury'],
+  },
+  'Black/African American': {
+    first: ['Marcus', 'Jasmine', 'DeShawn', 'Aaliyah', 'Malik', 'Imani', 'Terrence', 'Nia', 'Jerome', 'Simone'],
+    last: ['Johnson', 'Williams', 'Carter', 'Jackson', 'Brooks', 'Coleman', 'Bennett', 'Freeman', 'Harris'],
+  },
+  'Middle Eastern': {
+    first: ['Layla', 'Omar', 'Nadia', 'Yusuf', 'Amir', 'Zainab', 'Karim', 'Farah', 'Rania', 'Tariq'],
+    last: ['Hassan', 'Khalil', 'Aoun', 'Haddad', 'Nasser', 'Saleh', 'Farouk', 'Mansour'],
+  },
+  European: {
+    first: ['Anna', 'James', 'Elena', 'Piotr', 'Isabella', 'Liam', 'Greta', 'Marco', 'Ingrid', 'Declan'],
+    last: ['Kowalski', "O'Brien", 'Rossi', 'Novak', 'Muller', 'Andersen', 'Fitzgerald', 'Dubois', 'Lindqvist'],
+  },
+}
+
 export async function suggestPersonaTraits(description: string) {
-  // Rotate through name pools to avoid repetition
-  const nameContext = `Choose a name that reflects realistic demographic diversity — vary across ethnicities, backgrounds, and regions. Examples of diverse name pools to draw from: Latino/Hispanic (Sofia Ramirez, Miguel Torres, Lucia Herrera), East Asian (Jenny Park, David Kim, Mei Chen), South Asian (Priya Patel, Arjun Sharma, Ananya Singh), Black/African American (Marcus Johnson, Jasmine Williams, DeShawn Carter), Middle Eastern (Layla Hassan, Omar Khalil, Nadia Aoun), European (Anna Kowalski, James O'Brien, Elena Rossi), and others. Do NOT default to generic American names like Marcus Chen, Tyler Brooks, or similar. Pick something specific and varied based on the persona's location and background. Whatever name you choose, it must be internally consistent — a name like "Sarah Chen" (an English first name with a Chinese surname) implies a specific, real background (e.g. a Chinese-American woman, possibly from a mixed or adoptive family), not a generic/default ethnicity — the "ethnicity" field below must match the heritage the name actually implies, not be picked independently of it.`
+  const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
+  const nameExamples = Object.entries(NAME_POOLS)
+    .map(([label, pool]) => `${label} (${pick(pool.first)} ${pick(pool.last)})`)
+    .sort(() => Math.random() - 0.5)
+    .join(', ')
+
+  const nameContext = `Choose a name that reflects realistic demographic diversity — vary across ethnicities, backgrounds, and regions. For inspiration only, one example per background this time: ${nameExamples}, and others. These are just this call's examples, not a fixed list — pick your own first/last combination, and do NOT reuse the same name(s) you've generated in prior personas. Do NOT default to generic American names like Marcus Chen, Tyler Brooks, or similar. Pick something specific and varied based on the persona's location and background. Whatever name you choose, it must be internally consistent — a name like "Sarah Chen" (an English first name with a Chinese surname) implies a specific, real background (e.g. a Chinese-American woman, possibly from a mixed or adoptive family), not a generic/default ethnicity — the "ethnicity" field below must match the heritage the name actually implies, not be picked independently of it.`
 
   // LLMs asked for "a City, State" with no other constraint gravitate hard
   // toward a small set of trending-tech-hub defaults (Austin chief among
