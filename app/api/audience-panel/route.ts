@@ -56,15 +56,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
   }
 
-  // Run all personas in parallel — single question, single response each
+  // Run all personas in parallel — single question, single response each.
+  // Each gets a slightly different temperature (0.85 -> 1.0 stepped by index)
+  // so parallel calls aren't all sampling with identical settings — one
+  // contributor to otherwise-clustered numeric answers.
   const responses = await Promise.all(
-    personas.map(async (persona) => {
+    personas.map(async (persona, index) => {
       try {
         const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '')
 
         const response = await client.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 400,
+          temperature: Math.min(1, 0.85 + index * 0.05),
           system: systemPrompt + `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`,
           messages: [{ role: 'user', content: questionContent }],
         })

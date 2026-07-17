@@ -36,9 +36,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
   }
 
-  // Run all personas in parallel
+  // Run all personas in parallel. Each gets a slightly different temperature
+  // (0.85 -> 1.0 stepped by index) so parallel calls aren't all sampling with
+  // identical settings — one contributor to otherwise-clustered numeric answers.
   const results = await Promise.all(
-    personas.map(async (persona) => {
+    personas.map(async (persona, index) => {
       try {
         const systemPrompt = buildPersonaSystemPrompt(
           persona,
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
         const response = await client.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 600,
+          temperature: Math.min(1, 0.85 + index * 0.05),
           system: systemPrompt,
           messages: [{ role: 'user', content: questionContent }],
         })
