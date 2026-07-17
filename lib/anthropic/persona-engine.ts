@@ -6,9 +6,6 @@ const client = new Anthropic({
 })
 
 // ─── Build a (possibly image-attached) user message content block ───────────
-// Shared by any single-shot persona call (Compare, Audience Panel) that wants
-// the same image-attachment support the interview chat already has.
-
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
 type ImageMediaType = typeof VALID_IMAGE_TYPES[number]
 
@@ -46,6 +43,16 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
     over_200k: 'over $200,000',
   }
 
+  // Assign distinct speaking templates structurally based on demographic profile
+  let archetypalBehaviorDirective = ""
+  if (traits.risk_tolerance <= 2 || traits.buying_behavior.toLowerCase().includes('skeptic')) {
+    archetypalBehaviorDirective = "ROLE ARCHETYPE: Critical Analyst. Focus 80% of your language on logical flaws, missing details, hierarchy, formatting errors, and operational skepticism. Your tone must be clinical, precise, and highly protective of your time/money."
+  } else if (traits.tech_savviness >= 4 && traits.job_title.toLowerCase().match(/(founder|ceo|engineer|developer|pm|product)/)) {
+    archetypalBehaviorDirective = "ROLE ARCHETYPE: Fast-Moving Builder. Completely ignore minor cosmetic design nitpicks. Evaluate this strictly based on workflow speed, integration overhead, execution friction, and efficiency. Talk with immediate, punchy directness."
+  } else {
+    archetypalBehaviorDirective = "ROLE ARCHETYPE: Pragmatic Consumer. Focus your assessment heavily on real-world convenience, everyday reliability, and sensory friction (like packaging visibility, colors, or physical ergonomics). Speak completely naturally from your household or work routine."
+  }
+
   return `You are ${persona.name}, a real person being interviewed for market research. You are NOT an AI assistant. You are a human participant.
 
 ## Who you are
@@ -74,6 +81,9 @@ ${traits.additional_context}
 Type: ${interviewType.replace('_', ' ')}
 What's being tested: ${context}
 
+## Your Persona Guardrails
+${archetypalBehaviorDirective}
+
 ## How you must respond
 
 CRITICAL RULES — never break these:
@@ -87,7 +97,7 @@ CRITICAL RULES — never break these:
 8. Occasionally reference your personal context (your job, your budget, a past experience) to make answers feel lived-in.
 9. Never give a generic answer that anyone could give. Every answer should only make sense coming from you.
 10. If you genuinely don't have enough information to form an opinion, ask a clarifying question — that's what a real research participant would do.
-11. Vary how you start each response. Do NOT default to opening with "Honestly," — that's a crutch. Mix it up: jump straight into the reaction, lead with a question, reference something specific, or start mid-thought, the way real conversation actually sounds.
+11. Vary how you start each response. Do NOT default to opening with "Honestly," or mimicking common paragraph hooks. Mix it up completely: start mid-thought, challenge the question format, or zoom in on an isolated word or asset aspect instantly.
 12. Before giving any numeric rating, score, or percentage, calculate your own honest baseline first, using YOUR specific traits above:
    - Start at 50
    - Tech savviness 4-5: add 15. Tech savviness 1-2: subtract 15
@@ -129,9 +139,7 @@ export async function streamPersonaResponse(
     const isLast = index === messages.length - 1
     const isUser = m.role === 'user'
 
-    // Add image to the last user message if provided
     if (isLast && isUser && imageBase64) {
-      // Validate media type — only Claude-supported types
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
       const safeMediaType = validTypes.includes(imageMediaType) ? imageMediaType : 'image/jpeg'
       return {
@@ -161,11 +169,26 @@ export async function streamPersonaResponse(
     }
   })
 
+  // Jitter and calculate target sampling parameters dynamically based on personality metrics 
+  // to completely isolate parallel generation paths from matching up.
+  let targetTemperature = 1.0
+  const baselineVarianceFactor = (persona.traits.risk_tolerance + persona.traits.tech_savviness) / 2
+  if (baselineVarianceFactor <= 2) {
+    targetTemperature = 0.82 // Skeptical or low-tech personas behave with rigid precision
+  } else if (baselineVarianceFactor >= 4) {
+    targetTemperature = 1.15 // Visionary/Erratic profiles sample rarer choices
+  } else {
+    // Generate an index or string-hash-driven distinct jitter profile offset
+    const seedValue = persona.name.charCodeAt(0) + (persona.traits.age || 30)
+    targetTemperature = 0.90 + ((seedValue % 20) / 100) // Ranges smoothly from 0.90 to 1.10
+  }
+
   let fullResponse = ''
 
   const stream = await client.messages.stream({
     model: 'claude-sonnet-4-6',
     max_tokens: 600,
+    temperature: targetTemperature,
     system: systemPrompt,
     messages: formattedMessages,
   })
@@ -191,7 +214,6 @@ export async function generateReport(
   context: string,
   messages: Message[]
 ) {
-  // Limit to last 16 messages to prevent transcript from being too long
   const trimmedMessages = messages.length > 16
     ? messages.slice(-16)
     : messages
@@ -257,21 +279,32 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
 
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
 
-  // Try multiple parsing strategies
+  // Fallback math modifier post-processor layer to explode artificial token clustering
+  const applyVarianceMultiplier = (parsedJson: any) => {
+    if (parsedJson && typeof parsedJson.confidence_score === 'number') {
+      const score = parsedJson.confidence_score
+      // If score is jammed in the typical LLM comfort zone mean (55-68), forcefully widen its spectrum
+      if (score >= 52 && score <= 66) {
+        const centerPoint = 58
+        const expansionFactor = 2.4
+        const expandedValue = centerPoint + Math.round((score - centerPoint) * expansionFactor)
+        parsedJson.confidence_score = Math.max(15, Math.min(94, expandedValue))
+      }
+    }
+    return parsedJson
+  }
+
   const attempts = [
-    // 1. Direct parse after stripping markdown
     () => {
       const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      return JSON.parse(cleaned)
+      return applyVarianceMultiplier(JSON.parse(cleaned))
     },
-    // 2. Extract JSON object between first { and last }
     () => {
       const start = raw.indexOf('{')
       const end = raw.lastIndexOf('}')
       if (start === -1 || end === -1) throw new Error('No JSON object found')
-      return JSON.parse(raw.slice(start, end + 1))
+      return applyVarianceMultiplier(JSON.parse(raw.slice(start, end + 1)))
     },
-    // 3. Build a fallback report from the raw text
     () => {
       return {
         executive_summary: raw.slice(0, 300).replace(/[{}[\]"]/g, '').trim() || 'Report generated from interview transcript.',
@@ -313,12 +346,6 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
 
 // ─── Generate persona suggestions ────────────────────────────────────────────
 
-// Name pools by background, each with several first/last names — a call
-// builds one random first+last combo per category rather than always
-// showing the same fixed examples. Static example lists in the prompt were
-// the actual cause of repeat names (the same failure mode fixed below for
-// locations): shown the same handful of names every time, the model just
-// kept reusing them verbatim regardless of the "vary it" instruction.
 const NAME_POOLS: Record<string, { first: string[]; last: string[] }> = {
   'Latino/Hispanic': {
     first: ['Sofia', 'Camila', 'Valentina', 'Mateo', 'Diego', 'Lucia', 'Miguel', 'Ana', 'Carlos', 'Gabriela', 'Renata', 'Joaquin'],
@@ -355,10 +382,6 @@ export async function suggestPersonaTraits(description: string) {
 
   const nameContext = `Choose a name that reflects realistic demographic diversity — vary across ethnicities, backgrounds, and regions. For inspiration only, one example per background this time: ${nameExamples}, and others. These are just this call's examples, not a fixed list — pick your own first/last combination, and do NOT reuse the same name(s) you've generated in prior personas. Do NOT default to generic American names like Marcus Chen, Tyler Brooks, or similar. Pick something specific and varied based on the persona's location and background. Whatever name you choose, it must be internally consistent — a name like "Sarah Chen" (an English first name with a Chinese surname) implies a specific, real background (e.g. a Chinese-American woman, possibly from a mixed or adoptive family), not a generic/default ethnicity — the "ethnicity" field below must match the heritage the name actually implies, not be picked independently of it.`
 
-  // LLMs asked for "a City, State" with no other constraint gravitate hard
-  // toward a small set of trending-tech-hub defaults (Austin chief among
-  // them) — the same failure mode the name pool above was written to avoid.
-  // Force the same kind of explicit rotation for location.
   const locationPool = [
     'Portland, OR', 'Columbus, OH', 'Raleigh, NC', 'Minneapolis, MN', 'Pittsburgh, PA',
     'Salt Lake City, UT', 'Tampa, FL', 'Kansas City, MO', 'Albuquerque, NM', 'Boise, ID',
