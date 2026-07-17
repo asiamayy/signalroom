@@ -5,6 +5,36 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 })
 
+// ─── Build a (possibly image-attached) user message content block ───────────
+// Shared by any single-shot persona call (Compare, Audience Panel) that wants
+// the same image-attachment support the interview chat already has.
+
+const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
+type ImageMediaType = typeof VALID_IMAGE_TYPES[number]
+
+export function buildUserMessageContent(text: string, imageBase64: string | null, imageMediaType: string = 'image/jpeg') {
+  if (!imageBase64) return text
+
+  const safeMediaType: ImageMediaType = (VALID_IMAGE_TYPES as readonly string[]).includes(imageMediaType)
+    ? (imageMediaType as ImageMediaType)
+    : 'image/jpeg'
+
+  return [
+    {
+      type: 'image' as const,
+      source: {
+        type: 'base64' as const,
+        media_type: safeMediaType,
+        data: imageBase64,
+      },
+    },
+    {
+      type: 'text' as const,
+      text: text || 'What is your honest first reaction to this?',
+    },
+  ]
+}
+
 // ─── Build the system prompt that makes a persona feel real ──────────────────
 
 export function buildPersonaSystemPrompt(persona: Persona, interviewType: InterviewType, context: string, devilsAdvocate: boolean = false): string {

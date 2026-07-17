@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitCompare, Loader2, Radar, Compass, CheckSquare, Square } from 'lucide-react'
+import { GitCompare, Loader2, Radar, Compass, CheckSquare, Square, ImagePlus, X } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -54,6 +54,26 @@ export default function ComparePage() {
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
+  const [imageData, setImageData] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageMediaType, setImageMediaType] = useState<string>('image/jpeg')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) { setError('Please upload an image file'); return }
+    setImageMediaType(file.type || 'image/jpeg')
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string
+      setImagePreview(result)
+      setImageData(result.split(',')[1])
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const clearImage = () => { setImageData(null); setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = '' }
 
   useEffect(() => {
     fetch('/api/personas')
@@ -89,7 +109,7 @@ export default function ComparePage() {
 
   const handleCompare = async () => {
     if (selectedIds.length < 2) { setError('Select at least 2 personas'); return }
-    if (!question.trim()) { setError('Enter a question to ask'); return }
+    if (!question.trim() && !imageData) { setError('Enter a question to ask'); return }
     setLoading(true)
     setError('')
     setResults([])
@@ -97,7 +117,7 @@ export default function ComparePage() {
       const res = await fetch('/api/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persona_ids: selectedIds, question, context, interview_type: interviewType }),
+        body: JSON.stringify({ persona_ids: selectedIds, question, context, interview_type: interviewType, image: imageData, imageMediaType }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
@@ -155,17 +175,46 @@ export default function ComparePage() {
                 value={question}
                 onChange={e => setQuestion(e.target.value)}
                 rows={3}
-                placeholder="What question do you want to ask all personas?"
+                placeholder={imagePreview ? 'Ask all personas about this image...' : 'What question do you want to ask all personas?'}
                 className="w-full px-4 py-3 text-sm rounded-lg outline-none resize-none"
                 style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }}
               />
+              <div className="flex items-center gap-3 mt-3">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img src={imagePreview} alt="Upload preview" className="h-16 w-auto rounded-lg object-cover" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
+                    <button
+                      type="button"
+                      onClick={clearImage}
+                      className="absolute -top-2 -right-2 w-5 h-5 text-white rounded-full flex items-center justify-center"
+                      style={{ background: HOME_COLORS.primary }}
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                      style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurfaceVariant }}
+                      title="Attach an image for all personas to react to"
+                    >
+                      <ImagePlus size={13} />
+                      Attach image
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
             {error && <p className="text-sm rounded-lg px-3 py-2 mb-4" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{error}</p>}
             <button
               onClick={handleCompare}
-              disabled={loading || selectedIds.length < 2 || !question.trim()}
+              disabled={loading || selectedIds.length < 2 || (!question.trim() && !imageData)}
               className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-sm font-semibold transition-all disabled:cursor-not-allowed"
-              style={{ background: (!loading && selectedIds.length >= 2 && question.trim()) ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: (!loading && selectedIds.length >= 2 && question.trim()) ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}
+              style={{ background: (!loading && selectedIds.length >= 2 && (question.trim() || imageData)) ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: (!loading && selectedIds.length >= 2 && (question.trim() || imageData)) ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}
             >
               {loading ? <><Loader2 size={14} className="animate-spin" /> Running synthesis...</> : <><GitCompare size={14} /> Generate comparison</>}
             </button>
@@ -176,7 +225,7 @@ export default function ComparePage() {
             <div className="flex flex-col gap-6">
               <div className="flex items-center justify-between pb-3" style={{ borderBottom: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
                 <h2 className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface }}>Synthesis Results</h2>
-                <span className="text-[11px] uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>&ldquo;{question}&rdquo;</span>
+                <span className="text-[11px] uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>&ldquo;{question || 'Reaction to shared image'}&rdquo;</span>
               </div>
               {results.map((result, i) => (
                 <motion.article

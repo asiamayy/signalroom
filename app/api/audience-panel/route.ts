@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { buildPersonaSystemPrompt } from '@/lib/anthropic/persona-engine'
+import { buildPersonaSystemPrompt, buildUserMessageContent } from '@/lib/anthropic/persona-engine'
 import Anthropic from '@anthropic-ai/sdk'
 import { PLAN_LIMITS } from '@/types'
 import type { Plan } from '@/types'
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Upgrade to Signal or Broadcast to use Audience Panel' }, { status: 403 })
   }
 
-  const { persona_ids, question } = await request.json()
+  const { persona_ids, question, image, imageMediaType } = await request.json()
 
   if (!persona_ids || persona_ids.length < 5) {
     return NextResponse.json({ error: 'Select at least 5 personas' }, { status: 400 })
@@ -39,9 +39,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Your plan supports up to ${limits.audience_panel_max} personas` }, { status: 400 })
   }
 
-  if (!question?.trim()) {
+  if (!question?.trim() && !image) {
     return NextResponse.json({ error: 'Enter a question to ask your audience' }, { status: 400 })
   }
+
+  const questionContent = buildUserMessageContent(question ?? '', image ?? null, imageMediaType)
 
   // Load all selected personas
   const { data: personas, error } = await supabase
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
           model: 'claude-sonnet-4-6',
           max_tokens: 400,
           system: systemPrompt + `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`,
-          messages: [{ role: 'user', content: question }],
+          messages: [{ role: 'user', content: questionContent }],
         })
 
         const text = response.content[0].type === 'text' ? response.content[0].text : ''
@@ -133,7 +135,7 @@ export async function POST(request: NextRequest) {
       max_tokens: 800,
       messages: [{
         role: 'user',
-        content: `You are analyzing responses from ${responses.length} different customer personas who were asked: "${question}"
+        content: `You are analyzing responses from ${responses.length} different customer personas who were asked: "${question?.trim() || 'to react to a shared image'}"
 
 Here are their responses:
 ${allText}
@@ -153,7 +155,7 @@ Return ONLY a JSON array, no preamble, no markdown:
       max_tokens: 1000,
       messages: [{
         role: 'user',
-        content: `You are a senior market researcher analyzing responses from ${responses.length} customer personas who were asked: "${question}"
+        content: `You are a senior market researcher analyzing responses from ${responses.length} customer personas who were asked: "${question?.trim() || 'to react to a shared image'}"
 
 Responses:
 ${allText}

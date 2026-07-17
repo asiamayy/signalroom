@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { buildPersonaSystemPrompt } from '@/lib/anthropic/persona-engine'
+import { buildPersonaSystemPrompt, buildUserMessageContent } from '@/lib/anthropic/persona-engine'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
@@ -13,15 +13,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { persona_ids, question, context, interview_type } = await request.json()
+  const { persona_ids, question, context, interview_type, image, imageMediaType } = await request.json()
 
   if (!persona_ids || persona_ids.length < 2) {
     return NextResponse.json({ error: 'Select at least 2 personas' }, { status: 400 })
   }
 
-  if (!question?.trim()) {
+  if (!question?.trim() && !image) {
     return NextResponse.json({ error: 'Enter a question to ask' }, { status: 400 })
   }
+
+  const questionContent = buildUserMessageContent(question ?? '', image ?? null, imageMediaType)
 
   // Load all selected personas
   const { data: personas, error } = await supabase
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
           model: 'claude-sonnet-4-6',
           max_tokens: 600,
           system: systemPrompt,
-          messages: [{ role: 'user', content: question }],
+          messages: [{ role: 'user', content: questionContent }],
         })
 
         const text = response.content[0].type === 'text' ? response.content[0].text : ''

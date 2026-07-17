@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves, Terminal, ArrowRight, CheckSquare, Square } from 'lucide-react'
+import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves, Terminal, ArrowRight, CheckSquare, Square, ImagePlus, X } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
@@ -217,6 +217,26 @@ export default function AudiencePanelPage() {
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [plan, setPlan] = useState<Plan>('free')
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
+  const [imageData, setImageData] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageMediaType, setImageMediaType] = useState<string>('image/jpeg')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) { setError('Please upload an image file'); return }
+    setImageMediaType(file.type || 'image/jpeg')
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string
+      setImagePreview(result)
+      setImageData(result.split(',')[1])
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const clearImage = () => { setImageData(null); setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = '' }
 
   const maxPersonas = PLAN_LIMITS[plan].audience_panel_max
   const hasAccess = PLAN_LIMITS[plan].audience_panel
@@ -239,7 +259,7 @@ export default function AudiencePanelPage() {
 
   const handleRun = async () => {
     if (selectedIds.length < 5) { setError('Select at least 5 personas'); return }
-    if (!question.trim()) { setError('Enter a question'); return }
+    if (!question.trim() && !imageData) { setError('Enter a question'); return }
     setError('')
     setLoading(true)
     setResult(null)
@@ -247,7 +267,7 @@ export default function AudiencePanelPage() {
       const res = await fetch('/api/audience-panel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persona_ids: selectedIds, question }),
+        body: JSON.stringify({ persona_ids: selectedIds, question, image: imageData, imageMediaType }),
       })
       const json = await res.json()
       if (!res.ok) { setError(json.error ?? 'Something went wrong'); return }
@@ -259,7 +279,7 @@ export default function AudiencePanelPage() {
     }
   }
 
-  const canRun = !loading && selectedIds.length >= 5 && question.trim()
+  const canRun = !loading && selectedIds.length >= 5 && (question.trim() || !!imageData)
 
   if (!loadingPersonas && !hasAccess) {
     return (
@@ -399,10 +419,39 @@ export default function AudiencePanelPage() {
               value={question}
               onChange={e => setQuestion(e.target.value)}
               rows={4}
-              placeholder="e.g. Would you pay $199/month for an AI tool that runs customer interviews in minutes?"
+              placeholder={imagePreview ? 'Ask your audience about this image...' : 'e.g. Would you pay $199/month for an AI tool that runs customer interviews in minutes?'}
               className="w-full rounded-xl p-5 sm:p-6 text-base outline-none resize-none transition-colors mb-4"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: HOME_COLORS.onPrimary }}
             />
+            <div className="flex items-center gap-3 mb-4">
+              {imagePreview ? (
+                <div className="relative">
+                  <img src={imagePreview} alt="Upload preview" className="h-16 w-auto rounded-lg object-cover" style={{ border: '1px solid rgba(255,255,255,0.2)' }} />
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="absolute -top-2 -right-2 w-5 h-5 text-white rounded-full flex items-center justify-center"
+                    style={{ background: HOME_COLORS.primaryFixedDim, color: HOME_COLORS.onPrimaryFixedVariant }}
+                  >
+                    <X size={11} />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                    style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)' }}
+                    title="Attach an image for the panel to react to"
+                  >
+                    <ImagePlus size={13} />
+                    Attach image
+                  </button>
+                </>
+              )}
+            </div>
             {error && <p className="text-sm mb-4" style={{ color: '#FFB4AB' }}>{error}</p>}
             {selectedIds.length > 0 && selectedIds.length < 5 && (
               <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>Select {5 - selectedIds.length} more persona{5 - selectedIds.length === 1 ? '' : 's'} to run the panel.</p>
