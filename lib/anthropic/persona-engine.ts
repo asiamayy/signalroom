@@ -97,12 +97,69 @@ export function findClusteredScoreGroups(scores: (number | null)[]): number[][] 
 // the table and force it to re-derive one from its own specific traits, with
 // nothing external to average toward. Falls back to the original response on
 // any failure.
-export async function rescorePersonaAvoidingConvergence(
+// Ranks personas within a detected cluster by a continuous, trait-derived
+// signal (risk tolerance, income, buying-behavior language) — used only to
+// ORDER them relative to each other so band assignment is meaningful, not
+// arbitrary. This is not a prediction of the actual number.
+function computeOptimismRank(traits: Persona['traits']): number {
+  const incomeRank: Record<string, number> = { under_50k: 0, '50k_100k': 10, '100k_200k': 20, over_200k: 30 }
+  let rank = traits.risk_tolerance * 10 + (incomeRank[traits.income] ?? 10)
+  if (/skeptic|research|compare|review|careful/i.test(traits.buying_behavior)) rank -= 15
+  return rank
+}
+
+export interface DiversificationBand {
+  index: number
+  min: number
+  max: number
+}
+
+// Given a cluster of array indices (from findClusteredScoreGroups) with
+// their original scores and personas, compute a non-overlapping target band
+// per persona. The window is widened around the CLUSTER'S OWN average and
+// split into per-persona sub-bands ordered by computeOptimismRank — this
+// keeps the ask "local" to what each persona already said (spreading out an
+// authentic tight cluster) instead of asking anyone to flip their actual
+// reaction to hit an arbitrary absolute number unrelated to what they said.
+const PER_PERSONA_BAND_WIDTH = 8
+
+export function assignDiversificationBands(
+  group: number[],
+  scores: (number | null)[],
+  personas: Persona[]
+): DiversificationBand[] {
+  const avg = group.reduce((sum, i) => sum + scores[i]!, 0) / group.length
+  const totalWidth = PER_PERSONA_BAND_WIDTH * group.length
+  const rangeMax = Math.min(100, Math.round(avg + totalWidth / 2))
+  const rangeMin = Math.max(0, rangeMax - totalWidth)
+
+  const ranked = [...group].sort(
+    (a, b) => computeOptimismRank(personas[a].traits) - computeOptimismRank(personas[b].traits)
+  )
+
+  return ranked.map((idx, order) => ({
+    index: idx,
+    min: Math.round(rangeMin + order * PER_PERSONA_BAND_WIDTH),
+    max: Math.round(Math.min(100, rangeMin + (order + 1) * PER_PERSONA_BAND_WIDTH)),
+  }))
+}
+
+// Re-asks a single persona whose number converged with its cluster-mates, in
+// the same conversation (their own original answer as the prior assistant
+// turn). Gives an explicit, non-overlapping target BAND — derived from real
+// trait differences and centered on the cluster's own average, not an
+// arbitrary absolute scale — rather than a vague "pick something different"
+// ask, which testing showed still collapsed back into a smaller number of
+// shared "modes." Explicitly does NOT ask the persona to change its actual
+// reaction/sentiment — only to be more precise about where within that
+// reaction the number lands, so the quality/authenticity of the qualitative
+// reasoning is unaffected. Falls back to the original response on failure.
+export async function rescorePersonaWithBand(
   persona: Persona,
   systemPrompt: string,
   questionContent: UserMessageContent,
   originalResponse: string,
-  ownScore: number,
+  band: { min: number; max: number },
   temperature: number
 ): Promise<string> {
   try {
@@ -116,7 +173,7 @@ export async function rescorePersonaAvoidingConvergence(
         { role: 'assistant', content: originalResponse },
         {
           role: 'user',
-          content: `Several other independent panelists answering this exact same question also converged on ${ownScore}, or something within a few points of it. That's a sign you defaulted to a generic "reasonable" number for someone in your rough situation, instead of one truly grounded in your own specific details — ${ownScore} is off the table for you now.\n\nDig back into your own specific frustration, your own specific buying behavior, and how cautious or bold you actually are about trying new things — not a general impression of "someone like you" — and land on a genuinely different number, meaningfully higher or lower depending on what your specific situation actually justifies. State the new number first, then explain why your specific situation puts it there, the way you'd actually talk about it — describe the behavior or the story, never your own trait labels or ratings (no "my risk tolerance is X" or "as someone with a 4/5..."). Do not mention that you changed your answer, that other panelists exist, or that you converged with anyone — just answer as yourself, from scratch.`,
+          content: `Several other independent panelists answering this exact same question converged on a very similar number to yours. Keep your overall reaction exactly the same — do not become more positive or more negative than you actually are — but restate your answer with a number specifically between ${band.min} and ${band.max}. That range reflects your relative position among this group given your own specific situation; pick whichever number within it feels most honest to the reasoning you already gave. State the new number first (it must be between ${band.min} and ${band.max}), then explain briefly, describing behavior rather than trait labels or ratings. Do not mention other panelists, bands, or ranges in your answer — just answer as yourself.`,
         },
       ],
     })

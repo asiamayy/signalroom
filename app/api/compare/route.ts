@@ -6,7 +6,8 @@ import {
   computePersonaTemperature,
   extractLeadingScore,
   findClusteredScoreGroups,
-  rescorePersonaAvoidingConvergence,
+  assignDiversificationBands,
+  rescorePersonaWithBand,
 } from '@/lib/anthropic/persona-engine'
 import Anthropic from '@anthropic-ai/sdk'
 
@@ -93,18 +94,20 @@ export async function POST(request: NextRequest) {
   )
 
   // Detect clustered numeric scores (3+ personas landing within a few points
-  // of each other) and re-ask just those personas, taking their own
-  // convergent number off the table (without revealing what peers said —
-  // that triggers anchoring toward a consensus instead of divergence away
-  // from one). Only fires when clustering is actually detected — a normal
-  // run pays no extra cost.
+  // of each other) and re-ask just those personas with a non-overlapping
+  // target band — centered on the cluster's own average and ordered by real
+  // trait differences, not an arbitrary absolute scale — so the fix stays
+  // "local" to what each persona already said instead of asking anyone to
+  // flip their actual reaction. Only fires when clustering is actually
+  // detected — a normal run pays no extra cost.
   const scores = results.map(r => r.response ? extractLeadingScore(r.response) : null)
   const clusterGroups = findClusteredScoreGroups(scores)
 
   if (clusterGroups.length > 0) {
     await Promise.all(
-      clusterGroups.flatMap(group =>
-        group.map(async (idx) => {
+      clusterGroups.flatMap(group => {
+        const bands = assignDiversificationBands(group, scores, personas)
+        return bands.map(async ({ index: idx, min, max }) => {
           const persona = personas[idx]
           const original = results[idx]
           if (!original.response) return
@@ -115,18 +118,18 @@ export async function POST(request: NextRequest) {
             context ?? ''
           )
 
-          const revised = await rescorePersonaAvoidingConvergence(
+          const revised = await rescorePersonaWithBand(
             persona,
             systemPrompt,
             questionContent,
             original.response,
-            scores[idx]!,
+            { min, max },
             computePersonaTemperature(persona)
           )
 
           results[idx].response = revised
         })
-      )
+      })
     )
   }
 
