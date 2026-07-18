@@ -410,7 +410,7 @@ function ReportsTab({ reports }: { reports: (Report & { interview: Interview })[
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <span className="text-xs font-semibold" style={{ color: HOME_COLORS.primary }}>{report.confidence_score}%</span>
-            <DownloadReportButton />
+            <DownloadReportButton href={`/reports/${report.id}`} />
           </div>
         </div>
       ))}
@@ -463,10 +463,10 @@ function FilesTab({ project, files, onUploaded, onDeleted }: {
 
   return (
     <div>
-      <label className="flex flex-col items-center justify-center rounded-2xl py-10 mb-6 cursor-pointer transition-colors" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `2px dashed ${HOME_COLORS.outlineVariant}` }}>
+      <label className="flex flex-col items-center justify-center text-center rounded-2xl py-10 mb-6 px-6 cursor-pointer transition-colors" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `2px dashed ${HOME_COLORS.outlineVariant}` }}>
         <Upload size={20} className="mb-2" style={{ color: uploading ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant }} />
         <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{uploading ? 'Uploading…' : 'Upload a file'}</p>
-        <p className="text-xs mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>PDFs, notes, competitor docs, images — anything supporting this research</p>
+        <p className="text-xs mt-1 max-w-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>PDFs, notes, competitor docs, images — anything supporting this research</p>
         <input type="file" className="hidden" disabled={uploading} onChange={e => handleUpload(e.target.files)} />
       </label>
 

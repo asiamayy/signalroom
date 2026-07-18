@@ -20,13 +20,21 @@ import {
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
 import { CopyLinkButton } from '@/components/ui/CopyLinkButton'
+import { AutoPrint } from '@/components/ui/AutoPrint'
 import { ThemesClient } from './ThemesClient'
 import type { ReportTheme, ReportRecommendation } from '@/types'
 
 const cardStyle = { background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }
 
-export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ReportPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ print?: string }>
+}) {
   const { id } = await params
+  const { print } = await searchParams
   const supabase = await createClient()
 
   const { data: report, error } = await supabase
@@ -57,6 +65,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
   return (
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, minHeight: '100%' }} className="p-4 sm:p-8 max-w-4xl">
+      <AutoPrint trigger={print === '1'} />
 
       <Link href="/reports" className="flex items-center gap-1.5 text-sm mb-6 transition-colors w-fit" style={{ color: HOME_COLORS.onSurfaceVariant }}>
         <ArrowLeft size={14} />
