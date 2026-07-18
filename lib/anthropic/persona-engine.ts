@@ -209,8 +209,8 @@ export async function streamPersonaResponse(
   if (persona.traits.risk_tolerance <= 2) targetTemperature -= 0.15;
   if (persona.traits.risk_tolerance >= 4) targetTemperature += 0.15;
   
-  // Clamp between safe LLM bounds
-  targetTemperature = Math.max(0.75, Math.min(1.25, targetTemperature));
+  // Clamp between safe LLM bounds — Claude's API rejects temperature above 1.0
+  targetTemperature = Math.max(0.75, Math.min(1.0, targetTemperature));
 
   let fullResponse = ''
 
@@ -308,31 +308,16 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
 
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
 
-  // Fallback math modifier post-processor layer to explode artificial token clustering
-  const applyVarianceMultiplier = (parsedJson: any) => {
-    if (parsedJson && typeof parsedJson.confidence_score === 'number') {
-      const score = parsedJson.confidence_score
-      // If score is jammed in the typical LLM comfort zone mean (55-68), forcefully widen its spectrum
-      if (score >= 52 && score <= 66) {
-        const centerPoint = 58
-        const expansionFactor = 2.4
-        const expandedValue = centerPoint + Math.round((score - centerPoint) * expansionFactor)
-        parsedJson.confidence_score = Math.max(15, Math.min(94, expandedValue))
-      }
-    }
-    return parsedJson
-  }
-
   const attempts = [
     () => {
       const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      return applyVarianceMultiplier(JSON.parse(cleaned))
+      return JSON.parse(cleaned)
     },
     () => {
       const start = raw.indexOf('{')
       const end = raw.lastIndexOf('}')
       if (start === -1 || end === -1) throw new Error('No JSON object found')
-      return applyVarianceMultiplier(JSON.parse(raw.slice(start, end + 1)))
+      return JSON.parse(raw.slice(start, end + 1))
     },
     () => {
       return {
@@ -446,7 +431,7 @@ Generate realistic, specific persona traits as JSON with this shape:
   "tech_savviness": 1-5,
   "risk_tolerance": 1-5,
   "additional_context": "2-3 sentences of rich personal context that makes this person feel real",
-  "motivations": ["motivation 1", "motivation 2", "motivation 3", "motivation 四"],
+  "motivations": ["motivation 1", "motivation 2", "motivation 3", "motivation 4"],
   "preferred_tools": ["tool or product 1", "tool or product 2", "tool or product 3"],
   "key_quote": "A single first-person sentence that captures this person's core outlook or philosophy",
   "tags": ["tag1", "tag2", "tag3"]
