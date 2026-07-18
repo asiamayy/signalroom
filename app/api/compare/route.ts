@@ -6,7 +6,7 @@ import {
   computePersonaTemperature,
   extractLeadingScore,
   findClusteredScoreGroups,
-  rescorePersonaWithPeerContext,
+  rescorePersonaAvoidingConvergence,
 } from '@/lib/anthropic/persona-engine'
 import Anthropic from '@anthropic-ai/sdk'
 
@@ -93,9 +93,11 @@ export async function POST(request: NextRequest) {
   )
 
   // Detect clustered numeric scores (3+ personas landing within a few points
-  // of each other) and re-ask just those personas with real visibility into
-  // what their cluster-mates said. Only fires when clustering is actually
-  // detected — a normal run pays no extra cost.
+  // of each other) and re-ask just those personas, taking their own
+  // convergent number off the table (without revealing what peers said —
+  // that triggers anchoring toward a consensus instead of divergence away
+  // from one). Only fires when clustering is actually detected — a normal
+  // run pays no extra cost.
   const scores = results.map(r => r.response ? extractLeadingScore(r.response) : null)
   const clusterGroups = findClusteredScoreGroups(scores)
 
@@ -107,19 +109,18 @@ export async function POST(request: NextRequest) {
           const original = results[idx]
           if (!original.response) return
 
-          const peerScores = group.filter(i => i !== idx).map(i => scores[i]!)
           const systemPrompt = buildPersonaSystemPrompt(
             persona,
             interview_type ?? 'concept_testing',
             context ?? ''
           )
 
-          const revised = await rescorePersonaWithPeerContext(
+          const revised = await rescorePersonaAvoidingConvergence(
             persona,
             systemPrompt,
             questionContent,
             original.response,
-            peerScores,
+            scores[idx]!,
             computePersonaTemperature(persona)
           )
 

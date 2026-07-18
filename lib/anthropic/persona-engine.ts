@@ -87,30 +87,36 @@ export function findClusteredScoreGroups(scores: (number | null)[]): number[][] 
   return groups
 }
 
-// Re-asks a single persona with real visibility into what its cluster-mates
-// said, in the same conversation (their own original answer as the prior
-// assistant turn) so the model can genuinely reconsider rather than just
-// re-rolling the dice. Falls back to the original response on any failure.
-export async function rescorePersonaWithPeerContext(
+// Re-asks a single persona whose number converged with its cluster-mates, in
+// the same conversation (their own original answer as the prior assistant
+// turn). Deliberately does NOT reveal what peers actually said — telling a
+// model other people's numbers triggers anchoring/conformity, causing it to
+// reconcile toward a consensus (in testing, revealing peer scores made
+// personas converge on the average of those scores instead of diverging —
+// the opposite of the intent). Instead, take the persona's own number off
+// the table and force it to re-derive one from its own specific traits, with
+// nothing external to average toward. Falls back to the original response on
+// any failure.
+export async function rescorePersonaAvoidingConvergence(
   persona: Persona,
   systemPrompt: string,
   questionContent: UserMessageContent,
   originalResponse: string,
-  peerScores: number[],
+  ownScore: number,
   temperature: number
 ): Promise<string> {
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 400,
-      temperature,
+      temperature: Math.min(1.0, temperature + 0.1),
       system: systemPrompt,
       messages: [
         { role: 'user', content: questionContent },
         { role: 'assistant', content: originalResponse },
         {
           role: 'user',
-          content: `Other panelists answering this exact same question landed on: ${peerScores.join(', ')}. You are now aware of this.\n\nGiven your own specific traits, background, and reasoning — not theirs — is your original number still genuinely right for you? If your honest answer is a different number, restate your full answer with the new number and explanation. If your original number really is right for you even knowing what others said, restate it confidently in your own words. Do not change your number just to seem different — only change it if your own specific situation actually justifies a different number than the one you gave.`,
+          content: `Several other independent panelists answering this exact same question also converged on ${ownScore}, or something within a few points of it. That's a sign you defaulted to a generic "reasonable" number for someone in your rough situation, instead of one truly grounded in your own specific details — ${ownScore} is off the table for you now.\n\nDig back into your own specific frustration, your own specific buying behavior, your own specific risk tolerance — not a general impression of "someone like you" — and land on a genuinely different number, meaningfully higher or lower depending on what your specific traits actually justify. State the new number first, then explain why your specific situation puts it there. Do not mention that you changed your answer, that other panelists exist, or that you converged with anyone — just answer as yourself, from scratch.`,
         },
       ],
     })
