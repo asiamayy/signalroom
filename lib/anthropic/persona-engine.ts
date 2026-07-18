@@ -32,6 +32,95 @@ export function buildUserMessageContent(text: string, imageBase64: string | null
   ]
 }
 
+export type UserMessageContent = ReturnType<typeof buildUserMessageContent>
+
+// ─── Detect and correct clustered numeric scores ──────────────────────────────
+// Prompt engineering alone has a ceiling: personas are called independently in
+// parallel (Promise.all), so no matter how well-worded the prompt is, there's
+// nothing stopping several of them from probabilistically converging on the
+// same number. This adds a real, deterministic backstop: after the initial
+// parallel pass, check whether 3+ personas landed suspiciously close together,
+// and if so, re-ask just those personas with actual visibility into what the
+// others said — turning "assume others differ" into "here's concretely what
+// was said, is your number still right for you." Only fires when clustering
+// is actually detected, so it doesn't cost anything on a normal run.
+
+// The scoring rules tell personas to "state your number first," so it should
+// appear very early in the response — restricting the search window avoids
+// false positives from unrelated numbers appearing later in the text (e.g.
+// "3 different tools").
+export function extractLeadingScore(text: string): number | null {
+  const window = text.slice(0, 60)
+  const match = window.match(/\b(100|[0-9]{1,2})\b/)
+  if (!match) return null
+  const n = parseInt(match[1], 10)
+  return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null
+}
+
+// Points apart to be considered "the same" cluster — tight enough that it
+// reads as convergence rather than coincidentally-similar-but-independent
+// opinions between personas who happen to be alike.
+const CLUSTER_WINDOW = 4
+
+// Returns groups of original-array indices whose scores landed within
+// CLUSTER_WINDOW of each other, only including groups of 3+ (a pair landing
+// close is plausible coincidence; three or more independently converging on
+// the same number is the actual failure mode this is guarding against).
+export function findClusteredScoreGroups(scores: (number | null)[]): number[][] {
+  const withIndex = scores
+    .map((score, index) => ({ index, score }))
+    .filter((s): s is { index: number; score: number } => s.score !== null)
+    .sort((a, b) => a.score - b.score)
+
+  const groups: number[][] = []
+  let i = 0
+  while (i < withIndex.length) {
+    let j = i
+    while (j + 1 < withIndex.length && withIndex[j + 1].score - withIndex[i].score <= CLUSTER_WINDOW) {
+      j++
+    }
+    if (j - i + 1 >= 3) {
+      groups.push(withIndex.slice(i, j + 1).map(w => w.index))
+    }
+    i = j + 1
+  }
+  return groups
+}
+
+// Re-asks a single persona with real visibility into what its cluster-mates
+// said, in the same conversation (their own original answer as the prior
+// assistant turn) so the model can genuinely reconsider rather than just
+// re-rolling the dice. Falls back to the original response on any failure.
+export async function rescorePersonaWithPeerContext(
+  persona: Persona,
+  systemPrompt: string,
+  questionContent: UserMessageContent,
+  originalResponse: string,
+  peerScores: number[],
+  temperature: number
+): Promise<string> {
+  try {
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
+      temperature,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: questionContent },
+        { role: 'assistant', content: originalResponse },
+        {
+          role: 'user',
+          content: `Other panelists answering this exact same question landed on: ${peerScores.join(', ')}. You are now aware of this.\n\nGiven your own specific traits, background, and reasoning — not theirs — is your original number still genuinely right for you? If your honest answer is a different number, restate your full answer with the new number and explanation. If your original number really is right for you even knowing what others said, restate it confidently in your own words. Do not change your number just to seem different — only change it if your own specific situation actually justifies a different number than the one you gave.`,
+        },
+      ],
+    })
+
+    return response.content[0].type === 'text' ? response.content[0].text : originalResponse
+  } catch {
+    return originalResponse
+  }
+}
+
 // ─── Per-persona sampling temperature ─────────────────────────────────────────
 // Shared by every call site (interview chat, Compare, Audience Panel) so
 // there's one source of truth instead of duplicated/disconnected jitter

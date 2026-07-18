@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { buildPersonaSystemPrompt, buildUserMessageContent, computePersonaTemperature } from '@/lib/anthropic/persona-engine'
+import {
+  buildPersonaSystemPrompt,
+  buildUserMessageContent,
+  computePersonaTemperature,
+  extractLeadingScore,
+  findClusteredScoreGroups,
+  rescorePersonaWithPeerContext,
+} from '@/lib/anthropic/persona-engine'
 import Anthropic from '@anthropic-ai/sdk'
 import { PLAN_LIMITS } from '@/types'
 import type { Plan } from '@/types'
@@ -125,6 +132,60 @@ export async function POST(request: NextRequest) {
       }
     })
   )
+
+  // Detect clustered numeric scores (3+ personas landing within a few points
+  // of each other) and re-ask just those personas with real visibility into
+  // what their cluster-mates said. Only fires when clustering is actually
+  // detected — a normal run pays no extra cost. Sentiment is reclassified
+  // for any revised response so it doesn't go stale against the new text.
+  const scores = responses.map(r => r.response ? extractLeadingScore(r.response) : null)
+  const clusterGroups = findClusteredScoreGroups(scores)
+
+  if (clusterGroups.length > 0) {
+    await Promise.all(
+      clusterGroups.flatMap(group =>
+        group.map(async (idx) => {
+          const persona = personas[idx]
+          const original = responses[idx]
+          if (!original.response) return
+
+          const peerScores = group.filter(i => i !== idx).map(i => scores[i]!)
+          const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '')
+            + `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`
+
+          const revised = await rescorePersonaWithPeerContext(
+            persona,
+            systemPrompt,
+            questionContent,
+            original.response,
+            peerScores,
+            computePersonaTemperature(persona)
+          )
+
+          responses[idx].response = revised
+
+          try {
+            const sentimentResponse = await client.messages.create({
+              model: 'claude-sonnet-4-6',
+              max_tokens: 100,
+              messages: [{
+                role: 'user',
+                content: `Classify the overall sentiment of this response as exactly one of: "positive", "neutral", "negative", "mixed". Return ONLY the single word, nothing else.\n\nResponse: ${revised}`
+              }]
+            })
+            const sentimentRaw = sentimentResponse.content[0].type === 'text'
+              ? sentimentResponse.content[0].text.trim().toLowerCase()
+              : 'neutral'
+            if (['positive', 'neutral', 'negative', 'mixed'].includes(sentimentRaw)) {
+              responses[idx].sentiment = sentimentRaw as 'positive' | 'neutral' | 'negative' | 'mixed'
+            }
+          } catch {
+            // keep original sentiment on failure
+          }
+        })
+      )
+    )
+  }
 
   // Aggregate themes, executive summary, recommendations and quotes across all responses
   const allText = responses

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { buildPersonaSystemPrompt, buildUserMessageContent, computePersonaTemperature } from '@/lib/anthropic/persona-engine'
+import {
+  buildPersonaSystemPrompt,
+  buildUserMessageContent,
+  computePersonaTemperature,
+  extractLeadingScore,
+  findClusteredScoreGroups,
+  rescorePersonaWithPeerContext,
+} from '@/lib/anthropic/persona-engine'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
@@ -84,6 +91,43 @@ export async function POST(request: NextRequest) {
       }
     })
   )
+
+  // Detect clustered numeric scores (3+ personas landing within a few points
+  // of each other) and re-ask just those personas with real visibility into
+  // what their cluster-mates said. Only fires when clustering is actually
+  // detected — a normal run pays no extra cost.
+  const scores = results.map(r => r.response ? extractLeadingScore(r.response) : null)
+  const clusterGroups = findClusteredScoreGroups(scores)
+
+  if (clusterGroups.length > 0) {
+    await Promise.all(
+      clusterGroups.flatMap(group =>
+        group.map(async (idx) => {
+          const persona = personas[idx]
+          const original = results[idx]
+          if (!original.response) return
+
+          const peerScores = group.filter(i => i !== idx).map(i => scores[i]!)
+          const systemPrompt = buildPersonaSystemPrompt(
+            persona,
+            interview_type ?? 'concept_testing',
+            context ?? ''
+          )
+
+          const revised = await rescorePersonaWithPeerContext(
+            persona,
+            systemPrompt,
+            questionContent,
+            original.response,
+            peerScores,
+            computePersonaTemperature(persona)
+          )
+
+          results[idx].response = revised
+        })
+      )
+    )
+  }
 
   return NextResponse.json({ data: results })
 }
