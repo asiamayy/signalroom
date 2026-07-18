@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { buildPersonaSystemPrompt, buildUserMessageContent } from '@/lib/anthropic/persona-engine'
+import { buildPersonaSystemPrompt, buildUserMessageContent, computePersonaTemperature } from '@/lib/anthropic/persona-engine'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
   }
 
-  // Run all personas in parallel. Each gets a slightly different temperature
-  // (0.85 -> 1.0 stepped by index) so parallel calls aren't all sampling with
-  // identical settings — one contributor to otherwise-clustered numeric answers.
+  // Run all personas in parallel, each with its own persona-identity-based
+  // temperature (not array position) — same helper interviews use, so all
+  // three surfaces are consistent.
   const results = await Promise.all(
-    personas.map(async (persona, index) => {
+    personas.map(async (persona) => {
       try {
         const systemPrompt = buildPersonaSystemPrompt(
           persona,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         const response = await client.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 600,
-          temperature: Math.min(1, 0.85 + index * 0.05),
+          temperature: computePersonaTemperature(persona),
           system: systemPrompt,
           messages: [{ role: 'user', content: questionContent }],
         })

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { buildPersonaSystemPrompt, buildUserMessageContent } from '@/lib/anthropic/persona-engine'
+import { buildPersonaSystemPrompt, buildUserMessageContent, computePersonaTemperature } from '@/lib/anthropic/persona-engine'
 import Anthropic from '@anthropic-ai/sdk'
 import { PLAN_LIMITS } from '@/types'
 import type { Plan } from '@/types'
@@ -56,19 +56,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
   }
 
-  // Run all personas in parallel — single question, single response each.
-  // Each gets a slightly different temperature (0.85 -> 1.0 stepped by index)
-  // so parallel calls aren't all sampling with identical settings — one
-  // contributor to otherwise-clustered numeric answers.
+  // Run all personas in parallel — single question, single response each,
+  // each with its own persona-identity-based temperature (not array
+  // position) — same helper interviews use, so all three surfaces are
+  // consistent.
   const responses = await Promise.all(
-    personas.map(async (persona, index) => {
+    personas.map(async (persona) => {
       try {
         const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '')
 
         const response = await client.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 400,
-          temperature: Math.min(1, 0.85 + index * 0.05),
+          temperature: computePersonaTemperature(persona),
           system: systemPrompt + `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`,
           messages: [{ role: 'user', content: questionContent }],
         })

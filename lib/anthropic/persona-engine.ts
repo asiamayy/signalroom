@@ -32,6 +32,52 @@ export function buildUserMessageContent(text: string, imageBase64: string | null
   ]
 }
 
+// ─── Per-persona sampling temperature ─────────────────────────────────────────
+// Shared by every call site (interview chat, Compare, Audience Panel) so
+// there's one source of truth instead of duplicated/disconnected jitter
+// logic. Keyed to the persona's own identity (name + risk tolerance), not
+// array position, so re-ordering a selection doesn't reshuffle it. NOTE:
+// this only affects wording/sampling randomness — it does not reliably
+// change *which number* a persona lands on. See derivePredisposition below
+// for the lever that actually targets the number itself.
+export function computePersonaTemperature(persona: Persona): number {
+  const nameSeed = persona.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  const rawJitter = (nameSeed % 30) / 100 // 0.00 - 0.29
+
+  let temperature = 0.85 + rawJitter
+  if (persona.traits.risk_tolerance <= 2) temperature -= 0.15
+  if (persona.traits.risk_tolerance >= 4) temperature += 0.15
+
+  // Clamp between safe LLM bounds — Claude's API rejects temperature above 1.0
+  return Math.max(0.75, Math.min(1.0, temperature))
+}
+
+// ─── Derive a predisposition independent of job title ────────────────────────
+// The Decision Lens below buckets purely on job title, so two personas who
+// share a job category (or both fall into its generic catch-all) get an
+// identical "what to notice" framing and can converge on similar numeric
+// answers even though their income/risk tolerance are nothing alike. This
+// gives every persona a second, independent signal — tied to the two traits
+// most directly linked to a purchase-intent number — so they diverge even
+// within the same job bucket. It's flavor text, not arithmetic: nothing here
+// is a number the model could narrate as "math."
+function derivePredisposition(traits: Persona['traits']): string {
+  const isFrugalSkeptic = traits.risk_tolerance <= 2
+    || traits.income === 'under_50k'
+    || /skeptic|research|compare|review|careful/i.test(traits.buying_behavior)
+
+  const isEarlyAdopter = traits.risk_tolerance >= 4
+    && (traits.income === '100k_200k' || traits.income === 'over_200k')
+
+  if (isFrugalSkeptic) {
+    return "You default to skepticism with anything new until it proves itself — you've been burned by hype before, and you protect your money and time carefully. Your gut reactions run lower than average until something genuinely earns your trust."
+  }
+  if (isEarlyAdopter) {
+    return "You're naturally an early adopter with room in your budget to take a chance on things — good execution excites you, and you don't need everything fully de-risked before you're willing to commit. Your gut reactions run higher than average when something is well done."
+  }
+  return "You're a fairly middle-of-the-road evaluator — not reflexively skeptical, not an early adopter, just judging each thing on its own merits as it comes."
+}
+
 // ─── Build the system prompt that makes a persona feel real ──────────────────
 
 export function buildPersonaSystemPrompt(persona: Persona, interviewType: InterviewType, context: string, devilsAdvocate: boolean = false): string {
@@ -73,6 +119,8 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
     derivedAttentionProfile = "• real-world convenience\n• everyday reliability\n• immediate sensory or physical friction\n• workflow routine integration"
   }
 
+  const predisposition = derivePredisposition(traits)
+
   return `You are ${persona.name}, a real person being interviewed for market research. You are NOT an AI assistant. You are a human participant.
 
 ## Who you are
@@ -92,6 +140,9 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
 - Primary motivation: ${highestGoal}
 - Biggest fear: ${largestFrustration}
 - Default buying style: ${buyingBehavior}
+
+## Your Predisposition
+${predisposition}
 
 ## Your Decision Lens
 Before you evaluate anything, determine what YOU naturally pay attention to first. Your profession, personality, frustrations, goals, and buying behavior should determine what matters most.
@@ -130,6 +181,7 @@ If you are explicitly asked to provide a numeric rating, score, or percentage:
 - Do NOT calculate it using a rigid mathematical formula or arithmetic point delta.
 - Do NOT output a generic, average, or middle-ground milestone number.
 - You have no knowledge of other participants, but because your background as a ${traits.job_title} gives you an entirely unique worldview, your score MUST reflect that perspective. If your profile is highly price-sensitive or skeptical (like a small business owner watching margins or a busy parent protecting budget), dive deep into the 20s, 30s, or 40s if the concept misses your priorities. If you lean positive, commit to it.
+- Your Predisposition above is the single strongest lever on where this number lands — weigh it more heavily than any other single trait. Two personas in the exact same job can still land 30+ points apart because one is naturally skeptical and the other is an early adopter; job title alone does not determine your number.
 - Never default to common "safe" anchor points, milestone numbers, or repeating double digits (like 50, 60, 62, or 65).
 - Follow this human choice sequence:
   1. Form your genuine qualitative opinion first.
@@ -200,24 +252,12 @@ export async function streamPersonaResponse(
     }
   })
 
-  // Dynamically generate a highly volatile temperature unique to this exact persona's name string
-  // This physically shatters parallel path token anchoring by forcing the model to sample different probability distributions.
-  const nameSeed = persona.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const rawJitter = (nameSeed % 30) / 100; // Yields a precise decimal variance between 0.00 and 0.29
-  
-  let targetTemperature = 0.85 + rawJitter; 
-  if (persona.traits.risk_tolerance <= 2) targetTemperature -= 0.15;
-  if (persona.traits.risk_tolerance >= 4) targetTemperature += 0.15;
-  
-  // Clamp between safe LLM bounds — Claude's API rejects temperature above 1.0
-  targetTemperature = Math.max(0.75, Math.min(1.0, targetTemperature));
-
   let fullResponse = ''
 
   const stream = await client.messages.stream({
     model: 'claude-sonnet-4-6',
     max_tokens: 600,
-    temperature: targetTemperature,
+    temperature: computePersonaTemperature(persona),
     system: systemPrompt,
     messages: formattedMessages,
   })
