@@ -25,6 +25,11 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
   useEffect(() => {
     if (!isStale) return
     let cancelled = false
+    const start = Date.now()
+    // The Claude call this kicks off usually finishes in well under a
+    // second, which meant the refreshing indicator could disappear before a
+    // user actually registered it. Hold it visible for at least this long.
+    const MIN_VISIBLE_MS = 700
     setRefreshing(true)
     fetch('/api/briefing', { method: 'POST' })
       .then(res => res.json())
@@ -32,7 +37,10 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
         if (!cancelled && json.data) setBriefing(json.data)
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setRefreshing(false) })
+      .finally(() => {
+        const remaining = Math.max(0, MIN_VISIBLE_MS - (Date.now() - start))
+        setTimeout(() => { if (!cancelled) setRefreshing(false) }, remaining)
+      })
     return () => { cancelled = true }
     // Only ever needs to run once per page load — not on every prop change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,7 +70,12 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
           <div className="flex items-center gap-3 mb-6">
             <Sparkles size={16} style={{ color: HOME_COLORS.primaryFixedDim }} />
             <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Intelligence Briefing</span>
-            {refreshing && <Loader2 size={12} className="animate-spin" style={{ color: HOME_COLORS.primaryFixedDim }} />}
+            {refreshing && (
+              <span className="flex items-center gap-1.5 text-xs normal-case tracking-normal" style={{ color: HOME_COLORS.primaryFixedDim }}>
+                <Loader2 size={12} className="animate-spin" />
+                Refreshing…
+              </span>
+            )}
           </div>
 
           {!briefing ? (
