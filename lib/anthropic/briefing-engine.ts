@@ -77,11 +77,17 @@ Return ONLY a JSON object with this exact shape, no preamble, no markdown fences
   }))
 }
 
-// A flat rolling 24h window drifts across times of day (generate at 11pm,
-// still "fresh" at 10am the next day) instead of reliably refreshing each
-// morning. Compare calendar dates instead, so the first Home load after
-// midnight always triggers a regeneration.
-export function isBriefingStale(generatedAt: string | number | null | undefined): boolean {
+// Regenerate only when there's actually new data to synthesize — a new
+// report, or a signal that was created or reinforced by another interview —
+// rather than on a calendar-day timer. A pure time-based trigger burns a
+// Claude call (and shows a refresh) on the first visit of the day even when
+// nothing has changed since the last briefing; this only fires when
+// something real happened.
+export function isBriefingStale(
+  generatedAt: string | number | null | undefined,
+  latestDataAt: string | number | null | undefined
+): boolean {
   if (!generatedAt) return true
-  return new Date(generatedAt).toDateString() !== new Date().toDateString()
+  if (!latestDataAt) return false
+  return new Date(latestDataAt) > new Date(generatedAt)
 }

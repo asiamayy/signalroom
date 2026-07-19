@@ -68,7 +68,14 @@ export default async function HomePage() {
   // client-side, in BriefingCard. Previously this awaited a Claude call on
   // every stale/cold page load, which is what made Home slow to open.
   const cachedBriefing: ExecutiveBriefing | null = profile?.briefing ?? null
-  const isStale = isBriefingStale(profile?.briefing_generated_at)
+
+  // Only stale if a report or signal actually changed since the briefing
+  // was last generated — not just because a calendar day passed.
+  const latestDataAt = [
+    ...allReports.map(r => r.created_at),
+    ...allSignals.map(s => s.updated_at),
+  ].sort().at(-1) ?? null
+  const isStale = isBriefingStale(profile?.briefing_generated_at, latestDataAt)
 
   const avgConfidence = allSignals.length > 0
     ? Math.round(allSignals.reduce((sum, s) => sum + s.confidence_score, 0) / allSignals.length)
