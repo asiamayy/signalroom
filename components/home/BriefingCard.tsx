@@ -70,15 +70,9 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
           <div className="flex items-center gap-3 mb-6">
             <Sparkles size={16} style={{ color: HOME_COLORS.primaryFixedDim }} />
             <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Intelligence Briefing</span>
-            {refreshing && (
-              <span className="flex items-center gap-1.5 text-xs normal-case tracking-normal" style={{ color: HOME_COLORS.primaryFixedDim }}>
-                <Loader2 size={12} className="animate-spin" />
-                Refreshing…
-              </span>
-            )}
           </div>
 
-          {!briefing ? (
+          {(!briefing || refreshing) ? (
             <div className="flex items-center gap-2 mb-8">
               <Loader2 size={14} className="animate-spin" style={{ color: HOME_COLORS.primaryFixedDim }} />
               <span className="text-sm opacity-80">Synthesizing your research…</span>
