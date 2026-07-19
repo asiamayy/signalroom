@@ -505,6 +505,7 @@ function OverviewTab({ persona, interviews }: { persona: Persona; interviews: In
 // ─── Journeys tab ─────────────────────────────────────────────────────────────
 
 function JourneysTab({ persona, journeys, setJourneys }: { persona: Persona; journeys: Journey[] | null; setJourneys: (fn: (prev: Journey[] | null) => Journey[] | null) => void }) {
+  const [scenario, setScenario] = useState('')
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
   const [activeJourneyId, setActiveJourneyId] = useState<string | null>(null)
@@ -515,18 +516,20 @@ function JourneysTab({ persona, journeys, setJourneys }: { persona: Persona; jou
   }, [journeys])
 
   const handleGenerate = async () => {
+    if (!scenario.trim()) return
     setGenerating(true)
     setError('')
     try {
       const res = await fetch(`/api/personas/${persona.id}/journeys`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: `${persona.name}'s user journey` }),
+        body: JSON.stringify({ title: scenario.trim() }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
       setJourneys(prev => [json.data, ...(prev ?? [])])
       setActiveJourneyId(json.data.id)
+      setScenario('')
     } catch (e: any) {
       setError(e.message ?? 'Failed to generate journey')
     } finally {
@@ -538,16 +541,29 @@ function JourneysTab({ persona, journeys, setJourneys }: { persona: Persona; jou
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-        <div>
-          <h2 className="font-serif text-xl" style={{ color: '#202124' }}>User journeys</h2>
-          <p className="text-sm mt-0.5" style={{ color: '#5F6368' }}>AI-generated step-by-step timelines of this persona's experience.</p>
-        </div>
+      <div className="mb-5">
+        <h2 className="font-serif text-xl" style={{ color: '#202124' }}>User journeys</h2>
+        <p className="text-sm mt-0.5" style={{ color: '#5F6368' }}>AI-generated step-by-step timelines of this persona's experience, grounded in a specific scenario you describe.</p>
+      </div>
+
+      <div className="rounded-2xl p-4 mb-6" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
+        <label className="block text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: '#5F6368' }}>What are you testing?</label>
+        <textarea
+          value={scenario}
+          onChange={e => setScenario(e.target.value)}
+          rows={2}
+          placeholder="e.g. Reacting to a 20% price increase on their current tool, onboarding to a new expense-reporting app, deciding whether to renew a subscription…"
+          className="w-full px-3 py-2.5 text-sm rounded-lg outline-none resize-none"
+          style={{ background: '#F9FAFB', border: '1px solid #E0E2E4', color: '#202124' }}
+        />
+        {!scenario.trim() && (
+          <p className="text-xs mt-2" style={{ color: '#9CA3AF' }}>Describe a specific scenario before generating — without one, there's nothing for this persona's journey to actually be about.</p>
+        )}
         <button
           onClick={handleGenerate}
-          disabled={generating}
-          className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-lg text-white disabled:opacity-60"
-          style={{ background: '#1C3D2E', border: 'none', cursor: generating ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
+          disabled={generating || !scenario.trim()}
+          className="mt-3 flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-lg text-white disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ background: '#1C3D2E', border: 'none', cursor: generating || !scenario.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
         >
           {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
           {generating ? 'Generating…' : 'Generate journey'}

@@ -55,6 +55,14 @@ export async function POST(
   const { id } = await params
   const { title } = await request.json()
 
+  // No silent generic fallback — a journey generated without a specific
+  // scenario has nothing real to be grounded in, so the model just invents
+  // one from whatever's in the persona's profile (unrelated to what's
+  // actually being researched).
+  if (!title?.trim()) {
+    return NextResponse.json({ error: 'Describe a specific scenario for this persona to experience before generating a journey.' }, { status: 400 })
+  }
+
   const { data: persona, error: personaError } = await supabase
     .from('personas')
     .select('*')
@@ -67,8 +75,7 @@ export async function POST(
   }
 
   try {
-    const journeyTitle = title?.trim() || 'Product onboarding journey'
-    const generated = await generatePersonaJourney(persona, journeyTitle)
+    const generated = await generatePersonaJourney(persona, title.trim())
 
     const { data: journey, error: journeyError } = await supabase
       .from('journeys')
