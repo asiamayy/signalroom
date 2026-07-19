@@ -610,7 +610,7 @@ export async function suggestPersonaTraits(description: string) {
 Generate realistic, specific persona traits as JSON with this shape:
 {
   "name": "Full name — ${nameContext}",
-  "ethnicity": "The specific ethnicity/heritage implied by the name above (e.g. 'Chinese-American', 'Nigerian-American', 'Mexican-American', 'Polish-American') — used to generate a visually consistent avatar, so it must match the name, not be generic",
+  "ethnicity": "The specific ethnicity/heritage implied by the name you actually chose above — used to generate a visually consistent avatar, so it must match that name, not be picked independently of it. Vary this across generations the same way you vary the name itself — do NOT default to the same specific heritage call after call (e.g. always 'Nigerian-American' or 'Ghanaian-American' for Black personas, or always the same nationality for any other broad category). There is real variation within any broad category: a Black persona, for instance, could be a multi-generational African-American family with no recent immigrant tie at all (the most common case, and what names like 'DeShawn Carter' or 'Jasmine Williams' actually imply), Caribbean-American, East African, West African, or otherwise — pick whichever specific heritage the name you chose actually implies, not the first association that comes to mind",
   "age": number,
   "gender": "male" | "female" | "non-binary",
   "location": "City, State — ${locationContext}",
