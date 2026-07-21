@@ -187,6 +187,7 @@ export interface Report {
   recommendations: ReportRecommendation[]
   confidence_score: number
   ai_verdict: AIVerdict | null
+  share_token?: string | null
   created_at: string
 }
 

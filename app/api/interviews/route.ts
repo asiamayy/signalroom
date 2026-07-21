@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import type { InterviewFormData } from '@/types'
+import { canRunInterview } from '@/lib/utils'
+import { getPlanForUser, countInterviewsThisMonth, trackUsage } from '@/lib/utils/entitlements'
+import { interviewCreateSchema, parseBody } from '@/lib/validation'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -83,7 +85,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body: InterviewFormData & { devils_advocate?: boolean; project_id?: string | null } = await request.json()
+  const parsed = parseBody(interviewCreateSchema, await request.json())
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
+  }
+  const body = parsed.data
+
+  const { plan, limits } = await getPlanForUser(supabase, user.id)
+  if (limits.interviews_per_month !== Infinity) {
+    const usedThisMonth = await countInterviewsThisMonth(supabase, user.id)
+    if (!canRunInterview(plan, usedThisMonth)) {
+      return NextResponse.json({
+        error: `You've reached the ${limits.interviews_per_month} interview${limits.interviews_per_month === 1 ? '' : 's'}/month limit on the ${plan} plan. Upgrade to run more.`,
+        limit_reached: true,
+      }, { status: 403 })
+    }
+  }
 
   const { data, error } = await supabase
     .from('interviews')
@@ -104,6 +121,8 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  await trackUsage(supabase, 'interview')
 
   return NextResponse.json({ data }, { status: 201 })
 }

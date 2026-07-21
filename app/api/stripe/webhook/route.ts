@@ -46,7 +46,18 @@ export async function POST(request: NextRequest) {
     case 'customer.subscription.updated': {
       const subscription = event.data.object as Stripe.Subscription
       const priceId = subscription.items.data[0]?.price.id
-      const plan = PRICE_TO_PLAN[priceId] ?? 'free'
+      const plan = PRICE_TO_PLAN[priceId]
+
+      // An unrecognized price must never silently downgrade a paying
+      // customer — it usually means a rotated price ID or a missing env var
+      // at deploy, not an actual plan change. Log loudly and leave the plan
+      // alone so a human can reconcile.
+      if (!plan) {
+        console.error(
+          `[stripe-webhook] Unknown price ${priceId} on subscription ${subscription.id} — plan NOT changed. Check STRIPE_*_PRICE_ID env vars.`
+        )
+        break
+      }
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -60,6 +71,18 @@ export async function POST(request: NextRequest) {
           .update({ plan })
           .eq('id', profile.id)
       }
+      break
+    }
+
+    case 'invoice.payment_failed': {
+      // No dunning flow yet — Stripe retries per its own schedule and fires
+      // customer.subscription.deleted if it gives up (handled below, which
+      // downgrades). Log so failed renewals are at least visible instead of
+      // customers silently keeping full access.
+      const invoice = event.data.object as Stripe.Invoice
+      console.error(
+        `[stripe-webhook] Payment failed for customer ${invoice.customer} (invoice ${invoice.id}, attempt ${invoice.attempt_count}).`
+      )
       break
     }
 

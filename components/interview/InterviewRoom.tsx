@@ -97,7 +97,14 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, image: currentImageData, imageMediaType }),
       })
-      if (!res.ok) throw new Error('Failed to send message')
+      if (!res.ok) {
+        let msg = 'Failed to send message'
+        try {
+          const j = await res.json()
+          if (j?.error) msg = j.error
+        } catch {}
+        throw new Error(msg)
+      }
       const reader = res.body?.getReader()
       if (!reader) throw new Error('No response stream')
       const decoder = new TextDecoder()

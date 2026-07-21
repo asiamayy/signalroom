@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { streamPersonaResponse } from '@/lib/anthropic/persona-engine'
+import { chatMessageSchema, parseBody } from '@/lib/validation'
+import { logError } from '@/lib/logger'
 import type { Message } from '@/types'
 
 export async function POST(
@@ -15,7 +17,12 @@ export async function POST(
   }
 
   const { id } = await params
-  const { message, image, imageMediaType } = await request.json()
+
+  const parsed = parseBody(chatMessageSchema, await request.json())
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
+  }
+  const { message, image, imageMediaType } = parsed.data
 
   const { data: interview, error: interviewError } = await supabase
     .from('interviews')
@@ -74,7 +81,7 @@ export async function POST(
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`))
         controller.close()
       } catch (error) {
-        console.error('Chat stream error:', error instanceof Error ? error.message : error)
+        logError('interviews.chat.stream', error, { userId: user.id, interviewId: id })
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: 'Stream failed' })}\n\n`))
         controller.close()
       }

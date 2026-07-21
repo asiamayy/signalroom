@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { filterVerifiedQuotes } from '@/lib/utils/quotes'
 import type { Persona, InterviewType, Message, JourneyStep } from '@/types'
 
 const client = new Anthropic({
@@ -542,7 +543,19 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
 
   for (const attempt of attempts) {
     try {
-      return attempt()
+      const parsed = attempt()
+      // "Verbatim" quotes must actually exist in what the persona said —
+      // drop anything the model paraphrased or invented.
+      if (Array.isArray(parsed?.key_themes)) {
+        const personaText = messages
+          .filter(m => m.role === 'persona')
+          .map(m => m.content)
+          .join('\n')
+        for (const theme of parsed.key_themes) {
+          theme.quotes = filterVerifiedQuotes(theme?.quotes, personaText)
+        }
+      }
+      return parsed
     } catch {
       continue
     }

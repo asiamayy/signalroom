@@ -57,7 +57,7 @@ export default async function ReportPage({
   const score = report.confidence_score
   const scoreColor = score >= 75 ? HOME_COLORS.primary : score >= 50 ? '#B45309' : HOME_COLORS.error
   const scoreBg = score >= 75 ? HOME_COLORS.secondaryContainer : score >= 50 ? '#FEF3C7' : '#FFDAD6'
-  const scoreLabel = score >= 75 ? 'Strong Signal' : score >= 50 ? 'Moderate Signal' : 'Weak Signal'
+  const scoreLabel = score >= 75 ? 'In-Depth Session' : score >= 50 ? 'Moderate Depth' : 'Light Session'
 
   const themes: ReportTheme[] = report.key_themes ?? []
   const recommendations: ReportRecommendation[] = report.recommendations ?? []
@@ -97,7 +97,7 @@ export default async function ReportPage({
           <div className="flex-shrink-0 text-center rounded-xl px-4 py-3 self-start sm:self-auto" style={{ background: scoreBg }}>
             <p className="text-3xl font-semibold leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, color: scoreColor }}>{score}</p>
             <p className="text-[11px] font-semibold mt-1 uppercase tracking-wider" style={{ color: scoreColor }}>{scoreLabel}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Signal Strength</p>
+            <p className="text-[10px] mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Interview Depth</p>
           </div>
         </div>
 
@@ -117,7 +117,7 @@ export default async function ReportPage({
           </div>
           <div className="flex items-center gap-3 sm:ml-auto w-full sm:w-auto">
             <DownloadReportButton />
-            <CopyLinkButton />
+            <CopyLinkButton reportId={report.id} initialShared={!!report.share_token} />
             <Link href={`/interviews/${interview?.id}`} className="flex items-center gap-1.5 text-xs transition-colors" style={{ color: HOME_COLORS.onSurfaceVariant }}>
               <MessageSquare size={13} />
               View full transcript
@@ -196,10 +196,9 @@ export default async function ReportPage({
             <div className="space-y-2.5">
               <ConfidenceBar label="Depth of responses" value={Math.min(100, messageCount * 12)} />
               <ConfidenceBar label="Persona specificity" value={getPersonaSpecificity(persona)} />
-              <ConfidenceBar label="Theme consistency" value={score} />
             </div>
             <p className="text-xs mt-3 leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-              Higher scores reflect longer sessions with a well-defined persona. Validate key findings with real users.
+              This score measures the depth and specificity of this AI interview session — not market certainty. Longer sessions with a well-defined persona score higher. Always validate key findings with real users.
             </p>
           </div>
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateExecutiveBriefing } from '@/lib/anthropic/briefing-engine'
+import { logError } from '@/lib/logger'
 import { getTrendDirection, getMentionTrendPercent } from '@/lib/utils/signals'
 import type { Signal } from '@/types'
 
@@ -14,6 +15,23 @@ export async function POST() {
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Server-side staleness floor: the client only calls this when Home decides
+  // the briefing is stale, but nothing stopped a direct loop from regenerating
+  // (and paying for) a Claude call per request. If we generated one in the
+  // last minute, hand back the cache.
+  const { data: cachedProfile } = await supabase
+    .from('profiles')
+    .select('briefing, briefing_generated_at')
+    .eq('id', user.id)
+    .single()
+
+  if (cachedProfile?.briefing && cachedProfile.briefing_generated_at) {
+    const ageMs = Date.now() - new Date(cachedProfile.briefing_generated_at).getTime()
+    if (ageMs < 60_000) {
+      return NextResponse.json({ data: cachedProfile.briefing })
+    }
   }
 
   const [{ data: signals }, { data: reports }] = await Promise.all([
@@ -42,7 +60,7 @@ export async function POST() {
 
     return NextResponse.json({ data: briefing })
   } catch (e: any) {
-    console.error('Briefing generation error:', e?.message ?? e)
+    logError('briefing.generate', e, { userId: user.id })
     return NextResponse.json({ error: e?.message ?? 'Failed to generate briefing' }, { status: 500 })
   }
 }

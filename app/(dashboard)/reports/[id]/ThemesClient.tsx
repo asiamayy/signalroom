@@ -128,7 +128,7 @@ function ThemeModalContent({ theme, confidenceScore }: { theme: ReportTheme; con
       )}
 
       <div className="flex items-center justify-between pt-4" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
-        <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Report signal strength</span>
+        <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Interview depth score</span>
         <span className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{confidenceScore}</span>
       </div>
     </div>

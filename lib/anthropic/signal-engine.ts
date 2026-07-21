@@ -1,5 +1,6 @@
 import { anthropic, CLAUDE_MODEL } from './client'
 import { parseJsonResponse, extractText } from './parse-json'
+import { quoteInText } from '@/lib/utils/quotes'
 import type { Persona, Interview, ReportTheme, ReportRecommendation, SignalType, SignalQuote, SignalImpact } from '@/types'
 
 export interface CandidateSignal {
@@ -24,7 +25,7 @@ const SIGNAL_TYPES: SignalType[] = [
 // full transcript from scratch — the report generation call
 // (persona-engine.ts generateReport) already did the expensive extraction.
 export async function generateSignalsFromInterview(
-  interview: Pick<Interview, 'type' | 'context'>,
+  interview: Pick<Interview, 'type' | 'context' | 'messages'>,
   persona: Pick<Persona, 'name' | 'traits'>,
   report: {
     executive_summary: string
@@ -86,6 +87,13 @@ If nothing meaningfully recurring or actionable emerged, return an empty array [
   const parsed = parseJsonResponse<any[]>(raw, () => [])
   if (!Array.isArray(parsed)) return []
 
+  // "Verbatim" supporting quotes must actually appear in what the persona
+  // said in this interview — paraphrases and inventions are dropped.
+  const personaText = (interview.messages ?? [])
+    .filter(m => m.role === 'persona')
+    .map(m => m.content)
+    .join('\n')
+
   return parsed
     .filter(s => s && typeof s.title === 'string' && SIGNAL_TYPES.includes(s.type))
     .map(s => ({
@@ -94,7 +102,9 @@ If nothing meaningfully recurring or actionable emerged, return an empty array [
       summary: String(s.summary ?? ''),
       confidence_score: Math.max(0, Math.min(100, Math.round(Number(s.confidence_score) || 50))),
       supporting_quotes: Array.isArray(s.supporting_quotes)
-        ? s.supporting_quotes.filter((q: unknown) => typeof q === 'string').map((text: string) => ({ text, persona_id: null, interview_id: null }))
+        ? s.supporting_quotes
+            .filter((q: unknown): q is string => typeof q === 'string' && quoteInText(q, personaText))
+            .map((text: string) => ({ text, persona_id: null, interview_id: null }))
         : [],
       strategic_recommendation: String(s.strategic_recommendation ?? ''),
       impact: SIGNAL_IMPACTS.includes(s.impact) ? s.impact as SignalImpact : 'medium',

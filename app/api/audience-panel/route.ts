@@ -9,6 +9,7 @@ import {
   assignDiversificationBands,
   rescorePersonaWithBand,
 } from '@/lib/anthropic/persona-engine'
+import { quoteInText } from '@/lib/utils/quotes'
 import Anthropic from '@anthropic-ai/sdk'
 import { PLAN_LIMITS } from '@/types'
 import type { Plan } from '@/types'
@@ -16,6 +17,10 @@ import type { Plan } from '@/types'
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(request: NextRequest) {
+  // Real wall-clock start — "Time to Complete" in the UI reports measured
+  // elapsed time, never an estimate.
+  const startedAt = Date.now()
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -239,8 +244,7 @@ Return a JSON object with these exact fields:
   "most_representative_quote": "the single most representative quote from all responses verbatim",
   "most_representative_quote_persona": "name of persona who said it",
   "biggest_objection_quote": "the single biggest objection raised verbatim",
-  "biggest_objection_quote_persona": "name of persona who said it",
-  "completed_in_seconds": ${responses.length * 3}
+  "biggest_objection_quote_persona": "name of persona who said it"
 }
 
 Return ONLY the JSON, no preamble, no markdown.`
@@ -267,7 +271,7 @@ Return ONLY the JSON, no preamble, no markdown.`
     most_representative_quote_persona: '',
     biggest_objection_quote: '',
     biggest_objection_quote_persona: '',
-    completed_in_seconds: responses.length * 3,
+    completed_in_seconds: 0,
   }
   try {
     const raw = summaryResponse.content[0].type === 'text' ? summaryResponse.content[0].text : '{}'
@@ -276,6 +280,20 @@ Return ONLY the JSON, no preamble, no markdown.`
   } catch {
     // keep defaults
   }
+
+  // Quotes labeled as verbatim must actually appear in the panel's responses;
+  // the UI hides an empty quote card, so blanking a failed quote is safe.
+  if (!quoteInText(summary.most_representative_quote, allText)) {
+    summary.most_representative_quote = ''
+    summary.most_representative_quote_persona = ''
+  }
+  if (!quoteInText(summary.biggest_objection_quote, allText)) {
+    summary.biggest_objection_quote = ''
+    summary.biggest_objection_quote_persona = ''
+  }
+
+  // Measured, not modeled — overrides anything the LLM might have invented
+  summary.completed_in_seconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000))
 
   // Compute sentiment distribution
   const sentimentCounts = responses.reduce((acc, r) => {

@@ -9,6 +9,7 @@ import {
   assignDiversificationBands,
   rescorePersonaWithBand,
 } from '@/lib/anthropic/persona-engine'
+import { getPlanForUser } from '@/lib/utils/entitlements'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
@@ -25,6 +26,15 @@ export async function POST(request: NextRequest) {
 
   if (!persona_ids || persona_ids.length < 2) {
     return NextResponse.json({ error: 'Select at least 2 personas' }, { status: 400 })
+  }
+
+  // Compare is a multi-persona surface — pro and agency only
+  const { limits } = await getPlanForUser(supabase, user.id)
+  if (!limits.multi_persona) {
+    return NextResponse.json({
+      error: 'Comparing multiple personas is available on the Signal plan and above.',
+      limit_reached: true,
+    }, { status: 403 })
   }
 
   if (!question?.trim() && !image) {

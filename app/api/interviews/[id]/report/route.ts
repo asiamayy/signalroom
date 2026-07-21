@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getPlanForUser } from '@/lib/utils/entitlements'
+import { logError } from '@/lib/logger'
 import { generateReport } from '@/lib/anthropic/persona-engine'
 import { generateSignalsFromInterview, titleSimilarity, statusForInterviewCount, SIGNAL_TITLE_MATCH_THRESHOLD } from '@/lib/anthropic/signal-engine'
 import { appendHistoryEntry } from '@/lib/utils/signals'
@@ -15,7 +18,7 @@ async function syncSignalsForInterview(
   supabase: SupabaseClient,
   userId: string,
   projectId: string,
-  interview: Pick<Interview, 'type' | 'context'>,
+  interview: Pick<Interview, 'type' | 'context' | 'messages'>,
   interviewId: string,
   personaId: string,
   persona: Pick<Persona, 'name' | 'traits'>,
@@ -94,6 +97,15 @@ export async function POST(
 
   const { id } = await params
 
+  // Reports are a paid deliverable — pro and agency only (PLAN_LIMITS.reports)
+  const { limits } = await getPlanForUser(supabase, user.id)
+  if (!limits.reports) {
+    return NextResponse.json({
+      error: 'Insight reports are available on the Signal plan and above. Upgrade to generate reports.',
+      limit_reached: true,
+    }, { status: 403 })
+  }
+
   const { data: interview, error } = await supabase
     .from('interviews')
     .select('*, persona:personas(*)')
@@ -120,8 +132,18 @@ export async function POST(
       interview.messages
     )
 
-    // Delete any existing report for this interview first
+    // Delete any existing report for this interview first — but carry its
+    // share token over to the fresh row, so a link the user already sent out
+    // keeps working after a regenerate instead of silently 404ing.
+    let carriedShareToken: string | null = null
     if (interview.report_id) {
+      const { data: oldReport } = await supabase
+        .from('reports')
+        .select('share_token')
+        .eq('id', interview.report_id)
+        .single()
+      carriedShareToken = oldReport?.share_token ?? null
+
       await supabase
         .from('reports')
         .delete()
@@ -139,12 +161,13 @@ export async function POST(
         recommendations: reportData.recommendations,
         confidence_score: reportData.confidence_score,
         ai_verdict: reportData.ai_verdict,
+        share_token: carriedShareToken,
       })
       .select()
       .single()
 
     if (insertError) {
-      console.error('Report insert error:', insertError.message)
+      logError('reports.insert', insertError, { userId: user.id, interviewId: id })
       return NextResponse.json({ error: insertError.message }, { status: 500 })
     }
 
@@ -158,17 +181,22 @@ export async function POST(
     // — project_id is not-null on the signals table), so interviews that
     // aren't assigned to a project simply don't generate signals yet. This
     // is a secondary effect of report generation — an extra Claude call the
-    // user shouldn't have to wait on, so it's fired without awaiting it here.
-    // Failures here shouldn't (and now can't) fail the report response,
-    // which has already succeeded.
+    // user shouldn't have to wait on — so it's scheduled via after(), which
+    // keeps the serverless instance alive past the response instead of a bare
+    // fire-and-forget promise the platform may freeze mid-flight.
     if (interview.project_id) {
-      syncSignalsForInterview(supabase, user.id, interview.project_id, interview, id, interview.persona_id, interview.persona, reportData)
-        .catch((e: any) => console.error('Signal generation error:', e?.message ?? e))
+      after(async () => {
+        try {
+          await syncSignalsForInterview(supabase, user.id, interview.project_id, interview, id, interview.persona_id, interview.persona, reportData)
+        } catch (e: any) {
+          logError('signals.sync', e, { userId: user.id, interviewId: id, projectId: interview.project_id })
+        }
+      })
     }
 
     return NextResponse.json({ data: report }, { status: 201 })
   } catch (e: any) {
-    console.error('Report generation error:', e?.message ?? e)
+    logError('reports.generate', e, { userId: user.id, interviewId: id })
     return NextResponse.json({ error: e?.message ?? 'Failed to generate report' }, { status: 500 })
   }
 }

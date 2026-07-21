@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { suggestPersonaTraits } from '@/lib/anthropic/persona-engine'
 import { getInitials, getAvatarColor } from '@/lib/utils'
+import { getPlanForUser, trackUsage } from '@/lib/utils/entitlements'
+import { personaCreateSchema, personaGenerateSchema, parseBody } from '@/lib/validation'
+import { logError } from '@/lib/logger'
 import { PLAN_LIMITS } from '@/types'
-import type { PersonaFormData, Plan } from '@/types'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -48,25 +50,29 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json()
 
+  const { plan } = await getPlanForUser(supabase, user.id)
+
   // If AI suggestion requested, generate traits first — no limit check needed
-  if (body.generate && body.description) {
+  if (body.generate) {
+    const parsed = parseBody(personaGenerateSchema, body)
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 })
+    }
     try {
-      const suggested = await suggestPersonaTraits(body.description)
+      const suggested = await suggestPersonaTraits(parsed.data.description)
       return NextResponse.json({ data: suggested })
     } catch (e: any) {
-      console.error('Persona generation error:', e?.message ?? e)
+      logError('personas.generate', e, { userId: user.id })
       return NextResponse.json({ error: e?.message ?? 'Failed to generate persona' }, { status: 500 })
     }
   }
 
-  // Check plan limit before creating
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan')
-    .eq('id', user.id)
-    .single()
+  const parsed = parseBody(personaCreateSchema, body)
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 })
+  }
 
-  const plan = (profile?.plan ?? 'free') as Plan
+  // Check plan limit before creating
   const limit = PLAN_LIMITS[plan].personas
 
   if (limit !== Infinity) {
@@ -84,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const formData = body as PersonaFormData
+  const formData = parsed.data
   const initials = getInitials(formData.name)
   const color = getAvatarColor(formData.name)
 
@@ -92,13 +98,13 @@ export async function POST(request: NextRequest) {
     .from('personas')
     .insert({
       user_id: user.id,
-      project_id: body.project_id ?? null,
+      project_id: formData.project_id ?? null,
       name: formData.name,
       avatar_initials: initials,
       avatar_color: JSON.stringify(color),
-      avatar_url: body.avatar_url ?? null,
+      avatar_url: formData.avatar_url ?? null,
       traits: formData.traits,
-      tags: formData.tags ?? [],
+      tags: formData.tags,
     })
     .select()
     .single()
@@ -106,6 +112,8 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  await trackUsage(supabase, 'persona')
 
   return NextResponse.json({ data }, { status: 201 })
 }
