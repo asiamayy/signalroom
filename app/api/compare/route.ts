@@ -4,14 +4,9 @@ import {
   buildPersonaSystemPrompt,
   buildUserMessageContent,
   computePersonaTemperature,
-  extractLeadingScore,
-  stripScoreLine,
   questionRequestsScore,
-  SCORE_FORMAT_INSTRUCTION,
-  findClusteredScoreGroups,
-  rescorePersonaHonestly,
-  findDuplicateOpeningGroups,
-  rewriteResponseWithDistinctOpening,
+  buildStructuredResponseInstruction,
+  parseStructuredResponse,
 } from '@/lib/anthropic/persona-engine'
 import { getPlanForUser } from '@/lib/utils/entitlements'
 import Anthropic from '@anthropic-ai/sdk'
@@ -45,159 +40,74 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Enter a question to ask' }, { status: 400 })
   }
 
-  const questionContent = buildUserMessageContent(question ?? '', image ?? null, imageMediaType)
+  // Everything past here does real LLM work — wrap it so any failure returns a
+  // JSON error the client can show, instead of an unhandled 500 as HTML.
+  try {
+    const questionContent = buildUserMessageContent(question ?? '', image ?? null, imageMediaType)
 
-  // When the question asks for a score, force a reliable "Confidence: <N>"
-  // first line so the number is guaranteed present and parseable — both for
-  // the UI ring and for the declustering pass, which is a no-op if scores
-  // can't be extracted.
-  const wantsScore = questionRequestsScore(question ?? '')
-  const scoreInstruction = wantsScore ? SCORE_FORMAT_INSTRUCTION : ''
+    const wantsScore = questionRequestsScore(question ?? '')
 
-  // Load all selected personas
-  const { data: personas, error } = await supabase
-    .from('personas')
-    .select('*')
-    .in('id', persona_ids)
-    .eq('user_id', user.id)
+    // Load all selected personas
+    const { data: personas, error } = await supabase
+      .from('personas')
+      .select('*')
+      .in('id', persona_ids)
+      .eq('user_id', user.id)
 
-  if (error || !personas?.length) {
-    return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
-  }
-
-  // Run all personas in parallel, each with its own persona-identity-based
-  // temperature (not array position) — same helper interviews use, so all
-  // three surfaces are consistent.
-  const results = await Promise.all(
-    personas.map(async (persona) => {
-      try {
-        const systemPrompt = buildPersonaSystemPrompt(
-          persona,
-          interview_type ?? 'concept_testing',
-          context ?? ''
-        ) + scoreInstruction
-
-        const response = await client.messages.create({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 600,
-          temperature: computePersonaTemperature(persona),
-          system: systemPrompt,
-          messages: [{ role: 'user', content: questionContent }],
-        })
-
-        const text = response.content[0].type === 'text' ? response.content[0].text : ''
-
-        return {
-          persona_id: persona.id,
-          persona_name: persona.name,
-          avatar_initials: persona.avatar_initials,
-          avatar_color: persona.avatar_color,
-          avatar_url: persona.avatar_url,
-          job_title: persona.traits?.job_title,
-          location: persona.traits?.location,
-          response: text,
-          error: null,
-        }
-      } catch (e: any) {
-        return {
-          persona_id: persona.id,
-          persona_name: persona.name,
-          avatar_initials: persona.avatar_initials,
-          avatar_color: persona.avatar_color,
-          avatar_url: persona.avatar_url,
-          job_title: persona.traits?.job_title,
-          location: persona.traits?.location,
-          response: null,
-          error: e?.message ?? 'Failed to get response',
-        }
-      }
-    })
-  )
-
-  // Detect clustered numeric scores (3+ personas landing within a few points
-  // of each other) and give just those personas an honest nudge to double-
-  // check they weren't anchoring on a safe/consensus number — without ever
-  // assigning a target number. If their number was genuine it stays put (a
-  // repeated-but-honest score is fine); only real anchoring shifts. Fires
-  // only when clustering is actually detected.
-  const scores = wantsScore
-    ? results.map(r => r.response ? extractLeadingScore(r.response) : null)
-    : results.map(() => null)
-  const clusterGroups = findClusteredScoreGroups(scores)
-
-  if (clusterGroups.length > 0) {
-    await Promise.all(
-      clusterGroups.flat().map(async (idx) => {
-        const persona = personas[idx]
-        const original = results[idx]
-        if (!original.response) return
-
-        const systemPrompt = buildPersonaSystemPrompt(
-          persona,
-          interview_type ?? 'concept_testing',
-          context ?? ''
-        ) + scoreInstruction
-
-        const revised = await rescorePersonaHonestly(
-          persona,
-          systemPrompt,
-          questionContent,
-          original.response,
-          computePersonaTemperature(persona)
-        )
-
-        results[idx].response = revised
-      })
-    )
-  }
-
-  // Detect personas whose responses opened with essentially the same wording
-  // (e.g. multiple personas independently reaching for the same generic
-  // observation) and rewrite all but one against that shared opening, so the
-  // panel doesn't read as a single voice repeated across avatars.
-  const openingGroups = findDuplicateOpeningGroups(results.map(r => r.response))
-
-  if (openingGroups.length > 0) {
-    await Promise.all(
-      openingGroups.flatMap(group => {
-        const [anchorIdx, ...restIdx] = group
-        const peerOpening = results[anchorIdx].response!.slice(0, 120)
-        return restIdx.map(async (idx) => {
-          const persona = personas[idx]
-          const original = results[idx]
-          if (!original.response) return
-
-          const systemPrompt = buildPersonaSystemPrompt(
-            persona,
-            interview_type ?? 'concept_testing',
-            context ?? ''
-          ) + scoreInstruction
-
-          const revised = await rewriteResponseWithDistinctOpening(
-            persona,
-            systemPrompt,
-            questionContent,
-            original.response,
-            peerOpening,
-            computePersonaTemperature(persona)
-          )
-
-          results[idx].response = revised
-        })
-      })
-    )
-  }
-
-  // Surface the score as its own field and hand the client already-clean prose
-  // (the "Confidence: <N>" line stripped) so the number isn't shown twice.
-  const withScores = results.map(r => {
-    if (!r.response || !wantsScore) return { ...r, score: null }
-    return {
-      ...r,
-      score: extractLeadingScore(r.response),
-      response: stripScoreLine(r.response),
+    if (error || !personas?.length) {
+      return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
     }
-  })
 
-  return NextResponse.json({ data: withScores })
+    // ONE structured call per persona returns reply + score together. Diversity
+    // in the number and wording comes from each persona's disposition/lens in
+    // the system prompt — not from post-hoc re-ask passes.
+    const results = await Promise.all(
+      personas.map(async (persona) => {
+        const base = {
+          persona_id: persona.id,
+          persona_name: persona.name,
+          avatar_initials: persona.avatar_initials,
+          avatar_color: persona.avatar_color,
+          avatar_url: persona.avatar_url,
+          job_title: persona.traits?.job_title,
+          location: persona.traits?.location,
+        }
+        try {
+          const systemPrompt =
+            buildPersonaSystemPrompt(persona, interview_type ?? 'concept_testing', context ?? '')
+            + buildStructuredResponseInstruction({ wantsScore, wantsSentiment: false })
+
+          const response = await client.messages.create({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 700,
+            temperature: computePersonaTemperature(persona),
+            system: systemPrompt,
+            messages: [{ role: 'user', content: questionContent }],
+          })
+
+          const raw = response.content[0].type === 'text' ? response.content[0].text : ''
+          const parsed = parseStructuredResponse(raw, { wantsScore, wantsSentiment: false })
+
+          return {
+            ...base,
+            response: parsed.reply,
+            score: parsed.score,
+            error: null,
+          }
+        } catch (e: any) {
+          return {
+            ...base,
+            response: null,
+            score: null,
+            error: e?.message ?? 'Failed to get response',
+          }
+        }
+      })
+    )
+
+    return NextResponse.json({ data: results })
+  } catch (e: any) {
+    console.error('[compare] request failed:', e)
+    return NextResponse.json({ error: 'The comparison failed to complete. Please try again.' }, { status: 500 })
+  }
 }

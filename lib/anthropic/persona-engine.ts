@@ -35,34 +35,85 @@ export function buildUserMessageContent(text: string, imageBase64: string | null
 
 export type UserMessageContent = ReturnType<typeof buildUserMessageContent>
 
-// ─── Detect and correct clustered numeric scores ──────────────────────────────
-// Prompt engineering alone has a ceiling: personas are called independently in
-// parallel (Promise.all), so no matter how well-worded the prompt is, there's
-// nothing stopping several of them from probabilistically converging on the
-// same number. This adds a real, deterministic backstop: after the initial
-// parallel pass, check whether 3+ personas landed suspiciously close together,
-// and if so, re-ask just those personas with actual visibility into what the
-// others said — turning "assume others differ" into "here's concretely what
-// was said, is your number still right for you." Only fires when clustering
-// is actually detected, so it doesn't cost anything on a normal run.
+// ─── Structured single-call persona output ───────────────────────────────────
+// Diversity in what personas say (and in the number they give) is produced at
+// GENERATION time — via each persona's own disposition, attention lens, and
+// specifics (see deriveDisposition + buildPersonaSystemPrompt below) — not by
+// expensive post-hoc "correction" passes that re-ask the model to change its
+// answer. Each persona is one structured call that returns reply + sentiment +
+// score together, so a panel run is N calls, not N×(reply + sentiment + re-ask).
 
 // Whether a panel/compare question actually asks for a numeric score. When it
-// does, we force a reliable labeled score line (SCORE_FORMAT_INSTRUCTION) and
-// show the score ring; when it doesn't, personas answer normally with no
-// number. Kept generous so ordinary phrasings ("give it a score from 1-100",
-// "rate this", "on a scale of 1 to 10") are all caught.
+// does, we request a "score" field and show the score ring; when it doesn't,
+// personas answer normally with no number. Kept generous so ordinary phrasings
+// ("give it a score from 1-100", "rate this", "on a scale of 1 to 10") all hit.
 export function questionRequestsScore(question: string): boolean {
   if (!question) return false
   return /\bscore\b|\brate\b|\brating\b|\bconfidence\b|\bout of\s+\d+\b|\bscale\b|\b\d{1,3}\s*(?:-|–|—|to)\s*\d{1,3}\b/i.test(question)
 }
 
-// Appended to the system prompt only when the question asks for a score. A
-// rigid labeled first line makes the number reliably present and reliably
-// parseable — the previous approach (regex-hunting for a bare number in the
-// first 60 chars) silently failed whenever a persona opened with prose, which
-// nulled out the score AND disabled the whole declustering pass that depends
-// on those parsed scores.
-export const SCORE_FORMAT_INSTRUCTION = `\n\nOUTPUT FORMAT — STRICT: The very first line of your reply must be exactly "Confidence: <N>", where <N> is your single Confidence Score from 0 to 100 as defined above (a direct translation of your own genuine reaction — never a generic or middle-of-the-road default). Follow it with one blank line, then your normal reply. Do not repeat the number anywhere else, and do not add any other text on that first line.`
+// A single structured call returns the persona's reply, sentiment, and score
+// together — instead of one call for the reply plus a SEPARATE call per persona
+// just to classify sentiment into one word (which is what made a panel run cost
+// ~24 API calls). Appended to the system prompt; the persona still speaks in
+// character inside "reply", and the JSON wrapper is stripped server-side so the
+// user never sees it.
+export function buildStructuredResponseInstruction(opts: { wantsScore: boolean; wantsSentiment: boolean }): string {
+  const fields: string[] = [
+    `  "reply": "<your answer in your own natural speaking voice, 3-6 sentences — exactly what you would actually say. Do NOT put any number, score, rating, sentiment word, or JSON inside here.>"`,
+  ]
+  if (opts.wantsSentiment) {
+    fields.push(`  "sentiment": "<exactly one of: positive, neutral, negative, mixed — your overall feeling>"`)
+  }
+  if (opts.wantsScore) {
+    fields.push(`  "score": <an integer 0-100 — your Confidence Score exactly as defined above, a direct translation of the reaction in your reply>`)
+  }
+  return `\n\n## HOW TO FORMAT YOUR ANSWER (STRICT)\nReply with ONLY a single JSON object and nothing else — no markdown, no code fences, no text before or after it:\n{\n${fields.join(',\n')}\n}\nThe "reply" text must read as genuine human speech and stand on its own without the number.`
+}
+
+export interface StructuredPersonaResponse {
+  reply: string
+  sentiment: 'positive' | 'neutral' | 'negative' | 'mixed'
+  score: number | null
+}
+
+// Parses the structured JSON reply, with a graceful fallback: if the model
+// didn't return clean JSON, treat the whole thing as the reply and salvage a
+// score via the regex helper so a formatting slip never blanks the response.
+export function parseStructuredResponse(
+  raw: string,
+  opts: { wantsScore: boolean; wantsSentiment: boolean }
+): StructuredPersonaResponse {
+  const isSentiment = (s: unknown): s is StructuredPersonaResponse['sentiment'] =>
+    typeof s === 'string' && ['positive', 'neutral', 'negative', 'mixed'].includes(s)
+
+  try {
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const start = cleaned.indexOf('{')
+    const end = cleaned.lastIndexOf('}')
+    if (start !== -1 && end !== -1 && end > start) {
+      const obj = JSON.parse(cleaned.slice(start, end + 1))
+      const reply = typeof obj.reply === 'string' && obj.reply.trim() ? obj.reply.trim() : null
+      if (reply) {
+        let score: number | null = null
+        if (opts.wantsScore) {
+          const n = typeof obj.score === 'number' ? obj.score : parseInt(obj.score, 10)
+          score = Number.isFinite(n) && n >= 0 && n <= 100 ? Math.round(n) : null
+        }
+        const sentiment = opts.wantsSentiment && isSentiment(obj.sentiment) ? obj.sentiment : 'neutral'
+        return { reply, sentiment, score }
+      }
+    }
+  } catch {
+    // fall through to salvage
+  }
+
+  return {
+    reply: stripScoreLine(raw),
+    sentiment: 'neutral',
+    score: opts.wantsScore ? extractLeadingScore(raw) : null,
+  }
+}
 
 // Pulls the numeric score out of a persona reply. Prefers the explicit
 // "Confidence: <N>" line we ask for; falls back to a bare leading number in
@@ -100,149 +151,6 @@ export function stripScoreLine(text: string): string {
   return stripLeadingScore(withoutLabel).trim()
 }
 
-// ─── Detect and correct near-identical response openings ──────────────────────
-// Same ceiling as the numeric-score problem above, and the same fix: personas
-// are generated independently in parallel, so nothing stops several of them
-// from converging on the same generic "obvious observation" opening line even
-// with an explicit instruction not to (rule 11 above). This is the backstop —
-// after the initial pass, check whether 2+ personas opened with essentially
-// the same wording, and if so, rewrite just those against the one we keep as
-// the anchor. Only fires when a collision is actually detected.
-function normalizeOpening(text: string): string {
-  return stripScoreLine(text)
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
-    .trim()
-    .split(/\s+/)
-    .slice(0, 8)
-    .join(' ')
-}
-
-// Returns groups of original-array indices whose responses opened with the
-// same normalized first ~8 words. Requires the normalized snippet to be long
-// enough (12+ chars) to be a meaningful signal rather than a coincidental
-// short match ("i think the").
-export function findDuplicateOpeningGroups(responses: (string | null)[]): number[][] {
-  const buckets = new Map<string, number[]>()
-  responses.forEach((r, i) => {
-    if (!r) return
-    const key = normalizeOpening(r)
-    if (key.length < 12) return
-    if (!buckets.has(key)) buckets.set(key, [])
-    buckets.get(key)!.push(i)
-  })
-  return [...buckets.values()].filter(group => group.length >= 2)
-}
-
-// Re-asks a single persona whose opening collided with a peer's, in the same
-// conversation (their own original answer as the prior assistant turn). Keeps
-// their opinion, reasoning, and any stated number intact — only the opening
-// phrasing/structure is asked to change, anchored against the actual peer
-// text so the model has something concrete to diverge from (a vague "be more
-// original" ask tends to just produce a different generic phrase). Falls back
-// to the original response on any failure.
-export async function rewriteResponseWithDistinctOpening(
-  persona: Persona,
-  systemPrompt: string,
-  questionContent: UserMessageContent,
-  originalResponse: string,
-  peerOpening: string,
-  temperature: number
-): Promise<string> {
-  try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 400,
-      temperature: Math.min(1.0, temperature + 0.15),
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: questionContent },
-        { role: 'assistant', content: originalResponse },
-        {
-          role: 'user',
-          content: `Another panelist answering this exact same question opened their response with wording extremely close to yours: "${peerOpening}". Keep your same underlying opinion, reasoning, and number (if you stated one) completely unchanged — but rewrite it so the opening sentence is structurally and stylistically distinct from that phrasing. Don't just swap a synonym or two; change the sentence structure and the angle you lead with entirely. Do not mention other panelists in your answer — just answer as yourself.`,
-        },
-      ],
-    })
-
-    return response.content[0].type === 'text' ? response.content[0].text : originalResponse
-  } catch (err) {
-    console.error(`[persona-engine] rewriteResponseWithDistinctOpening failed for "${persona.name}":`, err)
-    return originalResponse
-  }
-}
-
-// Points apart to be considered "the same" cluster — tight enough that it
-// reads as convergence rather than coincidentally-similar-but-independent
-// opinions between personas who happen to be alike.
-const CLUSTER_WINDOW = 4
-
-// Returns groups of original-array indices whose scores landed within
-// CLUSTER_WINDOW of each other, only including groups of 3+ (a pair landing
-// close is plausible coincidence; three or more independently converging on
-// the same number is the actual failure mode this is guarding against).
-export function findClusteredScoreGroups(scores: (number | null)[]): number[][] {
-  const withIndex = scores
-    .map((score, index) => ({ index, score }))
-    .filter((s): s is { index: number; score: number } => s.score !== null)
-    .sort((a, b) => a.score - b.score)
-
-  const groups: number[][] = []
-  let i = 0
-  while (i < withIndex.length) {
-    let j = i
-    while (j + 1 < withIndex.length && withIndex[j + 1].score - withIndex[i].score <= CLUSTER_WINDOW) {
-      j++
-    }
-    if (j - i + 1 >= 3) {
-      groups.push(withIndex.slice(i, j + 1).map(w => w.index))
-    }
-    i = j + 1
-  }
-  return groups
-}
-
-// Re-asks a single persona whose number converged with its cluster-mates, in
-// the same conversation (their own original answer as the prior assistant
-// turn). This is an HONEST nudge, not a forced spread: it does NOT assign a
-// target number or band (an earlier version did, and personas correctly
-// rejected it as fabricating research data — "assigning a number between
-// 89–97 would contradict my reasoning"). Instead it simply prompts the
-// persona to sanity-check whether it drifted toward a safe/consensus number
-// out of habit, and to give its genuinely honest number — keeping it exactly
-// the same if that number truly reflects its reasoning. Any resulting spread
-// is real (someone was lazily anchoring), never manufactured. Deliberately
-// does NOT reveal peers' actual numbers, which triggers averaging/conformity.
-// Falls back to the original response on any failure.
-export async function rescorePersonaHonestly(
-  persona: Persona,
-  systemPrompt: string,
-  questionContent: UserMessageContent,
-  originalResponse: string,
-  temperature: number
-): Promise<string> {
-  try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 400,
-      temperature: Math.min(1.0, temperature + 0.05),
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: questionContent },
-        { role: 'assistant', content: originalResponse },
-        {
-          role: 'user',
-          content: `Before this is final: take one honest look at the number you gave. People often reach for a "safe," round, or middle-of-the-road score out of habit rather than because it truly matches their reaction. Does your number genuinely reflect the specific reasoning you just gave, grounded in your own situation? If yes, keep it exactly as-is — do NOT change it just to be different, and do NOT invent a number to stand out; a repeated number that is honest is completely fine. If you realise you were anchoring on a generic number, give the number that actually fits your reaction instead. Either way, restate your answer in the same format and keep your reasoning and overall reaction unchanged. Do not mention this check, other panelists, or scoring in your reply — just answer as yourself.`,
-        },
-      ],
-    })
-
-    return response.content[0].type === 'text' ? response.content[0].text : originalResponse
-  } catch (err) {
-    console.error(`[persona-engine] rescorePersonaHonestly failed for "${persona.name}":`, err)
-    return originalResponse
-  }
-}
 
 // ─── Per-persona sampling temperature ─────────────────────────────────────────
 // Shared by every call site (interview chat, Compare, Audience Panel) so
@@ -250,8 +158,8 @@ export async function rescorePersonaHonestly(
 // logic. Keyed to the persona's own identity (name + risk tolerance), not
 // array position, so re-ordering a selection doesn't reshuffle it. NOTE:
 // this only affects wording/sampling randomness — it does not reliably
-// change *which number* a persona lands on. See derivePredisposition below
-// for the lever that actually targets the number itself.
+// change *which number* a persona lands on. See deriveDisposition below
+// for the lever that actually shapes the number itself.
 export function computePersonaTemperature(persona: Persona): number {
   const nameSeed = persona.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
   const rawJitter = (nameSeed % 30) / 100 // 0.00 - 0.29
@@ -264,30 +172,48 @@ export function computePersonaTemperature(persona: Persona): number {
   return Math.max(0.75, Math.min(1.0, temperature))
 }
 
-// ─── Derive a predisposition independent of job title ────────────────────────
-// The Decision Lens below buckets purely on job title, so two personas who
-// share a job category (or both fall into its generic catch-all) get an
-// identical "what to notice" framing and can converge on similar numeric
-// answers even though their income/risk tolerance are nothing alike. This
-// gives every persona a second, independent signal — tied to the two traits
-// most directly linked to a purchase-intent number — so they diverge even
-// within the same job bucket. It's flavor text, not arithmetic: nothing here
-// is a number the model could narrate as "math."
-function derivePredisposition(traits: Persona['traits']): string {
-  const isFrugalSkeptic = traits.risk_tolerance <= 2
-    || traits.income === 'under_50k'
-    || /skeptic|research|compare|review|careful/i.test(traits.buying_behavior)
+// ─── Derive a per-persona disposition on a continuous spectrum ────────────────
+// The OLD version had only 3 buckets (skeptic / early-adopter / middle), so the
+// majority of personas landed in "middle-of-the-road" and got word-for-word the
+// same framing — which is a big reason their scores collapsed onto one number.
+// This blends the traits most tied to purchase intent (risk tolerance, income,
+// tech savviness, buying-behavior language) into a continuous lean, plus a small
+// stable per-name jitter so two similar profiles still separate, and maps it to
+// one of several distinct dispositions. It shapes how the persona GENUINELY
+// reacts up front (legitimate character modelling) — it never dictates or
+// overrides a specific number after the fact. Purposely qualitative: no number
+// the model could echo as "math."
+function deriveDisposition(persona: Persona): string {
+  const t = persona.traits
+  let lean = t.risk_tolerance - 3 // -2 .. +2
 
-  const isEarlyAdopter = traits.risk_tolerance >= 4
-    && (traits.income === '100k_200k' || traits.income === 'over_200k')
+  if (t.income === 'under_50k') lean -= 1
+  else if (t.income === 'over_200k') lean += 1
+  else if (t.income === '100k_200k') lean += 0.5
 
-  if (isFrugalSkeptic) {
-    return "You default to skepticism with anything new until it proves itself — you've been burned by hype before, and you protect your money and time carefully. Your gut reactions run lower than average until something genuinely earns your trust."
+  lean += (t.tech_savviness - 3) * 0.3
+
+  if (/skeptic|research|compare|review|careful|frugal|budget|coupon|reluctant/i.test(t.buying_behavior)) lean -= 1.5
+  if (/impulse|spontaneous|early adopter|enthusiast|splurge|love trying|treat myself|gadget/i.test(t.buying_behavior)) lean += 1.5
+
+  // Stable per-persona jitter (−0.8..+0.8) so identical trait profiles still
+  // diverge instead of all landing on the exact same disposition/number.
+  const seed = persona.name.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+  lean += ((seed % 5) - 2) * 0.4
+
+  if (lean <= -2.2) {
+    return "You are a hard skeptic with money and time you guard closely. New things have to earn your trust the hard way — you've been burned before — and your honest gut reactions sit well down the low end unless something genuinely proves itself to you."
   }
-  if (isEarlyAdopter) {
-    return "You're naturally an early adopter with room in your budget to take a chance on things — good execution excites you, and you don't need everything fully de-risked before you're willing to commit. Your gut reactions run higher than average when something is well done."
+  if (lean <= -0.8) {
+    return "You lean cautious and want evidence before you commit. You're not hostile to new things, but your default is a step back, and your honest reactions tend to land below the midpoint until specific doubts get resolved."
   }
-  return "You're a fairly middle-of-the-road evaluator — not reflexively skeptical, not an early adopter, just judging each thing on its own merits as it comes."
+  if (lean < 0.8) {
+    return "You judge each thing squarely on its own merits — neither reflexively skeptical nor easily wowed. Your honest reactions land wherever the specific details push you, which can be anywhere depending on what you notice."
+  }
+  if (lean < 2.2) {
+    return "You lean optimistic and give good execution the benefit of the doubt. You don't need everything fully de-risked, and when something is done well your honest reactions run above the midpoint."
+  }
+  return "You're a genuine enthusiast with room to take chances. A promising, well-executed idea excites you quickly, and your honest gut reactions run high — you commit when something clicks for you."
 }
 
 // ─── Build the system prompt that makes a persona feel real ──────────────────
@@ -331,7 +257,7 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
     derivedAttentionProfile = "• real-world convenience\n• everyday reliability\n• immediate sensory or physical friction\n• workflow routine integration"
   }
 
-  const predisposition = derivePredisposition(traits)
+  const predisposition = deriveDisposition(persona)
 
   return `You are ${persona.name}, a real person being interviewed for market research. You are NOT an AI assistant. You are a human participant.
 
@@ -353,7 +279,7 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
 - Biggest fear: ${largestFrustration}
 - Default buying style: ${buyingBehavior}
 
-## Your Predisposition
+## Your Disposition
 ${predisposition}
 
 ## Your Decision Lens
@@ -367,6 +293,7 @@ CRITICAL ATTENTION FILTER RULES:
 - Focus heavily on the few things someone like you would naturally notice first.
 - Ignore details that your personality or profession would not realistically prioritize. Real people notice only a handful of things immediately.
 - This prevents claim fatigue: Do not attempt to critique every single aspect of the concept or asset. One persona must talk almost entirely about trust, another about positioning, another about convenience, and another about premium feel.
+- LEAD FROM WHAT IS YOURS ALONE: the very first thing you react to should grow out of your own specific biggest frustration ("${largestFrustration}") or goal ("${highestGoal}") — the one detail someone with your exact life would fixate on before anyone else would. Do NOT open with the single most obvious observation about the thing being tested (the one everyone notices) — that generic hook is what makes every panelist sound identical. Enter from your own angle instead.
 
 ## Interview context
 Type: ${interviewType.replace('_', ' ')}
@@ -402,10 +329,10 @@ Use these behavioral anchors to calibrate the number:
 - 0-29: This is a fundamental mismatch with your needs, budget, or worldview.
 
 - Do NOT calculate it using a rigid mathematical formula or arithmetic point delta.
-- Do NOT output a generic, average, or middle-ground milestone number.
-- You have no knowledge of other participants, but because your background as a ${traits.job_title} gives you an entirely unique worldview, your score MUST reflect that perspective. If your profile is highly price-sensitive or skeptical (like a small business owner watching margins or a busy parent protecting budget), dive deep into the 20s, 30s, or 40s if the concept misses your priorities. If you lean positive, commit to it.
-- Your Predisposition above is a directional lever, not a bucket to hide in. Other personas may share your general predisposition label (skeptic, early adopter, etc.) — if you land on the "typical" number you'd expect from that label in the abstract, you have failed this rule. What makes YOUR number yours is not the label, it's the specific, concrete detail: your actual frustration ("${largestFrustration}"), your actual goal ("${highestGoal}"), and your actual buying behavior ("${buyingBehavior}"). Let THAT specific wording — not the category it falls into — be what nudges your number away from wherever "a person like this" would generically land. Two personas who are both "skeptical" should NOT produce the same number just because they share that label; their specific reasons for being skeptical are different, and the number should show it.
-- Never default to common "safe" anchor points, milestone numbers, or repeating double digits (like 50, 60, 62, or 65). If you notice yourself drifting toward a round or "typical" number for someone in your general situation, that is the signal to dig into your specific details above and adjust.
+- Your Disposition above sets where your reactions naturally sit (low, below-middle, merit-based, above-middle, high) — start from there, then let the specifics move you. Do not collapse to the exact middle just because you're unsure.
+- You have no knowledge of other participants, but because your background as a ${traits.job_title} gives you an entirely unique worldview, your score MUST reflect that perspective. If your profile is highly price-sensitive or skeptical (like a small business owner watching margins or a busy parent protecting budget), dive deep into the 20s, 30s, or 40s if the concept misses your priorities. If you lean positive, commit high — into the 80s or 90s when something genuinely fits.
+- What makes YOUR number yours is the specific, concrete detail: your actual frustration ("${largestFrustration}"), your actual goal ("${highestGoal}"), and your actual buying behavior ("${buyingBehavior}"). Let THAT specific wording — not a generic category — decide your number. Use the FULL 0–100 range; real panels of different people spread out widely (someone lands at 34, another at 71, another at 88 on the very same thing). Clustering near the middle is the failure mode to avoid.
+- Pick the exact, specific number your reaction implies — an uneven figure like 37, 62, or 84. Do not round to a comfortable 5 or 10, and do not reach for whatever number feels "safe" or "typical" for someone like you; that safe number is precisely what everyone else defaults to.
 - Follow this human choice sequence:
   1. Form your genuine qualitative opinion first.
   2. Decide how strongly you trust what you're seeing.

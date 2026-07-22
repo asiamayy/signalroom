@@ -4,14 +4,9 @@ import {
   buildPersonaSystemPrompt,
   buildUserMessageContent,
   computePersonaTemperature,
-  extractLeadingScore,
-  stripScoreLine,
   questionRequestsScore,
-  SCORE_FORMAT_INSTRUCTION,
-  findClusteredScoreGroups,
-  rescorePersonaHonestly,
-  findDuplicateOpeningGroups,
-  rewriteResponseWithDistinctOpening,
+  buildStructuredResponseInstruction,
+  parseStructuredResponse,
 } from '@/lib/anthropic/persona-engine'
 import { quoteInText } from '@/lib/utils/quotes'
 import Anthropic from '@anthropic-ai/sdk'
@@ -60,69 +55,37 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Enter a question to ask your audience' }, { status: 400 })
   }
 
-  const questionContent = buildUserMessageContent(question ?? '', image ?? null, imageMediaType)
+  // Everything past here does real LLM work — wrap it so any failure returns a
+  // JSON error the client can show, instead of an unhandled 500 that arrives as
+  // HTML and surfaces to the user as a blank "Something went wrong."
+  try {
+    const questionContent = buildUserMessageContent(question ?? '', image ?? null, imageMediaType)
 
-  // When the question asks for a score, force a reliable "Confidence: <N>"
-  // first line so the number is guaranteed present and parseable — both for
-  // the UI ring and for the declustering pass, which is a no-op if scores
-  // can't be extracted.
-  const wantsScore = questionRequestsScore(question ?? '')
+    const wantsScore = questionRequestsScore(question ?? '')
 
-  // The panel framing plus, only when a score was requested, the strict score
-  // format. Kept as one string so every call site (initial + rescore +
-  // rewrite) stays identical.
-  const panelInstruction = `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`
-    + (wantsScore ? SCORE_FORMAT_INSTRUCTION : '')
+    // Panel framing appended to each persona's own system prompt.
+    const panelInstruction = `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`
 
-  // Load all selected personas
-  const { data: personas, error } = await supabase
-    .from('personas')
-    .select('*')
-    .in('id', persona_ids)
-    .eq('user_id', user.id)
+    // Load all selected personas
+    const { data: personas, error } = await supabase
+      .from('personas')
+      .select('*')
+      .in('id', persona_ids)
+      .eq('user_id', user.id)
 
-  if (error || !personas?.length) {
-    return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
-  }
+    if (error || !personas?.length) {
+      return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
+    }
 
-  // Run all personas in parallel — single question, single response each,
-  // each with its own persona-identity-based temperature (not array
-  // position) — same helper interviews use, so all three surfaces are
-  // consistent.
-  const responses = await Promise.all(
-    personas.map(async (persona) => {
-      try {
-        const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '')
-
-        const response = await client.messages.create({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 400,
-          temperature: computePersonaTemperature(persona),
-          system: systemPrompt + panelInstruction,
-          messages: [{ role: 'user', content: questionContent }],
-        })
-
-        const text = response.content[0].type === 'text' ? response.content[0].text : ''
-
-        // Extract sentiment from response
-        const sentimentResponse = await client.messages.create({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 100,
-          messages: [{
-            role: 'user',
-            content: `Classify the overall sentiment of this response as exactly one of: "positive", "neutral", "negative", "mixed". Return ONLY the single word, nothing else.\n\nResponse: ${text}`
-          }]
-        })
-
-        const sentimentRaw = sentimentResponse.content[0].type === 'text'
-          ? sentimentResponse.content[0].text.trim().toLowerCase()
-          : 'neutral'
-
-        const sentiment = ['positive', 'neutral', 'negative', 'mixed'].includes(sentimentRaw)
-          ? sentimentRaw as 'positive' | 'neutral' | 'negative' | 'mixed'
-          : 'neutral'
-
-        return {
+    // ONE structured call per persona returns reply + sentiment + score
+    // together (no separate sentiment-classification call, no post-hoc
+    // re-ask passes — that machinery is what made a run cost ~24 calls).
+    // Each persona uses its own identity-based temperature; diversity in the
+    // number and the wording comes from the persona's disposition/lens in the
+    // system prompt, not from correcting the output afterward.
+    const responses = await Promise.all(
+      personas.map(async (persona) => {
+        const base = {
           persona_id: persona.id,
           persona_name: persona.name,
           avatar_initials: persona.avatar_initials,
@@ -132,153 +95,58 @@ export async function POST(request: NextRequest) {
           location: persona.traits?.location ?? '',
           age: persona.traits?.age ?? null,
           industry: persona.traits?.industry ?? '',
-          response: text,
-          sentiment,
-          error: null,
         }
-      } catch (e: any) {
-        return {
-          persona_id: persona.id,
-          persona_name: persona.name,
-          avatar_initials: persona.avatar_initials,
-          avatar_color: persona.avatar_color,
-          avatar_url: persona.avatar_url,
-          job_title: persona.traits?.job_title ?? '',
-          location: persona.traits?.location ?? '',
-          age: persona.traits?.age ?? null,
-          industry: persona.traits?.industry ?? '',
-          response: null,
-          sentiment: 'neutral' as const,
-          error: e?.message ?? 'Failed to get response',
-        }
-      }
-    })
-  )
-
-  // Detect clustered numeric scores (3+ personas landing within a few points
-  // of each other) and give just those personas an honest nudge to double-
-  // check they weren't anchoring on a safe/consensus number — without ever
-  // assigning a target number. If their number was genuine it stays put (a
-  // repeated-but-honest score is fine); only real anchoring shifts. Fires
-  // only when clustering is actually detected. Sentiment is reclassified for
-  // any revised response so it doesn't go stale against the new text.
-  const scores = wantsScore
-    ? responses.map(r => r.response ? extractLeadingScore(r.response) : null)
-    : responses.map(() => null)
-  const clusterGroups = findClusteredScoreGroups(scores)
-
-  if (clusterGroups.length > 0) {
-    await Promise.all(
-      clusterGroups.flat().map(async (idx) => {
-        const persona = personas[idx]
-        const original = responses[idx]
-        if (!original.response) return
-
-        const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '') + panelInstruction
-
-        const revised = await rescorePersonaHonestly(
-          persona,
-          systemPrompt,
-          questionContent,
-          original.response,
-          computePersonaTemperature(persona)
-        )
-
-        responses[idx].response = revised
-
         try {
-          const sentimentResponse = await client.messages.create({
+          const systemPrompt =
+            buildPersonaSystemPrompt(persona, 'custom', '')
+            + panelInstruction
+            + buildStructuredResponseInstruction({ wantsScore, wantsSentiment: true })
+
+          const response = await client.messages.create({
             model: 'claude-sonnet-4-6',
-            max_tokens: 100,
-            messages: [{
-              role: 'user',
-              content: `Classify the overall sentiment of this response as exactly one of: "positive", "neutral", "negative", "mixed". Return ONLY the single word, nothing else.\n\nResponse: ${revised}`
-            }]
+            max_tokens: 500,
+            temperature: computePersonaTemperature(persona),
+            system: systemPrompt,
+            messages: [{ role: 'user', content: questionContent }],
           })
-          const sentimentRaw = sentimentResponse.content[0].type === 'text'
-            ? sentimentResponse.content[0].text.trim().toLowerCase()
-            : 'neutral'
-          if (['positive', 'neutral', 'negative', 'mixed'].includes(sentimentRaw)) {
-            responses[idx].sentiment = sentimentRaw as 'positive' | 'neutral' | 'negative' | 'mixed'
+
+          const raw = response.content[0].type === 'text' ? response.content[0].text : ''
+          const parsed = parseStructuredResponse(raw, { wantsScore, wantsSentiment: true })
+
+          return {
+            ...base,
+            response: parsed.reply,
+            sentiment: parsed.sentiment,
+            score: parsed.score,
+            error: null,
           }
-        } catch {
-          // keep original sentiment on failure
+        } catch (e: any) {
+          return {
+            ...base,
+            response: null,
+            sentiment: 'neutral' as const,
+            score: null,
+            error: e?.message ?? 'Failed to get response',
+          }
         }
       })
     )
-  }
 
-  // Detect personas whose responses opened with essentially the same wording
-  // (e.g. multiple personas independently reaching for the same generic
-  // observation) and rewrite all but one against that shared opening, so the
-  // panel doesn't read as a single voice repeated across avatars. Sentiment
-  // is reclassified for any rewritten response so it doesn't go stale.
-  const openingGroups = findDuplicateOpeningGroups(responses.map(r => r.response))
+    // Aggregate themes, executive summary, recommendations and quotes across
+    // all responses. Replies are already clean prose (no score prefix).
+    const allText = responses
+      .filter(r => r.response)
+      .map(r => `${r.persona_name} (${r.job_title}): ${r.response}`)
+      .join('\n\n')
 
-  if (openingGroups.length > 0) {
-    await Promise.all(
-      openingGroups.flatMap(group => {
-        const [anchorIdx, ...restIdx] = group
-        const peerOpening = responses[anchorIdx].response!.slice(0, 120)
-        return restIdx.map(async (idx) => {
-          const persona = personas[idx]
-          const original = responses[idx]
-          if (!original.response) return
-
-          const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '') + panelInstruction
-
-          const revised = await rewriteResponseWithDistinctOpening(
-            persona,
-            systemPrompt,
-            questionContent,
-            original.response,
-            peerOpening,
-            computePersonaTemperature(persona)
-          )
-
-          responses[idx].response = revised
-
-          try {
-            const sentimentResponse = await client.messages.create({
-              model: 'claude-sonnet-4-6',
-              max_tokens: 100,
-              messages: [{
-                role: 'user',
-                content: `Classify the overall sentiment of this response as exactly one of: "positive", "neutral", "negative", "mixed". Return ONLY the single word, nothing else.\n\nResponse: ${revised}`
-              }]
-            })
-            const sentimentRaw = sentimentResponse.content[0].type === 'text'
-              ? sentimentResponse.content[0].text.trim().toLowerCase()
-              : 'neutral'
-            if (['positive', 'neutral', 'negative', 'mixed'].includes(sentimentRaw)) {
-              responses[idx].sentiment = sentimentRaw as 'positive' | 'neutral' | 'negative' | 'mixed'
-            }
-          } catch {
-            // keep original sentiment on failure
-          }
-        })
-      })
-    )
-  }
-
-  // Aggregate themes, executive summary, recommendations and quotes across all
-  // responses. Strip the forced "Confidence: <N>" line first so the summariser
-  // never treats it as prose (and never picks it as a representative quote).
-  const displayText = (r: { response: string | null }) =>
-    r.response && wantsScore ? stripScoreLine(r.response) : (r.response ?? '')
-  const allText = responses
-    .filter(r => r.response)
-    .map(r => `${r.persona_name} (${r.job_title}): ${displayText(r)}`)
-    .join('\n\n')
-
-  // Run theme extraction and executive summary in parallel
-  const [themeResponse, summaryResponse] = await Promise.all([
-    client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 800,
-      messages: [{
-        role: 'user',
-        content: `You are analyzing responses from ${responses.length} different customer personas who were asked: "${question?.trim() || 'to react to a shared image'}"
+    // Run theme extraction and executive summary in parallel
+    const [themeResponse, summaryResponse] = await Promise.all([
+      client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 800,
+        messages: [{
+          role: 'user',
+          content: `You are analyzing responses from ${responses.length} different customer personas who were asked: "${question?.trim() || 'to react to a shared image'}"
 
 Here are their responses:
 ${allText}
@@ -291,14 +159,14 @@ Extract 3-5 key themes across all responses. For each theme return:
 
 Return ONLY a JSON array, no preamble, no markdown:
 [{"title":"...","count":0,"sentiment":"...","summary":"..."}]`
-      }]
-    }),
-    client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: `You are a senior market researcher analyzing responses from ${responses.length} customer personas who were asked: "${question?.trim() || 'to react to a shared image'}"
+        }]
+      }),
+      client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `You are a senior market researcher analyzing responses from ${responses.length} customer personas who were asked: "${question?.trim() || 'to react to a shared image'}"
 
 Responses:
 ${allText}
@@ -317,83 +185,76 @@ Return a JSON object with these exact fields:
 }
 
 Return ONLY the JSON, no preamble, no markdown.`
-      }]
+        }]
+      })
+    ])
+
+    let themes: { title: string; count: number; sentiment: string; summary: string }[] = []
+    try {
+      const raw = themeResponse.content[0].type === 'text' ? themeResponse.content[0].text : '[]'
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      themes = JSON.parse(cleaned)
+    } catch {
+      themes = []
+    }
+
+    let summary = {
+      overall_recommendation: '',
+      top_opportunity: '',
+      biggest_risk: '',
+      likelihood_of_purchase: 0,
+      recommended_actions: [] as string[],
+      most_representative_quote: '',
+      most_representative_quote_persona: '',
+      biggest_objection_quote: '',
+      biggest_objection_quote_persona: '',
+      completed_in_seconds: 0,
+    }
+    try {
+      const raw = summaryResponse.content[0].type === 'text' ? summaryResponse.content[0].text : '{}'
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      summary = { ...summary, ...JSON.parse(cleaned) }
+    } catch {
+      // keep defaults
+    }
+
+    // Quotes labeled as verbatim must actually appear in the panel's responses;
+    // the UI hides an empty quote card, so blanking a failed quote is safe.
+    if (!quoteInText(summary.most_representative_quote, allText)) {
+      summary.most_representative_quote = ''
+      summary.most_representative_quote_persona = ''
+    }
+    if (!quoteInText(summary.biggest_objection_quote, allText)) {
+      summary.biggest_objection_quote = ''
+      summary.biggest_objection_quote_persona = ''
+    }
+
+    // Measured, not modeled — overrides anything the LLM might have invented
+    summary.completed_in_seconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000))
+
+    // Compute sentiment distribution
+    const sentimentCounts = responses.reduce((acc, r) => {
+      acc[r.sentiment] = (acc[r.sentiment] ?? 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    // Compute consensus score (% who share the majority sentiment)
+    const maxSentimentCount = Math.max(...Object.values(sentimentCounts))
+    const consensusScore = Math.round((maxSentimentCount / responses.length) * 100)
+
+    return NextResponse.json({
+      data: {
+        responses,
+        themes,
+        sentiment_distribution: sentimentCounts,
+        consensus_score: consensusScore,
+        total_personas: responses.length,
+        question,
+        summary,
+      }
     })
-  ])
-
-  let themes: { title: string; count: number; sentiment: string; summary: string }[] = []
-  try {
-    const raw = themeResponse.content[0].type === 'text' ? themeResponse.content[0].text : '[]'
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    themes = JSON.parse(cleaned)
-  } catch {
-    themes = []
+  } catch (e: any) {
+    console.error('[audience-panel] request failed:', e)
+    return NextResponse.json({ error: 'The panel failed to complete. Please try again.' }, { status: 500 })
   }
-
-  let summary = {
-    overall_recommendation: '',
-    top_opportunity: '',
-    biggest_risk: '',
-    likelihood_of_purchase: 0,
-    recommended_actions: [] as string[],
-    most_representative_quote: '',
-    most_representative_quote_persona: '',
-    biggest_objection_quote: '',
-    biggest_objection_quote_persona: '',
-    completed_in_seconds: 0,
-  }
-  try {
-    const raw = summaryResponse.content[0].type === 'text' ? summaryResponse.content[0].text : '{}'
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    summary = { ...summary, ...JSON.parse(cleaned) }
-  } catch {
-    // keep defaults
-  }
-
-  // Quotes labeled as verbatim must actually appear in the panel's responses;
-  // the UI hides an empty quote card, so blanking a failed quote is safe.
-  if (!quoteInText(summary.most_representative_quote, allText)) {
-    summary.most_representative_quote = ''
-    summary.most_representative_quote_persona = ''
-  }
-  if (!quoteInText(summary.biggest_objection_quote, allText)) {
-    summary.biggest_objection_quote = ''
-    summary.biggest_objection_quote_persona = ''
-  }
-
-  // Measured, not modeled — overrides anything the LLM might have invented
-  summary.completed_in_seconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000))
-
-  // Compute sentiment distribution
-  const sentimentCounts = responses.reduce((acc, r) => {
-    acc[r.sentiment] = (acc[r.sentiment] ?? 0) + 1
-    return acc
-  }, {} as Record<string, number>)
-
-  // Compute consensus score (% who share the majority sentiment)
-  const maxSentimentCount = Math.max(...Object.values(sentimentCounts))
-  const consensusScore = Math.round((maxSentimentCount / responses.length) * 100)
-
-  // Surface the score as its own field and hand the client already-clean prose
-  // (the "Confidence: <N>" line stripped) so the number isn't shown twice.
-  const responsesWithScores = responses.map(r => {
-    if (!r.response || !wantsScore) return { ...r, score: null }
-    return {
-      ...r,
-      score: extractLeadingScore(r.response),
-      response: stripScoreLine(r.response),
-    }
-  })
-
-  return NextResponse.json({
-    data: {
-      responses: responsesWithScores,
-      themes,
-      sentiment_distribution: sentimentCounts,
-      consensus_score: consensusScore,
-      total_personas: responses.length,
-      question,
-      summary,
-    }
-  })
 }
