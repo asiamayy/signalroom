@@ -9,8 +9,7 @@ import {
   questionRequestsScore,
   SCORE_FORMAT_INSTRUCTION,
   findClusteredScoreGroups,
-  assignDiversificationBands,
-  rescorePersonaWithBand,
+  rescorePersonaHonestly,
   findDuplicateOpeningGroups,
   rewriteResponseWithDistinctOpening,
 } from '@/lib/anthropic/persona-engine'
@@ -157,13 +156,12 @@ export async function POST(request: NextRequest) {
   )
 
   // Detect clustered numeric scores (3+ personas landing within a few points
-  // of each other) and re-ask just those personas with a non-overlapping
-  // target band — centered on the cluster's own average and ordered by real
-  // trait differences, not an arbitrary absolute scale — so the fix stays
-  // "local" to what each persona already said instead of asking anyone to
-  // flip their actual reaction. Only fires when clustering is actually
-  // detected — a normal run pays no extra cost. Sentiment is reclassified
-  // for any revised response so it doesn't go stale against the new text.
+  // of each other) and give just those personas an honest nudge to double-
+  // check they weren't anchoring on a safe/consensus number — without ever
+  // assigning a target number. If their number was genuine it stays put (a
+  // repeated-but-honest score is fine); only real anchoring shifts. Fires
+  // only when clustering is actually detected. Sentiment is reclassified for
+  // any revised response so it doesn't go stale against the new text.
   const scores = wantsScore
     ? responses.map(r => r.response ? extractLeadingScore(r.response) : null)
     : responses.map(() => null)
@@ -171,45 +169,41 @@ export async function POST(request: NextRequest) {
 
   if (clusterGroups.length > 0) {
     await Promise.all(
-      clusterGroups.flatMap(group => {
-        const bands = assignDiversificationBands(group, scores, personas)
-        return bands.map(async ({ index: idx, min, max }) => {
-          const persona = personas[idx]
-          const original = responses[idx]
-          if (!original.response) return
+      clusterGroups.flat().map(async (idx) => {
+        const persona = personas[idx]
+        const original = responses[idx]
+        if (!original.response) return
 
-          const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '') + panelInstruction
+        const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '') + panelInstruction
 
-          const revised = await rescorePersonaWithBand(
-            persona,
-            systemPrompt,
-            questionContent,
-            original.response,
-            { min, max },
-            computePersonaTemperature(persona)
-          )
+        const revised = await rescorePersonaHonestly(
+          persona,
+          systemPrompt,
+          questionContent,
+          original.response,
+          computePersonaTemperature(persona)
+        )
 
-          responses[idx].response = revised
+        responses[idx].response = revised
 
-          try {
-            const sentimentResponse = await client.messages.create({
-              model: 'claude-sonnet-4-6',
-              max_tokens: 100,
-              messages: [{
-                role: 'user',
-                content: `Classify the overall sentiment of this response as exactly one of: "positive", "neutral", "negative", "mixed". Return ONLY the single word, nothing else.\n\nResponse: ${revised}`
-              }]
-            })
-            const sentimentRaw = sentimentResponse.content[0].type === 'text'
-              ? sentimentResponse.content[0].text.trim().toLowerCase()
-              : 'neutral'
-            if (['positive', 'neutral', 'negative', 'mixed'].includes(sentimentRaw)) {
-              responses[idx].sentiment = sentimentRaw as 'positive' | 'neutral' | 'negative' | 'mixed'
-            }
-          } catch {
-            // keep original sentiment on failure
+        try {
+          const sentimentResponse = await client.messages.create({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 100,
+            messages: [{
+              role: 'user',
+              content: `Classify the overall sentiment of this response as exactly one of: "positive", "neutral", "negative", "mixed". Return ONLY the single word, nothing else.\n\nResponse: ${revised}`
+            }]
+          })
+          const sentimentRaw = sentimentResponse.content[0].type === 'text'
+            ? sentimentResponse.content[0].text.trim().toLowerCase()
+            : 'neutral'
+          if (['positive', 'neutral', 'negative', 'mixed'].includes(sentimentRaw)) {
+            responses[idx].sentiment = sentimentRaw as 'positive' | 'neutral' | 'negative' | 'mixed'
           }
-        })
+        } catch {
+          // keep original sentiment on failure
+        }
       })
     )
   }

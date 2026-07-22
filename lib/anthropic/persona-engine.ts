@@ -204,127 +204,44 @@ export function findClusteredScoreGroups(scores: (number | null)[]): number[][] 
 
 // Re-asks a single persona whose number converged with its cluster-mates, in
 // the same conversation (their own original answer as the prior assistant
-// turn). Deliberately does NOT reveal what peers actually said — telling a
-// model other people's numbers triggers anchoring/conformity, causing it to
-// reconcile toward a consensus (in testing, revealing peer scores made
-// personas converge on the average of those scores instead of diverging —
-// the opposite of the intent). Instead, take the persona's own number off
-// the table and force it to re-derive one from its own specific traits, with
-// nothing external to average toward. Falls back to the original response on
-// any failure.
-// Ranks personas within a detected cluster by a continuous, trait-derived
-// signal (risk tolerance, income, buying-behavior language) — used only to
-// ORDER them relative to each other so band assignment is meaningful, not
-// arbitrary. This is not a prediction of the actual number.
-function computeOptimismRank(traits: Persona['traits']): number {
-  const incomeRank: Record<string, number> = { under_50k: 0, '50k_100k': 10, '100k_200k': 20, over_200k: 30 }
-  let rank = traits.risk_tolerance * 10 + (incomeRank[traits.income] ?? 10)
-  if (/skeptic|research|compare|review|careful/i.test(traits.buying_behavior)) rank -= 15
-  return rank
-}
-
-export interface DiversificationBand {
-  index: number
-  min: number
-  max: number
-}
-
-// Given a cluster of array indices (from findClusteredScoreGroups) with
-// their original scores and personas, compute a non-overlapping target band
-// per persona. The window is widened around the CLUSTER'S OWN average and
-// split into per-persona sub-bands ordered by computeOptimismRank — this
-// keeps the ask "local" to what each persona already said (spreading out an
-// authentic tight cluster) instead of asking anyone to flip their actual
-// reaction to hit an arbitrary absolute number unrelated to what they said.
-const PER_PERSONA_BAND_WIDTH = 8
-
-export function assignDiversificationBands(
-  group: number[],
-  scores: (number | null)[],
-  personas: Persona[]
-): DiversificationBand[] {
-  const avg = group.reduce((sum, i) => sum + scores[i]!, 0) / group.length
-  const totalWidth = PER_PERSONA_BAND_WIDTH * group.length
-  const rangeMax = Math.min(100, Math.round(avg + totalWidth / 2))
-  const rangeMin = Math.max(0, rangeMax - totalWidth)
-
-  const ranked = [...group].sort(
-    (a, b) => computeOptimismRank(personas[a].traits) - computeOptimismRank(personas[b].traits)
-  )
-
-  return ranked.map((idx, order) => ({
-    index: idx,
-    min: Math.round(rangeMin + order * PER_PERSONA_BAND_WIDTH),
-    max: Math.round(Math.min(100, rangeMin + (order + 1) * PER_PERSONA_BAND_WIDTH)),
-  }))
-}
-
-// Re-asks a single persona whose number converged with its cluster-mates, in
-// the same conversation (their own original answer as the prior assistant
-// turn). Gives an explicit, non-overlapping target BAND — derived from real
-// trait differences and centered on the cluster's own average, not an
-// arbitrary absolute scale — rather than a vague "pick something different"
-// ask, which testing showed still collapsed back into a smaller number of
-// shared "modes." Explicitly does NOT ask the persona to change its actual
-// reaction/sentiment — only to be more precise about where within that
-// reaction the number lands, so the quality/authenticity of the qualitative
-// reasoning is unaffected. Falls back to the original response on failure.
-export async function rescorePersonaWithBand(
+// turn). This is an HONEST nudge, not a forced spread: it does NOT assign a
+// target number or band (an earlier version did, and personas correctly
+// rejected it as fabricating research data — "assigning a number between
+// 89–97 would contradict my reasoning"). Instead it simply prompts the
+// persona to sanity-check whether it drifted toward a safe/consensus number
+// out of habit, and to give its genuinely honest number — keeping it exactly
+// the same if that number truly reflects its reasoning. Any resulting spread
+// is real (someone was lazily anchoring), never manufactured. Deliberately
+// does NOT reveal peers' actual numbers, which triggers averaging/conformity.
+// Falls back to the original response on any failure.
+export async function rescorePersonaHonestly(
   persona: Persona,
   systemPrompt: string,
   questionContent: UserMessageContent,
   originalResponse: string,
-  band: { min: number; max: number },
   temperature: number
 ): Promise<string> {
-  const conversation: { role: 'user' | 'assistant'; content: UserMessageContent | string }[] = [
-    { role: 'user', content: questionContent },
-    { role: 'assistant', content: originalResponse },
-  ]
+  try {
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
+      temperature: Math.min(1.0, temperature + 0.05),
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: questionContent },
+        { role: 'assistant', content: originalResponse },
+        {
+          role: 'user',
+          content: `Before this is final: take one honest look at the number you gave. People often reach for a "safe," round, or middle-of-the-road score out of habit rather than because it truly matches their reaction. Does your number genuinely reflect the specific reasoning you just gave, grounded in your own situation? If yes, keep it exactly as-is — do NOT change it just to be different, and do NOT invent a number to stand out; a repeated number that is honest is completely fine. If you realise you were anchoring on a generic number, give the number that actually fits your reaction instead. Either way, restate your answer in the same format and keep your reasoning and overall reaction unchanged. Do not mention this check, other panelists, or scoring in your reply — just answer as yourself.`,
+        },
+      ],
+    })
 
-  const asks = [
-    `Several other independent panelists answering this exact same question converged on a very similar number to yours. Keep your overall reaction exactly the same — do not become more positive or more negative than you actually are — but restate your answer with a number specifically between ${band.min} and ${band.max}. That range reflects your relative position among this group given your own specific situation; pick whichever number within it feels most honest to the reasoning you already gave. State the new number first (it must be between ${band.min} and ${band.max}), then explain briefly, describing behavior rather than trait labels or ratings. Do not mention other panelists, bands, or ranges in your answer — just answer as yourself.`,
-    `That restated number still wasn't strictly between ${band.min} and ${band.max}. State a number strictly within that range first — this is a hard requirement — then your one-sentence reason.`,
-  ]
-
-  // Two attempts: the model occasionally ignores the band on the first try
-  // (or the request itself transiently fails), which — before this — silently
-  // fell back to the original, still-converged response with no signal that
-  // anything had gone wrong. Verify the number actually landed in-band before
-  // accepting it; if not, push back once and try again. Any failure is
-  // logged instead of swallowed.
-  let lastText: string | null = null
-
-  for (let attempt = 0; attempt < asks.length; attempt++) {
-    conversation.push({ role: 'user', content: asks[attempt] })
-
-    try {
-      const response = await client.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 400,
-        temperature: Math.min(1.0, temperature + 0.1),
-        system: systemPrompt,
-        messages: conversation as any,
-      })
-
-      const text = response.content[0].type === 'text' ? response.content[0].text : null
-      if (!text) continue
-
-      const gotScore = extractLeadingScore(text)
-      if (gotScore !== null && gotScore >= band.min && gotScore <= band.max) {
-        return text
-      }
-
-      lastText = text
-      conversation.push({ role: 'assistant', content: text })
-    } catch (err) {
-      console.error(`[persona-engine] rescorePersonaWithBand failed for "${persona.name}" (attempt ${attempt + 1}/${asks.length}):`, err)
-    }
+    return response.content[0].type === 'text' ? response.content[0].text : originalResponse
+  } catch (err) {
+    console.error(`[persona-engine] rescorePersonaHonestly failed for "${persona.name}":`, err)
+    return originalResponse
   }
-
-  // Best effort — a fresh generation that missed the exact band still beats
-  // silently keeping the original, still-converged response.
-  return lastText ?? originalResponse
 }
 
 // ─── Per-persona sampling temperature ─────────────────────────────────────────
