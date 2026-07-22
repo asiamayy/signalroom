@@ -6,6 +6,7 @@ import { GitCompare, Loader2, Radar, Compass, CheckSquare, Square, ImagePlus, X 
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
 import { Dropdown } from '@/components/ui/Dropdown'
+import { ScoreRing } from '@/components/ui/ScoreRing'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW, INTERVIEW_TYPE_LABELS, stripLeadingScore } from '@/lib/utils'
 import type { Persona, InterviewType } from '@/types'
@@ -25,15 +26,6 @@ interface CompareResult {
   error: string | null
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  return (
-    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold flex-shrink-0" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimaryContainer }}>
-      {score}
-      <span className="text-[10px] font-semibold uppercase tracking-wider opacity-70">Confidence</span>
-    </span>
-  )
-}
-
 function CompareResponseModalBody({ result }: { result: CompareResult }) {
   return (
     <>
@@ -43,7 +35,7 @@ function CompareResponseModalBody({ result }: { result: CompareResult }) {
           <p className="text-base font-semibold text-neutral-900 truncate">{result.persona_name}</p>
           <p className="text-sm text-neutral-500">{result.job_title}{result.location ? ` · ${result.location}` : ''}</p>
         </div>
-        {result.score !== null && <ScoreBadge score={result.score} />}
+        {result.score !== null && <ScoreRing score={result.score} size={56} />}
       </div>
       {result.error ? (
         <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{result.error}</p>
@@ -261,7 +253,7 @@ export default function ComparePage() {
                         </div>
                       </div>
                     </div>
-                    {result.score !== null && <ScoreBadge score={result.score} />}
+                    {result.score !== null && <ScoreRing score={result.score} size={48} />}
                   </div>
                   {result.error ? (
                     <p className="text-sm rounded-lg p-3" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{result.error}</p>

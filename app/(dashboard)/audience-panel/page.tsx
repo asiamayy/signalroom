@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves, Terminal, ArrowRight, CheckSquare, Square, ImagePlus, X } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
+import { ScoreRing } from '@/components/ui/ScoreRing'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW, stripLeadingScore } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -67,14 +68,6 @@ const SENTIMENT_COLORS = {
   neutral: { bg: HOME_COLORS.surfaceContainerHigh, text: HOME_COLORS.onSurfaceVariant, bar: HOME_COLORS.outline, border: HOME_COLORS.outlineVariant },
   negative: { bg: '#FFDAD6', text: HOME_COLORS.error, bar: HOME_COLORS.error, border: '#FFB4AB' },
   mixed: { bg: '#FEF3C7', text: '#B45309', bar: '#D97706', border: '#FDE68A' },
-}
-
-function ScoreBadge({ score }: { score: number }) {
-  return (
-    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>
-      {score}
-    </span>
-  )
 }
 
 function SentimentBadge({ sentiment }: { sentiment: string }) {
@@ -189,11 +182,11 @@ function ResponseModalContent({ response }: { response: PanelResponse }) {
         <div className="min-w-0 flex-1">
           <p className="text-base font-semibold text-neutral-900 truncate">{response.persona_name}</p>
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {response.score !== null && <ScoreBadge score={response.score} />}
             {response.job_title && <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>{response.job_title}</span>}
             <SentimentBadge sentiment={response.sentiment} />
           </div>
         </div>
+        {response.score !== null && <ScoreRing score={response.score} size={52} />}
       </div>
       {response.error ? (
         <p className="text-sm text-red-500">{response.error}</p>
@@ -585,12 +578,12 @@ export default function AudiencePanelPage() {
                       style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
                     >
                       <div className="flex items-center gap-2.5 mb-3">
+                        {r.score !== null && <ScoreRing score={r.score} size={38} />}
                         <PersonaAvatar avatarUrl={r.avatar_url} avatarInitials={r.avatar_initials} avatarColor={r.avatar_color} name={r.persona_name} size="sm" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{r.persona_name}</p>
                           {r.job_title && <p className="text-[10px] uppercase truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{r.job_title}</p>}
                         </div>
-                        {r.score !== null && <ScoreBadge score={r.score} />}
                         <SentimentBadge sentiment={r.sentiment} />
                       </div>
                       {r.error ? (
