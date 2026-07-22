@@ -5,6 +5,9 @@ import {
   buildUserMessageContent,
   computePersonaTemperature,
   extractLeadingScore,
+  stripScoreLine,
+  questionRequestsScore,
+  SCORE_FORMAT_INSTRUCTION,
   findClusteredScoreGroups,
   assignDiversificationBands,
   rescorePersonaWithBand,
@@ -45,6 +48,13 @@ export async function POST(request: NextRequest) {
 
   const questionContent = buildUserMessageContent(question ?? '', image ?? null, imageMediaType)
 
+  // When the question asks for a score, force a reliable "Confidence: <N>"
+  // first line so the number is guaranteed present and parseable — both for
+  // the UI ring and for the declustering pass, which is a no-op if scores
+  // can't be extracted.
+  const wantsScore = questionRequestsScore(question ?? '')
+  const scoreInstruction = wantsScore ? SCORE_FORMAT_INSTRUCTION : ''
+
   // Load all selected personas
   const { data: personas, error } = await supabase
     .from('personas')
@@ -66,7 +76,7 @@ export async function POST(request: NextRequest) {
           persona,
           interview_type ?? 'concept_testing',
           context ?? ''
-        )
+        ) + scoreInstruction
 
         const response = await client.messages.create({
           model: 'claude-sonnet-4-6',
@@ -112,7 +122,9 @@ export async function POST(request: NextRequest) {
   // "local" to what each persona already said instead of asking anyone to
   // flip their actual reaction. Only fires when clustering is actually
   // detected — a normal run pays no extra cost.
-  const scores = results.map(r => r.response ? extractLeadingScore(r.response) : null)
+  const scores = wantsScore
+    ? results.map(r => r.response ? extractLeadingScore(r.response) : null)
+    : results.map(() => null)
   const clusterGroups = findClusteredScoreGroups(scores)
 
   if (clusterGroups.length > 0) {
@@ -128,7 +140,7 @@ export async function POST(request: NextRequest) {
             persona,
             interview_type ?? 'concept_testing',
             context ?? ''
-          )
+          ) + scoreInstruction
 
           const revised = await rescorePersonaWithBand(
             persona,
@@ -165,7 +177,7 @@ export async function POST(request: NextRequest) {
             persona,
             interview_type ?? 'concept_testing',
             context ?? ''
-          )
+          ) + scoreInstruction
 
           const revised = await rewriteResponseWithDistinctOpening(
             persona,
@@ -182,10 +194,16 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const withScores = results.map(r => ({
-    ...r,
-    score: r.response ? extractLeadingScore(r.response) : null,
-  }))
+  // Surface the score as its own field and hand the client already-clean prose
+  // (the "Confidence: <N>" line stripped) so the number isn't shown twice.
+  const withScores = results.map(r => {
+    if (!r.response || !wantsScore) return { ...r, score: null }
+    return {
+      ...r,
+      score: extractLeadingScore(r.response),
+      response: stripScoreLine(r.response),
+    }
+  })
 
   return NextResponse.json({ data: withScores })
 }

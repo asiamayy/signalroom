@@ -5,6 +5,9 @@ import {
   buildUserMessageContent,
   computePersonaTemperature,
   extractLeadingScore,
+  stripScoreLine,
+  questionRequestsScore,
+  SCORE_FORMAT_INSTRUCTION,
   findClusteredScoreGroups,
   assignDiversificationBands,
   rescorePersonaWithBand,
@@ -60,6 +63,18 @@ export async function POST(request: NextRequest) {
 
   const questionContent = buildUserMessageContent(question ?? '', image ?? null, imageMediaType)
 
+  // When the question asks for a score, force a reliable "Confidence: <N>"
+  // first line so the number is guaranteed present and parseable — both for
+  // the UI ring and for the declustering pass, which is a no-op if scores
+  // can't be extracted.
+  const wantsScore = questionRequestsScore(question ?? '')
+
+  // The panel framing plus, only when a score was requested, the strict score
+  // format. Kept as one string so every call site (initial + rescore +
+  // rewrite) stays identical.
+  const panelInstruction = `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`
+    + (wantsScore ? SCORE_FORMAT_INSTRUCTION : '')
+
   // Load all selected personas
   const { data: personas, error } = await supabase
     .from('personas')
@@ -84,7 +99,7 @@ export async function POST(request: NextRequest) {
           model: 'claude-sonnet-4-6',
           max_tokens: 400,
           temperature: computePersonaTemperature(persona),
-          system: systemPrompt + `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`,
+          system: systemPrompt + panelInstruction,
           messages: [{ role: 'user', content: questionContent }],
         })
 
@@ -149,7 +164,9 @@ export async function POST(request: NextRequest) {
   // flip their actual reaction. Only fires when clustering is actually
   // detected — a normal run pays no extra cost. Sentiment is reclassified
   // for any revised response so it doesn't go stale against the new text.
-  const scores = responses.map(r => r.response ? extractLeadingScore(r.response) : null)
+  const scores = wantsScore
+    ? responses.map(r => r.response ? extractLeadingScore(r.response) : null)
+    : responses.map(() => null)
   const clusterGroups = findClusteredScoreGroups(scores)
 
   if (clusterGroups.length > 0) {
@@ -161,8 +178,7 @@ export async function POST(request: NextRequest) {
           const original = responses[idx]
           if (!original.response) return
 
-          const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '')
-            + `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`
+          const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '') + panelInstruction
 
           const revised = await rescorePersonaWithBand(
             persona,
@@ -215,8 +231,7 @@ export async function POST(request: NextRequest) {
           const original = responses[idx]
           if (!original.response) return
 
-          const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '')
-            + `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`
+          const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '') + panelInstruction
 
           const revised = await rewriteResponseWithDistinctOpening(
             persona,
@@ -252,10 +267,14 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Aggregate themes, executive summary, recommendations and quotes across all responses
+  // Aggregate themes, executive summary, recommendations and quotes across all
+  // responses. Strip the forced "Confidence: <N>" line first so the summariser
+  // never treats it as prose (and never picks it as a representative quote).
+  const displayText = (r: { response: string | null }) =>
+    r.response && wantsScore ? stripScoreLine(r.response) : (r.response ?? '')
   const allText = responses
     .filter(r => r.response)
-    .map(r => `${r.persona_name} (${r.job_title}): ${r.response}`)
+    .map(r => `${r.persona_name} (${r.job_title}): ${displayText(r)}`)
     .join('\n\n')
 
   // Run theme extraction and executive summary in parallel
@@ -361,10 +380,16 @@ Return ONLY the JSON, no preamble, no markdown.`
   const maxSentimentCount = Math.max(...Object.values(sentimentCounts))
   const consensusScore = Math.round((maxSentimentCount / responses.length) * 100)
 
-  const responsesWithScores = responses.map(r => ({
-    ...r,
-    score: r.response ? extractLeadingScore(r.response) : null,
-  }))
+  // Surface the score as its own field and hand the client already-clean prose
+  // (the "Confidence: <N>" line stripped) so the number isn't shown twice.
+  const responsesWithScores = responses.map(r => {
+    if (!r.response || !wantsScore) return { ...r, score: null }
+    return {
+      ...r,
+      score: extractLeadingScore(r.response),
+      response: stripScoreLine(r.response),
+    }
+  })
 
   return NextResponse.json({
     data: {

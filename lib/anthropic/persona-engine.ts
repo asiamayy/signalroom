@@ -46,11 +46,34 @@ export type UserMessageContent = ReturnType<typeof buildUserMessageContent>
 // was said, is your number still right for you." Only fires when clustering
 // is actually detected, so it doesn't cost anything on a normal run.
 
-// The scoring rules tell personas to "state your number first," so it should
-// appear very early in the response — restricting the search window avoids
-// false positives from unrelated numbers appearing later in the text (e.g.
-// "3 different tools").
+// Whether a panel/compare question actually asks for a numeric score. When it
+// does, we force a reliable labeled score line (SCORE_FORMAT_INSTRUCTION) and
+// show the score ring; when it doesn't, personas answer normally with no
+// number. Kept generous so ordinary phrasings ("give it a score from 1-100",
+// "rate this", "on a scale of 1 to 10") are all caught.
+export function questionRequestsScore(question: string): boolean {
+  if (!question) return false
+  return /\bscore\b|\brate\b|\brating\b|\bconfidence\b|\bout of\s+\d+\b|\bscale\b|\b\d{1,3}\s*(?:-|–|—|to)\s*\d{1,3}\b/i.test(question)
+}
+
+// Appended to the system prompt only when the question asks for a score. A
+// rigid labeled first line makes the number reliably present and reliably
+// parseable — the previous approach (regex-hunting for a bare number in the
+// first 60 chars) silently failed whenever a persona opened with prose, which
+// nulled out the score AND disabled the whole declustering pass that depends
+// on those parsed scores.
+export const SCORE_FORMAT_INSTRUCTION = `\n\nOUTPUT FORMAT — STRICT: The very first line of your reply must be exactly "Confidence: <N>", where <N> is your single Confidence Score from 0 to 100 as defined above (a direct translation of your own genuine reaction — never a generic or middle-of-the-road default). Follow it with one blank line, then your normal reply. Do not repeat the number anywhere else, and do not add any other text on that first line.`
+
+// Pulls the numeric score out of a persona reply. Prefers the explicit
+// "Confidence: <N>" line we ask for; falls back to a bare leading number in
+// the first 60 chars for older/free-form replies. The narrow fallback window
+// avoids grabbing unrelated numbers later in the text (e.g. "3 different tools").
 export function extractLeadingScore(text: string): number | null {
+  const labeled = text.match(/confidence:\s*\**\s*(100|\d{1,2})\b/i)
+  if (labeled) {
+    const n = parseInt(labeled[1], 10)
+    if (Number.isFinite(n) && n >= 0 && n <= 100) return n
+  }
   const window = text.slice(0, 60)
   const match = window.match(/\b(100|[0-9]{1,2})\b/)
   if (!match) return null
@@ -68,6 +91,15 @@ export function stripLeadingScore(text: string): string {
   return match ? text.slice(match[0].length) : text
 }
 
+// Strips both the forced "Confidence: <N>" first line AND a bare "78 — "
+// leading prefix, returning clean prose for display. Idempotent and safe on
+// text that has neither. Used server-side so the client receives already-clean
+// response text alongside the separately-surfaced score.
+export function stripScoreLine(text: string): string {
+  const withoutLabel = text.replace(/^\s*\**\s*confidence:\s*\**\s*(100|\d{1,2})\b[^\n]*\r?\n+/i, '')
+  return stripLeadingScore(withoutLabel).trim()
+}
+
 // ─── Detect and correct near-identical response openings ──────────────────────
 // Same ceiling as the numeric-score problem above, and the same fix: personas
 // are generated independently in parallel, so nothing stops several of them
@@ -77,7 +109,7 @@ export function stripLeadingScore(text: string): string {
 // the same wording, and if so, rewrite just those against the one we keep as
 // the anchor. Only fires when a collision is actually detected.
 function normalizeOpening(text: string): string {
-  return stripLeadingScore(text)
+  return stripScoreLine(text)
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, '')
     .trim()
