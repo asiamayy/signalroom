@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
-  buildPersonaSystemPrompt,
   buildUserMessageContent,
-  computePersonaTemperature,
   questionRequestsScore,
-  buildStructuredResponseInstruction,
-  parseStructuredResponse,
+  buildPanelSystemPrompt,
+  parsePanelResponses,
 } from '@/lib/anthropic/persona-engine'
 import { quoteInText } from '@/lib/utils/quotes'
 import Anthropic from '@anthropic-ai/sdk'
@@ -63,9 +61,6 @@ export async function POST(request: NextRequest) {
 
     const wantsScore = questionRequestsScore(question ?? '')
 
-    // Panel framing appended to each persona's own system prompt.
-    const panelInstruction = `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`
-
     // Load all selected personas
     const { data: personas, error } = await supabase
       .from('personas')
@@ -77,60 +72,47 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
     }
 
-    // ONE structured call per persona returns reply + sentiment + score
-    // together (no separate sentiment-classification call, no post-hoc
-    // re-ask passes — that machinery is what made a run cost ~24 calls).
-    // Each persona uses its own identity-based temperature; diversity in the
-    // number and the wording comes from the persona's disposition/lens in the
-    // system prompt, not from correcting the output afterward.
-    const responses = await Promise.all(
-      personas.map(async (persona) => {
-        const base = {
-          persona_id: persona.id,
-          persona_name: persona.name,
-          avatar_initials: persona.avatar_initials,
-          avatar_color: persona.avatar_color,
-          avatar_url: persona.avatar_url,
-          job_title: persona.traits?.job_title ?? '',
-          location: persona.traits?.location ?? '',
-          age: persona.traits?.age ?? null,
-          industry: persona.traits?.industry ?? '',
-        }
-        try {
-          const systemPrompt =
-            buildPersonaSystemPrompt(persona, 'custom', '')
-            + panelInstruction
-            + buildStructuredResponseInstruction({ wantsScore, wantsSentiment: true })
+    // ONE joint call generates the whole panel. Because the model sees every
+    // persona together it can make them genuinely distinct — different opening
+    // angles, scores scattered across the range per each person's real traits —
+    // which independent per-persona calls (each blind to the others) cannot do.
+    // It's also far cheaper: one generation call instead of one per persona.
+    const panelSystem = buildPanelSystemPrompt(personas, {
+      wantsScore,
+      wantsSentiment: true,
+      interviewType: 'custom',
+      context: '',
+    })
 
-          const response = await client.messages.create({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 500,
-            temperature: computePersonaTemperature(persona),
-            system: systemPrompt,
-            messages: [{ role: 'user', content: questionContent }],
-          })
+    const generation = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: Math.min(8000, 700 + personas.length * 340),
+      temperature: 1,
+      system: panelSystem,
+      messages: [{ role: 'user', content: questionContent }],
+    })
 
-          const raw = response.content[0].type === 'text' ? response.content[0].text : ''
-          const parsed = parseStructuredResponse(raw, { wantsScore, wantsSentiment: true })
+    const rawPanel = generation.content[0].type === 'text' ? generation.content[0].text : ''
+    const parsed = parsePanelResponses(rawPanel, personas, { wantsScore, wantsSentiment: true })
 
-          return {
-            ...base,
-            response: parsed.reply,
-            sentiment: parsed.sentiment,
-            score: parsed.score,
-            error: null,
-          }
-        } catch (e: any) {
-          return {
-            ...base,
-            response: null,
-            sentiment: 'neutral' as const,
-            score: null,
-            error: e?.message ?? 'Failed to get response',
-          }
-        }
-      })
-    )
+    const responses = personas.map((persona) => {
+      const base = {
+        persona_id: persona.id,
+        persona_name: persona.name,
+        avatar_initials: persona.avatar_initials,
+        avatar_color: persona.avatar_color,
+        avatar_url: persona.avatar_url,
+        job_title: persona.traits?.job_title ?? '',
+        location: persona.traits?.location ?? '',
+        age: persona.traits?.age ?? null,
+        industry: persona.traits?.industry ?? '',
+      }
+      const r = parsed.get(persona.id)
+      if (!r) {
+        return { ...base, response: null, sentiment: 'neutral' as const, score: null, error: 'No response generated' }
+      }
+      return { ...base, response: r.reply, sentiment: r.sentiment, score: r.score, error: null }
+    })
 
     // Aggregate themes, executive summary, recommendations and quotes across
     // all responses. Replies are already clean prose (no score prefix).

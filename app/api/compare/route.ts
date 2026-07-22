@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
-  buildPersonaSystemPrompt,
   buildUserMessageContent,
-  computePersonaTemperature,
   questionRequestsScore,
-  buildStructuredResponseInstruction,
-  parseStructuredResponse,
+  buildPanelSystemPrompt,
+  parsePanelResponses,
 } from '@/lib/anthropic/persona-engine'
 import { getPlanForUser } from '@/lib/utils/entitlements'
 import Anthropic from '@anthropic-ai/sdk'
@@ -58,52 +56,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
     }
 
-    // ONE structured call per persona returns reply + score together. Diversity
-    // in the number and wording comes from each persona's disposition/lens in
-    // the system prompt — not from post-hoc re-ask passes.
-    const results = await Promise.all(
-      personas.map(async (persona) => {
-        const base = {
-          persona_id: persona.id,
-          persona_name: persona.name,
-          avatar_initials: persona.avatar_initials,
-          avatar_color: persona.avatar_color,
-          avatar_url: persona.avatar_url,
-          job_title: persona.traits?.job_title,
-          location: persona.traits?.location,
-        }
-        try {
-          const systemPrompt =
-            buildPersonaSystemPrompt(persona, interview_type ?? 'concept_testing', context ?? '')
-            + buildStructuredResponseInstruction({ wantsScore, wantsSentiment: false })
+    // ONE joint call generates the whole comparison. Seeing all personas at once
+    // lets the model make them genuinely distinct (different opening angles,
+    // scattered scores) — which independent per-persona calls, each blind to the
+    // others, cannot do — and it's cheaper (one call instead of one per persona).
+    const panelSystem = buildPanelSystemPrompt(personas, {
+      wantsScore,
+      wantsSentiment: false,
+      interviewType: interview_type ?? 'concept_testing',
+      context: context ?? '',
+    })
 
-          const response = await client.messages.create({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 700,
-            temperature: computePersonaTemperature(persona),
-            system: systemPrompt,
-            messages: [{ role: 'user', content: questionContent }],
-          })
+    const generation = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: Math.min(8000, 700 + personas.length * 360),
+      temperature: 1,
+      system: panelSystem,
+      messages: [{ role: 'user', content: questionContent }],
+    })
 
-          const raw = response.content[0].type === 'text' ? response.content[0].text : ''
-          const parsed = parseStructuredResponse(raw, { wantsScore, wantsSentiment: false })
+    const rawPanel = generation.content[0].type === 'text' ? generation.content[0].text : ''
+    const parsed = parsePanelResponses(rawPanel, personas, { wantsScore, wantsSentiment: false })
 
-          return {
-            ...base,
-            response: parsed.reply,
-            score: parsed.score,
-            error: null,
-          }
-        } catch (e: any) {
-          return {
-            ...base,
-            response: null,
-            score: null,
-            error: e?.message ?? 'Failed to get response',
-          }
-        }
-      })
-    )
+    const results = personas.map((persona) => {
+      const base = {
+        persona_id: persona.id,
+        persona_name: persona.name,
+        avatar_initials: persona.avatar_initials,
+        avatar_color: persona.avatar_color,
+        avatar_url: persona.avatar_url,
+        job_title: persona.traits?.job_title,
+        location: persona.traits?.location,
+      }
+      const r = parsed.get(persona.id)
+      if (!r) {
+        return { ...base, response: null, score: null, error: 'No response generated' }
+      }
+      return { ...base, response: r.reply, score: r.score, error: null }
+    })
 
     return NextResponse.json({ data: results })
   } catch (e: any) {

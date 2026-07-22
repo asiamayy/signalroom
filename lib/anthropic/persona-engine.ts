@@ -52,105 +52,95 @@ export function questionRequestsScore(question: string): boolean {
   return /\bscore\b|\brate\b|\brating\b|\bconfidence\b|\bout of\s+\d+\b|\bscale\b|\b\d{1,3}\s*(?:-|–|—|to)\s*\d{1,3}\b/i.test(question)
 }
 
-// A single structured call returns the persona's reply, sentiment, and score
-// together — instead of one call for the reply plus a SEPARATE call per persona
-// just to classify sentiment into one word (which is what made a panel run cost
-// ~24 API calls). Appended to the system prompt; the persona still speaks in
-// character inside "reply", and the JSON wrapper is stripped server-side so the
-// user never sees it.
-export function buildStructuredResponseInstruction(opts: { wantsScore: boolean; wantsSentiment: boolean }): string {
-  const fields: string[] = [
-    `  "reply": "<your answer in your own natural speaking voice, 3-6 sentences — exactly what you would actually say. Do NOT put any number, score, rating, sentiment word, or JSON inside here.>"`,
-  ]
-  if (opts.wantsSentiment) {
-    fields.push(`  "sentiment": "<exactly one of: positive, neutral, negative, mixed — your overall feeling>"`)
-  }
-  if (opts.wantsScore) {
-    fields.push(`  "score": <an integer 0-100 — your Confidence Score exactly as defined above, a direct translation of the reaction in your reply>`)
-  }
-  return `\n\n## HOW TO FORMAT YOUR ANSWER (STRICT)\nReply with ONLY a single JSON object and nothing else — no markdown, no code fences, no text before or after it:\n{\n${fields.join(',\n')}\n}\nThe "reply" text must read as genuine human speech and stand on its own without the number.`
-}
-
 export interface StructuredPersonaResponse {
   reply: string
   sentiment: 'positive' | 'neutral' | 'negative' | 'mixed'
   score: number | null
 }
 
-// Parses the structured JSON reply, with a graceful fallback: if the model
-// didn't return clean JSON, treat the whole thing as the reply and salvage a
-// score via the regex helper so a formatting slip never blanks the response.
-export function parseStructuredResponse(
-  raw: string,
-  opts: { wantsScore: boolean; wantsSentiment: boolean }
-): StructuredPersonaResponse {
-  const isSentiment = (s: unknown): s is StructuredPersonaResponse['sentiment'] =>
-    typeof s === 'string' && ['positive', 'neutral', 'negative', 'mixed'].includes(s)
+function isValidSentiment(s: unknown): s is StructuredPersonaResponse['sentiment'] {
+  return typeof s === 'string' && ['positive', 'neutral', 'negative', 'mixed'].includes(s)
+}
 
+// Scans a string for top-level balanced {...} objects (brace-aware, and aware
+// of strings/escapes so braces inside reply text don't confuse it). Used to
+// salvage individual panel entries when the surrounding array is malformed or
+// truncated (e.g. a large panel that hit max_tokens with no closing "]").
+function extractJsonObjects(text: string): string[] {
+  const objects: string[] = []
+  let depth = 0, startIdx = -1, inString = false, escaped = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    if (inString) {
+      if (escaped) escaped = false
+      else if (ch === '\\') escaped = true
+      else if (ch === '"') inString = false
+      continue
+    }
+    if (ch === '"') { inString = true; continue }
+    if (ch === '{') { if (depth === 0) startIdx = i; depth++ }
+    else if (ch === '}') {
+      depth--
+      if (depth === 0 && startIdx !== -1) { objects.push(text.slice(startIdx, i + 1)); startIdx = -1 }
+    }
+  }
+  return objects
+}
+
+// Parses the JSON array returned by a single joint panel call into a map keyed
+// by persona id. Each element is matched to its persona by the id the model
+// echoes back (falling back to array order). Lenient on two levels: it parses
+// the array if it can, and otherwise salvages individual objects — so one
+// malformed element, or a truncated array with no closing bracket, never sinks
+// the whole panel. Any persona still missing is handled as an error by caller.
+export function parsePanelResponses(
+  raw: string,
+  personas: Persona[],
+  opts: { wantsScore: boolean; wantsSentiment: boolean }
+): Map<string, StructuredPersonaResponse> {
+  const result = new Map<string, StructuredPersonaResponse>()
+
+  const take = (obj: any, i: number) => {
+    const id = typeof obj?.persona_id === 'string' && personas.some(p => p.id === obj.persona_id)
+      ? obj.persona_id
+      : personas[i]?.id
+    if (!id || result.has(id)) return
+
+    const reply = typeof obj?.reply === 'string' && obj.reply.trim() ? obj.reply.trim() : null
+    if (!reply) return
+
+    let score: number | null = null
+    if (opts.wantsScore) {
+      const n = typeof obj.score === 'number' ? obj.score : parseInt(obj.score, 10)
+      score = Number.isFinite(n) && n >= 0 && n <= 100 ? Math.round(n) : null
+    }
+    const sentiment = opts.wantsSentiment && isValidSentiment(obj.sentiment) ? obj.sentiment : 'neutral'
+    result.set(id, { reply, sentiment, score })
+  }
+
+  const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+
+  // First choice: parse the whole array.
   try {
-    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    const start = cleaned.indexOf('{')
-    const end = cleaned.lastIndexOf('}')
+    const start = cleaned.indexOf('[')
+    const end = cleaned.lastIndexOf(']')
     if (start !== -1 && end !== -1 && end > start) {
-      const obj = JSON.parse(cleaned.slice(start, end + 1))
-      const reply = typeof obj.reply === 'string' && obj.reply.trim() ? obj.reply.trim() : null
-      if (reply) {
-        let score: number | null = null
-        if (opts.wantsScore) {
-          const n = typeof obj.score === 'number' ? obj.score : parseInt(obj.score, 10)
-          score = Number.isFinite(n) && n >= 0 && n <= 100 ? Math.round(n) : null
-        }
-        const sentiment = opts.wantsSentiment && isSentiment(obj.sentiment) ? obj.sentiment : 'neutral'
-        return { reply, sentiment, score }
-      }
+      const arr = JSON.parse(cleaned.slice(start, end + 1))
+      if (Array.isArray(arr)) arr.forEach(take)
     }
   } catch {
-    // fall through to salvage
+    // fall through to per-object salvage
   }
 
-  return {
-    reply: stripScoreLine(raw),
-    sentiment: 'neutral',
-    score: opts.wantsScore ? extractLeadingScore(raw) : null,
+  // Salvage any personas still missing by parsing individual objects.
+  if (result.size < personas.length) {
+    extractJsonObjects(cleaned).forEach((objStr, i) => {
+      try { take(JSON.parse(objStr), i) } catch { /* skip this object */ }
+    })
   }
-}
 
-// Pulls the numeric score out of a persona reply. Prefers the explicit
-// "Confidence: <N>" line we ask for; falls back to a bare leading number in
-// the first 60 chars for older/free-form replies. The narrow fallback window
-// avoids grabbing unrelated numbers later in the text (e.g. "3 different tools").
-export function extractLeadingScore(text: string): number | null {
-  const labeled = text.match(/confidence:\s*\**\s*(100|\d{1,2})\b/i)
-  if (labeled) {
-    const n = parseInt(labeled[1], 10)
-    if (Number.isFinite(n) && n >= 0 && n <= 100) return n
-  }
-  const window = text.slice(0, 60)
-  const match = window.match(/\b(100|[0-9]{1,2})\b/)
-  if (!match) return null
-  const n = parseInt(match[1], 10)
-  return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null
+  return result
 }
-
-// Strips a leading "78 — " / "78: " / "78% - " style prefix so the UI can
-// show the number as its own element without repeating it inside the quoted
-// response text. Only strips when the number sits right at the very start
-// (allowing for a leading markdown bold marker) — if the persona didn't lead
-// with it after all, the text is left untouched rather than mangled.
-export function stripLeadingScore(text: string): string {
-  const match = text.match(/^\s*\**\s*(100|[0-9]{1,2})\s*\**\s*(%|\/\s*100)?\s*[-—:]\s*/)
-  return match ? text.slice(match[0].length) : text
-}
-
-// Strips both the forced "Confidence: <N>" first line AND a bare "78 — "
-// leading prefix, returning clean prose for display. Idempotent and safe on
-// text that has neither. Used server-side so the client receives already-clean
-// response text alongside the separately-surfaced score.
-export function stripScoreLine(text: string): string {
-  const withoutLabel = text.replace(/^\s*\**\s*confidence:\s*\**\s*(100|\d{1,2})\b[^\n]*\r?\n+/i, '')
-  return stripLeadingScore(withoutLabel).trim()
-}
-
 
 // ─── Per-persona sampling temperature ─────────────────────────────────────────
 // Shared by every call site (interview chat, Compare, Audience Panel) so
@@ -216,46 +206,51 @@ function deriveDisposition(persona: Persona): string {
   return "You're a genuine enthusiast with room to take chances. A promising, well-executed idea excites you quickly, and your honest gut reactions run high — you commit when something clicks for you."
 }
 
+// What this persona's profession/type makes them notice and weigh first.
+// Extracted so both the single-persona prompt and the panel roster share it.
+function deriveAttentionProfile(traits: Persona['traits']): string {
+  const jobLower = traits.job_title.toLowerCase()
+  if (jobLower.match(/(pm|product|manager)/)) {
+    return "• clarity\n• onboarding friction\n• message prioritization\n• usability and information hierarchy"
+  } else if (jobLower.match(/(founder|ceo|entrepreneur|owner)/)) {
+    return "• market differentiation\n• competitive positioning\n• commercial viability\n• premium branding hooks"
+  } else if (jobLower.match(/(hr|talent|people|partner)/)) {
+    return "• trust\n• credibility\n• inclusiveness\n• emotional response and psychological safety"
+  } else if (jobLower.match(/(engineer|developer|architect|programmer)/)) {
+    return "• logical consistency\n• efficiency\n• simplicity\n• execution quality and unnecessary complexity"
+  } else if (jobLower.match(/(operations|plant|logistics|director)/)) {
+    return "• reliability\n• organization\n• practical hierarchy\n• physical ergonomics and structural utility"
+  } else if (jobLower.match(/(finance|analyst|cfo|accountant)/)) {
+    return "• cost value\n• risk assessment\n• pricing strategy\n• transparent trade-offs and baseline ROI"
+  } else if (jobLower.match(/(medical|doctor|nurse|health|clinical)/)) {
+    return "• safety\n• clinical trust\n• evidence-backed claims\n• institutional authority"
+  } else if (jobLower.match(/(mom|dad|parent|stay-at-home)/)) {
+    return "• family routine fit\n• household budget impact\n• instant physical convenience\n• zero-fluff reliability under stress"
+  } else if (jobLower.match(/(deli|shop|retail|restaurant|small business)/)) {
+    return "• razor-thin margin value\n• immediate practical utility\n• waste reduction\n• speed and straightforward positioning"
+  }
+  return "• real-world convenience\n• everyday reliability\n• immediate sensory or physical friction\n• workflow routine integration"
+}
+
+const INCOME_LABELS: Record<string, string> = {
+  under_50k: 'under $50,000',
+  '50k_100k': '$50,000–$100,000',
+  '100k_200k': '$100,000–$200,000',
+  over_200k: 'over $200,000',
+}
+
 // ─── Build the system prompt that makes a persona feel real ──────────────────
 
 export function buildPersonaSystemPrompt(persona: Persona, interviewType: InterviewType, context: string, devilsAdvocate: boolean = false): string {
   const { traits } = persona
-  const incomeMap = {
-    under_50k: 'under $50,000',
-    '50k_100k': '$50,000–$100,000',
-    '100k_200k': '$100,000–$200,000',
-    over_200k: 'over $200,000',
-  }
+  const incomeMap = INCOME_LABELS
 
   // Dynamically derive user priorities and attention profiles directly from data
   const highestGoal = traits.goals[0] || 'Not specified'
   const largestFrustration = traits.frustrations[0] || 'Not specified'
   const buyingBehavior = traits.buying_behavior
 
-  let derivedAttentionProfile = ""
-  const jobLower = traits.job_title.toLowerCase()
-  
-  if (jobLower.match(/(pm|product|manager)/)) {
-    derivedAttentionProfile = "• clarity\n• onboarding friction\n• message prioritization\n• usability and information hierarchy"
-  } else if (jobLower.match(/(founder|ceo|entrepreneur|owner)/)) {
-    derivedAttentionProfile = "• market differentiation\n• competitive positioning\n• commercial viability\n• premium branding hooks"
-  } else if (jobLower.match(/(hr|talent|people|partner)/)) {
-    derivedAttentionProfile = "• trust\n• credibility\n• inclusiveness\n• emotional response and psychological safety"
-  } else if (jobLower.match(/(engineer|developer|architect|programmer)/)) {
-    derivedAttentionProfile = "• logical consistency\n• efficiency\n• simplicity\n• execution quality and unnecessary complexity"
-  } else if (jobLower.match(/(operations|plant|logistics|director)/)) {
-    derivedAttentionProfile = "• reliability\n• organization\n• practical hierarchy\n• physical ergonomics and structural utility"
-  } else if (jobLower.match(/(finance|analyst|cfo|accountant)/)) {
-    derivedAttentionProfile = "• cost value\n• risk assessment\n• pricing strategy\n• transparent trade-offs and baseline ROI"
-  } else if (jobLower.match(/(medical|doctor|nurse|health|clinical)/)) {
-    derivedAttentionProfile = "• safety\n• clinical trust\n• evidence-backed claims\n• institutional authority"
-  } else if (jobLower.match(/(mom|dad|parent|stay-at-home)/)) {
-    derivedAttentionProfile = "• family routine fit\n• household budget impact\n• instant physical convenience\n• zero-fluff reliability under stress"
-  } else if (jobLower.match(/(deli|shop|retail|restaurant|small business)/)) {
-    derivedAttentionProfile = "• razor-thin margin value\n• immediate practical utility\n• waste reduction\n• speed and straightforward positioning"
-  } else {
-    derivedAttentionProfile = "• real-world convenience\n• everyday reliability\n• immediate sensory or physical friction\n• workflow routine integration"
-  }
+  const derivedAttentionProfile = deriveAttentionProfile(traits)
 
   const predisposition = deriveDisposition(persona)
 
@@ -352,6 +347,65 @@ You are in Devil's Advocate mode. This means:
 - You are not being negative for the sake of it — you are being the hardest customer to convince, the one who has been burned before and needs real proof
 - Only after surfacing your skepticism should you acknowledge any genuine interest or merit
 - This mode exists to stress-test ideas, not to be unconstructively hostile` : ''}`
+}
+
+// ─── Joint panel prompt (all personas in one coordinated call) ────────────────
+// Independent per-persona calls CANNOT coordinate — each one is blind to the
+// others, so they all reach for the same obvious observation and phrase it the
+// same way, and their numbers collapse toward one "safe" value. Generating the
+// whole panel in a single call lets the model see everyone at once and make
+// them genuinely distinct (different opening angles, scores scattered across the
+// range per each person's real traits). It is also far cheaper: one generation
+// call instead of one-per-persona.
+
+// Compact roster line for one persona — the essence of the individual prompt.
+function panelRosterEntry(persona: Persona): string {
+  const t = persona.traits
+  const notices = deriveAttentionProfile(t).replace(/•\s*/g, '').split('\n').filter(Boolean).join(', ')
+  return `— PERSON id="${persona.id}": ${persona.name}, ${t.age}, ${t.gender}, ${t.location}
+  Job: ${t.job_title} in ${t.industry} · income ${INCOME_LABELS[t.income] ?? 'unknown'} · tech ${t.tech_savviness}/5 · risk ${t.risk_tolerance}/5
+  Top goal: ${t.goals[0] || 'not specified'} · Biggest frustration: ${t.frustrations[0] || 'not specified'} · Buying style: ${t.buying_behavior}
+  Personal context: ${t.additional_context || 'none'}
+  Disposition: ${deriveDisposition(persona)}
+  Notices first: ${notices}`
+}
+
+export function buildPanelSystemPrompt(
+  personas: Persona[],
+  opts: { wantsScore: boolean; wantsSentiment: boolean; interviewType: InterviewType; context: string }
+): string {
+  const roster = personas.map(panelRosterEntry).join('\n\n')
+
+  const scoringRule = opts.wantsScore ? `
+6. SCORING — give each person a Confidence Score from 0 to 100: how confidently THEY, based on their own reaction, would move forward (buy / adopt / recommend / keep evaluating). Anchors: 90-100 = act today, no hesitation; 70-89 = genuinely interested but with one or two specific reservations; 50-69 = some value but not convinced enough to act; 30-49 = real reservations that stop them; 0-29 = fundamental mismatch. Start from each person's Disposition, then let their specific frustration/goal/situation set the exact, uneven number (e.g. 34, 61, 88 — not round or repeated). Real panels SCATTER widely: on the very same thing a frugal skeptic may sit in the 20s-40s while an enthusiast lands in the 80s-90s. Do NOT cluster the scores within a few points of each other. Equally, do NOT fabricate spread — give each person exactly the number their own honest reaction implies.` : ''
+
+  const replyField = `    "reply": "<this person's honest first-person reaction, 3-6 sentences, in their own natural voice — no numbers, no rating labels, no JSON inside>"`
+  const sentimentField = opts.wantsSentiment ? `,\n    "sentiment": "<one of: positive, neutral, negative, mixed>"` : ''
+  const scoreField = opts.wantsScore ? `,\n    "score": <integer 0-100, this person's Confidence Score>` : ''
+
+  return `You are simulating a market-research panel: ${personas.length} DIFFERENT real people, each reacting in their own authentic voice to the same thing. You are not an AI assistant and you never break character for any of them.
+
+## What's being tested
+Type: ${opts.interviewType.replace('_', ' ')}${opts.context ? `\nContext: ${opts.context}` : ''}
+
+## THE PANEL (each is a distinct real person)
+${roster}
+
+## HARD RULES
+1. Voice EACH person as a real human, first person, grounded in their own life, job, income, and situation. Translate traits into concrete behavior and lived detail — never cite a trait or rating as a label ("as someone with high risk tolerance").
+2. They are genuinely DIFFERENT people, so their reactions must genuinely differ — in what they focus on, their overall take, and their tone. Real consumers rarely agree; do not smooth them toward a shared "correct" opinion.
+3. CRITICAL — NO TWO PEOPLE MAY OPEN THE SAME WAY. Each person's first sentence must enter from THAT person's own angle (their biggest frustration or goal or professional lens). Do NOT let everyone lead with the single most obvious observation about the thing being tested — that identical opening is the #1 tell of fake panel data. If one person notices a given feature first, the others must come at it from entirely different starting points, in entirely different sentence structures.
+4. Keep each reply conversational — 3 to 6 sentences. Show real ambivalence where it's honest; push back where warranted.
+5. Each reply must only make sense coming from that specific person — swapping two replies between people should feel obviously wrong.${scoringRule}
+
+## OUTPUT — STRICT
+Reply with ONLY a JSON array, one object per person, in the SAME ORDER as the panel above, each using that person's exact id. No markdown, no code fences, no text before or after the array:
+[
+  {
+    "persona_id": "<the id from the panel above>",
+${replyField}${sentimentField}${scoreField}
+  }
+]`
 }
 
 // ─── Stream a persona response ────────────────────────────────────────────────
