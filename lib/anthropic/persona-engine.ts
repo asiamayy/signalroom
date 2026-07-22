@@ -58,6 +58,87 @@ export function extractLeadingScore(text: string): number | null {
   return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null
 }
 
+// Strips a leading "78 — " / "78: " / "78% - " style prefix so the UI can
+// show the number as its own element without repeating it inside the quoted
+// response text. Only strips when the number sits right at the very start
+// (allowing for a leading markdown bold marker) — if the persona didn't lead
+// with it after all, the text is left untouched rather than mangled.
+export function stripLeadingScore(text: string): string {
+  const match = text.match(/^\s*\**\s*(100|[0-9]{1,2})\s*\**\s*(%|\/\s*100)?\s*[-—:]\s*/)
+  return match ? text.slice(match[0].length) : text
+}
+
+// ─── Detect and correct near-identical response openings ──────────────────────
+// Same ceiling as the numeric-score problem above, and the same fix: personas
+// are generated independently in parallel, so nothing stops several of them
+// from converging on the same generic "obvious observation" opening line even
+// with an explicit instruction not to (rule 11 above). This is the backstop —
+// after the initial pass, check whether 2+ personas opened with essentially
+// the same wording, and if so, rewrite just those against the one we keep as
+// the anchor. Only fires when a collision is actually detected.
+function normalizeOpening(text: string): string {
+  return stripLeadingScore(text)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 8)
+    .join(' ')
+}
+
+// Returns groups of original-array indices whose responses opened with the
+// same normalized first ~8 words. Requires the normalized snippet to be long
+// enough (12+ chars) to be a meaningful signal rather than a coincidental
+// short match ("i think the").
+export function findDuplicateOpeningGroups(responses: (string | null)[]): number[][] {
+  const buckets = new Map<string, number[]>()
+  responses.forEach((r, i) => {
+    if (!r) return
+    const key = normalizeOpening(r)
+    if (key.length < 12) return
+    if (!buckets.has(key)) buckets.set(key, [])
+    buckets.get(key)!.push(i)
+  })
+  return [...buckets.values()].filter(group => group.length >= 2)
+}
+
+// Re-asks a single persona whose opening collided with a peer's, in the same
+// conversation (their own original answer as the prior assistant turn). Keeps
+// their opinion, reasoning, and any stated number intact — only the opening
+// phrasing/structure is asked to change, anchored against the actual peer
+// text so the model has something concrete to diverge from (a vague "be more
+// original" ask tends to just produce a different generic phrase). Falls back
+// to the original response on any failure.
+export async function rewriteResponseWithDistinctOpening(
+  persona: Persona,
+  systemPrompt: string,
+  questionContent: UserMessageContent,
+  originalResponse: string,
+  peerOpening: string,
+  temperature: number
+): Promise<string> {
+  try {
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 400,
+      temperature: Math.min(1.0, temperature + 0.15),
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: questionContent },
+        { role: 'assistant', content: originalResponse },
+        {
+          role: 'user',
+          content: `Another panelist answering this exact same question opened their response with wording extremely close to yours: "${peerOpening}". Keep your same underlying opinion, reasoning, and number (if you stated one) completely unchanged — but rewrite it so the opening sentence is structurally and stylistically distinct from that phrasing. Don't just swap a synonym or two; change the sentence structure and the angle you lead with entirely. Do not mention other panelists in your answer — just answer as yourself.`,
+        },
+      ],
+    })
+
+    return response.content[0].type === 'text' ? response.content[0].text : originalResponse
+  } catch {
+    return originalResponse
+  }
+}
+
 // Points apart to be considered "the same" cluster — tight enough that it
 // reads as convergence rather than coincidentally-similar-but-independent
 // opinions between personas who happen to be alike.
@@ -326,7 +407,7 @@ CRITICAL RULES — never break these:
 8. Occasionally reference your personal context (your job, your budget, a past experience) to make answers feel lived-in.
 9. Never give a generic answer that anyone could give. Every answer should only make sense coming from you.
 10. If you genuinely don't have enough information to form an opinion, ask a clarifying question.
-11. Vary how you start each response. Do NOT default to opening with "Honestly," or mimicking a uniform structural hook (like starting right after the number with "The [X] copy lands for me"). Mix it up completely: start mid-thought, challenge the question format, or zoom in on an isolated physical or visual aspect instantly. The sentence layout following your number must look completely unique from persona to persona.
+11. Vary how you start each response. Do NOT default to opening with "Honestly," or mimicking a uniform structural hook (like starting right after the number with "The [X] copy lands for me," or "The [object] is actually doing real work here"). Avoid reaching for the single most obvious, generic copywriter observation about the subject — that is exactly the phrase every other persona will also reach for. Mix it up completely: start mid-thought, challenge the question format, or zoom in on an isolated physical or visual aspect instantly, but do it in YOUR specific words, not a stock analyst phrase anyone could write. The sentence layout following your number must look completely unique from persona to persona.
 12. Real consumers rarely agree. Do not try to produce the objectively correct analysis. Produce YOUR analysis. If another persona might love something you dislike, that is expected. Do not soften your opinion simply because another reasonable person could disagree.
 13. Never cite your own trait sheet like a survey result — no "as someone with a 4/5 risk tolerance," "my tech savviness is a 3," or "my risk tolerance is low and my research instinct is high." Real people don't describe themselves with their own internal numeric ratings. Translate every trait into the concrete behavior, habit, or story that trait produces instead: not "I have low risk tolerance" but "I've been burned by a bad vendor before, so I read every review twice before I commit." The number/label is for you to reason from — it should never appear as a phrase in what you actually say.
 

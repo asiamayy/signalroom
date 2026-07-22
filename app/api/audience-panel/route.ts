@@ -8,6 +8,8 @@ import {
   findClusteredScoreGroups,
   assignDiversificationBands,
   rescorePersonaWithBand,
+  findDuplicateOpeningGroups,
+  rewriteResponseWithDistinctOpening,
 } from '@/lib/anthropic/persona-engine'
 import { quoteInText } from '@/lib/utils/quotes'
 import Anthropic from '@anthropic-ai/sdk'
@@ -196,6 +198,60 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Detect personas whose responses opened with essentially the same wording
+  // (e.g. multiple personas independently reaching for the same generic
+  // observation) and rewrite all but one against that shared opening, so the
+  // panel doesn't read as a single voice repeated across avatars. Sentiment
+  // is reclassified for any rewritten response so it doesn't go stale.
+  const openingGroups = findDuplicateOpeningGroups(responses.map(r => r.response))
+
+  if (openingGroups.length > 0) {
+    await Promise.all(
+      openingGroups.flatMap(group => {
+        const [anchorIdx, ...restIdx] = group
+        const peerOpening = responses[anchorIdx].response!.slice(0, 120)
+        return restIdx.map(async (idx) => {
+          const persona = personas[idx]
+          const original = responses[idx]
+          if (!original.response) return
+
+          const systemPrompt = buildPersonaSystemPrompt(persona, 'custom', '')
+            + `\n\nIMPORTANT: This is a quick audience panel response. Keep your answer focused and under 150 words. Be direct about your opinion.`
+
+          const revised = await rewriteResponseWithDistinctOpening(
+            persona,
+            systemPrompt,
+            questionContent,
+            original.response,
+            peerOpening,
+            computePersonaTemperature(persona)
+          )
+
+          responses[idx].response = revised
+
+          try {
+            const sentimentResponse = await client.messages.create({
+              model: 'claude-sonnet-4-6',
+              max_tokens: 100,
+              messages: [{
+                role: 'user',
+                content: `Classify the overall sentiment of this response as exactly one of: "positive", "neutral", "negative", "mixed". Return ONLY the single word, nothing else.\n\nResponse: ${revised}`
+              }]
+            })
+            const sentimentRaw = sentimentResponse.content[0].type === 'text'
+              ? sentimentResponse.content[0].text.trim().toLowerCase()
+              : 'neutral'
+            if (['positive', 'neutral', 'negative', 'mixed'].includes(sentimentRaw)) {
+              responses[idx].sentiment = sentimentRaw as 'positive' | 'neutral' | 'negative' | 'mixed'
+            }
+          } catch {
+            // keep original sentiment on failure
+          }
+        })
+      })
+    )
+  }
+
   // Aggregate themes, executive summary, recommendations and quotes across all responses
   const allText = responses
     .filter(r => r.response)
@@ -305,9 +361,14 @@ Return ONLY the JSON, no preamble, no markdown.`
   const maxSentimentCount = Math.max(...Object.values(sentimentCounts))
   const consensusScore = Math.round((maxSentimentCount / responses.length) * 100)
 
+  const responsesWithScores = responses.map(r => ({
+    ...r,
+    score: r.response ? extractLeadingScore(r.response) : null,
+  }))
+
   return NextResponse.json({
     data: {
-      responses,
+      responses: responsesWithScores,
       themes,
       sentiment_distribution: sentimentCounts,
       consensus_score: consensusScore,

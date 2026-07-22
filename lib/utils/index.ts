@@ -89,6 +89,16 @@ export function formatRelativeTime(dateString: string): string {
   return formatDate(dateString)
 }
 
+// ─── Score display ────────────────────────────────────────────────────────────
+// Strips a leading "78 — " / "78: " style prefix so a response quote can be
+// shown alongside a separate score badge without repeating the number. Only
+// strips when the number sits right at the start — if it isn't there, the
+// text is left untouched.
+export function stripLeadingScore(text: string): string {
+  const match = text.match(/^\s*\**\s*(100|[0-9]{1,2})\s*\**\s*(%|\/\s*100)?\s*[-—:]\s*/)
+  return match ? text.slice(match[0].length) : text
+}
+
 // ─── Sentiment color ──────────────────────────────────────────────────────────
 
 export function getSentimentColor(sentiment: string) {

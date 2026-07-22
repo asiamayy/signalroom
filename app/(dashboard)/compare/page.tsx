@@ -7,7 +7,7 @@ import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
-import { CARD_SHADOW, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
+import { CARD_SHADOW, INTERVIEW_TYPE_LABELS, stripLeadingScore } from '@/lib/utils'
 import type { Persona, InterviewType } from '@/types'
 
 const INTERVIEW_TYPE_OPTIONS = Object.entries(INTERVIEW_TYPE_LABELS).map(([value, label]) => ({ value, label }))
@@ -21,7 +21,17 @@ interface CompareResult {
   job_title: string
   location: string
   response: string | null
+  score: number | null
   error: string | null
+}
+
+function ScoreBadge({ score }: { score: number }) {
+  return (
+    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold flex-shrink-0" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimaryContainer }}>
+      {score}
+      <span className="text-[10px] font-semibold uppercase tracking-wider opacity-70">Confidence</span>
+    </span>
+  )
 }
 
 function CompareResponseModalBody({ result }: { result: CompareResult }) {
@@ -33,11 +43,14 @@ function CompareResponseModalBody({ result }: { result: CompareResult }) {
           <p className="text-base font-semibold text-neutral-900 truncate">{result.persona_name}</p>
           <p className="text-sm text-neutral-500">{result.job_title}{result.location ? ` · ${result.location}` : ''}</p>
         </div>
+        {result.score !== null && <ScoreBadge score={result.score} />}
       </div>
       {result.error ? (
         <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{result.error}</p>
       ) : (
-        <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">{result.response}</p>
+        <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">
+          {result.score !== null && result.response ? stripLeadingScore(result.response) : result.response}
+        </p>
       )}
     </>
   )
@@ -248,12 +261,13 @@ export default function ComparePage() {
                         </div>
                       </div>
                     </div>
+                    {result.score !== null && <ScoreBadge score={result.score} />}
                   </div>
                   {result.error ? (
                     <p className="text-sm rounded-lg p-3" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{result.error}</p>
                   ) : (
                     <p className="leading-relaxed" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '19px', color: HOME_COLORS.onSurface }}>
-                      &ldquo;{result.response}&rdquo;
+                      &ldquo;{result.score !== null && result.response ? stripLeadingScore(result.response) : result.response}&rdquo;
                     </p>
                   )}
                 </motion.article>

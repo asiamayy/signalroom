@@ -8,6 +8,8 @@ import {
   findClusteredScoreGroups,
   assignDiversificationBands,
   rescorePersonaWithBand,
+  findDuplicateOpeningGroups,
+  rewriteResponseWithDistinctOpening,
 } from '@/lib/anthropic/persona-engine'
 import { getPlanForUser } from '@/lib/utils/entitlements'
 import Anthropic from '@anthropic-ai/sdk'
@@ -143,5 +145,47 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  return NextResponse.json({ data: results })
+  // Detect personas whose responses opened with essentially the same wording
+  // (e.g. multiple personas independently reaching for the same generic
+  // observation) and rewrite all but one against that shared opening, so the
+  // panel doesn't read as a single voice repeated across avatars.
+  const openingGroups = findDuplicateOpeningGroups(results.map(r => r.response))
+
+  if (openingGroups.length > 0) {
+    await Promise.all(
+      openingGroups.flatMap(group => {
+        const [anchorIdx, ...restIdx] = group
+        const peerOpening = results[anchorIdx].response!.slice(0, 120)
+        return restIdx.map(async (idx) => {
+          const persona = personas[idx]
+          const original = results[idx]
+          if (!original.response) return
+
+          const systemPrompt = buildPersonaSystemPrompt(
+            persona,
+            interview_type ?? 'concept_testing',
+            context ?? ''
+          )
+
+          const revised = await rewriteResponseWithDistinctOpening(
+            persona,
+            systemPrompt,
+            questionContent,
+            original.response,
+            peerOpening,
+            computePersonaTemperature(persona)
+          )
+
+          results[idx].response = revised
+        })
+      })
+    )
+  }
+
+  const withScores = results.map(r => ({
+    ...r,
+    score: r.response ? extractLeadingScore(r.response) : null,
+  }))
+
+  return NextResponse.json({ data: withScores })
 }

@@ -7,7 +7,7 @@ import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Q
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
-import { CARD_SHADOW } from '@/lib/utils'
+import { CARD_SHADOW, stripLeadingScore } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan } from '@/types'
@@ -25,6 +25,7 @@ interface PanelResponse {
   age: number | null
   industry: string
   response: string | null
+  score: number | null
   sentiment: 'positive' | 'neutral' | 'negative' | 'mixed'
   error: string | null
 }
@@ -66,6 +67,14 @@ const SENTIMENT_COLORS = {
   neutral: { bg: HOME_COLORS.surfaceContainerHigh, text: HOME_COLORS.onSurfaceVariant, bar: HOME_COLORS.outline, border: HOME_COLORS.outlineVariant },
   negative: { bg: '#FFDAD6', text: HOME_COLORS.error, bar: HOME_COLORS.error, border: '#FFB4AB' },
   mixed: { bg: '#FEF3C7', text: '#B45309', bar: '#D97706', border: '#FDE68A' },
+}
+
+function ScoreBadge({ score }: { score: number }) {
+  return (
+    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>
+      {score}
+    </span>
+  )
 }
 
 function SentimentBadge({ sentiment }: { sentiment: string }) {
@@ -180,6 +189,7 @@ function ResponseModalContent({ response }: { response: PanelResponse }) {
         <div className="min-w-0 flex-1">
           <p className="text-base font-semibold text-neutral-900 truncate">{response.persona_name}</p>
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+            {response.score !== null && <ScoreBadge score={response.score} />}
             {response.job_title && <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>{response.job_title}</span>}
             <SentimentBadge sentiment={response.sentiment} />
           </div>
@@ -188,7 +198,9 @@ function ResponseModalContent({ response }: { response: PanelResponse }) {
       {response.error ? (
         <p className="text-sm text-red-500">{response.error}</p>
       ) : (
-        <p className="text-sm text-neutral-700 leading-relaxed">{response.response}</p>
+        <p className="text-sm text-neutral-700 leading-relaxed">
+          {response.score !== null && response.response ? stripLeadingScore(response.response) : response.response}
+        </p>
       )}
     </>
   )
@@ -578,12 +590,15 @@ export default function AudiencePanelPage() {
                           <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{r.persona_name}</p>
                           {r.job_title && <p className="text-[10px] uppercase truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{r.job_title}</p>}
                         </div>
+                        {r.score !== null && <ScoreBadge score={r.score} />}
                         <SentimentBadge sentiment={r.sentiment} />
                       </div>
                       {r.error ? (
                         <p className="text-xs" style={{ color: HOME_COLORS.error }}>{r.error}</p>
                       ) : (
-                        <p className="text-sm leading-relaxed italic line-clamp-3" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{r.response}&rdquo;</p>
+                        <p className="text-sm leading-relaxed italic line-clamp-3" style={{ color: HOME_COLORS.onSurface }}>
+                          &ldquo;{r.score !== null && r.response ? stripLeadingScore(r.response) : r.response}&rdquo;
+                        </p>
                       )}
                     </motion.article>
                   ))}

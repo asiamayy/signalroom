@@ -62,7 +62,7 @@ export async function updateSession(request: NextRequest) {
   // Redirect logged-in users away from auth pages
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = '/personas'
+    url.pathname = '/home'
     return NextResponse.redirect(url)
   }
 
