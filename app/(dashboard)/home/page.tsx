@@ -83,7 +83,7 @@ export default async function HomePage() {
   const validatedRatio = allSignals.length > 0
     ? Math.round((allSignals.filter(s => s.status === 'validated').length / allSignals.length) * 100)
     : 0
-  const researchStatus = allSignals.length === 0 ? 'No data yet' : avgConfidence >= 80 ? 'Strong signal' : avgConfidence >= 60 ? 'Developing' : 'Early stage'
+  const researchStatus = allSignals.length === 0 ? 'No data yet' : avgConfidence >= 80 ? 'Strongly validated' : avgConfidence >= 60 ? 'Developing' : 'Early stage'
 
   // ── Recent activity (cross-project) ─────────────────────────────────────
   const timelineEvents = buildTimelineEvents({
@@ -272,7 +272,7 @@ export default async function HomePage() {
           </div>
           <div className="w-px h-10" style={{ background: `${HOME_COLORS.outlineVariant}55` }} />
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>AI Confidence</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Signal Confidence</span>
             <span className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface }}>{avgConfidence}% {researchStatus}</span>
           </div>
         </div>

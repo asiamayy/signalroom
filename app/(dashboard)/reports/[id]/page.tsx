@@ -57,7 +57,7 @@ export default async function ReportPage({
   const score = report.confidence_score
   const scoreColor = score >= 75 ? HOME_COLORS.primary : score >= 50 ? '#B45309' : HOME_COLORS.error
   const scoreBg = score >= 75 ? HOME_COLORS.secondaryContainer : score >= 50 ? '#FEF3C7' : '#FFDAD6'
-  const scoreLabel = score >= 75 ? 'In-Depth Session' : score >= 50 ? 'Moderate Depth' : 'Light Session'
+  const scoreLabel = score >= 75 ? 'High Confidence' : score >= 50 ? 'Moderate Confidence' : 'Low Confidence'
 
   const themes: ReportTheme[] = report.key_themes ?? []
   const recommendations: ReportRecommendation[] = report.recommendations ?? []
@@ -97,7 +97,7 @@ export default async function ReportPage({
           <div className="flex-shrink-0 text-center rounded-xl px-4 py-3 self-start sm:self-auto" style={{ background: scoreBg }}>
             <p className="text-3xl font-semibold leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, color: scoreColor }}>{score}</p>
             <p className="text-[11px] font-semibold mt-1 uppercase tracking-wider" style={{ color: scoreColor }}>{scoreLabel}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Interview Depth</p>
+            <p className="text-[10px] mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence Score</p>
           </div>
         </div>
 

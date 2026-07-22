@@ -512,7 +512,7 @@ export default function LandingPage() {
           </div>
         </section>
       </RevealSection>
-{/* NEW SECTION: Confidence Score Calibration */}
+{/* Confidence Score demo — mirrors the report-page Confidence Score */}
       <div className="relative">
         {/* We use a local state-wrapped inner block to handle the scroll-triggered ring draw */}
         {(() => {
@@ -549,27 +549,27 @@ export default function LandingPage() {
                   {/* Left Column: New Copy and 3 Pillars */}
                   <div className="lg:col-span-7 space-y-8">
                     <div>
-                      <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">01 // Calibration Engine</span>
+                      <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">01 // Confidence Engine</span>
                       <h2 className="text-[28px] sm:text-[36px] mt-2 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                         Move Forward With Confidence.
                       </h2>
                       <p className="text-[13px] sm:text-[14px] text-neutral-500 font-light mt-2 max-w-xl">
-                        The strongest decisions come from knowing which insights matter. SignalRoom analyzes customer conversations to surface recurring patterns, validate assumptions, and highlight the findings most worth pursuing.
+                        Every AI interview gets a Confidence Score — how strongly that persona's response indicates they'd buy, adopt, or recommend what you're testing. It's a read on one simulated person's conviction, not a verdict on the market; SignalRoom always tells you to validate real findings with real customers.
                       </p>
                     </div>
                     
                     <div className="space-y-6 border-l-2 border-[#5A7973]/20 pl-4">
                       <div>
-                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Depth of responses</h4>
-                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Measures the quality and detail behind customer responses to separate meaningful insights from surface-level feedback.</p>
+                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Stated Conviction</h4>
+                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Extracted directly from the persona's own response, not calculated as a separate judgment layered on top.</p>
                       </div>
                       <div>
-                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Persona Alignment</h4>
-                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Ensures insights are grounded in the perspectives, motivations, and challenges of your target customer.</p>
+                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Behavioral Anchors</h4>
+                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Calibrated against concrete reactions, from "I'd sign up today" to "this doesn't work for me," for scores that are differentiated instead of generic.</p>
                       </div>
                       <div>
-                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Pattern Consistency</h4>
-                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Identifies recurring patterns across conversations to distinguish emerging trends from isolated opinions.</p>
+                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Visible Justification</h4>
+                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Every score ships with a one-sentence reason pulled straight from what the persona said, so you can audit it instead of trusting a black box.</p>
                       </div>
                     </div>
                   </div>
@@ -615,18 +615,15 @@ export default function LandingPage() {
                           95
                         </span>
                         <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#1A3024] mt-1 bg-[#e9edea] px-2.5 py-0.5 rounded-[4px]">
-                          Strong Signal
-                        </span>
-                        <span className="text-[10px] font-mono tracking-wider text-neutral-400 mt-2">
-                          Calibration Score
+                          Confidence Score
                         </span>
                       </div>
 
                     </div>
-                    
+
                     <div className="mt-4 text-center">
                       <span className="text-[10px] text-neutral-400 italic font-light">
-                        *Engine parameter calculated based on structural source alignment
+                        *Illustrative example — extracted from a persona's stated response, not calculated independently
                       </span>
                     </div>
                   </div>

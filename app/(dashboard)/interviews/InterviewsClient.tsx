@@ -294,7 +294,7 @@ export function InterviewsClient({ initialInterviews, allPersonas, allSignals, a
               <h3 className="text-xl mb-3" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>Session Velocity</h3>
               <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 {activeCount} active session{activeCount === 1 ? '' : 's'} and {completedCount} completed
-                {avgConfidence !== null ? `, averaging ${avgConfidence}% report confidence.` : '.'}
+                {avgConfidence !== null ? `, averaging a ${avgConfidence}% confidence score.` : '.'}
               </p>
               <Link href="/reports" className="inline-flex items-center gap-1.5 text-sm font-semibold pb-1 group" style={{ borderBottom: '1px solid rgba(255,255,255,0.3)' }}>
                 View all reports

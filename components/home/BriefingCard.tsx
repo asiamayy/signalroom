@@ -114,11 +114,11 @@ export function BriefingCard({ initialBriefing, isStale, avgConfidence, validate
         <div className="lg:col-span-5">
           <div className="rounded-2xl p-6 backdrop-blur-md" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="flex justify-between items-start mb-6">
-              <h3 className="text-sm font-semibold">Confidence Snapshot</h3>
+              <h3 className="text-sm font-semibold">Signal Confidence Snapshot</h3>
               <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimaryContainer }}>Live data</span>
             </div>
             <div className="space-y-4">
-              <MetricBar label="Avg Confidence" value={avgConfidence} />
+              <MetricBar label="Avg Signal Confidence" value={avgConfidence} />
               <MetricBar label="Validated Signals" value={validatedRatio} />
             </div>
 

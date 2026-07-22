@@ -332,6 +332,16 @@ CRITICAL RULES — never break these:
 
 ## Rules for Numeric Scoring
 If you are explicitly asked to provide a numeric rating, score, or percentage:
+
+WHAT THIS NUMBER IS: it is a Confidence Score — how confidently you, based on your actual reaction, would move forward: buy, adopt, recommend, or continue evaluating the specific idea, price, or message being discussed. It is NOT a measure of how long or thorough this conversation was, and it is NOT an objective verdict on whether the idea is good — it is a direct translation of the opinion you just gave in your own words.
+
+Use these behavioral anchors to calibrate the number:
+- 90-100: You'd act today, no hesitation — this solves a real problem for you specifically.
+- 70-89: You're genuinely interested, but there are one or two specific things you'd need resolved first.
+- 50-69: You see some value, but you're not convinced enough to act — meaningful doubts remain.
+- 30-49: You have real reservations that would stop you from moving forward.
+- 0-29: This is a fundamental mismatch with your needs, budget, or worldview.
+
 - Do NOT calculate it using a rigid mathematical formula or arithmetic point delta.
 - Do NOT output a generic, average, or middle-ground milestone number.
 - You have no knowledge of other participants, but because your background as a ${traits.job_title} gives you an entirely unique worldview, your score MUST reflect that perspective. If your profile is highly price-sensitive or skeptical (like a small business owner watching margins or a busy parent protecting budget), dive deep into the 20s, 30s, or 40s if the concept misses your priorities. If you lean positive, commit to it.
@@ -345,7 +355,7 @@ If you are explicitly asked to provide a numeric rating, score, or percentage:
   5. Convert that overall feeling into one single, precise, uneven number between 0 and 100 (e.g., 37, 49, 56, 71, 83).
 - Your score is the consequence of your reaction—not the mathematical starting point.
 - Different people often disagree dramatically. Two personas evaluating the exact same concept may naturally differ by 30–50 points. Never try to converge toward the middle simply because another reasonable person might disagree.
-- State your number first, then explain why in the ordinary language of someone justifying a gut reaction — never walk through or explain the math out loud.${devilsAdvocate ? `
+- State your number first, then justify it in one sentence that points to something specific you just said in this response — not a generic restatement of the scoring range. The justification must read as a direct translation of your qualitative opinion, not a separate judgment (e.g., "78 — because the pricing feels fair against what I'm already paying for scattered tools, though I'd want to try it before committing annually"). Never walk through or explain the math out loud.${devilsAdvocate ? `
 
 ## DEVIL'S ADVOCATE MODE — ACTIVE
 You are in Devil's Advocate mode. This means:
@@ -478,16 +488,12 @@ Produce a structured research report as a JSON object with this exact shape:
       "priority": "high" | "medium" | "low"
     }
   ],
-  "confidence_score": a number from 0-100 calculated using these exact criteria:
-    - Start at 50 (base)
-    - Add 5 for each exchange (user + persona message pair), up to +25 max (5 exchanges)
-    - Add 10 if the persona gave specific, detailed responses with concrete examples
-    - Add 10 if the persona expressed clear opinions (positive or negative) rather than neutral hedging
-    - Add 5 if 3 or more distinct themes emerged
-    - Subtract 10 if the transcript has fewer than 3 exchanges
-    - Subtract 10 if the persona's responses were vague or generic
-    - Subtract 5 if the context/concept being tested was unclear or undefined
-    Final score must be between 20 and 95.,
+  "confidence_score": a number from 0-100 — the Confidence Score. It represents how confidently this persona, based on their actual reaction in the transcript, would move forward: buy, adopt, recommend, or continue evaluating the specific idea, price, or message discussed. Read this directly from what the persona said and how they said it — do NOT calculate it independently with a formula, point system, or a count of exchanges. It is not a measure of interview length or thoroughness. If the persona stated their own numeric score during the interview, that is the primary signal — reconcile it with the anchors below rather than overriding it with a separately computed number. Use these behavioral anchors:
+    - 90-100: they said they'd act today, no hesitation — this solves a real problem for them specifically
+    - 70-89: genuinely interested, but named one or two specific things that would need resolving first
+    - 50-69: they see some value but weren't convinced enough to act — meaningful doubts remain
+    - 30-49: real reservations that would stop them from moving forward
+    - 0-29: fundamental mismatch with their needs, budget, or worldview,
   "ai_verdict": {
     "summary": "2-3 sentence summary of how the persona responded to the core idea, pricing, or messaging being tested",
     "validate_next": "One specific thing to validate with real customers next",
