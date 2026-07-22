@@ -134,7 +134,8 @@ export async function rewriteResponseWithDistinctOpening(
     })
 
     return response.content[0].type === 'text' ? response.content[0].text : originalResponse
-  } catch {
+  } catch (err) {
+    console.error(`[persona-engine] rewriteResponseWithDistinctOpening failed for "${persona.name}":`, err)
     return originalResponse
   }
 }
@@ -244,26 +245,54 @@ export async function rescorePersonaWithBand(
   band: { min: number; max: number },
   temperature: number
 ): Promise<string> {
-  try {
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 400,
-      temperature: Math.min(1.0, temperature + 0.1),
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: questionContent },
-        { role: 'assistant', content: originalResponse },
-        {
-          role: 'user',
-          content: `Several other independent panelists answering this exact same question converged on a very similar number to yours. Keep your overall reaction exactly the same — do not become more positive or more negative than you actually are — but restate your answer with a number specifically between ${band.min} and ${band.max}. That range reflects your relative position among this group given your own specific situation; pick whichever number within it feels most honest to the reasoning you already gave. State the new number first (it must be between ${band.min} and ${band.max}), then explain briefly, describing behavior rather than trait labels or ratings. Do not mention other panelists, bands, or ranges in your answer — just answer as yourself.`,
-        },
-      ],
-    })
+  const conversation: { role: 'user' | 'assistant'; content: UserMessageContent | string }[] = [
+    { role: 'user', content: questionContent },
+    { role: 'assistant', content: originalResponse },
+  ]
 
-    return response.content[0].type === 'text' ? response.content[0].text : originalResponse
-  } catch {
-    return originalResponse
+  const asks = [
+    `Several other independent panelists answering this exact same question converged on a very similar number to yours. Keep your overall reaction exactly the same — do not become more positive or more negative than you actually are — but restate your answer with a number specifically between ${band.min} and ${band.max}. That range reflects your relative position among this group given your own specific situation; pick whichever number within it feels most honest to the reasoning you already gave. State the new number first (it must be between ${band.min} and ${band.max}), then explain briefly, describing behavior rather than trait labels or ratings. Do not mention other panelists, bands, or ranges in your answer — just answer as yourself.`,
+    `That restated number still wasn't strictly between ${band.min} and ${band.max}. State a number strictly within that range first — this is a hard requirement — then your one-sentence reason.`,
+  ]
+
+  // Two attempts: the model occasionally ignores the band on the first try
+  // (or the request itself transiently fails), which — before this — silently
+  // fell back to the original, still-converged response with no signal that
+  // anything had gone wrong. Verify the number actually landed in-band before
+  // accepting it; if not, push back once and try again. Any failure is
+  // logged instead of swallowed.
+  let lastText: string | null = null
+
+  for (let attempt = 0; attempt < asks.length; attempt++) {
+    conversation.push({ role: 'user', content: asks[attempt] })
+
+    try {
+      const response = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 400,
+        temperature: Math.min(1.0, temperature + 0.1),
+        system: systemPrompt,
+        messages: conversation as any,
+      })
+
+      const text = response.content[0].type === 'text' ? response.content[0].text : null
+      if (!text) continue
+
+      const gotScore = extractLeadingScore(text)
+      if (gotScore !== null && gotScore >= band.min && gotScore <= band.max) {
+        return text
+      }
+
+      lastText = text
+      conversation.push({ role: 'assistant', content: text })
+    } catch (err) {
+      console.error(`[persona-engine] rescorePersonaWithBand failed for "${persona.name}" (attempt ${attempt + 1}/${asks.length}):`, err)
+    }
   }
+
+  // Best effort — a fresh generation that missed the exact band still beats
+  // silently keeping the original, still-converged response.
+  return lastText ?? originalResponse
 }
 
 // ─── Per-persona sampling temperature ─────────────────────────────────────────
