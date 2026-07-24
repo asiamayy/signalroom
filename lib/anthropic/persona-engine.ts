@@ -222,7 +222,7 @@ function deriveStageBehavior(stage: Persona['funnel_stage']): string {
     case 'purchase':
       return "You are on the verge of buying — or committing to — what's being tested here. Basically decided, doing a final gut-check. React like someone at the point of purchase: focus on price, value, risk, and the last bits of friction between you and yes. You want concrete reassurance it's worth it and a reason to commit now; vague upside won't move you."
     case 'loyalty':
-      return "IMPORTANT — treat yourself as an already-committed, loyal user in this space. If what's being tested is something already on the market, you are a repeat customer of IT specifically — the one you reach for, have bought many times, and would keep buying and recommend. If it's a brand-new idea not yet available, you are instead loyal to the established option you currently rely on in its place, and you react to this newcomer from that settled position. Either way, react from loyalty and lived experience — NOT as a shopper comparing options, and NOT as someone deciding whether to try it. Even if you are normally the type who compares brands, here you have already settled, so speak as a loyal user; the ONLY thing that would shake that is a specific, concrete problem. Do not say you aren't loyal or that you switch around — that contradicts who you are here."
+      return "IMPORTANT — you are an already-committed, loyal customer of the SPECIFIC product or brand being tested here. THAT named brand is the one you actually use and reach for; you've bought it many times and would keep buying it and recommend it. Never name or claim loyalty to a COMPETING brand as the one you use — if you're asked what you use or reach for, the answer is THIS brand, not a rival. React entirely from that established loyalty and lived experience — NOT as a shopper comparing options, and NOT as someone deciding whether to try it. Even if you're normally the type who compares brands, this is the one you've settled on; the only thing that would shake that is a specific, concrete problem. (If what's being tested is a brand-new idea not yet on the market, then instead you're loyal to the established option you currently rely on, and react to this newcomer from that settled position.) Do not say you aren't loyal, that you actually use a competitor, or that you switch around — that contradicts who you are here."
     default:
       // Unknown/unset stage — add nothing rather than guessing.
       return ''
@@ -662,9 +662,24 @@ const NAME_POOLS: Record<string, { first: string[]; last: string[] }> = {
     last: ['Hassan', 'Khalil', 'Aoun', 'Haddad', 'Nasser', 'Saleh', 'Farouk', 'Mansour'],
   },
   European: {
-    first: ['Anna', 'James', 'Elena', 'Piotr', 'Isabella', 'Liam', 'Greta', 'Marco', 'Ingrid', 'Declan'],
-    last: ['Kowalski', "O'Brien", 'Rossi', 'Novak', 'Muller', 'Andersen', 'Fitzgerald', 'Dubois', 'Lindqvist'],
+    first: ['Anna', 'James', 'Elena', 'Piotr', 'Isabella', 'Liam', 'Greta', 'Marco', 'Ingrid', 'Declan', 'Emily', 'Ryan', 'Claire', 'Nathan', 'Hannah', 'Scott', 'Laura', 'Brandon'],
+    last: ['Kowalski', "O'Brien", 'Rossi', 'Novak', 'Muller', 'Andersen', 'Fitzgerald', 'Dubois', 'Lindqvist', 'Miller', 'Davis', 'Wilson', 'Anderson', 'Thompson', 'Bauer', 'Sullivan', 'Meyer', 'Walsh'],
   },
+}
+
+// Specific sub-heritages per broad background. Generation picks ONE per call in
+// code (not in the prompt) so the distribution is actually enforced — the model,
+// called independently each time with no memory, otherwise collapses onto a few
+// favorites (repeated "Nigerian-American" / "Polish-American"). "multi-
+// generational American" variants are included because that's the most common
+// real case and was being under-represented.
+const HERITAGE_POOLS: Record<keyof typeof NAME_POOLS, string[]> = {
+  'Latino/Hispanic': ['Mexican-American', 'Puerto Rican', 'Cuban-American', 'Colombian-American', 'Dominican-American', 'Salvadoran-American', 'Guatemalan-American', 'Peruvian-American', 'Ecuadorian-American'],
+  'East Asian': ['Chinese-American', 'Korean-American', 'Japanese-American', 'Vietnamese-American', 'Taiwanese-American', 'Filipino-American', 'Hmong-American'],
+  'South Asian': ['Indian-American', 'Pakistani-American', 'Bangladeshi-American', 'Sri Lankan-American', 'Nepali-American', 'Indo-Caribbean American'],
+  'Black/African American': ['multi-generational African-American', 'multi-generational African-American', 'Jamaican-American', 'Haitian-American', 'Nigerian-American', 'Ghanaian-American', 'Ethiopian-American', 'Trinidadian-American', 'Somali-American'],
+  'Middle Eastern': ['Lebanese-American', 'Iranian-American', 'Egyptian-American', 'Syrian-American', 'Turkish-American', 'Palestinian-American', 'Iraqi-American'],
+  European: ['multi-generational American (English/Scots-Irish descent)', 'multi-generational American (English/Scots-Irish descent)', 'Irish-American', 'Italian-American', 'German-American', 'Polish-American', 'Scandinavian-American', 'Greek-American', 'Portuguese-American', 'French-Canadian American'],
 }
 
 // The model occasionally returns a descriptive sentence where a short label
@@ -728,14 +743,17 @@ export function sanitizeSuggestedTraits(parsed: unknown): unknown {
 
 export async function suggestPersonaTraits(description: string) {
   const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
-  const nameExamples = Object.entries(NAME_POOLS)
-    .map(([label, pool]) => `${label} (${pick(pool.first)} ${pick(pool.last)})`)
-    .sort(() => Math.random() - 0.5)
-    .join(', ')
 
-  const nameContext = `Choose a name that reflects a realistic, balanced mix of backgrounds over many generations. European/Caucasian-American names should appear about as often as Latino, Black, East/South Asian, or Middle Eastern names — treat "White/Caucasian" as just one more background in the rotation, not something to systematically avoid or under-represent for the sake of "diversity," and not something to over-represent either. Aim for a genuine, realistic balance, not a skew in either direction. For inspiration only, one example per background this time: ${nameExamples}, and others. These are just this call's examples, not a fixed list — pick your own first/last combination, and do NOT reuse the same name(s) you've generated in prior personas, and don't default to the same handful of overused names call after call. Pick something specific and varied based on the persona's location and background. Whatever name you choose, it must be internally consistent — a name like "Sarah Chen" (an English first name with a Chinese surname) implies a specific, real background (e.g. a Chinese-American woman, possibly from a mixed or adoptive family), not a generic/default ethnicity — the "ethnicity" field below must match the heritage the name actually implies, not be picked independently of it.`
+  // Pick the background, a specific heritage within it, and a couple of seed
+  // names IN CODE, so variety is actually enforced across independent calls
+  // rather than left to a model that reliably defaults to a few favorites.
+  const bgKey = pick(Object.keys(NAME_POOLS)) as keyof typeof NAME_POOLS
+  const chosenHeritage = pick(HERITAGE_POOLS[bgKey])
+  const seedNames = `${pick(NAME_POOLS[bgKey].first)} ${pick(NAME_POOLS[bgKey].last)}, ${pick(NAME_POOLS[bgKey].first)} ${pick(NAME_POOLS[bgKey].last)}`
 
-  const ethnicityContext = `Give the specific heritage implied by the name you actually chose — it drives avatar generation, so it must match that name rather than being picked independently. Vary it across generations the same way you vary the name: do NOT default to the same heritage call after call (e.g. always "Nigerian-American" or "Ghanaian-American" for Black personas, or always the same nationality for any other broad category). There is real variation within any broad category — a Black persona could be a multi-generational African-American family with no recent immigrant tie at all (the most common case, and what names like "DeShawn Carter" or "Jasmine Williams" actually imply), Caribbean-American, East African, West African, or otherwise. Pick whichever specific heritage the name you chose actually implies, not the first association that comes to mind. Express it as a short label only — never a sentence.`
+  const nameContext = `Unless the user's description clearly calls for a different background, this persona's heritage is ${chosenHeritage}. Give them a specific, real first and last name that authentically fits that heritage — two randomly drawn examples in that spirit are "${seedNames}", but do NOT just copy them; pick your own equally specific and believable combination (don't default to the single most common or obvious name). The name must be internally consistent with the heritage: e.g. "Sarah Chen" implies a Chinese-American background, not a generic default. If — and only if — the description itself makes a different background clearly more fitting, follow the description instead and match the name to that.`
+
+  const ethnicityContext = `Set "ethnicity" to a SHORT heritage label (never a sentence). Use exactly "${chosenHeritage}" to match the name and heritage above — unless the description clearly called for a different background, in which case use the matching short label for that instead. This drives avatar generation, so it must match the name you actually chose.`
 
   const locationPool = [
     'Portland, OR', 'Columbus, OH', 'Raleigh, NC', 'Minneapolis, MN', 'Pittsburgh, PA',
