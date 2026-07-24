@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Camera, Loader2, Check } from 'lucide-react'
 import { Button, Input, Textarea, Select, Slider, TagInput, ListInput } from '@/components/ui'
-import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation } from '@/types'
+import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation, FunnelStage } from '@/types'
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
 
@@ -106,6 +106,15 @@ const EDUCATION_OPTIONS = [
   { value: 'phd', label: 'PhD' },
 ]
 
+const FUNNEL_STAGE_OPTIONS = [
+  { value: 'awareness', label: 'Awareness — just discovering it' },
+  { value: 'consideration', label: 'Consideration — comparing options' },
+  { value: 'purchase', label: 'Purchase — about to decide' },
+  { value: 'loyalty', label: 'Loyalty — experienced user' },
+]
+
+const FUNNEL_STAGES: readonly FunnelStage[] = ['awareness', 'consideration', 'purchase', 'loyalty']
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function PersonaBuilder() {
@@ -115,6 +124,7 @@ export default function PersonaBuilder() {
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [funnelStage, setFunnelStage] = useState<FunnelStage>('awareness')
   const [traits, setTraits] = useState<PersonaTraits>(DEFAULT_TRAITS)
   const [aiPrompt, setAiPrompt] = useState('')
   const [generating, setGenerating] = useState(false)
@@ -143,6 +153,7 @@ export default function PersonaBuilder() {
       const s = json.data
       setName(s.name ?? '')
       setTags(s.tags ?? [])
+      setFunnelStage(FUNNEL_STAGES.includes(s.funnel_stage) ? s.funnel_stage : 'awareness')
       setTraits({
         age: s.age ?? 30,
         gender: (s.gender as PersonaGender) ?? 'female',
@@ -243,7 +254,7 @@ export default function PersonaBuilder() {
       const res = await fetch('/api/personas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, tags, traits, avatar_url: avatarUrl, project_id: projectId }),
+        body: JSON.stringify({ name, tags, traits, funnel_stage: funnelStage, avatar_url: avatarUrl, project_id: projectId }),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -400,6 +411,13 @@ export default function PersonaBuilder() {
                   hint="Press Enter to add — e.g. 'bootstrapped', 'B2B', 'budget-conscious'"
                   tags={tags}
                   onChange={setTags}
+                />
+                <Select
+                  label="Funnel stage"
+                  hint="Where they sit in the buying journey — this shapes how they react (a new prospect vs. an experienced user). Filterable on the Personas page."
+                  value={funnelStage}
+                  onChange={e => setFunnelStage(e.target.value as FunnelStage)}
+                  options={FUNNEL_STAGE_OPTIONS}
                 />
               </div>
             </div>

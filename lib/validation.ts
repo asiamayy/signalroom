@@ -35,6 +35,7 @@ export const personaCreateSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(120),
   traits: personaTraitsSchema,
   tags: z.array(z.string().max(60)).max(20).default([]),
+  funnel_stage: z.enum(['awareness', 'consideration', 'purchase', 'loyalty']).default('awareness'),
   project_id: optionalUuid,
   avatar_url: z.string().max(2000).nullable().optional(),
 })

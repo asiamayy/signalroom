@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
       avatar_url: formData.avatar_url ?? null,
       traits: formData.traits,
       tags: formData.tags,
+      funnel_stage: formData.funnel_stage,
     })
     .select()
     .single()

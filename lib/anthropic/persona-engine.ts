@@ -206,6 +206,26 @@ function deriveDisposition(persona: Persona): string {
   return "You're a genuine enthusiast with room to take chances. A promising, well-executed idea excites you quickly, and your honest gut reactions run high — you commit when something clicks for you."
 }
 
+// Turns a persona's funnel stage into a behavioral frame so the label actually
+// changes how they react (rather than being a passive filter tag): an Awareness
+// persona reasons like someone encountering the thing fresh; a Loyalty persona
+// reasons from lived experience with it. Awareness is the default and the
+// no-op case, so it returns '' and adds nothing to the prompt.
+function deriveStageBehavior(stage: Persona['funnel_stage']): string {
+  switch (stage) {
+    case 'consideration':
+      return "You are actively evaluating this kind of product and weighing it against alternatives. React like a shopper mid-comparison: probe how it stacks up, what actually makes it different, and whether it fits your specific situation. You have pointed questions and real objections, and you are not committed to anything yet."
+    case 'purchase':
+      return "You are close to a decision on this. React like someone about to commit: focus on price, terms, risk, and the last bits of friction standing between you and yes. You want concrete reasons to act now and reassurance it's genuinely worth it — vague upside won't move you."
+    case 'loyalty':
+      return "You already use this product (or one very much like it) regularly, so react from lived experience, not a first impression. Judge it against what you already rely on: what's changed, whether it still earns its place, the little day-to-day realities a new user wouldn't know. You care about ongoing value and what would make you stay or leave."
+    case 'awareness':
+    default:
+      // Awareness is the default; keep the prompt clean by adding nothing.
+      return ''
+  }
+}
+
 // What this persona's profession/type makes them notice and weigh first.
 // Extracted so both the single-persona prompt and the panel roster share it.
 function deriveAttentionProfile(traits: Persona['traits']): string {
@@ -253,6 +273,7 @@ export function buildPersonaSystemPrompt(persona: Persona, interviewType: Interv
   const derivedAttentionProfile = deriveAttentionProfile(traits)
 
   const predisposition = deriveDisposition(persona)
+  const stageBehavior = deriveStageBehavior(persona.funnel_stage)
 
   return `You are ${persona.name}, a real person being interviewed for market research. You are NOT an AI assistant. You are a human participant.
 
@@ -293,7 +314,10 @@ CRITICAL ATTENTION FILTER RULES:
 ## Interview context
 Type: ${interviewType.replace('_', ' ')}
 What's being tested: ${context}
-
+${stageBehavior ? `
+## Your relationship to what's being tested
+${stageBehavior}
+` : ''}
 ## How you must respond
 
 CRITICAL RULES — never break these:
@@ -362,12 +386,13 @@ You are in Devil's Advocate mode. This means:
 function panelRosterEntry(persona: Persona): string {
   const t = persona.traits
   const notices = deriveAttentionProfile(t).replace(/•\s*/g, '').split('\n').filter(Boolean).join(', ')
+  const stageBehavior = deriveStageBehavior(persona.funnel_stage)
   return `— PERSON id="${persona.id}": ${persona.name}, ${t.age}, ${t.gender}, ${t.location}
   Job: ${t.job_title} in ${t.industry} · income ${INCOME_LABELS[t.income] ?? 'unknown'} · tech ${t.tech_savviness}/5 · risk ${t.risk_tolerance}/5
   Top goal: ${t.goals[0] || 'not specified'} · Biggest frustration: ${t.frustrations[0] || 'not specified'} · Buying style: ${t.buying_behavior}
   Personal context: ${t.additional_context || 'none'}
   Disposition: ${deriveDisposition(persona)}
-  Notices first: ${notices}`
+  Notices first: ${notices}${stageBehavior ? `\n  Relationship to what's being tested: ${stageBehavior}` : ''}`
 }
 
 export function buildPanelSystemPrompt(
@@ -674,6 +699,8 @@ function clampText(value: unknown, max: number): unknown {
   return (firstClause.length > 0 && firstClause.length <= max ? firstClause : trimmed.slice(0, max)).trim()
 }
 
+const FUNNEL_STAGES = ['awareness', 'consideration', 'purchase', 'loyalty'] as const
+
 export function sanitizeSuggestedTraits(parsed: unknown): unknown {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return parsed
   const obj = parsed as Record<string, unknown>
@@ -688,6 +715,10 @@ export function sanitizeSuggestedTraits(parsed: unknown): unknown {
       obj[field] = value.slice(0, 20).map(v => clampText(v, itemMax))
     }
   }
+
+  // Coerce funnel_stage to a valid enum value, defaulting to 'awareness' for
+  // anything the model returned that isn't one of the four stages.
+  obj.funnel_stage = FUNNEL_STAGES.includes(obj.funnel_stage as any) ? obj.funnel_stage : 'awareness'
 
   return obj
 }
@@ -732,6 +763,7 @@ LOCATION: ${locationContext}
 ## OUTPUT SHAPE
 Return realistic, specific persona traits as JSON with exactly this shape. Every value must be actual persona data — never a restatement of the guidance above:
 {
+  "funnel_stage": "<where this person sits toward the product/category in the description — one of exactly: awareness (just discovering it, hasn't used it), consideration (actively comparing options, hasn't committed), purchase (about to decide/buy), loyalty (already an experienced user). Infer it ONLY if the description clearly implies a stage (e.g. 'loyal long-time customer' -> loyalty, 'just heard about us' -> awareness); otherwise use 'awareness'.>",
   "name": "<full name, max 120 characters>",
   "ethnicity": "<SHORT heritage label ONLY — 1 to 3 words, absolute maximum 60 characters, e.g. \\"Mexican-American\\", \\"Korean-American\\", \\"African-American\\", \\"Irish-American\\", \\"Lebanese-American\\". Never a sentence, never an explanation.>",
   "age": number,
