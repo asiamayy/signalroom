@@ -639,6 +639,59 @@ const NAME_POOLS: Record<string, { first: string[]; last: string[] }> = {
   },
 }
 
+// The model occasionally returns a descriptive sentence where a short label
+// belongs — most often `ethnicity`, whose guidance is long — which then failed
+// the create request with an opaque "traits.ethnicity: Too big" error. These
+// clamp every length-constrained field to the limits declared in
+// lib/validation.ts, so generation can never hand the form a value the API
+// would reject. Limits intentionally mirror personaTraitsSchema/personaCreateSchema.
+const SUGGESTION_TEXT_LIMITS: Record<string, number> = {
+  name: 120,
+  ethnicity: 100,
+  location: 200,
+  job_title: 200,
+  industry: 200,
+  key_quote: 1000,
+  buying_behavior: 2000,
+  additional_context: 2000,
+}
+
+const SUGGESTION_ARRAY_LIMITS: Record<string, number> = {
+  goals: 500,
+  frustrations: 500,
+  motivations: 500,
+  preferred_tools: 200,
+  tags: 60,
+}
+
+function clampText(value: unknown, max: number): unknown {
+  if (typeof value !== 'string') return value
+  const trimmed = value.trim()
+  if (trimmed.length <= max) return trimmed
+  // Prefer cutting at a natural clause boundary before hard-truncating, so a
+  // stray explanation collapses to its leading label rather than a mid-word cut.
+  const firstClause = trimmed.split(/\s*[—–,;:.(]\s*/)[0].trim()
+  return (firstClause.length > 0 && firstClause.length <= max ? firstClause : trimmed.slice(0, max)).trim()
+}
+
+export function sanitizeSuggestedTraits(parsed: unknown): unknown {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return parsed
+  const obj = parsed as Record<string, unknown>
+
+  for (const [field, max] of Object.entries(SUGGESTION_TEXT_LIMITS)) {
+    if (field in obj) obj[field] = clampText(obj[field], max)
+  }
+
+  for (const [field, itemMax] of Object.entries(SUGGESTION_ARRAY_LIMITS)) {
+    const value = obj[field]
+    if (Array.isArray(value)) {
+      obj[field] = value.slice(0, 20).map(v => clampText(v, itemMax))
+    }
+  }
+
+  return obj
+}
+
 export async function suggestPersonaTraits(description: string) {
   const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
   const nameExamples = Object.entries(NAME_POOLS)
@@ -647,6 +700,8 @@ export async function suggestPersonaTraits(description: string) {
     .join(', ')
 
   const nameContext = `Choose a name that reflects a realistic, balanced mix of backgrounds over many generations. European/Caucasian-American names should appear about as often as Latino, Black, East/South Asian, or Middle Eastern names — treat "White/Caucasian" as just one more background in the rotation, not something to systematically avoid or under-represent for the sake of "diversity," and not something to over-represent either. Aim for a genuine, realistic balance, not a skew in either direction. For inspiration only, one example per background this time: ${nameExamples}, and others. These are just this call's examples, not a fixed list — pick your own first/last combination, and do NOT reuse the same name(s) you've generated in prior personas, and don't default to the same handful of overused names call after call. Pick something specific and varied based on the persona's location and background. Whatever name you choose, it must be internally consistent — a name like "Sarah Chen" (an English first name with a Chinese surname) implies a specific, real background (e.g. a Chinese-American woman, possibly from a mixed or adoptive family), not a generic/default ethnicity — the "ethnicity" field below must match the heritage the name actually implies, not be picked independently of it.`
+
+  const ethnicityContext = `Give the specific heritage implied by the name you actually chose — it drives avatar generation, so it must match that name rather than being picked independently. Vary it across generations the same way you vary the name: do NOT default to the same heritage call after call (e.g. always "Nigerian-American" or "Ghanaian-American" for Black personas, or always the same nationality for any other broad category). There is real variation within any broad category — a Black persona could be a multi-generational African-American family with no recent immigrant tie at all (the most common case, and what names like "DeShawn Carter" or "Jasmine Williams" actually imply), Caribbean-American, East African, West African, or otherwise. Pick whichever specific heritage the name you chose actually implies, not the first association that comes to mind. Express it as a short label only — never a sentence.`
 
   const locationPool = [
     'Portland, OR', 'Columbus, OH', 'Raleigh, NC', 'Minneapolis, MN', 'Pittsburgh, PA',
@@ -666,13 +721,22 @@ export async function suggestPersonaTraits(description: string) {
         role: 'user',
         content: `A user wants to create a market research persona with this description: "${description}"
 
-Generate realistic, specific persona traits as JSON with this shape:
+## GUIDELINES (these are instructions for you — never copy this wording into the output)
+
+NAME: ${nameContext}
+
+ETHNICITY: ${ethnicityContext}
+
+LOCATION: ${locationContext}
+
+## OUTPUT SHAPE
+Return realistic, specific persona traits as JSON with exactly this shape. Every value must be actual persona data — never a restatement of the guidance above:
 {
-  "name": "Full name — ${nameContext}",
-  "ethnicity": "The specific ethnicity/heritage implied by the name you actually chose above — used to generate a visually consistent avatar, so it must match that name, not be picked independently of it. Vary this across generations the same way you vary the name itself — do NOT default to the same specific heritage call after call (e.g. always 'Nigerian-American' or 'Ghanaian-American' for Black personas, or always the same nationality for any other broad category). There is real variation within any broad category: a Black persona, for instance, could be a multi-generational African-American family with no recent immigrant tie at all (the most common case, and what names like 'DeShawn Carter' or 'Jasmine Williams' actually imply), Caribbean-American, East African, West African, or otherwise — pick whichever specific heritage the name you chose actually implies, not the first association that comes to mind",
+  "name": "<full name, max 120 characters>",
+  "ethnicity": "<SHORT heritage label ONLY — 1 to 3 words, absolute maximum 60 characters, e.g. \\"Mexican-American\\", \\"Korean-American\\", \\"African-American\\", \\"Irish-American\\", \\"Lebanese-American\\". Never a sentence, never an explanation.>",
   "age": number,
   "gender": "male" | "female" | "non-binary",
-  "location": "City, State — ${locationContext}",
+  "location": "<City, State — max 100 characters>",
   "job_title": "Specific job title",
   "industry": "Industry",
   "income": "under_50k" | "50k_100k" | "100k_200k" | "over_200k",
@@ -698,7 +762,7 @@ Make it specific and believable. Return ONLY the JSON.`,
 
   try {
     const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    return JSON.parse(cleaned)
+    return sanitizeSuggestedTraits(JSON.parse(cleaned))
   } catch {
     throw new Error('Failed to parse persona suggestion JSON')
   }

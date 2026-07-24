@@ -386,12 +386,14 @@ export default function PersonaBuilder() {
                   value={traits.location}
                   onChange={e => updateTrait('location', e.target.value)}
                   placeholder="e.g. Austin, TX"
+                  maxLength={200}
                 />
                 <Input
                   label="Ethnicity / heritage"
                   value={traits.ethnicity ?? ''}
                   onChange={e => updateTrait('ethnicity', e.target.value)}
                   placeholder="e.g. Chinese-American"
+                  maxLength={100}
                 />
                 <TagInput
                   label="Tags"
