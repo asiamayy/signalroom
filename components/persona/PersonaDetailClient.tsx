@@ -9,8 +9,16 @@ import {
   Bookmark, Archive, Trash2, Check, Heart, LayoutGrid, Users, Plus,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
+import { Dropdown } from '@/components/ui/Dropdown'
 import { INTERVIEW_TYPE_LABELS } from '@/lib/utils'
-import type { Persona, Interview, Journey } from '@/types'
+import type { Persona, Interview, Journey, FunnelStage } from '@/types'
+
+const FUNNEL_STAGE_OPTIONS = [
+  { value: 'awareness', label: 'Awareness — just discovering it' },
+  { value: 'consideration', label: 'Consideration — comparing options' },
+  { value: 'purchase', label: 'Purchase — about to decide' },
+  { value: 'loyalty', label: 'Loyalty — experienced user' },
+]
 
 const TABS = ['Overview', 'Insights', 'Journeys', 'Quotes', 'Data', 'Activity'] as const
 type Tab = typeof TABS[number]
@@ -43,8 +51,29 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [stage, setStage] = useState<FunnelStage>((persona.funnel_stage as FunnelStage) ?? 'awareness')
+  const [savingStage, setSavingStage] = useState(false)
   const moreMenuRef = useRef<HTMLDivElement>(null)
   const t = persona.traits
+
+  const updateStage = async (next: FunnelStage) => {
+    const prev = stage
+    setStage(next) // optimistic
+    setSavingStage(true)
+    try {
+      const res = await fetch('/api/personas', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: persona.id, action: 'set_stage', funnel_stage: next }),
+      })
+      if (!res.ok) throw new Error()
+      router.refresh()
+    } catch {
+      setStage(prev) // roll back on failure
+    } finally {
+      setSavingStage(false)
+    }
+  }
 
   useEffect(() => {
     fetch(`/api/personas/${persona.id}/journeys`)
@@ -225,6 +254,18 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
                   {t?.job_title && <span className="flex items-center gap-1.5"><Briefcase size={16} style={{ color: '#9CA3AF' }} />{t.job_title}</span>}
                   {t?.location && <span className="flex items-center gap-1.5"><MapPin size={16} style={{ color: '#9CA3AF' }} />{t.location}</span>}
                   {t?.age && <span className="flex items-center gap-1.5"><User size={16} style={{ color: '#9CA3AF' }} />{t.age} years</span>}
+                </div>
+
+                {/* Funnel stage — inline editable */}
+                <div className="mt-4 flex items-center gap-2.5 flex-wrap">
+                  <span className="text-xs font-medium uppercase tracking-wider" style={{ color: '#9CA3AF' }}>Funnel stage</span>
+                  <Dropdown
+                    value={stage}
+                    onChange={v => updateStage(v as FunnelStage)}
+                    options={FUNNEL_STAGE_OPTIONS}
+                  />
+                  {savingStage && <Loader2 size={13} className="animate-spin" style={{ color: '#9CA3AF' }} />}
+                  <span className="text-[11px]" style={{ color: '#9CA3AF' }}>Changes how they react in new interviews — won't alter past ones.</span>
                 </div>
 
                 {pills.length > 0 && (

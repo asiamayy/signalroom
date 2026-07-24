@@ -127,8 +127,22 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { id, action, project_id } = await request.json()
+  const { id, action, project_id, funnel_stage } = await request.json()
   if (!id || !action) return NextResponse.json({ error: 'ID and action required' }, { status: 400 })
+
+  if (action === 'set_stage') {
+    const VALID_STAGES = ['awareness', 'consideration', 'purchase', 'loyalty']
+    if (!VALID_STAGES.includes(funnel_stage)) {
+      return NextResponse.json({ error: 'Invalid funnel stage' }, { status: 400 })
+    }
+    const { error } = await supabase
+      .from('personas')
+      .update({ funnel_stage })
+      .eq('id', id)
+      .eq('user_id', user.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
 
   if (action === 'archive') {
     const { error } = await supabase

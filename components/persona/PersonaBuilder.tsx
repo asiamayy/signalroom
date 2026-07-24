@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Camera, Loader2, Check } from 'lucide-react'
 import { Button, Input, Textarea, Select, Slider, TagInput, ListInput } from '@/components/ui'
+import { Dropdown } from '@/components/ui/Dropdown'
 import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation, FunnelStage } from '@/types'
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
@@ -412,13 +413,17 @@ export default function PersonaBuilder() {
                   tags={tags}
                   onChange={setTags}
                 />
-                <Select
-                  label="Funnel stage"
-                  hint="Where they sit in the buying journey — this shapes how they react (a new prospect vs. an experienced user). Filterable on the Personas page."
-                  value={funnelStage}
-                  onChange={e => setFunnelStage(e.target.value as FunnelStage)}
-                  options={FUNNEL_STAGE_OPTIONS}
-                />
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-[#202124]">Funnel stage</label>
+                  <Dropdown
+                    size="md"
+                    fullWidth
+                    value={funnelStage}
+                    onChange={v => setFunnelStage(v as FunnelStage)}
+                    options={FUNNEL_STAGE_OPTIONS}
+                  />
+                  <p className="text-xs text-[#5F6368]">Where they sit in the buying journey — this shapes how they react (a new prospect vs. an experienced user). Filterable on the Personas page.</p>
+                </div>
               </div>
             </div>
           )}
