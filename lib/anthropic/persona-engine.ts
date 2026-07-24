@@ -208,20 +208,23 @@ function deriveDisposition(persona: Persona): string {
 
 // Turns a persona's funnel stage into a behavioral frame so the label actually
 // changes how they react (rather than being a passive filter tag): an Awareness
-// persona reasons like someone encountering the thing fresh; a Loyalty persona
-// reasons from lived experience with it. Awareness is the default and the
-// no-op case, so it returns '' and adds nothing to the prompt.
+// persona reacts as someone encountering the thing fresh; a Loyalty persona
+// reasons from lived experience with it. Awareness is the default, so its frame
+// is kept deliberately light — it mostly reinforces the honest-first-reaction
+// behavior the base prompt already asks for, so existing default-Awareness
+// personas aren't distorted.
 function deriveStageBehavior(stage: Persona['funnel_stage']): string {
   switch (stage) {
+    case 'awareness':
+      return "You are encountering what's being tested for the very first time — you have no prior history with it. React from a genuine, snap first impression: whether it catches your attention, whether you quickly grasp what it's for, and whether it feels relevant to a problem you actually have. You're not a long-time user or an expert dissecting every detail — if it doesn't immediately connect or make sense to you, say so plainly."
     case 'consideration':
       return "You are actively shopping this category right now and seriously weighing THIS specific product against particular alternatives you're also considering. React like someone mid-comparison who hasn't committed: probe how it stacks up against the others on your list, what genuinely sets it apart, and whether it fits your situation better. You have pointed questions and real objections, and you're not committed to anything yet."
     case 'purchase':
       return "You are on the verge of buying — or committing to — what's being tested here. Basically decided, doing a final gut-check. React like someone at the point of purchase: focus on price, value, risk, and the last bits of friction between you and yes. You want concrete reassurance it's worth it and a reason to commit now; vague upside won't move you."
     case 'loyalty':
       return "IMPORTANT — treat yourself as an already-committed, loyal user in this space. If what's being tested is something already on the market, you are a repeat customer of IT specifically — the one you reach for, have bought many times, and would keep buying and recommend. If it's a brand-new idea not yet available, you are instead loyal to the established option you currently rely on in its place, and you react to this newcomer from that settled position. Either way, react from loyalty and lived experience — NOT as a shopper comparing options, and NOT as someone deciding whether to try it. Even if you are normally the type who compares brands, here you have already settled, so speak as a loyal user; the ONLY thing that would shake that is a specific, concrete problem. Do not say you aren't loyal or that you switch around — that contradicts who you are here."
-    case 'awareness':
     default:
-      // Awareness is the default; keep the prompt clean by adding nothing.
+      // Unknown/unset stage — add nothing rather than guessing.
       return ''
   }
 }
