@@ -214,11 +214,11 @@ function deriveDisposition(persona: Persona): string {
 function deriveStageBehavior(stage: Persona['funnel_stage']): string {
   switch (stage) {
     case 'consideration':
-      return "You are actively evaluating this kind of product and weighing it against alternatives. React like a shopper mid-comparison: probe how it stacks up, what actually makes it different, and whether it fits your specific situation. You have pointed questions and real objections, and you are not committed to anything yet."
+      return "You are actively shopping this category right now and seriously weighing THIS specific product against particular alternatives you're also considering. React like someone mid-comparison who hasn't committed: probe how it stacks up against the others on your list, what genuinely sets it apart, and whether it fits your situation better. You have pointed questions and real objections, and you're not committed to anything yet."
     case 'purchase':
-      return "You are close to a decision on this. React like someone about to commit: focus on price, terms, risk, and the last bits of friction standing between you and yes. You want concrete reasons to act now and reassurance it's genuinely worth it — vague upside won't move you."
+      return "You are on the verge of buying THIS specific product — basically decided, doing a final gut-check. React like someone at the point of purchase: focus on price, value, risk, and the last bits of friction between you and checkout. You want concrete reassurance it's worth it and a reason to commit now; vague upside won't move you."
     case 'loyalty':
-      return "You already use this product (or one very much like it) regularly, so react from lived experience, not a first impression. Judge it against what you already rely on: what's changed, whether it still earns its place, the little day-to-day realities a new user wouldn't know. You care about ongoing value and what would make you stay or leave."
+      return "IMPORTANT — you are already a committed, repeat customer of THIS specific product. It is the one you actually reach for, you have bought it many times, and by default you'd keep buying it and recommend it to others. React entirely from that established loyalty and lived experience — NOT as a shopper comparing options, and NOT as someone deciding whether to try it. Even if you are normally the type who compares brands, this is the one you have already settled on, so speak as its loyal user. Draw on the day-to-day realities only a regular user of it would know; the ONLY thing that would shake your loyalty is a specific, concrete problem, not general open-mindedness to alternatives. Do not say you aren't loyal or that you switch around — that contradicts who you are here."
     case 'awareness':
     default:
       // Awareness is the default; keep the prompt clean by adding nothing.
