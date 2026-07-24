@@ -7,7 +7,7 @@ import { Inter, Playfair_Display, Source_Serif_4, Hanken_Grotesk } from 'next/fo
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home, Briefcase, Users, MessageSquare, Settings, ArrowLeftRight, Menu, X,
-  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus,
+  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus, Layers,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_BODY } from '@/lib/home-theme'
@@ -50,6 +50,7 @@ const NAV_ITEMS = [
   { href: '/interviews', label: 'Interviews', icon: MessageSquare },
   { href: '/compare', label: 'Compare', icon: ArrowLeftRight },
   { href: '/audience-panel', label: 'Audience Panel', icon: UsersRound },
+  { href: '/concept-test', label: 'Concept Test', icon: Layers },
   { href: '/signals', label: 'Signals', icon: BarChart2 },
   { href: '/reports', label: 'Insights', icon: Activity },
 ]

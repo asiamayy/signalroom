@@ -436,6 +436,117 @@ ${replyField}${sentimentField}${scoreField}
 ]`
 }
 
+// ─── Concept test (one panel evaluates several concepts side by side) ──────────
+// Same joint-call idea as the panel, extended to a matrix: every persona reacts
+// to EVERY concept in one coordinated call, so the model can compare them and
+// spread scores per person and per concept. The concepts' full text and images
+// live in the user message; the system prompt lists their ids so the model keys
+// its output correctly.
+export function buildConceptTestSystemPrompt(
+  personas: Persona[],
+  concepts: { id: string; label: string }[],
+  opts: { interviewType: InterviewType; context: string }
+): string {
+  const roster = personas.map(panelRosterEntry).join('\n\n')
+  const conceptList = concepts.map((c, i) => `  ${i + 1}. id="${c.id}" — "${c.label}"`).join('\n')
+
+  return `You are simulating a market-research panel of ${personas.length} DIFFERENT real people evaluating ${concepts.length} competing concepts side by side. You are not an AI assistant and never break character for any of them.
+
+## What's being tested
+Type: ${opts.interviewType.replace('_', ' ')}${opts.context ? `\nOverall brief: ${opts.context}` : ''}
+
+## THE PANEL (each is a distinct real person)
+${roster}
+
+## THE CONCEPTS being compared (each concept's full description and any image are provided in the message, labelled by id)
+${conceptList}
+
+## HARD RULES
+1. Voice EACH person as a real human, first person, grounded in their own life and situation. Translate traits into concrete behavior — never cite a trait as a label.
+2. Every person reacts to EVERY concept, and reacts COMPARATIVELY — they've seen all of them, so they can say which lands better for them and why. Different people genuinely disagree about which concept wins.
+3. No two people may react the same way, and don't open every reaction with the same obvious observation — enter from each person's own angle.
+4. Keep each per-concept reaction SHORT: 2 to 3 sentences, specific to that person.
+5. SCORING — for EACH concept, each person gives a Confidence Score from 0 to 100: how confidently THEY, based on their reaction to THAT concept, would act on it (buy / adopt / respond). A person can score the concepts very differently from each other, and different people scatter widely — do not make everyone's scores cluster. Give each the exact, uneven number their honest reaction implies.
+
+## OUTPUT — STRICT
+Reply with ONLY a JSON array, one object per person in the SAME ORDER as the panel, each with a "concepts" array covering ALL ${concepts.length} concepts by their exact id. No markdown, no code fences, no text before or after the array:
+[
+  {
+    "persona_id": "<the id from the panel above>",
+    "concepts": [
+      { "concept_id": "<a concept id from the list above>", "reaction": "<this person's honest 2-3 sentence reaction to THIS concept, first person, no numbers or JSON inside>", "score": <integer 0-100> }
+    ]
+  }
+]`
+}
+
+export interface ConceptCell {
+  reaction: string
+  score: number | null
+}
+
+// Parses the concept-test matrix into persona id -> (concept id -> cell).
+// Lenient at both levels (array parse, then per-object salvage) so a malformed
+// element or a truncated tail doesn't sink the whole run; concept ids are
+// matched to the real concepts, falling back to positional order.
+export function parseConceptTestResponses(
+  raw: string,
+  personas: Persona[],
+  concepts: { id: string }[]
+): Map<string, Map<string, ConceptCell>> {
+  const result = new Map<string, Map<string, ConceptCell>>()
+
+  const takeConcepts = (personaId: string, arr: any): void => {
+    if (!Array.isArray(arr)) return
+    const cells = new Map<string, ConceptCell>()
+    arr.forEach((c: any, j: number) => {
+      const cid = typeof c?.concept_id === 'string' && concepts.some(x => x.id === c.concept_id)
+        ? c.concept_id
+        : concepts[j]?.id
+      if (!cid || cells.has(cid)) return
+      const reaction = typeof c?.reaction === 'string' && c.reaction.trim() ? c.reaction.trim() : null
+      if (!reaction) return
+      let score: number | null = null
+      const n = typeof c?.score === 'number' ? c.score : parseInt(c?.score, 10)
+      if (Number.isFinite(n) && n >= 0 && n <= 100) score = Math.round(n)
+      cells.set(cid, { reaction, score })
+    })
+    if (cells.size > 0) result.set(personaId, cells)
+  }
+
+  const takePersona = (obj: any, i: number) => {
+    const id = typeof obj?.persona_id === 'string' && personas.some(p => p.id === obj.persona_id)
+      ? obj.persona_id
+      : personas[i]?.id
+    if (!id || result.has(id)) return
+    takeConcepts(id, obj?.concepts)
+  }
+
+  const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+
+  try {
+    const start = cleaned.indexOf('[')
+    const end = cleaned.lastIndexOf(']')
+    if (start !== -1 && end !== -1 && end > start) {
+      const parsedArr = JSON.parse(cleaned.slice(start, end + 1))
+      if (Array.isArray(parsedArr)) parsedArr.forEach(takePersona)
+    }
+  } catch {
+    // fall through to salvage
+  }
+
+  if (result.size < personas.length) {
+    extractJsonObjects(cleaned).forEach((objStr, i) => {
+      try {
+        const obj = JSON.parse(objStr)
+        if (obj && typeof obj === 'object' && 'concepts' in obj) takePersona(obj, i)
+      } catch { /* skip */ }
+    })
+  }
+
+  return result
+}
+
 // ─── Stream a persona response ────────────────────────────────────────────────
 
 export async function streamPersonaResponse(

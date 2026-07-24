@@ -280,6 +280,50 @@ export interface ProjectFile {
   created_at: string
 }
 
+// ─── Concept test (compare multiple concepts side by side) ──────────────────
+
+// One concept the panel evaluates — a short label + description, plus an
+// optional image (ad creative, packaging, mockup).
+export interface ConceptInput {
+  id: string
+  label: string
+  description: string
+  image?: string | null // base64, no data: prefix
+  imageMediaType?: string
+}
+
+// A single persona's take on one concept.
+export interface ConceptReaction {
+  persona_id: string
+  persona_name: string
+  avatar_initials: string
+  avatar_color: any
+  avatar_url: string | null
+  job_title: string
+  reaction: string
+  score: number | null
+}
+
+// Aggregated result for one concept across the whole panel.
+export interface ConceptResult {
+  id: string
+  label: string
+  rank: number
+  avg_score: number | null
+  reactions: ConceptReaction[]
+  strength: string
+  weakness: string
+  verdict: string
+}
+
+export interface ConceptTestResult {
+  concepts: ConceptResult[] // ranked, best first
+  winner_id: string | null
+  overall_recommendation: string
+  total_personas: number
+  completed_in_seconds: number
+}
+
 // ─── API Response shapes ──────────────────────────────────────────────────────
 
 export interface ApiResponse<T> {
