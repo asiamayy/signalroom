@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/Modal'
 import { ScoreRing } from '@/components/ui/ScoreRing'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW, stripLeadingScore } from '@/lib/utils'
+import { compressImageFile } from '@/lib/utils/image'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan } from '@/types'
@@ -227,18 +228,18 @@ export default function AudiencePanelPage() {
   const [imageMediaType, setImageMediaType] = useState<string>('image/jpeg')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) { setError('Please upload an image file'); return }
-    setImageMediaType(file.type || 'image/jpeg')
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const result = ev.target?.result as string
-      setImagePreview(result)
-      setImageData(result.split(',')[1])
+    try {
+      const { dataUrl, base64, mediaType } = await compressImageFile(file)
+      setImageMediaType(mediaType)
+      setImagePreview(dataUrl)
+      setImageData(base64)
+    } catch {
+      setError('Could not process that image — try a different file')
     }
-    reader.readAsDataURL(file)
   }
 
   const clearImage = () => { setImageData(null); setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = '' }

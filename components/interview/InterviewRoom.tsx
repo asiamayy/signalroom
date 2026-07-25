@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Send, FileText, Loader2, ImagePlus, X, ArrowRight } from 'lucide-react'
 import { cn, formatRelativeTime, INTERVIEW_TYPE_LABELS, CARD_SHADOW } from '@/lib/utils'
+import { compressImageFile } from '@/lib/utils/image'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import type { Interview, Message } from '@/types'
@@ -50,19 +51,18 @@ export default function InterviewRoom({ interview }: InterviewRoomProps) {
     ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`
   }, [input])
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) { setError('Please upload an image file'); return }
-    setImageMediaType(file.type || 'image/jpeg')
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const result = ev.target?.result as string
-      setImagePreview(result)
-      const base64 = result.split(',')[1]
+    try {
+      const { dataUrl, base64, mediaType } = await compressImageFile(file)
+      setImageMediaType(mediaType)
+      setImagePreview(dataUrl)
       setImageData(base64)
+    } catch {
+      setError('Could not process that image — try a different file')
     }
-    reader.readAsDataURL(file)
   }
 
   const clearImage = () => { setImageData(null); setImagePreview(null); if (fileInputRef.current) fileInputRef.current.value = '' }

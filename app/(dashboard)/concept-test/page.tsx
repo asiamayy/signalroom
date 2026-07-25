@@ -8,6 +8,7 @@ import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { ScoreRing } from '@/components/ui/ScoreRing'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW } from '@/lib/utils'
+import { compressImageFile } from '@/lib/utils/image'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
 import type { Persona, Plan, ConceptTestResult } from '@/types'
@@ -60,16 +61,16 @@ export default function ConceptTestPage() {
   const addConcept = () => setConcepts(prev => prev.length < MAX_CONCEPTS ? [...prev, emptyConcept()] : prev)
   const removeConcept = (i: number) => setConcepts(prev => prev.length > 2 ? prev.filter((_, idx) => idx !== i) : prev)
 
-  const handleImage = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImage = async (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) { setError('Please upload an image file'); return }
-    const reader = new FileReader()
-    reader.onload = ev => {
-      const res = ev.target?.result as string
-      updateConcept(i, { imagePreview: res, imageData: res.split(',')[1], imageMediaType: file.type || 'image/jpeg' })
+    try {
+      const { dataUrl, base64, mediaType } = await compressImageFile(file)
+      updateConcept(i, { imagePreview: dataUrl, imageData: base64, imageMediaType: mediaType })
+    } catch {
+      setError('Could not process that image — try a different file')
     }
-    reader.readAsDataURL(file)
   }
 
   const filledConcepts = concepts.filter(c => c.description.trim() || c.imageData)
