@@ -11,6 +11,11 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
+// The persona×concept matrix is the heaviest call in the app; give it room so
+// the platform doesn't kill it mid-generation (which would return a non-JSON
+// 504 and surface as a blank "Something went wrong"). Capped by the hosting plan.
+export const maxDuration = 300
+
 export async function POST(request: NextRequest) {
   const startedAt = Date.now()
 
@@ -21,45 +26,48 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Concept test is a multi-persona panel surface — pro and agency only.
-  const { limits } = await getPlanForUser(supabase, user.id)
-  if (!limits.audience_panel) {
-    return NextResponse.json({
-      error: 'Concept testing is available on the Signal plan and above.',
-      limit_reached: true,
-    }, { status: 403 })
-  }
-
-  const body = await request.json()
-  const { persona_ids, interview_type, context } = body
-  const rawConcepts = Array.isArray(body.concepts) ? body.concepts : []
-
-  if (!persona_ids || persona_ids.length < 3) {
-    return NextResponse.json({ error: 'Select at least 3 personas' }, { status: 400 })
-  }
-  if (persona_ids.length > limits.audience_panel_max) {
-    return NextResponse.json({ error: `Your plan supports up to ${limits.audience_panel_max} personas` }, { status: 400 })
-  }
-
-  // Normalize concepts: assign stable ids, keep only those with real content.
-  const concepts = rawConcepts
-    .map((c: any, i: number) => ({
-      id: `c${i}`,
-      label: (typeof c?.label === 'string' && c.label.trim()) ? c.label.trim().slice(0, 120) : `Concept ${i + 1}`,
-      description: typeof c?.description === 'string' ? c.description.trim().slice(0, 4000) : '',
-      image: typeof c?.image === 'string' ? c.image : null,
-      imageMediaType: VALID_IMAGE_TYPES.includes(c?.imageMediaType) ? c.imageMediaType : 'image/jpeg',
-    }))
-    .filter((c: any) => c.description || c.image)
-
-  if (concepts.length < 2) {
-    return NextResponse.json({ error: 'Add at least 2 concepts (each needs a description or an image)' }, { status: 400 })
-  }
-  if (concepts.length > 4) {
-    return NextResponse.json({ error: 'Compare up to 4 concepts at a time' }, { status: 400 })
-  }
-
+  // Everything after auth is wrapped so ANY failure (plan lookup, body parse,
+  // LLM call, timeout mid-await) returns a JSON error the client can show,
+  // instead of an unhandled 500/504 that arrives as HTML.
   try {
+    // Concept test is a multi-persona panel surface — pro and agency only.
+    const { limits } = await getPlanForUser(supabase, user.id)
+    if (!limits.audience_panel) {
+      return NextResponse.json({
+        error: 'Concept testing is available on the Signal plan and above.',
+        limit_reached: true,
+      }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { persona_ids, interview_type, context } = body
+    const rawConcepts = Array.isArray(body.concepts) ? body.concepts : []
+
+    if (!persona_ids || persona_ids.length < 3) {
+      return NextResponse.json({ error: 'Select at least 3 personas' }, { status: 400 })
+    }
+    if (persona_ids.length > limits.audience_panel_max) {
+      return NextResponse.json({ error: `Your plan supports up to ${limits.audience_panel_max} personas` }, { status: 400 })
+    }
+
+    // Normalize concepts: assign stable ids, keep only those with real content.
+    const concepts = rawConcepts
+      .map((c: any, i: number) => ({
+        id: `c${i}`,
+        label: (typeof c?.label === 'string' && c.label.trim()) ? c.label.trim().slice(0, 120) : `Concept ${i + 1}`,
+        description: typeof c?.description === 'string' ? c.description.trim().slice(0, 4000) : '',
+        image: typeof c?.image === 'string' ? c.image : null,
+        imageMediaType: VALID_IMAGE_TYPES.includes(c?.imageMediaType) ? c.imageMediaType : 'image/jpeg',
+      }))
+      .filter((c: any) => c.description || c.image)
+
+    if (concepts.length < 2) {
+      return NextResponse.json({ error: 'Add at least 2 concepts (each needs a description or an image)' }, { status: 400 })
+    }
+    if (concepts.length > 4) {
+      return NextResponse.json({ error: 'Compare up to 4 concepts at a time' }, { status: 400 })
+    }
+
     // Load personas
     const { data: personas, error } = await supabase
       .from('personas')
