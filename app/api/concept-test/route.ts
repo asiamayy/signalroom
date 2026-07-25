@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import {
   buildConceptTestSystemPrompt,
   parseConceptTestResponses,
+  buildConceptBackfillSystemPrompt,
+  parseConceptBackfillResponse,
+  computePersonaTemperature,
 } from '@/lib/anthropic/persona-engine'
 import { getPlanForUser } from '@/lib/utils/entitlements'
 import Anthropic from '@anthropic-ai/sdk'
@@ -104,9 +107,15 @@ export async function POST(request: NextRequest) {
       { interviewType: interview_type ?? 'concept_testing', context: context ?? '' },
     )
 
+    // ~90 tokens/cell badly underestimated real need (a 2-3 sentence reaction
+    // plus JSON overhead runs closer to 200) — on larger panels that ran the
+    // model out of budget mid-generation, and the truncation-salvage parser
+    // then silently returned fewer personas than were selected, with no
+    // indication anything was cut. Budget is more realistic now; the backfill
+    // pass below is the actual completeness guarantee regardless.
     const generation = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: Math.min(8000, 800 + personas.length * concepts.length * 90),
+      max_tokens: Math.min(8000, 1000 + personas.length * concepts.length * 200),
       temperature: 1,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }],
@@ -114,6 +123,45 @@ export async function POST(request: NextRequest) {
 
     const rawMatrix = generation.content[0].type === 'text' ? generation.content[0].text : ''
     const matrix = parseConceptTestResponses(rawMatrix, personas, concepts)
+
+    // Backfill any persona missing from the joint output — entirely, or just
+    // missing a concept or two — with a small per-persona follow-up scoped to
+    // only what's missing. This is what actually guarantees every selected
+    // persona appears in the results, rather than just reducing (but not
+    // eliminating) the chance of truncation via a better token estimate above.
+    const backfillTargets = personas.flatMap((p) => {
+      const have = matrix.get(p.id)
+      const missing = concepts.filter((c: any) => !have?.has(c.id))
+      return missing.length > 0 ? [{ persona: p, missing }] : []
+    })
+
+    if (backfillTargets.length > 0) {
+      await Promise.all(backfillTargets.map(async ({ persona, missing }) => {
+        try {
+          const backfillSystemPrompt = buildConceptBackfillSystemPrompt(
+            persona,
+            missing.map((c: any) => ({ id: c.id, label: c.label })),
+            { interviewType: interview_type ?? 'concept_testing', context: context ?? '' },
+          )
+          const res = await client.messages.create({
+            model: 'claude-sonnet-4-6',
+            max_tokens: Math.min(3000, 300 + missing.length * 250),
+            temperature: computePersonaTemperature(persona),
+            system: backfillSystemPrompt,
+            messages: [{ role: 'user', content: userContent }],
+          })
+          const raw = res.content[0].type === 'text' ? res.content[0].text : ''
+          const cells = parseConceptBackfillResponse(raw, missing.map((c: any) => ({ id: c.id })))
+          if (cells.size === 0) return
+
+          let existing = matrix.get(persona.id)
+          if (!existing) { existing = new Map(); matrix.set(persona.id, existing) }
+          cells.forEach((cell, cid) => existing!.set(cid, cell))
+        } catch (err) {
+          console.error(`[concept-test] backfill failed for "${persona.name}":`, err)
+        }
+      }))
+    }
 
     // Aggregate per concept: mean score across personas + each persona's reaction.
     const conceptAgg = concepts.map((c: any) => {

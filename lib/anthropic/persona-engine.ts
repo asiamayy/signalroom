@@ -547,6 +547,71 @@ export function parseConceptTestResponses(
   return result
 }
 
+// Backfills ONE persona's reaction to a specific set of concepts they're
+// missing from the joint matrix call — used when the joint call's token
+// budget runs out mid-generation on a large panel×concepts combination (the
+// per-object salvage parser recovers whatever completed before the cutoff,
+// but that means later personas in the array can be silently dropped). This
+// guarantees every selected persona shows up in the results rather than
+// quietly showing fewer than the user chose. Scoped to just the missing
+// concepts (not the whole panel) to keep the follow-up call small.
+export function buildConceptBackfillSystemPrompt(
+  persona: Persona,
+  missingConcepts: { id: string; label: string }[],
+  opts: { interviewType: InterviewType; context: string }
+): string {
+  const base = buildPersonaSystemPrompt(persona, opts.interviewType, opts.context)
+  const conceptList = missingConcepts.map((c, i) => `  ${i + 1}. id="${c.id}" — "${c.label}"`).join('\n')
+
+  return `${base}
+
+## ADDITIONAL TASK — CONCEPT REACTIONS
+You are reacting to ${missingConcepts.length} concept${missingConcepts.length === 1 ? '' : 's'} from a comparison, listed below by id (their full description and any image are in the message). Give a short, honest 2-3 sentence first-person reaction to EACH, plus a 0-100 Confidence Score for each (as defined above).
+
+${conceptList}
+
+## OUTPUT — STRICT
+Reply with ONLY a JSON object (no markdown, no text before or after it):
+{
+  "concepts": [
+    { "concept_id": "<id from above>", "reaction": "<your honest 2-3 sentence reaction, first person, no numbers or JSON inside>", "score": <integer 0-100> }
+  ]
+}`
+}
+
+// Parses a single-persona backfill reply into concept id -> cell. Same
+// leniency as the joint parser (falls back to positional order for a missing
+// concept_id); returns an empty map on unparseable output.
+export function parseConceptBackfillResponse(
+  raw: string,
+  missingConcepts: { id: string }[]
+): Map<string, ConceptCell> {
+  const cells = new Map<string, ConceptCell>()
+  try {
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const start = cleaned.indexOf('{')
+    const end = cleaned.lastIndexOf('}')
+    if (start === -1 || end === -1 || end <= start) return cells
+    const obj = JSON.parse(cleaned.slice(start, end + 1))
+    const arr = Array.isArray(obj?.concepts) ? obj.concepts : []
+    arr.forEach((c: any, j: number) => {
+      const cid = typeof c?.concept_id === 'string' && missingConcepts.some(m => m.id === c.concept_id)
+        ? c.concept_id
+        : missingConcepts[j]?.id
+      if (!cid || cells.has(cid)) return
+      const reaction = typeof c?.reaction === 'string' && c.reaction.trim() ? c.reaction.trim() : null
+      if (!reaction) return
+      let score: number | null = null
+      const n = typeof c?.score === 'number' ? c.score : parseInt(c?.score, 10)
+      if (Number.isFinite(n) && n >= 0 && n <= 100) score = Math.round(n)
+      cells.set(cid, { reaction, score })
+    })
+  } catch {
+    // return whatever was salvaged (empty)
+  }
+  return cells
+}
+
 // ─── Stream a persona response ────────────────────────────────────────────────
 
 export async function streamPersonaResponse(
