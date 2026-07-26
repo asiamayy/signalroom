@@ -375,7 +375,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   },
   pro: {
     personas: 50,
-    interviews_per_month: Infinity,
+    interviews_per_month: 100,
     reports: true,
     templates: true,
     multi_persona: true,

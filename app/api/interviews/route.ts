@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { canRunInterview } from '@/lib/utils'
 import { getPlanForUser, countInterviewsThisMonth, trackUsage } from '@/lib/utils/entitlements'
 import { interviewCreateSchema, parseBody } from '@/lib/validation'
 
@@ -94,7 +93,16 @@ export async function POST(request: NextRequest) {
   const { plan, limits } = await getPlanForUser(supabase, user.id)
   if (limits.interviews_per_month !== Infinity) {
     const usedThisMonth = await countInterviewsThisMonth(supabase, user.id)
-    if (!canRunInterview(plan, usedThisMonth)) {
+
+    // Grandfather: a user who already ran more interviews this month than the
+    // plan's current monthly cap (e.g. before a lower cap took effect) is
+    // never blocked from anything they could already do this month — their
+    // effective ceiling is whichever is higher, the plan's cap or what
+    // they've already used. Self-resolving: the count resets next calendar
+    // month, so this only ever applies for the remainder of the current one.
+    const effectiveLimit = Math.max(limits.interviews_per_month, usedThisMonth)
+
+    if (usedThisMonth >= effectiveLimit) {
       return NextResponse.json({
         error: `You've reached the ${limits.interviews_per_month} interview${limits.interviews_per_month === 1 ? '' : 's'}/month limit on the ${plan} plan. Upgrade to run more.`,
         limit_reached: true,

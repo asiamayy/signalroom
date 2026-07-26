@@ -56,7 +56,7 @@ const PLANS: {
     features: [
       'Unlimited research projects',
       'Up to 50 AI customer personas',
-      'Unlimited simulated interviews',
+      '100 interviews per month',
       'Executive-ready research reports',
       'Multi-persona comparative analysis',
       'Advanced insight synthesis',
@@ -70,6 +70,7 @@ const PLANS: {
     icon: Building2,
     features: [
       'Unlimited AI customer personas',
+      'Unlimited interviews',
       'Everything in Signal',
       '10 collaborative team seats',
       'White-label executive reports',

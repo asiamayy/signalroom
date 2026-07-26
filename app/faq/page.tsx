@@ -55,7 +55,7 @@ const FAQS = [
     items: [
       {
         q: 'What are the plan limits?',
-        a: 'The Free plan includes 1 persona and 1 interview per month, no credit card required. The Pulse plan ($199/month) includes 10 personas and 10 interviews per month. The Signal plan ($499/month) includes up to 50 personas and unlimited interviews. The Broadcast plan ($999/month) includes unlimited personas plus team seats and white-label reports. Deleted personas free up your slots — limits are based on how many you have at one time, not total ever created.',
+        a: 'The Free plan includes 1 persona and 1 interview per month, no credit card required. The Pulse plan ($199/month) includes 10 personas and 10 interviews per month. The Signal plan ($499/month) includes up to 50 personas and 100 interviews per month. The Broadcast plan ($999/month) includes unlimited personas and interviews, plus team seats and white-label reports. Deleted personas free up your slots — limits are based on how many you have at one time, not total ever created.',
       },
       {
         q: 'Can I cancel anytime?',

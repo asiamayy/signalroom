@@ -24,10 +24,6 @@ export function canCreatePersona(plan: Plan, currentCount: number): boolean {
   return currentCount < PLAN_LIMITS[plan].personas
 }
 
-export function canRunInterview(plan: Plan, monthlyCount: number): boolean {
-  return monthlyCount < PLAN_LIMITS[plan].interviews_per_month
-}
-
 // ─── Persona avatar helpers ───────────────────────────────────────────────────
 
 const AVATAR_COLORS = [

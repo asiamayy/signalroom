@@ -682,7 +682,7 @@ export default function LandingPage() {
                     <div className="p-5 sm:p-6 bg-[#e9edea]">
                       <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1A3024] block mb-2">SignalRoom</span>
                       <span className="text-[28px] font-normal tracking-tighter text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$499</span>
-                      <p className="text-[11px] text-[#1A3024] font-medium mb-3">unlimited/month</p>
+                      <p className="text-[11px] text-[#1A3024] font-medium mb-3">100 interviews/month</p>
                       <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1A3024]">
                         <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
                         <div className="flex justify-between"><span>Per interview</span><span className="font-medium">~$0</span></div>
@@ -751,7 +751,7 @@ export default function LandingPage() {
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited research projects</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Up to 50 AI customer personas</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited simulated interviews</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ 100 interviews per month</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Executive-ready research reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona comparative analysis</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Advanced insight synthesis</li>
@@ -770,6 +770,7 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Unlimited AI customer personas</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Unlimited interviews</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in Signal</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 collaborative team seats</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label executive reports</li>
