@@ -74,8 +74,6 @@ const PLANS: {
       'Everything in Signal',
       '10 collaborative team seats',
       'White-label executive reports',
-      'Shared research workspace',
-      'Organization-wide project management',
       'Priority feature access',
     ],
   },

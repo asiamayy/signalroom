@@ -774,8 +774,6 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in Signal</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 collaborative team seats</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label executive reports</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Shared research workspace</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Organization-wide project management</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority feature access</li>
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
