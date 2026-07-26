@@ -82,7 +82,16 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
     // All personas (active + archived) count toward limit
 
-    if ((count ?? 0) >= limit) {
+    // Grandfather: a user who already has more personas than the plan's
+    // current cap (e.g. built up under a prior "unlimited" tier) is never
+    // asked to delete anything or blocked from anything they could already
+    // do. Their effective ceiling is whichever is higher — the plan's cap or
+    // what they already have — so they can keep using everything they built,
+    // just can't add indefinitely more until they drop back under the cap or
+    // upgrade. New/smaller accounts are capped normally.
+    const effectiveLimit = Math.max(limit, count ?? 0)
+
+    if ((count ?? 0) >= effectiveLimit) {
       return NextResponse.json({
         error: `You've reached the ${limit} persona limit on the ${plan} plan. Upgrade to create more.`,
         limit_reached: true,

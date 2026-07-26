@@ -55,7 +55,7 @@ const PLANS: {
     highlight: true,
     features: [
       'Unlimited research projects',
-      'Unlimited AI customer personas',
+      'Up to 50 AI customer personas',
       'Unlimited simulated interviews',
       'Executive-ready research reports',
       'Multi-persona comparative analysis',
@@ -69,6 +69,7 @@ const PLANS: {
     price: 999,
     icon: Building2,
     features: [
+      'Unlimited AI customer personas',
       'Everything in Signal',
       '10 collaborative team seats',
       'White-label executive reports',

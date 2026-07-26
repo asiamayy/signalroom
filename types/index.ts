@@ -363,7 +363,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     white_label: false,
   },
   starter: {
-    personas: 3,
+    personas: 10,
     interviews_per_month: 10,
     reports: false,
     templates: false,
@@ -374,7 +374,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     white_label: false,
   },
   pro: {
-    personas: Infinity,
+    personas: 50,
     interviews_per_month: Infinity,
     reports: true,
     templates: true,
