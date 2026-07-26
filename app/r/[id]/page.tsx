@@ -19,7 +19,8 @@ import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
 import { CopyLinkButton } from '@/components/ui/CopyLinkButton'
 import { ThemesClient } from '@/app/(dashboard)/reports/[id]/ThemesClient'
-import type { ReportTheme, ReportRecommendation } from '@/types'
+import { PLAN_LIMITS } from '@/types'
+import type { Plan, ReportTheme, ReportRecommendation } from '@/types'
 
 const cardStyle = { background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }
 
@@ -55,6 +56,17 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
 
   if (error || !report) notFound()
 
+  // White-label (Broadcast): the report owner's plan controls whether the
+  // SignalRoom logo/upsell shows on their shared links — an agency handing a
+  // client a report link shouldn't be advertising SignalRoom on their work.
+  const { data: ownerProfile } = await supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', report.user_id)
+    .single()
+  const ownerPlan = (ownerProfile?.plan ?? 'free') as Plan
+  const isWhiteLabel = PLAN_LIMITS[ownerPlan]?.white_label ?? false
+
   const interview = report.interview
   const persona = interview?.persona
 
@@ -71,19 +83,21 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, minHeight: '100vh' }}>
       <div className="p-4 sm:p-8 max-w-4xl mx-auto">
 
-        {/* Public header */}
-        <div className="flex items-center justify-between mb-6">
-          <Link href="https://getsignalroom.com" className="flex items-center transition-opacity hover:opacity-80">
-            <img src="/signalroom-logo.svg" alt="SignalRoom" width="94" height="55" className="h-12 w-auto object-contain" />
-          </Link>
-          <Link
-            href="/signup"
-            className="text-xs font-semibold px-4 py-2 rounded-full transition-opacity hover:opacity-90"
-            style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}
-          >
-            Try SignalRoom free →
-          </Link>
-        </div>
+        {/* Public header — hidden entirely for white-label (Broadcast) accounts */}
+        {!isWhiteLabel && (
+          <div className="flex items-center justify-between mb-6">
+            <Link href="https://getsignalroom.com" className="flex items-center transition-opacity hover:opacity-80">
+              <img src="/signalroom-logo.svg" alt="SignalRoom" width="94" height="55" className="h-12 w-auto object-contain" />
+            </Link>
+            <Link
+              href="/signup"
+              className="text-xs font-semibold px-4 py-2 rounded-full transition-opacity hover:opacity-90"
+              style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}
+            >
+              Try SignalRoom free →
+            </Link>
+          </div>
+        )}
 
         {/* Report header */}
         <div className="rounded-2xl p-4 sm:p-6 mb-6" style={cardStyle}>
