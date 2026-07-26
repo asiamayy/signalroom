@@ -750,7 +750,7 @@ export default function LandingPage() {
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited research projects</li>
-                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited AI customer personas</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Up to 50 AI customer personas</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Unlimited simulated interviews</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Executive-ready research reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona comparative analysis</li>
@@ -769,6 +769,7 @@ export default function LandingPage() {
                 <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
               </div>
               <ul className="space-y-4 mb-12 sm:mb-16 flex-grow">
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Unlimited AI customer personas</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in Signal</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 collaborative team seats</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label executive reports</li>
