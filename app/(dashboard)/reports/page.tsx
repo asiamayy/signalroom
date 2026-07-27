@@ -120,15 +120,15 @@ export default function ReportsPage() {
             <section className="lg:col-span-8">
               <div className="mb-4 flex items-center justify-between border-b pb-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}80` }}>
                 <h2 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{activeType === 'all' ? 'All Research' : INTERVIEW_TYPE_LABELS[activeType] ?? activeType}</h2>
-                <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                  <Filter size={16} />
-                  <span className="hidden sm:inline">Filter research</span>
+                <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                  <Filter size={15} />
+                  <span className="hidden sm:inline">Research type</span>
                   <span className="relative">
-                    <select value={activeType} onChange={event => setActiveType(event.target.value)} aria-label="Filter research type" className="appearance-none rounded-full py-2 pl-3 pr-8 text-xs font-semibold outline-none transition-colors hover:bg-white focus:bg-white" style={{ background: HOME_COLORS.surfaceContainer, color: HOME_COLORS.onSurface, fontFamily: 'inherit' }}>
+                    <select value={activeType} onChange={event => setActiveType(event.target.value)} aria-label="Filter research type" className="appearance-none rounded-lg border py-2 pl-3 pr-8 text-xs font-semibold outline-none transition-all hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#18281c]/15" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}99`, color: HOME_COLORS.onSurface, fontFamily: 'inherit', boxShadow: '0 1px 2px rgba(24, 40, 28, 0.03)' }}>
                       <option value="all">All research</option>
                       {researchTypes.map(type => <option key={type} value={type}>{INTERVIEW_TYPE_LABELS[type] ?? type}</option>)}
                     </select>
-                    <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
+                    <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: HOME_COLORS.primary }} />
                   </span>
                 </label>
               </div>
@@ -159,7 +159,7 @@ function InsightCard({ report, deleting, onDelete }: { report: ReportRecord; del
   const persona = report.interview?.persona
 
   return (
-    <article className="group relative overflow-hidden rounded-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-xl" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
+    <article className="group relative overflow-hidden rounded-xl transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(24,40,28,0.07)]" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: '0 1px 2px rgba(24, 40, 28, 0.025)' }}>
       <span className="absolute inset-y-0 left-0 w-1 origin-top scale-y-0 transition-transform duration-500 group-hover:scale-y-100" style={{ background: HOME_COLORS.primary }} />
       <Link href={`/reports/${report.id}`} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-5">
         <PersonaAvatar
