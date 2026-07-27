@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle } from 'lucide-react'
+import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X } from 'lucide-react'
 import { cn, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { createClient } from '@/lib/supabase/client'
@@ -93,6 +93,14 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const [signingOut, setSigningOut] = useState(false)
   const [billingError, setBillingError] = useState('')
 
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(profile?.brand_logo_url ?? null)
+  const [brandColor, setBrandColor] = useState<string | null>(profile?.brand_color ?? null)
+  const [colorDraft, setColorDraft] = useState(profile?.brand_color ?? HOME_COLORS.primary)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [savingColor, setSavingColor] = useState(false)
+  const [brandingError, setBrandingError] = useState('')
+  const logoInputRef = useRef<HTMLInputElement>(null)
+
   const currentPlan = profile?.plan ?? 'free'
   const currentPlanData = PLANS.find(p => p.id === currentPlan)
   const personaLimit = PLAN_LIMITS[currentPlan as Plan].personas
@@ -145,6 +153,74 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  const handleLogoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setBrandingError('')
+    setUploadingLogo(true)
+    try {
+      const body = new FormData()
+      body.append('logo', file)
+      const res = await fetch('/api/settings/branding', { method: 'POST', body })
+      const json = await res.json()
+      if (!res.ok) { setBrandingError(json.error ?? 'Failed to upload logo'); return }
+      setBrandLogoUrl(json.data.brand_logo_url)
+    } catch {
+      setBrandingError('Failed to upload logo — please try again.')
+    } finally {
+      setUploadingLogo(false)
+      if (logoInputRef.current) logoInputRef.current.value = ''
+    }
+  }
+
+  const handleRemoveLogo = async () => {
+    setBrandingError('')
+    setUploadingLogo(true)
+    try {
+      await fetch('/api/settings/branding', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: 'logo' }),
+      })
+      setBrandLogoUrl(null)
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
+  const handleSaveColor = async () => {
+    setBrandingError('')
+    setSavingColor(true)
+    try {
+      const body = new FormData()
+      body.append('color', colorDraft)
+      const res = await fetch('/api/settings/branding', { method: 'POST', body })
+      const json = await res.json()
+      if (!res.ok) { setBrandingError(json.error ?? 'Failed to save color'); return }
+      setBrandColor(json.data.brand_color)
+    } catch {
+      setBrandingError('Failed to save color — please try again.')
+    } finally {
+      setSavingColor(false)
+    }
+  }
+
+  const handleResetColor = async () => {
+    setBrandingError('')
+    setSavingColor(true)
+    try {
+      await fetch('/api/settings/branding', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: 'color' }),
+      })
+      setBrandColor(null)
+      setColorDraft(HOME_COLORS.primary)
+    } finally {
+      setSavingColor(false)
+    }
   }
 
   return (
@@ -267,6 +343,114 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
             </div>
           </div>
         </section>
+
+        {/* ── White-label branding (Broadcast only) ──────────────────────────── */}
+        {currentPlan === 'agency' && (
+          <section className="mb-8">
+            <h2 className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>White-label branding</h2>
+            <div className="rounded-2xl p-5 space-y-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+              <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                Shared report links already hide SignalRoom&apos;s branding for your account. Add your own logo and accent color so they read as your agency&apos;s deliverable.
+              </p>
+
+              {brandingError && (
+                <div className="flex items-start gap-2 rounded-xl px-4 py-3" style={{ background: '#FFDAD6', color: HOME_COLORS.error }}>
+                  <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+                  <p className="text-sm">{brandingError}</p>
+                </div>
+              )}
+
+              {/* Logo */}
+              <div>
+                <p className="text-sm font-semibold mb-2" style={{ color: HOME_COLORS.onSurface }}>Logo</p>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+                    style={{ background: HOME_COLORS.surfaceContainer, border: `1px solid ${HOME_COLORS.outlineVariant}66` }}
+                  >
+                    {brandLogoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={brandLogoUrl} alt="Your logo" className="w-full h-full object-contain" />
+                    ) : (
+                      <Upload size={16} style={{ color: HOME_COLORS.onSurfaceVariant }} />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadingLogo}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:bg-black/[0.03]"
+                      style={{ color: HOME_COLORS.onSurfaceVariant, border: `1px solid ${HOME_COLORS.outlineVariant}66`, background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      {uploadingLogo ? 'Uploading...' : brandLogoUrl ? 'Replace logo' : 'Upload logo'}
+                    </button>
+                    {brandLogoUrl && (
+                      <button
+                        onClick={handleRemoveLogo}
+                        disabled={uploadingLogo}
+                        className="flex items-center gap-1 text-xs transition-colors hover:text-red-600"
+                        style={{ color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        <X size={11} /> Remove
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className="hidden"
+                    onChange={handleLogoSelect}
+                  />
+                </div>
+                <p className="text-[11px] mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>PNG, JPEG, WebP, or SVG. Up to 2MB.</p>
+              </div>
+
+              <hr style={{ border: 'none', borderTop: `1px solid ${HOME_COLORS.outlineVariant}33` }} />
+
+              {/* Accent color */}
+              <div>
+                <p className="text-sm font-semibold mb-2" style={{ color: HOME_COLORS.onSurface }}>Accent color</p>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <input
+                    type="color"
+                    value={colorDraft}
+                    onChange={e => setColorDraft(e.target.value)}
+                    className="w-10 h-10 rounded-lg cursor-pointer"
+                    style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66`, padding: 0, background: 'none' }}
+                  />
+                  <input
+                    type="text"
+                    value={colorDraft}
+                    onChange={e => setColorDraft(e.target.value)}
+                    placeholder="#1A2B3C"
+                    className="text-sm px-3 py-2 rounded-lg w-32"
+                    style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface, background: 'none', fontFamily: 'inherit' }}
+                  />
+                  <button
+                    onClick={handleSaveColor}
+                    disabled={savingColor || colorDraft === brandColor}
+                    className="text-xs font-semibold px-3 py-2 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+                    style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    {savingColor ? 'Saving...' : 'Save'}
+                  </button>
+                  {brandColor && (
+                    <button
+                      onClick={handleResetColor}
+                      disabled={savingColor}
+                      className="text-xs transition-colors hover:text-red-600"
+                      style={{ color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      Reset to default
+                    </button>
+                  )}
+                </div>
+                <p className="text-[11px] mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Used for the confidence score, sentiment, and links on your shared report pages.</p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ── Plans ────────────────────────────────────────────────────────── */}
         <section>

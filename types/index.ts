@@ -14,6 +14,8 @@ export interface UserProfile {
   personas_used: number
   briefing?: ExecutiveBriefing | null
   briefing_generated_at?: string | null
+  brand_logo_url?: string | null
+  brand_color?: string | null
   created_at: string
   updated_at: string
 }

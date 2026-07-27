@@ -75,17 +75,24 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
 
   const { data: ownerProfile } = await supabase
     .from('profiles')
-    .select('plan')
+    .select('plan, brand_logo_url, brand_color')
     .eq('id', planCheckUserId)
     .single()
   const ownerPlan = (ownerProfile?.plan ?? 'free') as Plan
   const isWhiteLabel = PLAN_LIMITS[ownerPlan]?.white_label ?? false
 
+  // Beyond hiding SignalRoom's own branding, genuine white-label means
+  // showing the AGENCY's branding — a custom logo and accent color, so the
+  // report reads as their own deliverable. Falls back to today's look
+  // (SignalRoom's brand accent, no logo) if the owner hasn't set one yet.
+  const brandLogoUrl = isWhiteLabel ? ownerProfile?.brand_logo_url : null
+  const accentColor = (isWhiteLabel && ownerProfile?.brand_color) || HOME_COLORS.primary
+
   const interview = report.interview
   const persona = interview?.persona
 
   const score = report.confidence_score
-  const scoreColor = score >= 75 ? HOME_COLORS.primary : score >= 50 ? '#B45309' : HOME_COLORS.error
+  const scoreColor = score >= 75 ? accentColor : score >= 50 ? '#B45309' : HOME_COLORS.error
   const scoreBg = score >= 75 ? HOME_COLORS.secondaryContainer : score >= 50 ? '#FEF3C7' : '#FFDAD6'
   const scoreLabel = score >= 75 ? 'High Confidence' : score >= 50 ? 'Moderate Confidence' : 'Low Confidence'
 
@@ -97,7 +104,9 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, minHeight: '100vh' }}>
       <div className="p-4 sm:p-8 max-w-4xl mx-auto">
 
-        {/* Public header — hidden entirely for white-label (Broadcast) accounts */}
+        {/* Public header — SignalRoom's own branding for everyone else; the
+            agency's own logo (if they've set one) for white-label accounts;
+            nothing at all for white-label accounts with no logo uploaded yet */}
         {!isWhiteLabel && (
           <div className="flex items-center justify-between mb-6">
             <Link href="https://getsignalroom.com" className="flex items-center transition-opacity hover:opacity-80">
@@ -110,6 +119,11 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
             >
               Try SignalRoom free →
             </Link>
+          </div>
+        )}
+        {isWhiteLabel && brandLogoUrl && (
+          <div className="flex items-center mb-6">
+            <img src={brandLogoUrl} alt="" className="h-10 w-auto object-contain" />
           </div>
         )}
 
@@ -231,8 +245,8 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
                 <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>About this score</h3>
               </div>
               <div className="space-y-2.5">
-                <ConfidenceBar label="Depth of responses" value={Math.min(100, messageCount * 12)} />
-                <ConfidenceBar label="Persona specificity" value={getPersonaSpecificity(persona)} />
+                <ConfidenceBar label="Depth of responses" value={Math.min(100, messageCount * 12)} accentColor={accentColor} />
+                <ConfidenceBar label="Persona specificity" value={getPersonaSpecificity(persona)} accentColor={accentColor} />
               </div>
               <p className="text-xs mt-3 leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 This score measures the depth and specificity of this AI interview session — not market certainty. Longer sessions with a well-defined persona score higher. Always validate key findings with real users.
@@ -245,7 +259,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
                 <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                   Sentiment breakdown
                 </h3>
-                <SentimentBreakdown themes={themes} />
+                <SentimentBreakdown themes={themes} accentColor={accentColor} />
               </div>
             )}
 
@@ -274,7 +288,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
                     </div>
                   ))}
                 </dl>
-                <Link href={`/personas/${persona.id}`} className="block text-xs mt-3 transition-colors" style={{ color: HOME_COLORS.primary }}>
+                <Link href={`/personas/${persona.id}`} className="block text-xs mt-3 transition-colors" style={{ color: accentColor }}>
                   View full persona →
                 </Link>
               </div>
@@ -316,9 +330,9 @@ function RecommendationCard({ rec }: { rec: ReportRecommendation }) {
 
 // ─── Confidence bar ────────────────────────────────────────────────────────────
 
-function ConfidenceBar({ label, value }: { label: string; value: number }) {
+function ConfidenceBar({ label, value, accentColor }: { label: string; value: number; accentColor: string }) {
   const capped = Math.min(100, Math.max(0, value))
-  const color = capped >= 75 ? HOME_COLORS.primary : capped >= 50 ? '#D97706' : '#EF4444'
+  const color = capped >= 75 ? accentColor : capped >= 50 ? '#D97706' : '#EF4444'
 
   return (
     <div>
@@ -335,7 +349,7 @@ function ConfidenceBar({ label, value }: { label: string; value: number }) {
 
 // ─── Sentiment breakdown ───────────────────────────────────────────────────────
 
-function SentimentBreakdown({ themes }: { themes: ReportTheme[] }) {
+function SentimentBreakdown({ themes, accentColor }: { themes: ReportTheme[]; accentColor: string }) {
   const counts = themes.reduce((acc, t) => {
     acc[t.sentiment] = (acc[t.sentiment] ?? 0) + 1
     return acc
@@ -343,7 +357,7 @@ function SentimentBreakdown({ themes }: { themes: ReportTheme[] }) {
 
   const total = themes.length
   const sentiments: { key: string; label: string; color: string }[] = [
-    { key: 'positive', label: 'Positive', color: HOME_COLORS.primary },
+    { key: 'positive', label: 'Positive', color: accentColor },
     { key: 'mixed', label: 'Mixed', color: '#D97706' },
     { key: 'neutral', label: 'Neutral', color: HOME_COLORS.outline },
     { key: 'negative', label: 'Negative', color: '#EF4444' },
