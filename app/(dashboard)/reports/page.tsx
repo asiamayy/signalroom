@@ -192,8 +192,8 @@ function InsightCard({ report, deleting, onDelete }: { report: ReportRecord; del
           </span>
         </div>
       </Link>
-      <button onClick={event => onDelete(event, report.id)} disabled={deleting} title="Delete report" aria-label="Delete report" className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.onSurfaceVariant }}>
-        {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+      <button onClick={event => onDelete(event, report.id)} disabled={deleting} title="Delete report" aria-label="Delete report" className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-md opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.onSurfaceVariant }}>
+        {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
       </button>
     </article>
   )
