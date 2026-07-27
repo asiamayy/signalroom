@@ -15,6 +15,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect, useRef } from 'react'
 import type { Project } from '@/types'
 import { SearchProvider, useSearch } from '@/lib/search-context'
+import { Modal } from '@/components/ui/Modal'
+import { CreateProjectForm } from '@/app/(dashboard)/projects/ProjectsClient'
 
 // Dashboard-only logo lockup (icon + wordmark + "AI Market Research" tagline
 // baked in). Scoped to the dashboard so the landing page's logo is untouched.
@@ -75,9 +77,27 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
+  const [showCreateProject, setShowCreateProject] = useState(false)
   const { query: search, setQuery: setSearch } = useSearch()
   const accountMenuRef = useRef<HTMLDivElement>(null)
   const closeMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Available from any dashboard page via the sidebar's "New Project" button
+  // — no list to append to here (unlike the Projects page itself), so this
+  // navigates straight to the new project's detail page once created.
+  const handleCreateProject = async (name: string) => {
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    })
+    if (res.ok) {
+      const { data } = await res.json()
+      setShowCreateProject(false)
+      fetch(`/api/projects/${data.id}/cover`, { method: 'POST' }).catch(() => {})
+      router.push(`/projects/${data.id}`)
+    }
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -198,14 +218,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* Footer — New Project */}
       <div className="px-3 pb-4 pt-2" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}66`, fontFamily: HOME_FONT_BODY }}>
-        <Link
-          href="/projects"
+        <button
+          onClick={() => setShowCreateProject(true)}
           className="w-full flex items-center gap-2 text-sm font-semibold px-3.5 py-2.5 rounded-lg transition-colors hover:bg-[#eae7e7]"
-          style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }}
+          style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface, cursor: 'pointer', fontFamily: 'inherit' }}
         >
           <Plus size={15} />
           New Project
-        </Link>
+        </button>
       </div>
     </>
   )
@@ -352,6 +372,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      <AnimatePresence>
+        {showCreateProject && (
+          <Modal key="sidebar-create-project-modal" onClose={() => setShowCreateProject(false)} layoutId="sidebar-create-project-modal" maxWidth={440}>
+            <CreateProjectForm onCreate={handleCreateProject} />
+          </Modal>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

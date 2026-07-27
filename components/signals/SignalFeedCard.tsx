@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { motion } from 'framer-motion'
 import {
   AlertTriangle, ShieldAlert, Target, Lightbulb, Zap, TrendingUp, Sparkles, AlertOctagon,
   BarChart3, ShieldCheck,
@@ -43,16 +43,24 @@ const IMPACT_DOT: Record<SignalImpact, string> = {
 interface SignalFeedCardProps {
   signal: Signal
   variant?: 'standard' | 'wide'
+  // Opens the full-text preview modal (mirrors the Personas "Show preview"
+  // pattern) instead of navigating away to the project's Signals tab.
+  onPreview: (signal: Signal, layoutId: string) => void
 }
 
-export function SignalFeedCard({ signal, variant = 'standard' }: SignalFeedCardProps) {
+export function SignalFeedCard({ signal, variant = 'standard', onPreview }: SignalFeedCardProps) {
   const Icon = TYPE_ICON[signal.type]
   const badge = TYPE_BADGE[signal.type]
-  const href = `/projects/${signal.project_id}?tab=Signals`
+  const layoutId = `signal-feed-${variant}-${signal.id}`
 
   if (variant === 'wide') {
     return (
-      <article className="rounded-xl overflow-hidden transition-all hover:shadow-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+      <motion.article
+        layoutId={layoutId}
+        onClick={() => onPreview(signal, layoutId)}
+        className="rounded-xl overflow-hidden transition-all hover:shadow-xl cursor-pointer"
+        style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
+      >
         <div className="grid grid-cols-12">
           <div className="col-span-12 sm:col-span-4 min-h-[160px] sm:min-h-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
             <Icon size={48} strokeWidth={1.1} style={{ color: `${HOME_COLORS.primaryFixedDim}99` }} />
@@ -64,9 +72,7 @@ export function SignalFeedCard({ signal, variant = 'standard' }: SignalFeedCardP
               </span>
               <span className="text-xs uppercase" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(signal.created_at)}</span>
             </div>
-            <Link href={href}>
-              <h3 className="text-xl sm:text-2xl mb-3 leading-snug" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{signal.title}</h3>
-            </Link>
+            <h3 className="text-xl sm:text-2xl mb-3 leading-snug" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{signal.title}</h3>
             <p className="text-sm leading-relaxed mb-5 line-clamp-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>{signal.summary}</p>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
@@ -80,12 +86,17 @@ export function SignalFeedCard({ signal, variant = 'standard' }: SignalFeedCardP
             </div>
           </div>
         </div>
-      </article>
+      </motion.article>
     )
   }
 
   return (
-    <article className="group rounded-xl p-6 sm:p-8 transition-all hover:shadow-xl hover:-translate-y-1" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+    <motion.article
+      layoutId={layoutId}
+      onClick={() => onPreview(signal, layoutId)}
+      className="group rounded-xl p-6 sm:p-8 transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+      style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
+    >
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-3">
           <span className="px-3 py-1 font-bold text-[10px] uppercase tracking-wider rounded-full" style={{ background: badge.bg, color: badge.text }}>
@@ -95,11 +106,9 @@ export function SignalFeedCard({ signal, variant = 'standard' }: SignalFeedCardP
         </div>
       </div>
 
-      <Link href={href}>
-        <h3 className="text-xl sm:text-2xl mb-4 leading-snug cursor-pointer" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>
-          {signal.title}
-        </h3>
-      </Link>
+      <h3 className="text-xl sm:text-2xl mb-4 leading-snug" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>
+        {signal.title}
+      </h3>
       <p className="text-sm leading-relaxed mb-8 line-clamp-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>{signal.summary}</p>
 
       <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-6" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
@@ -128,6 +137,6 @@ export function SignalFeedCard({ signal, variant = 'standard' }: SignalFeedCardP
           <span className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{signal.supporting_quotes.length} quote{signal.supporting_quotes.length === 1 ? '' : 's'}</span>
         </div>
       </div>
-    </article>
+    </motion.article>
   )
 }

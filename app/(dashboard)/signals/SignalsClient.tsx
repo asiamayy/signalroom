@@ -2,14 +2,16 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { AnimatePresence } from 'framer-motion'
 import {
-  Activity, Filter, ArrowUp, ArrowDown, Gauge, Share2, Lightbulb, TrendingUp, TrendingDown,
+  Activity, Filter, ArrowUp, ArrowDown, Gauge, Share2, Lightbulb, TrendingUp, TrendingDown, Quote,
 } from 'lucide-react'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW, formatRelativeTime } from '@/lib/utils'
 import { SignalFeedCard } from '@/components/signals/SignalFeedCard'
 import { Dropdown } from '@/components/ui/Dropdown'
-import { SIGNAL_TYPE_LABELS } from '@/types'
+import { Modal } from '@/components/ui/Modal'
+import { SIGNAL_TYPE_LABELS, SIGNAL_STATUS_LABELS, SIGNAL_IMPACT_LABELS } from '@/types'
 import type { Signal, SignalType } from '@/types'
 
 interface SignalsClientProps {
@@ -28,6 +30,8 @@ const DATE_RANGES = [
 
 export function SignalsClient({ initialSignals, projects, personas, interviews }: SignalsClientProps) {
   const [showFilters, setShowFilters] = useState(false)
+  const [preview, setPreview] = useState<{ signal: Signal; layoutId: string } | null>(null)
+  const openPreview = (signal: Signal, layoutId: string) => setPreview({ signal, layoutId })
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc')
   const [projectId, setProjectId] = useState('')
   const [personaId, setPersonaId] = useState('')
@@ -197,7 +201,7 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
             </div>
           ) : (
             filtered.map((signal, i) => (
-              <SignalFeedCard key={signal.id} signal={signal} variant={(i + 1) % 3 === 0 ? 'wide' : 'standard'} />
+              <SignalFeedCard key={signal.id} signal={signal} variant={(i + 1) % 3 === 0 ? 'wide' : 'standard'} onPreview={openPreview} />
             ))
           )}
         </div>
@@ -266,7 +270,12 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
             ) : (
               <div className="space-y-1">
                 {recentlyDiscovered.map(signal => (
-                  <Link key={signal.id} href={`/projects/${signal.project_id}?tab=Signals`} className="flex gap-3 p-3 rounded-lg transition-all hover:bg-black/[0.03]">
+                  <button
+                    key={signal.id}
+                    onClick={() => openPreview(signal, `signal-recent-${signal.id}`)}
+                    className="w-full flex gap-3 p-3 rounded-lg transition-all hover:bg-black/[0.03] text-left"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
                     <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${HOME_COLORS.primary}0d` }}>
                       <Lightbulb size={16} style={{ color: HOME_COLORS.primary }} />
                     </div>
@@ -274,13 +283,80 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
                       <p className="text-sm font-medium leading-tight mb-1 truncate" style={{ color: HOME_COLORS.onSurface }}>{signal.title}</p>
                       <span className="text-[10px] uppercase" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(signal.created_at)}</span>
                     </div>
-                  </Link>
+                  </button>
                 ))}
               </div>
             )}
           </section>
         </aside>
       </div>
+
+      <AnimatePresence>
+        {preview && (
+          <Modal key="signal-preview-modal" onClose={() => setPreview(null)} maxWidth={560} layoutId={preview.layoutId}>
+            <SignalPreviewBody signal={preview.signal} projectName={projects.find(p => p.id === preview.signal.project_id)?.name} />
+          </Modal>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ─── Full-text signal preview (mirrors the Personas "Show preview" modal) ────
+
+function SignalPreviewBody({ signal, projectName }: { signal: Signal; projectName?: string }) {
+  const sourceCount = signal.related_interview_ids.length + signal.related_run_ids.length
+
+  return (
+    <div className="pr-6">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <span className="px-3 py-1 font-bold text-[10px] uppercase tracking-wider rounded-full" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+          {SIGNAL_TYPE_LABELS[signal.type]}
+        </span>
+        <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-full" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>
+          {SIGNAL_STATUS_LABELS[signal.status]}
+        </span>
+        {signal.impact && (
+          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>{SIGNAL_IMPACT_LABELS[signal.impact]}</span>
+        )}
+      </div>
+
+      <h2 className="text-xl mb-2 leading-snug" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{signal.title}</h2>
+
+      <div className="flex items-center gap-3 mb-5 text-xs flex-wrap" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+        <span className="font-semibold" style={{ color: HOME_COLORS.onSurface }}>{signal.confidence_score}% confidence</span>
+        <span>·</span>
+        <span>{sourceCount} source{sourceCount === 1 ? '' : 's'}</span>
+        <span>·</span>
+        <span>{formatRelativeTime(signal.created_at)}</span>
+      </div>
+
+      <p className="text-sm leading-relaxed mb-5" style={{ color: HOME_COLORS.onSurface }}>{signal.summary}</p>
+
+      {signal.strategic_recommendation && (
+        <div className="rounded-xl p-4 mb-5" style={{ background: HOME_COLORS.secondaryContainer }}>
+          <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: HOME_COLORS.primary }}>Strategic recommendation</p>
+          <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.primary }}>{signal.strategic_recommendation}</p>
+        </div>
+      )}
+
+      {signal.supporting_quotes.length > 0 && (
+        <div className="space-y-2.5 mb-5">
+          <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: HOME_COLORS.onSurfaceVariant }}>Supporting evidence</p>
+          {signal.supporting_quotes.map((q, i) => (
+            <div key={i} className="flex items-start gap-2 text-sm italic leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <Quote size={12} className="flex-shrink-0 mt-1" />
+              <span>&ldquo;{q.text}&rdquo;</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {projectName && (
+        <Link href={`/projects/${signal.project_id}?tab=Signals`} className="text-xs font-semibold" style={{ color: HOME_COLORS.primary }}>
+          View in {projectName} →
+        </Link>
+      )}
     </div>
   )
 }

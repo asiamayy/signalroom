@@ -619,7 +619,7 @@ export default function LandingPage() {
                           fill="transparent"
                           strokeOpacity="0.6"
                         />
-                        {/* Active Ring — Animates dynamically from 615.75 to the 95% offset value when scrolled into view */}
+                        {/* Active Ring — Animates dynamically from 615.75 to the 97% offset value when scrolled into view */}
                         <circle
                           cx="112"
                           cy="112"
@@ -630,8 +630,8 @@ export default function LandingPage() {
                           strokeDasharray="615.75"
                           strokeLinecap="round"
                           style={{
-                            strokeDashoffset: hasLoaded 
-                              ? "calc(615.75 - (615.75 * 95) / 100)" 
+                            strokeDashoffset: hasLoaded
+                              ? "calc(615.75 - (615.75 * 97) / 100)"
                               : "615.75",
                             transition: "stroke-dashoffset 2.5s cubic-bezier(0.16, 1, 0.3, 1)"
                           }}
@@ -641,7 +641,7 @@ export default function LandingPage() {
                       {/* Internal Center Typography Panel */}
                       <div className="text-center z-10 flex flex-col items-center justify-center">
                         <span className="text-[56px] font-normal leading-none text-[#121314] tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                          95
+                          97
                         </span>
                         <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#1A3024] mt-1 bg-[#e9edea] px-2.5 py-0.5 rounded-[4px]">
                           Confidence Score
@@ -876,7 +876,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 collaborative team seats</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label executive reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Slack & Notion integrations</li>
-                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority feature access</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority feature access and support</li>
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>
             </div>

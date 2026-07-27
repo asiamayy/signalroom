@@ -76,7 +76,7 @@ const PLANS: {
       '10 collaborative team seats',
       'White-label executive reports',
       'Slack & Notion integrations',
-      'Priority feature access',
+      'Priority feature access and support',
     ],
   },
 ]

@@ -481,7 +481,7 @@ function ProjectCard({ rollup, onDelete, deleting, onRegenerateCover, regenerati
   )
 }
 
-function CreateProjectForm({ onCreate }: { onCreate: (name: string) => Promise<void> }) {
+export function CreateProjectForm({ onCreate }: { onCreate: (name: string) => Promise<void> }) {
   const [name, setName] = useState('')
   const [creating, setCreating] = useState(false)
 
