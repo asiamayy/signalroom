@@ -31,9 +31,10 @@ const MAX_CONCEPTS = 4
 // history view to build or keep in sync.
 function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result: ConceptTestResult; expandedId: string | null; onToggleExpand: (id: string) => void }) {
   return (
-    <section className="flex flex-col gap-5">
+    <section className="mt-4 flex flex-col gap-5 border-t pt-8" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}>
+      <div className="flex items-center gap-3"><span className="h-px w-10" style={{ background: HOME_COLORS.primary }} /><span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Test Results</span></div>
       {result.overall_recommendation && (
-        <div className="rounded-xl p-6" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+        <div className="rounded-2xl p-6 sm:p-8" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary }}>
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={15} style={{ color: HOME_COLORS.primaryFixedDim }} />
             <span className="text-[11px] font-bold uppercase tracking-widest opacity-70">Recommendation</span>
@@ -50,15 +51,15 @@ function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result
           <motion.article
             key={c.id}
             layout
-            className="rounded-xl p-5 sm:p-6"
-            style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: isWinner ? `2px solid ${HOME_COLORS.primary}` : '2px solid transparent' }}
+            className="rounded-2xl p-5 sm:p-6"
+            style={{ background: isWinner ? HOME_COLORS.surfaceContainerLowest : HOME_COLORS.surfaceContainerLow, border: isWinner ? `1.5px solid ${HOME_COLORS.primary}` : `1px solid ${HOME_COLORS.outlineVariant}66` }}
           >
             <div className="flex items-start gap-4">
               {c.avg_score !== null && <ScoreRing score={c.avg_score} size={52} />}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="text-[11px] font-bold" style={{ color: HOME_COLORS.onSurfaceVariant }}>#{c.rank}</span>
-                  <h3 className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{c.label}</h3>
+                  <h3 className="text-xl font-semibold" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{c.label}</h3>
                   {isWinner && (
                     <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
                       <Trophy size={10} /> Winner
@@ -72,14 +73,14 @@ function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result
             {(c.strength || c.weakness) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                 {c.strength && (
-                  <div className="rounded-lg p-3" style={{ background: HOME_COLORS.secondaryContainer }}>
+                  <div className="rounded-xl p-4" style={{ background: HOME_COLORS.primaryFixed }}>
                     <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.primary }}>Strength</p>
                     <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{c.strength}</p>
                   </div>
                 )}
                 {c.weakness && (
-                  <div className="rounded-lg p-3" style={{ background: '#FFDAD6' }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.error }}>Weakness</p>
+                  <div className="rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainer }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Consideration</p>
                     <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{c.weakness}</p>
                   </div>
                 )}
@@ -101,7 +102,7 @@ function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                         {c.reactions.map(r => (
-                          <div key={r.persona_id} className="rounded-lg p-3 flex flex-col gap-2" style={{ background: HOME_COLORS.surfaceContainerLow }}>
+                          <div key={r.persona_id} className="rounded-xl p-4 flex flex-col gap-2" style={{ background: HOME_COLORS.surfaceContainer }}>
                             <div className="flex items-center gap-2">
                               <PersonaAvatar avatarUrl={r.avatar_url} avatarInitials={r.avatar_initials} avatarColor={r.avatar_color} name={r.persona_name} size="sm" />
                               <div className="flex-1 min-w-0">
@@ -365,7 +366,7 @@ export default function ConceptTestPage() {
                       key={persona.id}
                       onClick={() => !atLimit && togglePersona(persona.id)}
                       disabled={atLimit}
-                      className="group w-full flex items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-all hover:border-[#c3c8c1]/20 hover:bg-[#f0eded] disabled:cursor-not-allowed disabled:opacity-40"
+                      className="group w-full flex items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-all hover:border-[#c3c8c1]/20 hover:bg-[#eae7e7] disabled:cursor-not-allowed disabled:opacity-40"
                       style={{ background: isSelected ? HOME_COLORS.secondaryContainer : 'transparent' }}
                     >
                       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full">
@@ -459,8 +460,8 @@ export default function ConceptTestPage() {
             </div>
           </section>
 
-          <button onClick={handleRun} disabled={!canRun} className="self-center flex items-center gap-3 px-10 py-5 rounded-full text-base font-semibold shadow-xl transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60" style={{ background: canRun ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: canRun ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}>
-            {loading ? <><Loader2 size={18} className="animate-spin" /> Running simulation...</> : <>Launch Head-to-Head Test <Rocket size={18} /></>}
+          <button onClick={handleRun} disabled={!canRun} className="self-center flex items-center gap-3 px-10 py-5 rounded-full text-base font-semibold shadow-xl transition-shadow hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60" style={{ background: canRun ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: canRun ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}>
+            {loading ? <><Loader2 size={18} className="animate-spin" /> Running simulation...</> : <>Run Concept Test <Rocket size={18} /></>}
           </button>
           {error && <p className="text-sm rounded-lg px-3 py-2" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{error}</p>}
           {/* Results */}
@@ -469,7 +470,7 @@ export default function ConceptTestPage() {
         <aside className="lg:col-span-3 flex flex-col gap-6 order-3">
           <section className="rounded-xl p-6 border" style={{ background: `${HOME_COLORS.surfaceContainerHigh}66`, borderColor: `${HOME_COLORS.outlineVariant}33` }}>
             <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-6" style={{ color: HOME_COLORS.onSurface }}><ShieldCheck size={16} style={{ color: HOME_COLORS.primary }} /> Testing Protocols</h3>
-            <div className="space-y-6">{[['01', 'Cognitive Bias Shield', 'Concepts are presented in randomized order to prevent sequence bias.'], ['02', 'Forced Choice Matrix', 'Personas must justify qualitative delta between both concepts.'], ['03', 'Enterprise Rigor', 'Statistical significance automatically calculated at 95% CI.']].map(([number, title, copy]) => <div key={number} className="flex gap-4"><span className="text-lg" style={{ color: HOME_COLORS.primaryFixedDim, fontFamily: HOME_FONT_DISPLAY }}>{number}</span><div><p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{title}</p><p className="mt-1 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{copy}</p></div></div>)}</div>
+            <div className="space-y-6">{[['01', 'Cognitive Bias Shield', 'Concepts are presented in randomized order to prevent sequence bias.'], ['02', 'Forced Choice Matrix', 'Personas must justify qualitative delta between both concepts.'], ['03', 'Evidence-Backed Comparison', 'Every recommendation is grounded in panel scores and individual written reactions.']].map(([number, title, copy]) => <div key={number} className="flex gap-4"><span className="text-lg" style={{ color: HOME_COLORS.primaryFixedDim, fontFamily: HOME_FONT_DISPLAY }}>{number}</span><div><p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{title}</p><p className="mt-1 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{copy}</p></div></div>)}</div>
           </section>
           <section className="rounded-xl p-6 border shadow-sm" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}4d` }}>
             <div className="mb-4"><h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurface }}>Live Progress</h3></div>
