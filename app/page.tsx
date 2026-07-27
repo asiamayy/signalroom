@@ -29,13 +29,41 @@ function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode;
   return (
     <div
       ref={sectionRef}
-      className={`transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+      className={`transition-all duration-1000 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
       style={{ transitionDelay: delay }}
     >
       {children}
     </div>
+  );
+}
+
+// Slack's four-color mark — used to indicate real integration compatibility,
+// not affiliation with or endorsement by Slack.
+function SlackMark({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 122.8 122.8" xmlns="http://www.w3.org/2000/svg">
+      <path d="M25.8 77.6c0 7.1-5.8 12.9-12.9 12.9S0 84.7 0 77.6s5.8-12.9 12.9-12.9h12.9v12.9z" fill="#E01E5A" />
+      <path d="M32.3 77.6c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9v32.3c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V77.6z" fill="#E01E5A" />
+      <path d="M45.2 25.8c-7.1 0-12.9-5.8-12.9-12.9S38.1 0 45.2 0s12.9 5.8 12.9 12.9v12.9H45.2z" fill="#36C5F0" />
+      <path d="M45.2 32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H12.9C5.8 58.1 0 52.3 0 45.2s5.8-12.9 12.9-12.9h32.3z" fill="#36C5F0" />
+      <path d="M97 45.2c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9H97V45.2z" fill="#2EB67D" />
+      <path d="M90.5 45.2c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V12.9C64.7 5.8 70.5 0 77.6 0s12.9 5.8 12.9 12.9v32.3z" fill="#2EB67D" />
+      <path d="M77.6 97c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9-12.9-5.8-12.9-12.9V97h12.9z" fill="#ECB22E" />
+      <path d="M77.6 90.5c-7.1 0-12.9-5.8-12.9-12.9s5.8-12.9 12.9-12.9h32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H77.6z" fill="#ECB22E" />
+    </svg>
+  );
+}
+
+// Notion's app-icon mark — used to indicate real integration compatibility,
+// not affiliation with or endorsement by Notion.
+function NotionMark({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="92" height="92" rx="18" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="4" />
+      <path d="M30 28 h10 l24 36 V28 h8 v44 h-10 l-24-36 v36 h-8 Z" fill="#1A1A1A" />
+    </svg>
   );
 }
 
@@ -232,6 +260,7 @@ export default function LandingPage() {
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#integrations">Team &amp; Integrations</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
         </div>
         <div className="flex items-center gap-4 sm:gap-6">
@@ -705,6 +734,77 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </RevealSection>
+
+      {/* Team Workspaces + Integrations Section */}
+      <RevealSection>
+        <section id="integrations" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-4 mb-10 sm:mb-16">
+              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">04 // Built For Teams</span>
+              <div className="hidden sm:block h-px flex-grow bg-[#1A3024]/10" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+              {/* Workspaces */}
+              <div className="border border-[#d1d5d3] rounded-[4px] p-8 sm:p-12 bg-white">
+                <span className="material-symbols-outlined text-[#1A3024] text-3xl mb-6 block">workspaces</span>
+                <h3 className="text-[26px] sm:text-[32px] tracking-tighter font-normal text-[#121314] mb-4 leading-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                  Isolated workspaces, not a shared free-for-all.
+                </h3>
+                <p className="text-[13px] sm:text-sm text-neutral-600 leading-relaxed mb-6">
+                  Invite your team into named workspaces — one per client, or however you want to split research. Each member gets full create and edit access, scoped to exactly what you&rsquo;ve shared with them. Nothing more.
+                </p>
+                <Link href="#pricing" className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] border-b border-[#1A3024]/30 hover:border-[#1A3024] transition-colors pb-0.5">
+                  10 seats on Broadcast →
+                </Link>
+              </div>
+
+              {/* Integrations */}
+              <div className="border border-[#d1d5d3] rounded-[4px] p-8 sm:p-12 bg-white flex flex-col">
+                <span className="material-symbols-outlined text-[#1A3024] text-3xl mb-6 block">bolt</span>
+                <h3 className="text-[26px] sm:text-[32px] tracking-tighter font-normal text-[#121314] mb-4 leading-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                  Insights arrive where your team already works.
+                </h3>
+                <p className="text-[13px] sm:text-sm text-neutral-600 leading-relaxed mb-8">
+                  Connect Slack and Notion once. New reports and signals push through automatically — no one has to remember to check a dashboard.
+                </p>
+
+                {/* Connection diagram */}
+                <div className="mt-auto flex items-center justify-center gap-4 sm:gap-6 py-6">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-14 h-14 rounded-[10px] border border-[#d1d5d3] flex items-center justify-center bg-white shadow-sm">
+                      <img src="/signalroom-logo.svg" alt="SignalRoom" className="w-8 h-8 object-contain" />
+                    </div>
+                    <span className="text-[9px] uppercase tracking-wider text-neutral-400">SignalRoom</span>
+                  </div>
+                  <svg width="32" height="12" viewBox="0 0 32 12" className="flex-shrink-0 text-[#1A3024]/30">
+                    <line x1="0" y1="6" x2="26" y2="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
+                    <path d="M22 1 L28 6 L22 11" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                  </svg>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-11 h-11 rounded-[10px] border border-[#d1d5d3] flex items-center justify-center bg-white shadow-sm flex-shrink-0">
+                        <SlackMark size={22} />
+                      </div>
+                      <span className="text-[11px] font-medium text-neutral-700">Slack</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-11 h-11 rounded-[10px] border border-[#d1d5d3] flex items-center justify-center bg-white shadow-sm flex-shrink-0">
+                        <NotionMark size={22} />
+                      </div>
+                      <span className="text-[11px] font-medium text-neutral-700">Notion</span>
+                    </div>
+                  </div>
+                </div>
+
+                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] border-b border-[#1A3024]/30 w-fit pb-0.5">
+                  Included on Signal & Broadcast
+                </span>
               </div>
             </div>
           </div>
