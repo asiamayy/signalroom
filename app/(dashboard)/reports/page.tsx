@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Brain, FileText, Filter, Loader2, Trash2 } from 'lucide-react'
+import { ArrowRight, Brain, ChevronDown, FileText, Filter, Loader2, Trash2 } from 'lucide-react'
 import { formatDate, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_BODY, HOME_FONT_DISPLAY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
@@ -104,7 +104,7 @@ export default function ReportsPage() {
             Research <span className="italic" style={{ fontWeight: 400 }}>Insights</span>
           </h1>
           <p className="max-w-2xl text-base leading-relaxed sm:text-lg" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            Structured summaries, themes, and recommendations synthesized from every interview you&apos;ve run. High-fidelity extraction powered by Signalroom Intelligence.
+            Structured summaries, themes, and recommendations synthesized from every interview you&apos;ve run.
           </p>
         </header>
 
@@ -119,14 +119,17 @@ export default function ReportsPage() {
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-10">
             <section className="lg:col-span-8">
               <div className="mb-4 flex items-center justify-between border-b pb-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}80` }}>
-                <h2 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>All Research</h2>
+                <h2 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{activeType === 'all' ? 'All Research' : INTERVIEW_TYPE_LABELS[activeType] ?? activeType}</h2>
                 <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                   <Filter size={16} />
                   <span className="hidden sm:inline">Filter research</span>
-                  <select value={activeType} onChange={event => setActiveType(event.target.value)} aria-label="Filter research type" className="rounded-lg px-2.5 py-2 text-xs font-medium outline-none" style={{ background: HOME_COLORS.surfaceContainer, border: `1px solid ${HOME_COLORS.outlineVariant}`, color: HOME_COLORS.onSurface, fontFamily: 'inherit' }}>
-                    <option value="all">All research</option>
-                    {researchTypes.map(type => <option key={type} value={type}>{INTERVIEW_TYPE_LABELS[type] ?? type}</option>)}
-                  </select>
+                  <span className="relative">
+                    <select value={activeType} onChange={event => setActiveType(event.target.value)} aria-label="Filter research type" className="appearance-none rounded-full py-2 pl-3 pr-8 text-xs font-semibold outline-none transition-colors hover:bg-white focus:bg-white" style={{ background: HOME_COLORS.surfaceContainer, color: HOME_COLORS.onSurface, fontFamily: 'inherit' }}>
+                      <option value="all">All research</option>
+                      {researchTypes.map(type => <option key={type} value={type}>{INTERVIEW_TYPE_LABELS[type] ?? type}</option>)}
+                    </select>
+                    <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" />
+                  </span>
                 </label>
               </div>
               <div className="flex flex-col gap-4">
@@ -158,13 +161,13 @@ function InsightCard({ report, deleting, onDelete }: { report: ReportRecord; del
   return (
     <article className="group relative overflow-hidden rounded-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-xl" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
       <span className="absolute inset-y-0 left-0 w-1 origin-top scale-y-0 transition-transform duration-500 group-hover:scale-y-100" style={{ background: HOME_COLORS.primary }} />
-      <Link href={`/reports/${report.id}`} className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:gap-6 sm:p-6">
+      <Link href={`/reports/${report.id}`} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:gap-5 sm:p-5">
         <PersonaAvatar
           avatarUrl={persona?.avatar_url}
           avatarInitials={persona?.avatar_initials}
           avatarColor={persona?.avatar_color}
           name={persona?.name}
-          size="xl"
+          size="lg"
         />
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: `${HOME_COLORS.onSurfaceVariant}99` }}>
@@ -178,13 +181,13 @@ function InsightCard({ report, deleting, onDelete }: { report: ReportRecord; del
           <p className="mt-1 truncate text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>{persona?.name ?? 'Research participant'}</p>
         </div>
 
-        <div className="flex items-center justify-between gap-5 border-t pt-4 sm:justify-start sm:gap-8 sm:border-l sm:border-t-0 sm:px-7 sm:pt-0" style={{ borderColor: `${HOME_COLORS.outlineVariant}80` }}>
+        <div className="flex items-center justify-between gap-4 border-t pt-3 sm:justify-start sm:gap-6 sm:border-l sm:border-t-0 sm:px-5 sm:pt-0" style={{ borderColor: `${HOME_COLORS.outlineVariant}80` }}>
           <ConfidenceRing score={score} />
           <div className="flex min-w-10 flex-col items-center">
             <span className="text-2xl leading-none" style={{ color: HOME_COLORS.primary, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{String(themeCount).padStart(2, '0')}</span>
             <span className="mt-1 text-[9px] font-semibold uppercase tracking-tight" style={{ color: `${HOME_COLORS.onSurfaceVariant}99` }}>Themes</span>
           </div>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 group-hover:bg-[#18281c] group-hover:text-white" style={{ background: HOME_COLORS.surfaceContainer, color: HOME_COLORS.onSurfaceVariant }}>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0eded] text-[#434843] transition-all duration-300 group-hover:bg-[#18281c] group-hover:text-white">
             <ArrowRight size={19} className="transition-transform duration-300 group-hover:translate-x-1" />
           </span>
         </div>

@@ -272,15 +272,15 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Search */}
-          <div className="hidden md:flex items-center gap-2.5 rounded-xl px-4 py-2.5 flex-1" style={{ background: '#FFFFFF', border: '1px solid #E0E2E4' }}>
-            <Search size={16} style={{ color: '#9CA3AF' }} />
+          <div className="group hidden max-w-2xl flex-1 items-center gap-3 rounded-full px-5 py-2.5 transition-all duration-200 focus-within:bg-white focus-within:ring-1 focus-within:ring-[#18281c]/20 md:flex" style={{ background: HOME_COLORS.surfaceContainer }}>
+            <Search size={18} style={{ color: HOME_COLORS.onSurfaceVariant }} />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search personas, projects, insights, and more..."
-              className="text-sm bg-transparent outline-none w-full placeholder:text-neutral-400"
-              style={{ color: '#202124' }}
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#737873]"
+              style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_BODY }}
             />
           </div>
 
