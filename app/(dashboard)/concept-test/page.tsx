@@ -338,12 +338,12 @@ export default function ConceptTestPage() {
           )}
         </div>
       ) : (
-      <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-20 -mt-8">
+      <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-20 pt-6">
         {/* Sidebar — persona selection */}
         <aside className="lg:col-span-3 flex flex-col gap-4 order-2 lg:order-1">
           <section className="p-6 rounded-xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: '0 12px 28px rgba(15,23,42,0.12)', borderColor: `${HOME_COLORS.outlineVariant}4d` }}>
             <div className="flex items-center justify-between mb-5">
-              <div><h3 className="text-lg font-semibold" style={{ color: HOME_COLORS.onSurface }}>Judging Panel</h3><p className="text-[11px] font-semibold uppercase tracking-wider mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Expert Personas</p></div>
+              <div><h3 className="text-lg font-semibold" style={{ color: HOME_COLORS.onSurface }}>Judging Panel</h3></div>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: selectedIds.length >= MIN_PERSONAS ? HOME_COLORS.secondaryContainer : HOME_COLORS.surfaceContainerHigh, color: selectedIds.length >= MIN_PERSONAS ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant }}>
                 {selectedIds.length} / {maxPersonas}
               </span>
@@ -365,10 +365,12 @@ export default function ConceptTestPage() {
                       key={persona.id}
                       onClick={() => !atLimit && togglePersona(persona.id)}
                       disabled={atLimit}
-                      className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left hover:translate-x-1 hover:bg-[#f0eded] hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{ background: isSelected ? HOME_COLORS.secondaryContainer : 'transparent', border: isSelected ? `1.5px solid ${HOME_COLORS.primary}33` : '1.5px solid transparent' }}
+                      className="group w-full flex items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-all hover:border-[#c3c8c1]/20 hover:bg-[#f0eded] disabled:cursor-not-allowed disabled:opacity-40"
+                      style={{ background: isSelected ? HOME_COLORS.secondaryContainer : 'transparent' }}
                     >
-                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="md" className="transition-transform duration-300 group-hover:scale-105" />
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg" className="transition-transform duration-500 group-hover:scale-[1.6]" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{persona.name}</p>
                         <p className="text-[11px] truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{persona.traits?.job_title ?? 'No role'}</p>
