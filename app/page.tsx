@@ -239,8 +239,11 @@ export default function LandingPage() {
            symmetric ease and a longer streak read as one continuous glide
            rather than a repeating tick. Same duration on both lines so they
            stay in sync without JS timing. */
+        /* -176 is a clean multiple of the 44px dash pattern (16 dash + 28
+           gap) below, so the loop point lands on an identical phase of the
+           pattern instead of snapping visibly when it resets. */
         @keyframes flowDash {
-          to { stroke-dashoffset: -160; }
+          to { stroke-dashoffset: -176; }
         }
         .flow-dash {
           stroke-dasharray: 16 28;
@@ -806,7 +809,7 @@ export default function LandingPage() {
                 <div className="mt-auto flex items-center justify-center gap-1 sm:gap-3 py-6">
                   <div className="flex flex-col items-center gap-2 relative z-10">
                     <div className="w-14 h-14 rounded-[10px] border border-[#d1d5d3] flex items-center justify-center bg-white shadow-sm relative">
-                      <img src="/signalroom-logo.svg" alt="SignalRoom" className="w-8 h-8 object-contain" />
+                      <img src="/signalroom-logo.svg" alt="SignalRoom" className="w-10 h-10 object-contain" />
                     </div>
                     <span className="text-[9px] uppercase tracking-wider text-neutral-400">SignalRoom</span>
                   </div>
