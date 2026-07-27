@@ -255,10 +255,10 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main content area */}
-      <div className="dashboard-main-col flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="dashboard-main-col relative flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Top bar — search, help, settings, profile (desktop + mobile) */}
-        <div className="flex items-center gap-3 px-4 sm:px-6 py-3 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+        <div className="absolute inset-x-0 top-0 z-30 flex min-h-20 items-center gap-3 px-4 py-3 backdrop-blur-xl sm:px-6" style={{ background: 'rgba(252, 249, 248, 0.8)', boxShadow: '0 1px 12px rgba(0,0,0,0.03)' }}>
           {/* Mobile hamburger + logo */}
           <button
             onClick={() => setMobileNavOpen(true)}
@@ -272,15 +272,15 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Search */}
-          <div className="group hidden max-w-2xl flex-1 items-center gap-3 rounded-full px-5 py-2.5 transition-all duration-200 focus-within:bg-white focus-within:ring-1 focus-within:ring-[#18281c]/20 md:flex" style={{ background: HOME_COLORS.surfaceContainer }}>
-            <Search size={18} style={{ color: HOME_COLORS.onSurfaceVariant }} />
+          <div className="group hidden max-w-xl flex-1 items-center gap-3 rounded-full bg-[#f0eded] px-5 py-2.5 transition-all focus-within:bg-[#eae7e7] md:flex" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+            <Search size={20} />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search personas, projects, insights, and more..."
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[#737873]"
-              style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_BODY }}
+              className="w-full border-none bg-transparent text-sm outline-none placeholder:text-[#737873]"
+              style={{ color: HOME_COLORS.onSurfaceVariant, fontFamily: HOME_FONT_BODY }}
             />
           </div>
 
@@ -368,7 +368,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         {/* scrollbar-gutter: stable reserves the scrollbar's width whether or not
             it's needed, so header controls don't shift horizontally when filtering
             (e.g. search) changes content height enough to toggle the scrollbar. */}
-        <main className="flex-1 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+        <main className="flex-1 overflow-y-auto pt-20" style={{ scrollbarGutter: 'stable' }}>
           {children}
         </main>
       </div>
