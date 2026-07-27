@@ -26,6 +26,27 @@ create table if not exists public.workspaces (
   updated_at timestamptz not null default now()
 );
 
+create index if not exists workspaces_owner_id_idx on public.workspaces(owner_id);
+
+create trigger workspaces_updated_at
+  before update on public.workspaces
+  for each row execute procedure public.handle_updated_at();
+
+-- ─── Workspace members ────────────────────────────────────────────────────────
+-- The owner is a row here too (role='owner'), inserted at creation time —
+-- see the file header comment for why this matters.
+-- Created before workspaces' own RLS policies below, since those policies
+-- reference this table.
+create table if not exists public.workspace_members (
+  id uuid primary key default uuid_generate_v4(),
+  workspace_id uuid references public.workspaces(id) on delete cascade not null,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  role text not null default 'member' check (role in ('owner', 'member')),
+  created_at timestamptz not null default now(),
+  unique (workspace_id, user_id)
+);
+
+-- ─── Workspaces RLS (needs workspace_members to already exist) ──────────────
 alter table public.workspaces enable row level security;
 
 create policy "Members can view their workspaces"
@@ -42,24 +63,7 @@ create policy "Owners can manage their workspaces"
   using (owner_id = auth.uid())
   with check (owner_id = auth.uid());
 
-create index if not exists workspaces_owner_id_idx on public.workspaces(owner_id);
-
-create trigger workspaces_updated_at
-  before update on public.workspaces
-  for each row execute procedure public.handle_updated_at();
-
--- ─── Workspace members ────────────────────────────────────────────────────────
--- The owner is a row here too (role='owner'), inserted at creation time —
--- see the file header comment for why this matters.
-create table if not exists public.workspace_members (
-  id uuid primary key default uuid_generate_v4(),
-  workspace_id uuid references public.workspaces(id) on delete cascade not null,
-  user_id uuid references public.profiles(id) on delete cascade not null,
-  role text not null default 'member' check (role in ('owner', 'member')),
-  created_at timestamptz not null default now(),
-  unique (workspace_id, user_id)
-);
-
+-- ─── Workspace members RLS ────────────────────────────────────────────────────
 alter table public.workspace_members enable row level security;
 
 -- Any co-member can see the member list of a workspace they're in (needed
