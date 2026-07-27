@@ -809,7 +809,7 @@ export default function LandingPage() {
                 <div className="mt-auto flex items-center justify-center gap-1 sm:gap-3 py-6">
                   <div className="flex flex-col items-center gap-2 relative z-10">
                     <div className="w-14 h-14 rounded-[10px] border border-[#d1d5d3] flex items-center justify-center bg-white shadow-sm relative">
-                      <img src="/signalroom-logo.svg" alt="SignalRoom" className="w-10 h-10 object-contain" />
+                      <img src="/signalroom-icon.png" alt="SignalRoom" className="w-10 h-10 object-contain" />
                     </div>
                     <span className="text-[9px] uppercase tracking-wider text-neutral-400">SignalRoom</span>
                   </div>
