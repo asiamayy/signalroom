@@ -52,7 +52,7 @@ function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result
             key={c.id}
             layout
             className="rounded-2xl p-5 sm:p-6"
-            style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66` }}
+            style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1.5px solid ${HOME_COLORS.primary}` }}
           >
             <div className="flex items-start gap-4">
               {c.avg_score !== null && <ScoreRing score={c.avg_score} size={52} />}
