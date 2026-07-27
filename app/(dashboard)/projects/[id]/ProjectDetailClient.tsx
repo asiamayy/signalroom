@@ -10,6 +10,7 @@ import {
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { SignalCard } from '@/components/signals/SignalCard'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
+import { Dropdown } from '@/components/ui/Dropdown'
 import { formatDate, formatRelativeTime, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { buildTimelineEvents, type TimelineEvent } from '@/lib/utils/timeline'
@@ -28,10 +29,11 @@ interface ProjectDetailClientProps {
   signals: Signal[]
   reports: (Report & { interview: Interview })[]
   files: ProjectFile[]
+  workspaces: { id: string; name: string }[]
   initialTab?: string
 }
 
-export function ProjectDetailClient({ project: initialProject, allPersonas, allInterviews, signals, reports, files: initialFiles, initialTab }: ProjectDetailClientProps) {
+export function ProjectDetailClient({ project: initialProject, allPersonas, allInterviews, signals, reports, files: initialFiles, workspaces, initialTab }: ProjectDetailClientProps) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>((TABS as readonly string[]).includes(initialTab ?? '') ? (initialTab as Tab) : 'Overview')
   const [project, setProject] = useState(initialProject)
@@ -175,8 +177,10 @@ export function ProjectDetailClient({ project: initialProject, allPersonas, allI
       {tab === 'Settings' && (
         <SettingsTab
           project={project}
+          workspaces={workspaces}
           onRenamed={(name) => setProject(prev => ({ ...prev, name }))}
           onArchiveToggled={(archived) => setProject(prev => ({ ...prev, archived, archived_at: archived ? new Date().toISOString() : null }))}
+          onWorkspaceChanged={(workspace_id) => setProject(prev => ({ ...prev, workspace_id }))}
           onDeleted={() => router.push('/projects')}
         />
       )}
@@ -523,16 +527,19 @@ function TimelineTab({ events }: { events: TimelineEvent[] }) {
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
-function SettingsTab({ project, onRenamed, onArchiveToggled, onDeleted }: {
+function SettingsTab({ project, workspaces, onRenamed, onArchiveToggled, onWorkspaceChanged, onDeleted }: {
   project: Project
+  workspaces: { id: string; name: string }[]
   onRenamed: (name: string) => void
   onArchiveToggled: (archived: boolean) => void
+  onWorkspaceChanged: (workspaceId: string | null) => void
   onDeleted: () => void
 }) {
   const [name, setName] = useState(project.name)
   const [saving, setSaving] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [savingWorkspace, setSavingWorkspace] = useState(false)
 
   const handleRename = async () => {
     if (!name.trim() || name === project.name) return
@@ -542,6 +549,17 @@ function SettingsTab({ project, onRenamed, onArchiveToggled, onDeleted }: {
       onRenamed(name.trim())
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSetWorkspace = async (workspaceId: string) => {
+    const value = workspaceId === 'personal' ? null : workspaceId
+    setSavingWorkspace(true)
+    try {
+      await fetch(`/api/projects/${project.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'set_workspace', workspace_id: value }) })
+      onWorkspaceChanged(value)
+    } finally {
+      setSavingWorkspace(false)
     }
   }
 
@@ -578,6 +596,27 @@ function SettingsTab({ project, onRenamed, onArchiveToggled, onDeleted }: {
           </button>
         </div>
       </div>
+
+      {workspaces.length > 0 && (
+        <div className="rounded-2xl p-5" style={cardStyle}>
+          <label className="block text-xs font-semibold mb-1.5" style={{ color: HOME_COLORS.onSurface }}>Workspace</label>
+          <p className="text-xs mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+            Sharing this project with a workspace makes it (and its personas/interviews/reports) visible and editable by every member of that workspace.
+          </p>
+          <Dropdown
+            value={project.workspace_id ?? 'personal'}
+            onChange={handleSetWorkspace}
+            className="w-full max-w-xs"
+            size="md"
+            fullWidth
+            options={[
+              { value: 'personal', label: 'Personal (not shared)' },
+              ...workspaces.map(w => ({ value: w.id, label: w.name })),
+            ]}
+          />
+          {savingWorkspace && <p className="text-xs mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Saving...</p>}
+        </div>
+      )}
 
       <div className="rounded-2xl p-5 flex items-center justify-between gap-3" style={cardStyle}>
         <div>

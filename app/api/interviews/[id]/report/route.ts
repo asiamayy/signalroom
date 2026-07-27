@@ -97,24 +97,39 @@ export async function POST(
 
   const { id } = await params
 
-  // Reports are a paid deliverable — pro and agency only (PLAN_LIMITS.reports)
-  const { limits } = await getPlanForUser(supabase, user.id)
+  // No user_id filter — RLS is the real gate (personal owner, or any
+  // co-member of the interview's workspace, can generate its report).
+  const { data: interview, error } = await supabase
+    .from('interviews')
+    .select('*, persona:personas(*)')
+    .eq('id', id)
+    .single()
+
+  if (error || !interview) {
+    return NextResponse.json({ error: 'Interview not found' }, { status: 404 })
+  }
+
+  // Reports are a paid deliverable — pro and agency only (PLAN_LIMITS.reports).
+  // For a workspace interview, gate on the WORKSPACE OWNER's plan, not the
+  // caller's own — a member operates under the owner's Broadcast entitlement
+  // while inside a shared workspace, same reasoning as the persona/interview
+  // creation limits being skipped for workspace content.
+  let planCheckUserId = user.id
+  if (interview.workspace_id) {
+    const { data: workspace } = await supabase
+      .from('workspaces')
+      .select('owner_id')
+      .eq('id', interview.workspace_id)
+      .single()
+    if (workspace) planCheckUserId = workspace.owner_id
+  }
+
+  const { limits } = await getPlanForUser(supabase, planCheckUserId)
   if (!limits.reports) {
     return NextResponse.json({
       error: 'Insight reports are available on the Signal plan and above. Upgrade to generate reports.',
       limit_reached: true,
     }, { status: 403 })
-  }
-
-  const { data: interview, error } = await supabase
-    .from('interviews')
-    .select('*, persona:personas(*)')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .single()
-
-  if (error || !interview) {
-    return NextResponse.json({ error: 'Interview not found' }, { status: 404 })
   }
 
   if (!interview.messages || interview.messages.length < 2) {
@@ -150,12 +165,16 @@ export async function POST(
         .eq('id', interview.report_id)
     }
 
-    // Always create a fresh report
+    // Always create a fresh report. workspace_id is inherited from the
+    // interview — must not be left off, or a workspace member's report would
+    // be invisible to the owner and everyone else on the team (the RLS
+    // workspace-member branch only applies to non-null workspace_id rows).
     const { data: report, error: insertError } = await supabase
       .from('reports')
       .insert({
         user_id: user.id,
         interview_id: id,
+        workspace_id: interview.workspace_id ?? null,
         executive_summary: reportData.executive_summary,
         key_themes: reportData.key_themes,
         recommendations: reportData.recommendations,

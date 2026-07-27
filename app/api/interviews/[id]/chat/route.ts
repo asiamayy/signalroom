@@ -24,11 +24,12 @@ export async function POST(
   }
   const { message, image, imageMediaType } = parsed.data
 
+  // No user_id filter — RLS is the real gate (personal owner, or any
+  // co-member of the interview's workspace, can chat in it).
   const { data: interview, error: interviewError } = await supabase
     .from('interviews')
     .select('*, persona:personas(*)')
     .eq('id', id)
-    .eq('user_id', user.id)
     .single()
 
   if (interviewError || !interview) {

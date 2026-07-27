@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Camera, Loader2, Check } from 'lucide-react'
 import { Button, Input, Textarea, Select, Slider, TagInput, ListInput } from '@/components/ui'
@@ -126,6 +126,8 @@ export default function PersonaBuilder() {
   const [name, setName] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [funnelStage, setFunnelStage] = useState<FunnelStage>('awareness')
+  const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([])
+  const [workspaceId, setWorkspaceId] = useState<string>('personal')
   const [traits, setTraits] = useState<PersonaTraits>(DEFAULT_TRAITS)
   const [aiPrompt, setAiPrompt] = useState('')
   const [generating, setGenerating] = useState(false)
@@ -134,6 +136,15 @@ export default function PersonaBuilder() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  // Harmless to call regardless of plan — returns an empty list for accounts
+  // without any workspaces, in which case the picker below just never renders.
+  useEffect(() => {
+    fetch('/api/workspaces')
+      .then(r => r.json())
+      .then(json => setWorkspaces(json.data ?? []))
+      .catch(() => setWorkspaces([]))
+  }, [])
 
   // ─── AI generation ──────────────────────────────────────────────────────────
 
@@ -255,7 +266,7 @@ export default function PersonaBuilder() {
       const res = await fetch('/api/personas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, tags, traits, funnel_stage: funnelStage, avatar_url: avatarUrl, project_id: projectId }),
+        body: JSON.stringify({ name, tags, traits, funnel_stage: funnelStage, avatar_url: avatarUrl, project_id: projectId, workspace_id: workspaceId === 'personal' ? null : workspaceId }),
       })
       const json = await res.json()
       if (!res.ok) {
@@ -424,6 +435,19 @@ export default function PersonaBuilder() {
                   />
                   <p className="text-xs text-[#5F6368]">Where they sit in the buying journey — this shapes how they react (a new prospect vs. an experienced user). Filterable on the Personas page.</p>
                 </div>
+                {workspaces.length > 0 && (
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-[#202124]">Workspace</label>
+                    <Dropdown
+                      size="md"
+                      fullWidth
+                      value={workspaceId}
+                      onChange={setWorkspaceId}
+                      options={[{ value: 'personal', label: 'Personal (not shared)' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
+                    />
+                    <p className="text-xs text-[#5F6368]">Share this persona with a workspace to make it visible and editable by every member of that workspace.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

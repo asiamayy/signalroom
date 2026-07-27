@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
 
   const projectId = request.nextUrl.searchParams.get('project_id')
 
+  // No user_id filter — RLS alone scopes this to personal interviews plus any
+  // workspace-shared ones this user is a member of.
   let query = supabase
     .from('interviews')
     .select('*, persona:personas(*)')
-    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   if (projectId) query = query.eq('project_id', projectId)
@@ -42,11 +43,12 @@ export async function PATCH(request: NextRequest) {
   if (!id || !action) return NextResponse.json({ error: 'ID and action required' }, { status: 400 })
 
   if (action === 'set_project') {
+    // No user_id filter — RLS is the real gate (personal owner, or any
+    // co-member of the interview's workspace).
     const { error } = await supabase
       .from('interviews')
       .update({ project_id: project_id ?? null })
       .eq('id', id)
-      .eq('user_id', user.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
   }
@@ -65,11 +67,11 @@ export async function DELETE(request: NextRequest) {
   const { id } = await request.json()
   if (!id) return NextResponse.json({ error: 'Interview ID required' }, { status: 400 })
 
+  // No user_id filter — RLS is the real gate, same reasoning as PATCH above.
   const { error } = await supabase
     .from('interviews')
     .delete()
     .eq('id', id)
-    .eq('user_id', user.id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
@@ -91,7 +93,13 @@ export async function POST(request: NextRequest) {
   const body = parsed.data
 
   const { plan, limits } = await getPlanForUser(supabase, user.id)
-  if (limits.interviews_per_month !== Infinity) {
+
+  // Monthly interview cap only applies to personal interviews — a workspace
+  // member creating inside a shared Broadcast workspace operates under the
+  // OWNER's entitlement (and the 10-seat cap), not their own individual plan,
+  // so the check is skipped entirely for workspace creates (same pattern as
+  // the persona limit in app/api/personas/route.ts).
+  if (!body.workspace_id && limits.interviews_per_month !== Infinity) {
     const usedThisMonth = await countInterviewsThisMonth(supabase, user.id)
 
     // Grandfather: a user who already ran more interviews this month than the
@@ -115,6 +123,7 @@ export async function POST(request: NextRequest) {
     .insert({
       user_id: user.id,
       project_id: body.project_id ?? null,
+      workspace_id: body.workspace_id ?? null,
       persona_id: body.persona_id,
       title: body.title,
       type: body.type,

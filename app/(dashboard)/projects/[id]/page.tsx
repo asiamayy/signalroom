@@ -10,11 +10,13 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
 
   if (!user) notFound()
 
+  // No user_id filter — RLS is the real gate. Without this fix a workspace
+  // co-member could never open a shared project's detail page at all, since
+  // it would only ever match projects THEY personally created.
   const { data: project } = await supabase
     .from('projects')
     .select('*')
     .eq('id', id)
-    .eq('user_id', user.id)
     .single()
 
   if (!project) notFound()
@@ -24,11 +26,13 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
     { data: allInterviews },
     { data: signals },
     { data: files },
+    { data: workspaces },
   ] = await Promise.all([
-    supabase.from('personas').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-    supabase.from('interviews').select('*, persona:personas(*)').eq('user_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('personas').select('*').order('created_at', { ascending: false }),
+    supabase.from('interviews').select('*, persona:personas(*)').order('created_at', { ascending: false }),
     supabase.from('signals').select('*').eq('project_id', id).order('confidence_score', { ascending: false }),
     supabase.from('project_files').select('*').eq('project_id', id).order('created_at', { ascending: false }),
+    supabase.from('workspaces').select('id, name').order('name'),
   ])
 
   const projectInterviewIds = (allInterviews ?? []).filter(iv => iv.project_id === id).map(iv => iv.id)
@@ -45,6 +49,7 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
       signals={signals ?? []}
       reports={reports ?? []}
       files={files ?? []}
+      workspaces={workspaces ?? []}
       initialTab={tab}
     />
   )

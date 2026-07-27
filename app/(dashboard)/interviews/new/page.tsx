@@ -6,6 +6,7 @@ import { ChevronRight, MessageSquare, Swords, Loader2, Plus } from 'lucide-react
 import { HOME_COLORS, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { CARD_SHADOW } from '@/lib/utils'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
+import { Dropdown } from '@/components/ui/Dropdown'
 import type { Persona, InterviewType } from '@/types'
 
 const INTERVIEW_TYPES: { value: InterviewType; label: string; description: string }[] = [
@@ -49,6 +50,8 @@ function NewInterviewForm() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([])
+  const [workspaceId, setWorkspaceId] = useState<string>('personal')
 
   useEffect(() => {
     setLoading(true)
@@ -56,6 +59,13 @@ function NewInterviewForm() {
       .then(r => r.json())
       .then(json => setPersonas(json.data ?? []))
       .finally(() => setLoading(false))
+
+    // Harmless to call regardless of plan — empty list if the account has no
+    // workspaces, in which case the picker below just never renders.
+    fetch('/api/workspaces')
+      .then(r => r.json())
+      .then(json => setWorkspaces(json.data ?? []))
+      .catch(() => setWorkspaces([]))
   }, [])
 
   const handleStart = async () => {
@@ -69,7 +79,7 @@ function NewInterviewForm() {
       const res = await fetch('/api/interviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persona_id: personaId, title, type, context, devils_advocate: devilsAdvocate, project_id: projectId }),
+        body: JSON.stringify({ persona_id: personaId, title, type, context, devils_advocate: devilsAdvocate, project_id: projectId, workspace_id: workspaceId === 'personal' ? null : workspaceId }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
@@ -208,6 +218,21 @@ function NewInterviewForm() {
             />
             <p className="text-xs mt-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>This gives the persona context for the session — they&apos;ll respond in light of it.</p>
           </div>
+
+          {/* Workspace */}
+          {workspaces.length > 0 && (
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace</label>
+              <Dropdown
+                size="md"
+                fullWidth
+                value={workspaceId}
+                onChange={setWorkspaceId}
+                options={[{ value: 'personal', label: 'Personal (not shared)' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
+              />
+              <p className="text-xs mt-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share this interview with a workspace to make it (and its report) visible and editable by every member.</p>
+            </div>
+          )}
 
           {/* Devil's Advocate */}
           <button

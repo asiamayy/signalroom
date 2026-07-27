@@ -7,7 +7,7 @@ import { Inter, Playfair_Display, Source_Serif_4, Hanken_Grotesk } from 'next/fo
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home, Briefcase, Users, MessageSquare, Settings, ArrowLeftRight, Menu, X,
-  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus, Layers,
+  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus, Layers, UserPlus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_BODY } from '@/lib/home-theme'
@@ -53,6 +53,8 @@ const NAV_ITEMS = [
   { href: '/concept-test', label: 'Concept Test', icon: Layers },
   { href: '/signals', label: 'Signals', icon: BarChart2 },
   { href: '/reports', label: 'Insights', icon: Activity },
+  // Broadcast-only — team workspaces
+  { href: '/team', label: 'Team', icon: UserPlus, requiresAgency: true },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -151,7 +153,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto" style={{ fontFamily: HOME_FONT_BODY }}>
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.filter(item => !item.requiresAgency || plan === 'agency').map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
           return (
             <Link

@@ -64,6 +64,7 @@ export interface Persona {
   id: string
   user_id: string
   project_id?: string | null
+  workspace_id?: string | null
   name: string
   avatar_initials: string
   avatar_color: string
@@ -82,12 +83,48 @@ export interface Persona {
 export interface Project {
   id: string
   user_id: string
+  workspace_id?: string | null
   name: string
   cover_image_url: string | null
   archived: boolean
   archived_at: string | null
   created_at: string
   updated_at: string
+}
+
+// ─── Workspace (Broadcast team seats) ────────────────────────────────────────
+// A workspace is a shared, isolated space an account owner creates (e.g. one
+// per client) and invites specific people into — never a flat pool visible to
+// everyone with a seat. Content (projects/personas/interviews/reports) with a
+// null workspace_id is personal, exactly as it behaves without this feature;
+// a non-null workspace_id makes it visible/editable by every member of that
+// workspace. See supabase-migration-team-workspaces.sql for the RLS that
+// enforces this.
+
+export interface Workspace {
+  id: string
+  owner_id: string
+  name: string
+  created_at: string
+  updated_at: string
+}
+
+export interface WorkspaceMember {
+  id: string
+  full_name: string | null
+  avatar_url: string | null
+  email: string
+  role: 'owner' | 'member'
+}
+
+export interface WorkspaceInvite {
+  id: string
+  workspace_id: string
+  invited_email: string
+  invited_by: string
+  status: 'pending' | 'accepted' | 'revoked'
+  created_at: string
+  accepted_at?: string | null
 }
 
 // ─── Journey ──────────────────────────────────────────────────────────────────
@@ -137,6 +174,7 @@ export interface Interview {
   id: string
   user_id: string
   project_id?: string | null
+  workspace_id?: string | null
   persona_id: string
   persona?: Persona
   title: string
@@ -180,6 +218,7 @@ export interface AIVerdict {
 export interface Report {
   id: string
   user_id: string
+  workspace_id?: string | null
   interview_id: string
   interview?: Interview
   executive_summary: string

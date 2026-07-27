@@ -14,11 +14,12 @@ export async function GET(
 
   const { id } = await params
 
+  // No user_id filter — RLS is the real gate (personal owner, or any
+  // co-member of the project's workspace).
   const { data, error } = await supabase
     .from('projects')
     .select('*')
     .eq('id', id)
-    .eq('user_id', user.id)
     .single()
 
   if (error) {
@@ -40,7 +41,10 @@ export async function PATCH(
   }
 
   const { id } = await params
-  const { action, name } = await request.json()
+  const { action, name, workspace_id } = await request.json()
+
+  // No user_id filter on any of these — RLS is the real gate (personal owner,
+  // or any co-member of the project's workspace).
 
   if (action === 'rename') {
     if (!name?.trim()) {
@@ -50,7 +54,6 @@ export async function PATCH(
       .from('projects')
       .update({ name: name.trim() })
       .eq('id', id)
-      .eq('user_id', user.id)
       .select()
       .single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -62,7 +65,6 @@ export async function PATCH(
       .from('projects')
       .update({ archived: true, archived_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('user_id', user.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
   }
@@ -72,7 +74,18 @@ export async function PATCH(
       .from('projects')
       .update({ archived: false, archived_at: null })
       .eq('id', id)
-      .eq('user_id', user.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ success: true })
+  }
+
+  if (action === 'set_workspace') {
+    // Assign/unassign this project to one of the caller's workspaces. RLS's
+    // with-check rejects setting workspace_id to a workspace the caller isn't
+    // a member of — no extra app-level membership check needed here.
+    const { error } = await supabase
+      .from('projects')
+      .update({ workspace_id: workspace_id ?? null })
+      .eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
   }
@@ -93,11 +106,11 @@ export async function DELETE(
 
   const { id } = await params
 
+  // No user_id filter — RLS is the real gate, same reasoning as GET above.
   const { error } = await supabase
     .from('projects')
     .delete()
     .eq('id', id)
-    .eq('user_id', user.id)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

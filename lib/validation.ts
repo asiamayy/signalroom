@@ -37,6 +37,7 @@ export const personaCreateSchema = z.object({
   tags: z.array(z.string().max(60)).max(20).default([]),
   funnel_stage: z.enum(['awareness', 'consideration', 'purchase', 'loyalty']).default('awareness'),
   project_id: optionalUuid,
+  workspace_id: optionalUuid,
   avatar_url: z.string().max(2000).nullable().optional(),
 })
 
@@ -61,6 +62,7 @@ export const interviewCreateSchema = z.object({
   context: z.string().max(4000).default(''),
   devils_advocate: z.boolean().optional(),
   project_id: optionalUuid,
+  workspace_id: optionalUuid,
 })
 
 export const chatMessageSchema = z.object({

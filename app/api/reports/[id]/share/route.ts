@@ -18,11 +18,12 @@ export async function POST(
 
   const { id } = await params
 
+  // No user_id filter — RLS is the real gate (personal owner, or any
+  // co-member of the report's workspace, can generate its share link).
   const { data: report, error } = await supabase
     .from('reports')
     .select('id, share_token')
     .eq('id', id)
-    .eq('user_id', user.id)
     .single()
 
   if (error || !report) {
@@ -38,7 +39,6 @@ export async function POST(
     .from('reports')
     .update({ share_token: token })
     .eq('id', id)
-    .eq('user_id', user.id)
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
@@ -62,11 +62,11 @@ export async function DELETE(
 
   const { id } = await params
 
+  // No user_id filter — RLS is the real gate, same reasoning as POST above.
   const { error } = await supabase
     .from('reports')
     .update({ share_token: null })
     .eq('id', id)
-    .eq('user_id', user.id)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

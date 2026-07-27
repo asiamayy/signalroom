@@ -1,12 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+// useSearchParams() requires a Suspense boundary in the App Router, or
+// `next build` fails prerendering this page.
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,7 +35,11 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/home')
+      // Honor ?redirect= (e.g. a pending workspace invite) — falls back to
+      // the normal dashboard home. Only ever a same-origin relative path
+      // (an invite link we generated ourselves), never an external URL.
+      const redirect = searchParams.get('redirect')
+      router.push(redirect && redirect.startsWith('/') ? redirect : '/home')
       router.refresh()
     }
   }

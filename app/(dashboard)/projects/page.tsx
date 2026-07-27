@@ -7,16 +7,19 @@ export default async function ProjectsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // No user_id filter on projects/interviews/reports — RLS alone scopes these
+  // to personal items plus any workspace-shared ones this user is a member
+  // of. signals stays user_id-only (deliberately deferred).
   const [
     { data: projects },
     { data: interviews },
     { data: signals },
     { data: reports },
   ] = await Promise.all([
-    supabase.from('projects').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }),
-    supabase.from('interviews').select('id, project_id').eq('user_id', user.id),
+    supabase.from('projects').select('*').order('updated_at', { ascending: false }),
+    supabase.from('interviews').select('id, project_id'),
     supabase.from('signals').select('*').eq('user_id', user.id),
-    supabase.from('reports').select('id, interview_id').eq('user_id', user.id),
+    supabase.from('reports').select('id, interview_id'),
   ])
 
   const allProjects = projects ?? []

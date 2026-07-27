@@ -21,6 +21,7 @@ interface InterviewsClientProps {
   allSignals: Signal[]
   allReports: Report[]
   allProjects: ProjectLite[]
+  allWorkspaces: ProjectLite[]
 }
 
 const STATUS_META: Record<InterviewStatus, { label: string; bg: string; color: string; pulse: boolean }> = {
@@ -38,11 +39,12 @@ const ACTIVITY_ICONS: Record<TimelineEventType, typeof Mic> = {
   file_uploaded: Mic,
 }
 
-export function InterviewsClient({ initialInterviews, allPersonas, allSignals, allReports, allProjects }: InterviewsClientProps) {
+export function InterviewsClient({ initialInterviews, allPersonas, allSignals, allReports, allProjects, allWorkspaces }: InterviewsClientProps) {
   const [interviews, setInterviews] = useState(initialInterviews)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [projectFilter, setProjectFilter] = useState('')
+  const [workspaceFilter, setWorkspaceFilter] = useState('')
   const [deleting, setDeleting] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
@@ -51,10 +53,12 @@ export function InterviewsClient({ initialInterviews, allPersonas, allSignals, a
       if (statusFilter && iv.status !== statusFilter) return false
       if (projectFilter === 'unassigned' && iv.project_id) return false
       if (projectFilter && projectFilter !== 'unassigned' && iv.project_id !== projectFilter) return false
+      if (workspaceFilter === 'personal' && iv.workspace_id) return false
+      if (workspaceFilter && workspaceFilter !== 'personal' && iv.workspace_id !== workspaceFilter) return false
       if (q && !iv.title.toLowerCase().includes(q) && !(iv.persona?.name ?? '').toLowerCase().includes(q)) return false
       return true
     })
-  }, [interviews, search, statusFilter, projectFilter])
+  }, [interviews, search, statusFilter, projectFilter, workspaceFilter])
 
   const activeCount = interviews.filter(iv => iv.status === 'active').length
   const completedCount = interviews.filter(iv => iv.status === 'completed').length
@@ -143,6 +147,14 @@ export function InterviewsClient({ initialInterviews, allPersonas, allSignals, a
               placeholder="All projects"
               options={[{ value: '', label: 'All projects' }, { value: 'unassigned', label: 'Unassigned' }, ...allProjects.map(p => ({ value: p.id, label: p.name }))]}
             />
+            {allWorkspaces.length > 0 && (
+              <Dropdown
+                value={workspaceFilter}
+                onChange={setWorkspaceFilter}
+                placeholder="All workspaces"
+                options={[{ value: '', label: 'All workspaces' }, { value: 'personal', label: 'Personal (not shared)' }, ...allWorkspaces.map(w => ({ value: w.id, label: w.name }))]}
+              />
+            )}
           </div>
         </div>
       </section>

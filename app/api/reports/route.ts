@@ -9,6 +9,8 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // No user_id filter — RLS alone scopes this to personal reports plus any
+  // workspace-shared ones this user is a member of.
   const { data, error } = await supabase
     .from('reports')
     .select(`
@@ -21,7 +23,6 @@ export async function GET() {
         persona:personas(name, avatar_initials, avatar_color)
       )
     `)
-    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -42,11 +43,11 @@ export async function DELETE(request: NextRequest) {
   const { id } = await request.json()
   if (!id) return NextResponse.json({ error: 'Report ID required' }, { status: 400 })
 
+  // No user_id filter — RLS is the real gate, same reasoning as GET above.
   const { error } = await supabase
     .from('reports')
     .delete()
     .eq('id', id)
-    .eq('user_id', user.id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendEmail } from '@/lib/email'
 
 export async function POST() {
   const supabase = await createClient()
@@ -17,30 +18,11 @@ export async function POST() {
     return NextResponse.json({ error: 'No email on account' }, { status: 400 })
   }
 
-  try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'api-key': process.env.BREVO_API_KEY!,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: [{ email }],
-        templateId: 1,
-        sender: { name: 'Asiah Sharpe', email: 'hello@getsignalroom.com' },
-      }),
-    })
+  const result = await sendEmail({ to: email, templateId: 1 })
 
-    if (!res.ok) {
-      const err = await res.json()
-      console.error('Brevo error:', err)
-      return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
-    }
-
-    return NextResponse.json({ success: true })
-  } catch (e) {
-    console.error('Welcome email error:', e)
-    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: 500 })
   }
+
+  return NextResponse.json({ success: true })
 }

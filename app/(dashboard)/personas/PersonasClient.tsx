@@ -19,6 +19,7 @@ interface PersonasClientProps {
   limit: number
   count: number
   projects: { id: string; name: string }[]
+  workspaces: { id: string; name: string }[]
 }
 
 const FILTER_TABS = ['All Personas', 'Active', 'Archived'] as const
@@ -29,7 +30,7 @@ const SORT_OPTIONS = ['Most relevant', 'Recently updated', 'Recently created', '
 const FUNNEL_TABS = ['All Personas', 'awareness', 'consideration', 'purchase', 'loyalty'] as const
 type FunnelTab = typeof FUNNEL_TABS[number]
 
-export default function PersonasClient({ initialPersonas, plan, limit, count, projects }: PersonasClientProps) {
+export default function PersonasClient({ initialPersonas, plan, limit, count, projects, workspaces }: PersonasClientProps) {
   const [personas, setPersonas] = useState<Persona[]>(initialPersonas)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [archiving, setArchiving] = useState<string | null>(null)
@@ -37,6 +38,7 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
   const [filterTab, setFilterTab] = useState<FilterTab>('All Personas')
   const [funnelTab, setFunnelTab] = useState<FunnelTab>('All Personas')
   const [projectFilter, setProjectFilter] = useState<string>('all')
+  const [workspaceFilter, setWorkspaceFilter] = useState<string>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState('Most relevant')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -158,9 +160,15 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
     ? personas.filter(p => !p.project_id)
     : personas.filter(p => p.project_id === projectFilter)
 
+  const workspaceScoped = workspaceFilter === 'all'
+    ? projectScoped
+    : workspaceFilter === 'personal'
+    ? projectScoped.filter(p => !p.workspace_id)
+    : projectScoped.filter(p => p.workspace_id === workspaceFilter)
+
   const baseFiltered = filterTab === 'Archived'
-    ? projectScoped.filter(p => p.archived)
-    : projectScoped.filter(p => !p.archived)
+    ? workspaceScoped.filter(p => p.archived)
+    : workspaceScoped.filter(p => !p.archived)
 
   const funnelFiltered = funnelTab === 'All Personas'
     ? baseFiltered
@@ -257,6 +265,21 @@ export default function PersonasClient({ initialPersonas, plan, limit, count, pr
                           { value: 'all', label: 'All projects' },
                           { value: 'unassigned', label: 'Unassigned' },
                           ...projects.map(p => ({ value: p.id, label: p.name })),
+                        ]}
+                      />
+                    </>
+                  )}
+                  {workspaces.length > 0 && (
+                    <>
+                      <label className="block text-xs font-semibold mb-1.5 mt-4" style={{ color: HOME_COLORS.onSurface }}>Workspace</label>
+                      <Dropdown
+                        value={workspaceFilter}
+                        onChange={setWorkspaceFilter}
+                        className="w-full"
+                        options={[
+                          { value: 'all', label: 'All' },
+                          { value: 'personal', label: 'Personal (not shared)' },
+                          ...workspaces.map(w => ({ value: w.id, label: w.name })),
                         ]}
                       />
                     </>

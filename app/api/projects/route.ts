@@ -12,10 +12,11 @@ export async function GET(request: NextRequest) {
   const limitParam = request.nextUrl.searchParams.get('limit')
   const limit = limitParam ? Number(limitParam) : undefined
 
+  // No user_id filter — RLS alone scopes this to personal projects plus any
+  // workspace-shared ones this user is a member of.
   let query = supabase
     .from('projects')
     .select('*')
-    .eq('user_id', user.id)
     .order('updated_at', { ascending: false })
 
   if (limit) {

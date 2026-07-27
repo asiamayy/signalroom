@@ -18,10 +18,12 @@ export async function GET(request: NextRequest) {
   const funnelStage = request.nextUrl.searchParams.get('funnel_stage')
   const projectId = request.nextUrl.searchParams.get('project_id')
 
+  // No user_id filter — RLS alone scopes this to personal personas plus any
+  // workspace-shared ones this user is a member of. An explicit filter here
+  // would incorrectly hide co-members' workspace personas.
   let query = supabase
     .from('personas')
     .select('*')
-    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   if (funnelStage) {
@@ -72,34 +74,45 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error }, { status: 400 })
   }
 
-  // Check plan limit before creating
-  const limit = PLAN_LIMITS[plan].personas
+  const formData = parsed.data
 
-  if (limit !== Infinity) {
-    const { count } = await supabase
-      .from('personas')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-    // All personas (active + archived) count toward limit
+  // Personal plan limit only applies to personal (non-workspace) personas —
+  // a workspace member creating inside a shared Broadcast workspace operates
+  // under the OWNER's entitlement (and the 10-seat cap), not their own
+  // individual plan, so the check is skipped entirely for workspace creates.
+  // (RLS's insert `with check` still requires actual membership in the
+  // target workspace regardless — this is a UX/business-logic gate on top,
+  // not the security boundary.)
+  if (!formData.workspace_id) {
+    const limit = PLAN_LIMITS[plan].personas
 
-    // Grandfather: a user who already has more personas than the plan's
-    // current cap (e.g. built up under a prior "unlimited" tier) is never
-    // asked to delete anything or blocked from anything they could already
-    // do. Their effective ceiling is whichever is higher — the plan's cap or
-    // what they already have — so they can keep using everything they built,
-    // just can't add indefinitely more until they drop back under the cap or
-    // upgrade. New/smaller accounts are capped normally.
-    const effectiveLimit = Math.max(limit, count ?? 0)
+    if (limit !== Infinity) {
+      const { count } = await supabase
+        .from('personas')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .is('workspace_id', null)
+      // All personal personas (active + archived) count toward the limit —
+      // personas created inside a shared workspace never count here.
 
-    if ((count ?? 0) >= effectiveLimit) {
-      return NextResponse.json({
-        error: `You've reached the ${limit} persona limit on the ${plan} plan. Upgrade to create more.`,
-        limit_reached: true,
-      }, { status: 403 })
+      // Grandfather: a user who already has more personas than the plan's
+      // current cap (e.g. built up under a prior "unlimited" tier) is never
+      // asked to delete anything or blocked from anything they could already
+      // do. Their effective ceiling is whichever is higher — the plan's cap or
+      // what they already have — so they can keep using everything they built,
+      // just can't add indefinitely more until they drop back under the cap or
+      // upgrade. New/smaller accounts are capped normally.
+      const effectiveLimit = Math.max(limit, count ?? 0)
+
+      if ((count ?? 0) >= effectiveLimit) {
+        return NextResponse.json({
+          error: `You've reached the ${limit} persona limit on the ${plan} plan. Upgrade to create more.`,
+          limit_reached: true,
+        }, { status: 403 })
+      }
     }
   }
 
-  const formData = parsed.data
   const initials = getInitials(formData.name)
   const color = getAvatarColor(formData.name)
 
@@ -108,6 +121,7 @@ export async function POST(request: NextRequest) {
     .insert({
       user_id: user.id,
       project_id: formData.project_id ?? null,
+      workspace_id: formData.workspace_id ?? null,
       name: formData.name,
       avatar_initials: initials,
       avatar_color: JSON.stringify(color),
@@ -139,6 +153,11 @@ export async function PATCH(request: NextRequest) {
   const { id, action, project_id, funnel_stage } = await request.json()
   if (!id || !action) return NextResponse.json({ error: 'ID and action required' }, { status: 400 })
 
+  // No user_id filter on any of these — RLS is the real gate (personal owner,
+  // or any co-member of the persona's workspace). An explicit filter here
+  // would incorrectly block a workspace member from managing a persona a
+  // co-member created, which is the entire point of shared edit access.
+
   if (action === 'set_stage') {
     const VALID_STAGES = ['awareness', 'consideration', 'purchase', 'loyalty']
     if (!VALID_STAGES.includes(funnel_stage)) {
@@ -148,7 +167,6 @@ export async function PATCH(request: NextRequest) {
       .from('personas')
       .update({ funnel_stage })
       .eq('id', id)
-      .eq('user_id', user.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
   }
@@ -158,7 +176,6 @@ export async function PATCH(request: NextRequest) {
       .from('personas')
       .update({ archived: true, archived_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('user_id', user.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
   }
@@ -168,7 +185,6 @@ export async function PATCH(request: NextRequest) {
       .from('personas')
       .update({ archived: false, archived_at: null })
       .eq('id', id)
-      .eq('user_id', user.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
   }
@@ -178,7 +194,6 @@ export async function PATCH(request: NextRequest) {
       .from('personas')
       .update({ project_id: project_id ?? null })
       .eq('id', id)
-      .eq('user_id', user.id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })
   }
@@ -200,11 +215,11 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Persona ID required' }, { status: 400 })
   }
 
+  // No user_id filter — RLS is the real gate, same reasoning as PATCH above.
   const { error } = await supabase
     .from('personas')
     .delete()
     .eq('id', id)
-    .eq('user_id', user.id)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

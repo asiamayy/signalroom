@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Check } from 'lucide-react'
 
@@ -12,8 +12,19 @@ const PERKS = [
   'No research background needed',
 ]
 
+// useSearchParams() requires a Suspense boundary in the App Router, or
+// `next build` fails prerendering this page.
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
+  )
+}
+
+function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,8 +58,11 @@ export default function SignupPage() {
         body: JSON.stringify({ email }),
       }).catch(err => console.error('Welcome email failed:', err))
 
-      // Redirect straight to dashboard — no email confirmation needed
-      router.push('/home')
+      // Redirect straight to dashboard — no email confirmation needed. Honor
+      // ?redirect= (e.g. a pending workspace invite) if present; only ever a
+      // same-origin relative path (an invite link we generated ourselves).
+      const redirect = searchParams.get('redirect')
+      router.push(redirect && redirect.startsWith('/') ? redirect : '/home')
     }
   }
 
