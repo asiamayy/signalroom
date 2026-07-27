@@ -24,7 +24,7 @@ export function AcceptInviteButton({ token }: { token: string }) {
         setLoading(false)
         return
       }
-      router.push('/team')
+      router.push('/workspaces')
       router.refresh()
     } catch {
       setError('Something went wrong — please try again')

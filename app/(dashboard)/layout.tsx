@@ -7,7 +7,7 @@ import { Inter, Playfair_Display, Source_Serif_4, Hanken_Grotesk } from 'next/fo
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home, Briefcase, Users, MessageSquare, Settings, ArrowLeftRight, Menu, X,
-  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus, Layers, UserPlus,
+  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus, Layers, Building2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_BODY } from '@/lib/home-theme'
@@ -54,7 +54,7 @@ const NAV_ITEMS = [
   { href: '/signals', label: 'Signals', icon: BarChart2 },
   { href: '/reports', label: 'Insights', icon: Activity },
   // Broadcast-only — team workspaces
-  { href: '/team', label: 'Team', icon: UserPlus, requiresAgency: true },
+  { href: '/workspaces', label: 'Workspaces', icon: Building2, requiresAgency: true },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

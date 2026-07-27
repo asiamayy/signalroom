@@ -96,7 +96,7 @@ export function SignalFeedCard({ signal, variant = 'standard' }: SignalFeedCardP
       </div>
 
       <Link href={href}>
-        <h3 className="text-xl sm:text-2xl mb-4 leading-snug transition-transform group-hover:translate-x-1 cursor-pointer" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>
+        <h3 className="text-xl sm:text-2xl mb-4 leading-snug cursor-pointer" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>
           {signal.title}
         </h3>
       </Link>

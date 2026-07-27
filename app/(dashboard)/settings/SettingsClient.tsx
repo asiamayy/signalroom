@@ -60,6 +60,7 @@ const PLANS: {
       'Executive-ready research reports',
       'Multi-persona comparative analysis',
       'Advanced insight synthesis',
+      'Slack & Notion integrations',
     ],
   },
   {
@@ -74,6 +75,7 @@ const PLANS: {
       'Everything in Signal',
       '10 collaborative team seats',
       'White-label executive reports',
+      'Slack & Notion integrations',
       'Priority feature access',
     ],
   },

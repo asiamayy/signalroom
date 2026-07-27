@@ -755,6 +755,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Executive-ready research reports</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Multi-persona comparative analysis</li>
                 <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Advanced insight synthesis</li>
+                <li className="flex items-center gap-4 text-xs text-[#121314] font-medium">✓ Slack & Notion integrations</li>
               </ul>
               <Link href="/signup" className="w-full text-center bg-[#1A3024] text-white py-4 text-[11px] font-medium uppercase tracking-[0.4em] hover:bg-[#5A7973] transition-all shadow-xl shadow-black/10 rounded-[4px]">Subscribe</Link>
             </div>
@@ -774,6 +775,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Everything in Signal</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ 10 collaborative team seats</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ White-label executive reports</li>
+                <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Slack & Notion integrations</li>
                 <li className="flex items-center gap-4 text-xs text-[#454947]">✓ Priority feature access</li>
               </ul>
               <Link href="/signup" className="w-full text-center border border-[#b5bab7]/30 py-4 text-[11px] font-medium uppercase tracking-[0.3em] group-hover:bg-[#1A3024] group-hover:text-white transition-all duration-500 rounded-[4px] text-neutral-700">Subscribe</Link>

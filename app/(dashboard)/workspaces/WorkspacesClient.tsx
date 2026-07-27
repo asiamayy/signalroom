@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { UserPlus, Plus, X, Trash2, Loader2, Lock, Crown } from 'lucide-react'
+import { Building2, Plus, X, Trash2, Loader2, Lock, Crown } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
-import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
 import { CARD_SHADOW, getInitials, getAvatarColor } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
 import type { Plan, Workspace, WorkspaceMember, WorkspaceInvite } from '@/types'
 
-export function TeamClient() {
+export function WorkspacesClient() {
   const [plan, setPlan] = useState<Plan | null>(null)
   const [loadingPlan, setLoadingPlan] = useState(true)
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
@@ -161,24 +161,23 @@ export function TeamClient() {
   if (plan !== 'agency') {
     return (
       <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full p-4 sm:p-10 max-w-2xl">
-        <div className="mb-8">
-          <h1 className="flex items-center gap-2" style={{ ...DISPLAY_LG_STYLE, fontSize: '28px', lineHeight: '36px', color: HOME_COLORS.onSurface }}>
-            <UserPlus size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-            Team
-          </h1>
-          <p className="text-sm mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            Invite teammates into isolated workspaces — each with full create/edit access, scoped to just what you share with them.
-          </p>
-        </div>
-        <div className="rounded-2xl p-10 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
-            <Lock size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
+        <div
+          className="rounded-2xl p-10 text-center"
+          style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})`, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}
+        >
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <Lock size={22} style={{ color: HOME_COLORS.primaryFixedDim }} />
           </div>
-          <h2 className="text-lg font-bold mb-2" style={{ color: HOME_COLORS.onSurface }}>Broadcast plan required</h2>
-          <p className="text-sm mb-6 max-w-sm mx-auto leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            Create up to {seatLimit} team seats across isolated workspaces — one per client, or however you want to split your research.
+          <h1 className="text-2xl font-semibold mb-2" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspaces</h1>
+          <p className="text-sm mb-2 opacity-80">Broadcast plan required</p>
+          <p className="text-sm mb-6 max-w-sm mx-auto leading-relaxed opacity-70">
+            Create up to {seatLimit} team seats across isolated workspaces — one per client, or however you want to split your research. Each member gets full create/edit access, scoped to just what you share with them.
           </p>
-          <Link href="/settings" className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-full text-white transition-colors" style={{ background: HOME_COLORS.primary }}>
+          <Link
+            href="/settings"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-full transition-opacity hover:opacity-90"
+            style={{ background: HOME_COLORS.primaryFixedDim, color: HOME_COLORS.onPrimaryFixedVariant }}
+          >
             Upgrade plan →
           </Link>
         </div>
@@ -188,23 +187,31 @@ export function TeamClient() {
 
   return (
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full p-4 sm:p-10">
-      <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="flex items-center gap-2" style={{ ...DISPLAY_LG_STYLE, fontSize: '28px', lineHeight: '36px', color: HOME_COLORS.onSurface }}>
-            <UserPlus size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-            Team
-          </h1>
-          <p className="text-sm mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Isolated workspaces — each member only sees what they&rsquo;ve been added to.</p>
+      {/* Hero — dark-green premium treatment, matching Home/Audience Panel */}
+      <div
+        className="mb-8 rounded-2xl p-6 sm:p-8"
+        style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})`, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}
+      >
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.1)' }}>
+              <Building2 size={20} style={{ color: HOME_COLORS.primaryFixedDim }} />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-[28px] leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>Workspaces</h1>
+              <p className="text-sm mt-1 opacity-75">Isolated workspaces — each member only sees what they&rsquo;ve been added to.</p>
+            </div>
+          </div>
+          <span
+            className="text-xs font-semibold px-3 py-1.5 rounded-full flex-shrink-0"
+            style={{
+              background: allSeats.size >= seatLimit ? '#FFB4AB' : 'rgba(255,255,255,0.12)',
+              color: allSeats.size >= seatLimit ? '#410E0B' : HOME_COLORS.primaryFixedDim,
+            }}
+          >
+            {allSeats.size} / {seatLimit} seats used
+          </span>
         </div>
-        <span
-          className="text-xs font-semibold px-3 py-1.5 rounded-full"
-          style={{
-            background: allSeats.size >= seatLimit ? '#FFDAD6' : HOME_COLORS.secondaryContainer,
-            color: allSeats.size >= seatLimit ? HOME_COLORS.error : HOME_COLORS.primary,
-          }}
-        >
-          {allSeats.size} / {seatLimit} seats used
-        </span>
       </div>
 
       {error && <p className="text-sm rounded-lg px-3 py-2 mb-4" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{error}</p>}
@@ -286,7 +293,7 @@ export function TeamClient() {
                     className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
                     style={{ border: `1px solid ${HOME_COLORS.outlineVariant}`, color: HOME_COLORS.onSurface, background: 'none', cursor: 'pointer' }}
                   >
-                    <UserPlus size={12} /> Invite member
+                    <Crown size={12} /> Invite member
                   </button>
                 </div>
 
