@@ -342,7 +342,7 @@ export default function ConceptTestPage() {
       <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-20 pt-6">
         {/* Sidebar — persona selection */}
         <aside className="lg:col-span-3 flex flex-col gap-4 order-2 lg:order-1">
-          <section className="p-6 rounded-xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: '0 12px 28px rgba(15,23,42,0.12)', borderColor: `${HOME_COLORS.outlineVariant}4d` }}>
+          <section className="p-6 rounded-xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: '0 2px 8px rgba(15,23,42,0.05)', borderColor: `${HOME_COLORS.outlineVariant}4d` }}>
             <div className="flex items-center justify-between mb-5">
               <div><h3 className="text-lg font-semibold" style={{ color: HOME_COLORS.onSurface }}>Judging Panel</h3></div>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: selectedIds.length >= MIN_PERSONAS ? HOME_COLORS.secondaryContainer : HOME_COLORS.surfaceContainerHigh, color: selectedIds.length >= MIN_PERSONAS ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant }}>
@@ -460,7 +460,7 @@ export default function ConceptTestPage() {
             </div>
           </section>
 
-          <button onClick={handleRun} disabled={!canRun} className="self-center flex items-center gap-3 px-10 py-5 rounded-full text-base font-semibold shadow-xl transition-shadow hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60" style={{ background: canRun ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: canRun ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}>
+          <button onClick={handleRun} disabled={!canRun} className="self-center flex items-center gap-3 px-10 py-5 rounded-full text-base font-semibold shadow-sm transition-shadow hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60" style={{ background: canRun ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: canRun ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}>
             {loading ? <><Loader2 size={18} className="animate-spin" /> Running simulation...</> : <>Run Concept Test <Rocket size={18} /></>}
           </button>
           {error && <p className="text-sm rounded-lg px-3 py-2" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{error}</p>}
