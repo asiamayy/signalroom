@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Brain, FileText, Loader2, Trash2 } from 'lucide-react'
+import { ArrowRight, Brain, FileText, Filter, Loader2, Trash2 } from 'lucide-react'
 import { formatDate, INTERVIEW_TYPE_LABELS } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_BODY, HOME_FONT_DISPLAY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
@@ -118,6 +118,17 @@ export default function ReportsPage() {
         ) : (
           <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-10">
             <section className="lg:col-span-8">
+              <div className="mb-4 flex items-center justify-between border-b pb-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}80` }}>
+                <h2 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>All Research</h2>
+                <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                  <Filter size={16} />
+                  <span className="hidden sm:inline">Filter research</span>
+                  <select value={activeType} onChange={event => setActiveType(event.target.value)} aria-label="Filter research type" className="rounded-lg px-2.5 py-2 text-xs font-medium outline-none" style={{ background: HOME_COLORS.surfaceContainer, border: `1px solid ${HOME_COLORS.outlineVariant}`, color: HOME_COLORS.onSurface, fontFamily: 'inherit' }}>
+                    <option value="all">All research</option>
+                    {researchTypes.map(type => <option key={type} value={type}>{INTERVIEW_TYPE_LABELS[type] ?? type}</option>)}
+                  </select>
+                </label>
+              </div>
               <div className="flex flex-col gap-4">
                 {visibleReports.map(report => <InsightCard key={report.id} report={report} deleting={deleting === report.id} onDelete={handleDelete} />)}
                 {visibleReports.length === 0 && (
@@ -131,12 +142,6 @@ export default function ReportsPage() {
             <aside className="flex flex-col gap-6 lg:col-span-4">
               <ConfidenceSummary confidence={averageConfidence} reportCount={reports.length} />
               <EmergentThemes themes={themes} />
-              <div className="flex flex-wrap gap-2">
-                <FilterPill label="All Research" active={activeType === 'all'} onClick={() => setActiveType('all')} />
-                {researchTypes.map(type => (
-                  <FilterPill key={type} label={INTERVIEW_TYPE_LABELS[type] ?? type} active={activeType === type} onClick={() => setActiveType(type)} />
-                ))}
-              </div>
             </aside>
           </div>
         )}
@@ -179,7 +184,7 @@ function InsightCard({ report, deleting, onDelete }: { report: ReportRecord; del
             <span className="text-2xl leading-none" style={{ color: HOME_COLORS.primary, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{String(themeCount).padStart(2, '0')}</span>
             <span className="mt-1 text-[9px] font-semibold uppercase tracking-tight" style={{ color: `${HOME_COLORS.onSurfaceVariant}99` }}>Themes</span>
           </div>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 group-hover:text-white" style={{ background: HOME_COLORS.surfaceContainer, color: HOME_COLORS.onSurfaceVariant }}>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 group-hover:bg-[#18281c] group-hover:text-white" style={{ background: HOME_COLORS.surfaceContainer, color: HOME_COLORS.onSurfaceVariant }}>
             <ArrowRight size={19} className="transition-transform duration-300 group-hover:translate-x-1" />
           </span>
         </div>
@@ -237,13 +242,9 @@ function EmergentThemes({ themes }: { themes: { title: string; count: number; pe
           <div className="h-1 overflow-hidden rounded-full" style={{ background: `${HOME_COLORS.outlineVariant}33` }}><div className="h-full rounded-full" style={{ width: `${theme.percentage}%`, background: HOME_COLORS.primary }} /></div>
         </div>
       ))}</div> : <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Themes will appear as research reports are generated.</p>}
-      <Link href="/signals" className="mt-8 block w-full rounded-full border py-3 text-center text-xs font-semibold transition-colors hover:bg-white" style={{ borderColor: HOME_COLORS.outline, color: HOME_COLORS.onSurface }}>Explore Theme Map</Link>
+      <Link href="/signals" className="mt-8 block w-full rounded-full border py-3 text-center text-xs font-semibold transition-colors hover:bg-[#eae7e7]" style={{ borderColor: HOME_COLORS.outline, color: HOME_COLORS.onSurface }}>Explore Theme Map</Link>
     </section>
   )
-}
-
-function FilterPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return <button onClick={onClick} className="rounded-full px-4 py-2 text-xs font-semibold transition-colors" style={{ background: active ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: active ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}>{label}</button>
 }
 
 function EmptyInsights() {
