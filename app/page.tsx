@@ -222,31 +222,45 @@ export default function LandingPage() {
           color: #1A3024 !important;
         }
 
-        /* Integration flow lines — a soft gradient dash travels from each
-           icon toward SignalRoom, sparking on arrival. Same loop duration
-           on every dash/spark pair so they land in sync without needing
-           JS-timed coordination. */
+        /* Gentler hover drift for the Integrations icon — a smaller nudge
+           than the Methodology bounce, not a repeat of it. */
+        @keyframes subtleIconDrift {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-2px) scale(1.03); }
+        }
+        .group:hover .animate-icon-subtle {
+          animation: subtleIconDrift 2.2s ease-in-out infinite;
+          color: #1A3024 !important;
+        }
+
+        /* Integration flow lines — a soft gradient streak travels from
+           SignalRoom out to each connected tool (that's the real direction:
+           SignalRoom pushes reports/signals out to Slack/Notion), sparking
+           on arrival. A slow, symmetric ease and a longer streak read as one
+           continuous glide rather than a repeating tick. Same loop duration
+           on every dash/spark pair so they land in sync without JS timing. */
         @keyframes flowDash {
-          to { stroke-dashoffset: -152; }
+          to { stroke-dashoffset: -160; }
         }
         .flow-dash {
-          stroke-dasharray: 5 14;
-          animation: flowDash 2.4s linear infinite;
+          stroke-dasharray: 16 28;
+          animation: flowDash 3.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
         }
         .flow-dash-delay {
-          animation-delay: 1.2s;
+          animation-delay: 1.8s;
         }
         @keyframes flowSpark {
-          0%, 78% { opacity: 0; transform: scale(0.4); }
-          88% { opacity: 1; transform: scale(1.5); }
-          100% { opacity: 0; transform: scale(0.4); }
+          0%, 70% { opacity: 0; transform: scale(0.5); }
+          82% { opacity: 1; transform: scale(1.35); }
+          92% { opacity: 0.5; transform: scale(1); }
+          100% { opacity: 0; transform: scale(0.5); }
         }
         .flow-spark {
-          animation: flowSpark 2.4s ease-out infinite;
+          animation: flowSpark 3.6s ease-in-out infinite;
           transform-origin: center;
         }
         .flow-spark-delay {
-          animation-delay: 1.2s;
+          animation-delay: 1.8s;
         }
 
         .eyebrow-shine-wrap {
@@ -793,7 +807,7 @@ export default function LandingPage() {
 
               {/* Integrations */}
               <div className="border border-[#d1d5d3] rounded-[4px] p-8 sm:p-12 bg-white flex flex-col group hover:bg-[#fafbfa] transition-all duration-500">
-                <span className="material-symbols-outlined text-neutral-400 text-3xl mb-6 block transition-all duration-300 transform animate-editorial-bounce">bolt</span>
+                <span className="material-symbols-outlined text-neutral-400 text-3xl mb-6 block transition-all duration-300 transform animate-icon-subtle">sync_alt</span>
                 <h3 className="text-[26px] sm:text-[32px] tracking-tighter font-normal text-[#121314] mb-4 leading-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                   Bring customer intelligence into your workflow.
                 </h3>
@@ -812,14 +826,15 @@ export default function LandingPage() {
 
                   <svg width="68" height="100" viewBox="0 0 68 100" className="flex-shrink-0 -mx-1 sm:-mx-2" fill="none">
                     {/* Static base lines */}
-                    <path d="M64,22 C 34,22 34,50 4,50" stroke="#1A3024" strokeOpacity="0.12" strokeWidth="1.5" />
-                    <path d="M64,78 C 34,78 34,50 4,50" stroke="#1A3024" strokeOpacity="0.12" strokeWidth="1.5" />
-                    {/* Traveling gradient dash, icon → SignalRoom */}
-                    <path d="M64,22 C 34,22 34,50 4,50" stroke="url(#flow-grad-a)" strokeWidth="2" strokeLinecap="round" className="flow-dash" />
-                    <path d="M64,78 C 34,78 34,50 4,50" stroke="url(#flow-grad-b)" strokeWidth="2" strokeLinecap="round" className="flow-dash flow-dash-delay" />
-                    {/* Spark on arrival at SignalRoom */}
-                    <circle cx="4" cy="50" r="4" fill="#1A3024" className="flow-spark" />
-                    <circle cx="4" cy="50" r="4" fill="#1A3024" className="flow-spark flow-spark-delay" />
+                    <path d="M4,50 C 34,50 34,22 64,22" stroke="#1A3024" strokeOpacity="0.12" strokeWidth="1.5" />
+                    <path d="M4,50 C 34,50 34,78 64,78" stroke="#1A3024" strokeOpacity="0.12" strokeWidth="1.5" />
+                    {/* Traveling gradient streak, SignalRoom → icon (that's the
+                        real direction: SignalRoom pushes reports/signals out) */}
+                    <path d="M4,50 C 34,50 34,22 64,22" stroke="url(#flow-grad-a)" strokeWidth="2" strokeLinecap="round" className="flow-dash" />
+                    <path d="M4,50 C 34,50 34,78 64,78" stroke="url(#flow-grad-b)" strokeWidth="2" strokeLinecap="round" className="flow-dash flow-dash-delay" />
+                    {/* Spark on arrival at Slack / Notion */}
+                    <circle cx="64" cy="22" r="4" fill="#1A3024" className="flow-spark" />
+                    <circle cx="64" cy="78" r="4" fill="#1A3024" className="flow-spark flow-spark-delay" />
                     <defs>
                       <linearGradient id="flow-grad-a" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#1A3024" stopOpacity="0" />
