@@ -367,10 +367,10 @@ export default function ConceptTestPage() {
                       onClick={() => !atLimit && togglePersona(persona.id)}
                       disabled={atLimit}
                       className="group w-full flex items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-all hover:border-[#c3c8c1]/20 hover:bg-[#eae7e7] disabled:cursor-not-allowed disabled:opacity-40"
-                      style={{ background: isSelected ? HOME_COLORS.secondaryContainer : 'transparent' }}
+                      style={isSelected ? { background: HOME_COLORS.secondaryContainer } : undefined}
                     >
                       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full">
-                        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg" className="transition-transform duration-500 group-hover:scale-[1.6]" />
+                        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{persona.name}</p>
