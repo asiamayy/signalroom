@@ -227,7 +227,6 @@ function ConfidenceSummary({ confidence, reportCount }: { confidence: number; re
         </p>
         <div className="mt-8 space-y-4 border-t pt-6 text-xs" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
           <div className="flex justify-between"><span style={{ opacity: 0.6 }}>Research reports</span><span className="font-semibold">{reportCount}</span></div>
-          <div className="flex justify-between"><span style={{ opacity: 0.6 }}>Data points</span><span className="font-semibold">{reportCount} synthesis{reportCount === 1 ? '' : 'es'}</span></div>
         </div>
       </div>
       <span className="absolute -bottom-12 -right-12 h-48 w-48 rounded-full blur-3xl" style={{ background: `${HOME_COLORS.primaryFixed}0d` }} />

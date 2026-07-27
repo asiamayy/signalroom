@@ -277,7 +277,7 @@ export default function ConceptTestPage() {
   return (
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
       {/* Hero */}
-      <section className="relative px-4 sm:px-10 py-10 sm:py-12" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary }}>
+      <section className="relative px-4 py-8 sm:px-10 sm:py-9" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary }}>
         <div className="max-w-6xl flex items-start justify-between gap-6 flex-wrap">
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -338,7 +338,7 @@ export default function ConceptTestPage() {
           )}
         </div>
       ) : (
-      <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-20 -mt-12">
+      <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-20 -mt-8">
         {/* Sidebar — persona selection */}
         <aside className="lg:col-span-3 flex flex-col gap-4 order-2 lg:order-1">
           <section className="p-6 rounded-xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: '0 12px 28px rgba(15,23,42,0.12)', borderColor: `${HOME_COLORS.outlineVariant}4d` }}>
@@ -365,10 +365,10 @@ export default function ConceptTestPage() {
                       key={persona.id}
                       onClick={() => !atLimit && togglePersona(persona.id)}
                       disabled={atLimit}
-                      className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left hover:bg-[#f0eded] disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left hover:translate-x-1 hover:bg-[#f0eded] hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{ background: isSelected ? HOME_COLORS.secondaryContainer : 'transparent', border: isSelected ? `1.5px solid ${HOME_COLORS.primary}33` : '1.5px solid transparent' }}
                     >
-                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="md" className="grayscale transition-all duration-500 group-hover:grayscale-0" />
+                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="md" className="transition-transform duration-300 group-hover:scale-105" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{persona.name}</p>
                         <p className="text-[11px] truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{persona.traits?.job_title ?? 'No role'}</p>
@@ -452,12 +452,6 @@ export default function ConceptTestPage() {
                       <input type="file" accept="image/*" onChange={e => handleImage(i, e)} className="hidden" />
                     </label>
                   )}
-                  <div className="grid grid-cols-3 gap-4 border-t pt-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}33` }}>
-                    {['Tone of Voice', 'Visual Complexity', 'Emotional Impact'].map((label, statIndex) => {
-                      const filled = i === 0 ? [1, 2, 3][statIndex] : [2, 0, 1][statIndex]
-                      return <div key={label}><p className="mb-1 text-[10px] font-semibold uppercase" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</p><div className="flex gap-1">{[0, 1, 2].map(segment => <span key={segment} className="h-1 flex-1 rounded-full" style={{ background: segment < filled ? HOME_COLORS.primaryFixed : HOME_COLORS.outlineVariant }} />)}</div></div>
-                    })}
-                  </div>
                 </div>
               ))}
             </div>
@@ -476,8 +470,8 @@ export default function ConceptTestPage() {
             <div className="space-y-6">{[['01', 'Cognitive Bias Shield', 'Concepts are presented in randomized order to prevent sequence bias.'], ['02', 'Forced Choice Matrix', 'Personas must justify qualitative delta between both concepts.'], ['03', 'Enterprise Rigor', 'Statistical significance automatically calculated at 95% CI.']].map(([number, title, copy]) => <div key={number} className="flex gap-4"><span className="text-lg" style={{ color: HOME_COLORS.primaryFixedDim, fontFamily: HOME_FONT_DISPLAY }}>{number}</span><div><p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{title}</p><p className="mt-1 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{copy}</p></div></div>)}</div>
           </section>
           <section className="rounded-xl p-6 border shadow-sm" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}4d` }}>
-            <div className="flex items-center justify-between mb-4"><h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurface }}>Live Progress</h3><span className="w-2 h-2 rounded-full animate-ping" style={{ background: HOME_COLORS.error }} /></div>
-            <div className="space-y-4"><div className="flex justify-between text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}><span>Setup Readiness</span><span>{setupReadiness}%</span></div><div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-full transition-all duration-700" style={{ width: `${setupReadiness}%`, background: HOME_COLORS.primary }} /></div><ul className="text-xs space-y-2 pt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}><li className="flex items-center gap-2" style={{ color: HOME_COLORS.primary }}><CheckCircle2 size={14} /> Session Initialized</li><li className="flex items-center gap-2" style={{ opacity: selectedIds.length ? 1 : 0.5, color: selectedIds.length ? HOME_COLORS.primary : undefined }}>{selectedIds.length ? <CheckCircle2 size={14} /> : <Circle size={14} />} Select {MIN_PERSONAS}+ Personas</li><li className="flex items-center gap-2" style={{ opacity: filledConcepts.length >= 2 ? 1 : 0.5, color: filledConcepts.length >= 2 ? HOME_COLORS.primary : undefined }}>{filledConcepts.length >= 2 ? <CheckCircle2 size={14} /> : <Circle size={14} />} Define Concept Payloads</li></ul></div>
+            <div className="mb-4"><h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurface }}>Live Progress</h3></div>
+            <div className="space-y-4"><div className="flex justify-between text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}><span>Setup Readiness</span><span>{setupReadiness}%</span></div><div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-full transition-all duration-700" style={{ width: `${setupReadiness}%`, background: HOME_COLORS.primary }} /></div><ul className="text-xs space-y-2 pt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}><li className="flex items-center gap-2" style={{ color: HOME_COLORS.primary }}><CheckCircle2 size={14} /> Session Initialized</li><li className="flex items-center gap-2" style={{ opacity: selectedIds.length ? 1 : 0.5, color: selectedIds.length ? HOME_COLORS.primary : undefined }}>{selectedIds.length ? <CheckCircle2 size={14} /> : <Circle size={14} />} Select {MIN_PERSONAS}+ Personas</li><li className="flex items-center gap-2" style={{ opacity: filledConcepts.length >= 2 ? 1 : 0.5, color: filledConcepts.length >= 2 ? HOME_COLORS.primary : undefined }}>{filledConcepts.length >= 2 ? <CheckCircle2 size={14} /> : <Circle size={14} />} Add two concept descriptions</li></ul></div>
           </section>
         </aside>
       </div>
