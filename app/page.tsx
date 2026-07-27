@@ -222,6 +222,33 @@ export default function LandingPage() {
           color: #1A3024 !important;
         }
 
+        /* Integration flow lines — a soft gradient dash travels from each
+           icon toward SignalRoom, sparking on arrival. Same loop duration
+           on every dash/spark pair so they land in sync without needing
+           JS-timed coordination. */
+        @keyframes flowDash {
+          to { stroke-dashoffset: -152; }
+        }
+        .flow-dash {
+          stroke-dasharray: 5 14;
+          animation: flowDash 2.4s linear infinite;
+        }
+        .flow-dash-delay {
+          animation-delay: 1.2s;
+        }
+        @keyframes flowSpark {
+          0%, 78% { opacity: 0; transform: scale(0.4); }
+          88% { opacity: 1; transform: scale(1.5); }
+          100% { opacity: 0; transform: scale(0.4); }
+        }
+        .flow-spark {
+          animation: flowSpark 2.4s ease-out infinite;
+          transform-origin: center;
+        }
+        .flow-spark-delay {
+          animation-delay: 1.2s;
+        }
+
         .eyebrow-shine-wrap {
           position: relative;
           display: inline-block;
@@ -260,7 +287,7 @@ export default function LandingPage() {
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
-          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#integrations">Team &amp; Integrations</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#integrations">Integrations</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
         </div>
         <div className="flex items-center gap-4 sm:gap-6">
@@ -751,13 +778,13 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
               {/* Workspaces */}
-              <div className="border border-[#d1d5d3] rounded-[4px] p-8 sm:p-12 bg-white">
-                <span className="material-symbols-outlined text-[#1A3024] text-3xl mb-6 block">workspaces</span>
+              <div className="border border-[#d1d5d3] rounded-[4px] p-8 sm:p-12 bg-white group hover:bg-[#fafbfa] transition-all duration-500">
+                <span className="material-symbols-outlined text-neutral-400 text-3xl mb-6 block transition-all duration-300 transform animate-editorial-bounce">workspaces</span>
                 <h3 className="text-[26px] sm:text-[32px] tracking-tighter font-normal text-[#121314] mb-4 leading-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                  Isolated workspaces, not a shared free-for-all.
+                  Keep every research initiative in its own space.
                 </h3>
                 <p className="text-[13px] sm:text-sm text-neutral-600 leading-relaxed mb-6">
-                  Invite your team into named workspaces — one per client, or however you want to split research. Each member gets full create and edit access, scoped to exactly what you&rsquo;ve shared with them. Nothing more.
+                  Whether you&rsquo;re managing multiple brands, launching a new product, or supporting different clients, create dedicated workspaces that keep customer research organized and teams aligned. Share access with the right people while keeping each initiative focused.
                 </p>
                 <Link href="#pricing" className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] border-b border-[#1A3024]/30 hover:border-[#1A3024] transition-colors pb-0.5">
                   10 seats on Broadcast →
@@ -765,28 +792,49 @@ export default function LandingPage() {
               </div>
 
               {/* Integrations */}
-              <div className="border border-[#d1d5d3] rounded-[4px] p-8 sm:p-12 bg-white flex flex-col">
-                <span className="material-symbols-outlined text-[#1A3024] text-3xl mb-6 block">bolt</span>
+              <div className="border border-[#d1d5d3] rounded-[4px] p-8 sm:p-12 bg-white flex flex-col group hover:bg-[#fafbfa] transition-all duration-500">
+                <span className="material-symbols-outlined text-neutral-400 text-3xl mb-6 block transition-all duration-300 transform animate-editorial-bounce">bolt</span>
                 <h3 className="text-[26px] sm:text-[32px] tracking-tighter font-normal text-[#121314] mb-4 leading-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                  Insights arrive where your team already works.
+                  Bring customer intelligence into your workflow.
                 </h3>
                 <p className="text-[13px] sm:text-sm text-neutral-600 leading-relaxed mb-8">
-                  Connect Slack and Notion once. New reports and signals push through automatically — no one has to remember to check a dashboard.
+                  Connect Slack and Notion once, and SignalRoom automatically delivers new reports, trends, and customer signals where your team already works — turning research into action without another dashboard to check.
                 </p>
 
-                {/* Connection diagram */}
-                <div className="mt-auto flex items-center justify-center gap-4 sm:gap-6 py-6">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-14 h-14 rounded-[10px] border border-[#d1d5d3] flex items-center justify-center bg-white shadow-sm">
+                {/* Connection diagram — animated flow lines from each icon to SignalRoom */}
+                <div className="mt-auto flex items-center justify-center gap-1 sm:gap-3 py-6">
+                  <div className="flex flex-col items-center gap-2 relative z-10">
+                    <div className="w-14 h-14 rounded-[10px] border border-[#d1d5d3] flex items-center justify-center bg-white shadow-sm relative">
                       <img src="/signalroom-logo.svg" alt="SignalRoom" className="w-8 h-8 object-contain" />
                     </div>
                     <span className="text-[9px] uppercase tracking-wider text-neutral-400">SignalRoom</span>
                   </div>
-                  <svg width="32" height="12" viewBox="0 0 32 12" className="flex-shrink-0 text-[#1A3024]/30">
-                    <line x1="0" y1="6" x2="26" y2="6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
-                    <path d="M22 1 L28 6 L22 11" stroke="currentColor" strokeWidth="1.5" fill="none" />
+
+                  <svg width="68" height="100" viewBox="0 0 68 100" className="flex-shrink-0 -mx-1 sm:-mx-2" fill="none">
+                    {/* Static base lines */}
+                    <path d="M64,22 C 34,22 34,50 4,50" stroke="#1A3024" strokeOpacity="0.12" strokeWidth="1.5" />
+                    <path d="M64,78 C 34,78 34,50 4,50" stroke="#1A3024" strokeOpacity="0.12" strokeWidth="1.5" />
+                    {/* Traveling gradient dash, icon → SignalRoom */}
+                    <path d="M64,22 C 34,22 34,50 4,50" stroke="url(#flow-grad-a)" strokeWidth="2" strokeLinecap="round" className="flow-dash" />
+                    <path d="M64,78 C 34,78 34,50 4,50" stroke="url(#flow-grad-b)" strokeWidth="2" strokeLinecap="round" className="flow-dash flow-dash-delay" />
+                    {/* Spark on arrival at SignalRoom */}
+                    <circle cx="4" cy="50" r="4" fill="#1A3024" className="flow-spark" />
+                    <circle cx="4" cy="50" r="4" fill="#1A3024" className="flow-spark flow-spark-delay" />
+                    <defs>
+                      <linearGradient id="flow-grad-a" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#1A3024" stopOpacity="0" />
+                        <stop offset="50%" stopColor="#5A7973" stopOpacity="0.95" />
+                        <stop offset="100%" stopColor="#1A3024" stopOpacity="0" />
+                      </linearGradient>
+                      <linearGradient id="flow-grad-b" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#1A3024" stopOpacity="0" />
+                        <stop offset="50%" stopColor="#5A7973" stopOpacity="0.95" />
+                        <stop offset="100%" stopColor="#1A3024" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
                   </svg>
-                  <div className="flex flex-col gap-3">
+
+                  <div className="flex flex-col gap-3 relative z-10">
                     <div className="flex items-center gap-2">
                       <div className="w-11 h-11 rounded-[10px] border border-[#d1d5d3] flex items-center justify-center bg-white shadow-sm flex-shrink-0">
                         <SlackMark size={22} />
