@@ -133,14 +133,12 @@ function NewInterviewForm() {
                       key={persona.id}
                       type="button"
                       onClick={() => setPersonaId(persona.id)}
-                      className="flex items-center gap-3 p-3 rounded-xl text-left transition-all"
-                      style={{
-                        background: selected ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerLowest,
-                        border: selected ? `1.5px solid ${HOME_COLORS.primary}` : `1.5px solid ${HOME_COLORS.outlineVariant}33`,
-                        boxShadow: CARD_SHADOW,
-                      }}
+                      className="group flex items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-all hover:border-[#c3c8c1]/20 hover:bg-[#eae7e7]"
+                      style={selected ? { background: HOME_COLORS.primary, borderColor: HOME_COLORS.primary, boxShadow: CARD_SHADOW } : undefined}
                     >
-                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" className="flex-shrink-0" />
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg" />
+                      </div>
                       <div className="min-w-0">
                         <p className="text-sm font-semibold truncate" style={{ color: selected ? HOME_COLORS.onPrimary : HOME_COLORS.onSurface }}>{persona.name}</p>
                         <p className="text-xs truncate" style={{ color: selected ? 'rgba(255,255,255,0.7)' : HOME_COLORS.onSurfaceVariant }}>{persona.traits?.job_title ?? 'No role'}</p>

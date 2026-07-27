@@ -542,10 +542,12 @@ export default function AudiencePanelPage() {
                       key={persona.id}
                       onClick={() => !atLimit && togglePersona(persona.id)}
                       disabled={atLimit}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{ background: isSelected ? HOME_COLORS.secondaryContainer : HOME_COLORS.surfaceContainerLow, border: isSelected ? `1.5px solid ${HOME_COLORS.primary}` : '1.5px solid transparent' }}
+                      className="group w-full flex items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-all hover:border-[#c3c8c1]/20 hover:bg-[#eae7e7] disabled:cursor-not-allowed disabled:opacity-40"
+                      style={isSelected ? { background: HOME_COLORS.secondaryContainer } : undefined}
                     >
-                      <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                        <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{persona.name}</p>
                         <p className="text-[11px] truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{persona.traits?.job_title ?? 'No role'}</p>
