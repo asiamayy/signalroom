@@ -44,34 +44,37 @@ function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result
         </div>
       )}
 
-      {result.concepts.map(c => {
+      {result.concepts.map((c, index) => {
         const isWinner = c.id === result.winner_id
         const isOpen = expandedId === c.id
+        const label = String.fromCharCode(65 + index)
+        const tabColor = index === 0 ? HOME_COLORS.primary : HOME_COLORS.secondary
         return (
           <motion.article
             key={c.id}
             layout
-            className="rounded-2xl p-5 sm:p-6"
-            style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1.5px solid ${HOME_COLORS.primary}` }}
+            className="group relative rounded-2xl border p-6 shadow-md transition-shadow duration-500 hover:shadow-xl sm:p-8"
+            style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}66` }}
           >
-            <div className="flex items-start gap-4">
-              {c.avg_score !== null && <ScoreRing score={c.avg_score} size={52} />}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="text-[11px] font-bold" style={{ color: HOME_COLORS.onSurfaceVariant }}>#{c.rank}</span>
-                  <h3 className="text-xl font-semibold" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{c.label}</h3>
+            <span className="absolute -left-3 top-8 rounded-sm px-3 py-1 text-xs font-semibold" style={{ background: tabColor, color: HOME_COLORS.onPrimary }}>{label}</span>
+            <div className="flex items-start gap-5">
+              {c.avg_score !== null && <ScoreRing score={c.avg_score} size={60} />}
+              <div className="min-w-0 flex-1">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Rank #{c.rank}</span>
+                  <h3 className="text-2xl font-semibold" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{c.label}</h3>
                   {isWinner && (
-                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+                    <span className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
                       <Trophy size={10} /> Winner
                     </span>
                   )}
                 </div>
-                {c.verdict && <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{c.verdict}</p>}
               </div>
             </div>
+            {c.verdict && <div className="mt-5 rounded-xl p-5 text-sm leading-relaxed" style={{ background: 'rgba(255,255,255,0.5)', color: HOME_COLORS.onSurface }}>{c.verdict}</div>}
 
             {(c.strength || c.weakness) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+              <div className="mt-5 grid grid-cols-1 gap-3 border-t pt-5 sm:grid-cols-2" style={{ borderColor: `${HOME_COLORS.outlineVariant}33` }}>
                 {c.strength && (
                   <div className="rounded-xl p-4" style={{ background: HOME_COLORS.primaryFixed }}>
                     <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.primary }}>Strength</p>
@@ -91,7 +94,7 @@ function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result
               <>
                 <button
                   onClick={() => onToggleExpand(c.id)}
-                  className="flex items-center gap-1.5 text-xs font-semibold mt-4 transition-colors"
+                  className="mt-5 flex items-center gap-1.5 text-xs font-semibold transition-colors"
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: HOME_COLORS.primary }}
                 >
                   <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -100,7 +103,7 @@ function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {c.reactions.map(r => (
                           <div key={r.persona_id} className="rounded-xl p-4 flex flex-col gap-2" style={{ background: HOME_COLORS.surfaceContainer }}>
                             <div className="flex items-center gap-2">
