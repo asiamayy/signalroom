@@ -46,17 +46,38 @@ create table if not exists public.workspace_members (
   unique (workspace_id, user_id)
 );
 
+-- ─── Membership check helper (avoids RLS self-recursion) ───────────────────
+-- Any policy that checks "is this uid a member of this workspace" via a raw
+-- subquery against workspace_members re-triggers workspace_members' OWN RLS
+-- for that subquery — including this same check on itself, which is a real
+-- cycle. Postgres detects it and raises "infinite recursion detected in
+-- policy for relation workspace_members" (42P17) instead of returning rows,
+-- which PostgREST surfaces as a 500 on every table that (transitively)
+-- checks membership this way — i.e. every shareable table below.
+--
+-- Fix: route the check through this SECURITY DEFINER function. It executes
+-- as its owner (postgres, the table owner), and table owners bypass their
+-- own table's RLS by default (no FORCE ROW LEVEL SECURITY is set anywhere in
+-- this schema) — so the internal query never re-enters any policy.
+create or replace function public.is_workspace_member(p_workspace_id uuid, p_user_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.workspace_members
+    where workspace_id = p_workspace_id and user_id = p_user_id
+  );
+$$;
+
 -- ─── Workspaces RLS (needs workspace_members to already exist) ──────────────
 alter table public.workspaces enable row level security;
 
 create policy "Members can view their workspaces"
   on public.workspaces for select
-  using (
-    exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = workspaces.id and wm.user_id = auth.uid()
-    )
-  );
+  using ( public.is_workspace_member(workspaces.id, auth.uid()) );
 
 create policy "Owners can manage their workspaces"
   on public.workspaces for all
@@ -70,12 +91,7 @@ alter table public.workspace_members enable row level security;
 -- for the "Team members" UI) — but only the owner can add/remove members.
 create policy "Members can view co-members of their workspaces"
   on public.workspace_members for select
-  using (
-    exists (
-      select 1 from public.workspace_members my
-      where my.workspace_id = workspace_members.workspace_id and my.user_id = auth.uid()
-    )
-  );
+  using ( public.is_workspace_member(workspace_members.workspace_id, auth.uid()) );
 
 create policy "Owners can manage workspace membership"
   on public.workspace_members for all
@@ -163,17 +179,11 @@ create policy "Users can manage projects they own or share via workspace"
   on public.projects for all
   using (
     (workspace_id is null and auth.uid() = user_id)
-    or (workspace_id is not null and exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = projects.workspace_id and wm.user_id = auth.uid()
-    ))
+    or (workspace_id is not null and public.is_workspace_member(workspace_id, auth.uid()))
   )
   with check (
     (workspace_id is null and auth.uid() = user_id)
-    or (workspace_id is not null and exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = projects.workspace_id and wm.user_id = auth.uid()
-    ))
+    or (workspace_id is not null and public.is_workspace_member(workspace_id, auth.uid()))
   );
 
 drop policy if exists "Users can manage their own personas" on public.personas;
@@ -181,17 +191,11 @@ create policy "Users can manage personas they own or share via workspace"
   on public.personas for all
   using (
     (workspace_id is null and auth.uid() = user_id)
-    or (workspace_id is not null and exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = personas.workspace_id and wm.user_id = auth.uid()
-    ))
+    or (workspace_id is not null and public.is_workspace_member(workspace_id, auth.uid()))
   )
   with check (
     (workspace_id is null and auth.uid() = user_id)
-    or (workspace_id is not null and exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = personas.workspace_id and wm.user_id = auth.uid()
-    ))
+    or (workspace_id is not null and public.is_workspace_member(workspace_id, auth.uid()))
   );
 
 drop policy if exists "Users can manage their own interviews" on public.interviews;
@@ -199,17 +203,11 @@ create policy "Users can manage interviews they own or share via workspace"
   on public.interviews for all
   using (
     (workspace_id is null and auth.uid() = user_id)
-    or (workspace_id is not null and exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = interviews.workspace_id and wm.user_id = auth.uid()
-    ))
+    or (workspace_id is not null and public.is_workspace_member(workspace_id, auth.uid()))
   )
   with check (
     (workspace_id is null and auth.uid() = user_id)
-    or (workspace_id is not null and exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = interviews.workspace_id and wm.user_id = auth.uid()
-    ))
+    or (workspace_id is not null and public.is_workspace_member(workspace_id, auth.uid()))
   );
 
 drop policy if exists "Users can view their own reports" on public.reports;
@@ -217,17 +215,11 @@ create policy "Users can manage reports they own or share via workspace"
   on public.reports for all
   using (
     (workspace_id is null and auth.uid() = user_id)
-    or (workspace_id is not null and exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = reports.workspace_id and wm.user_id = auth.uid()
-    ))
+    or (workspace_id is not null and public.is_workspace_member(workspace_id, auth.uid()))
   )
   with check (
     (workspace_id is null and auth.uid() = user_id)
-    or (workspace_id is not null and exists (
-      select 1 from public.workspace_members wm
-      where wm.workspace_id = reports.workspace_id and wm.user_id = auth.uid()
-    ))
+    or (workspace_id is not null and public.is_workspace_member(workspace_id, auth.uid()))
   );
 
 -- ─── Safe cross-user profile lookup for the "Team members" UI ───────────────
