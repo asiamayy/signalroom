@@ -362,7 +362,6 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research capacity</p>
                 <h2 className="mt-2 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Usage at a glance</h2>
               </div>
-              <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Resets monthly</span>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
             {/* Personas */}

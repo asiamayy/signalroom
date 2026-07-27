@@ -30,6 +30,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [activeType, setActiveType] = useState('all')
+  const [filterOpen, setFilterOpen] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -120,17 +121,30 @@ export default function ReportsPage() {
             <section className="lg:col-span-8">
               <div className="mb-4 flex items-center justify-between border-b pb-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}80` }}>
                 <h2 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{activeType === 'all' ? 'All Research' : INTERVIEW_TYPE_LABELS[activeType] ?? activeType}</h2>
-                <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                   <Filter size={15} />
-                  <span className="hidden sm:inline">Research type</span>
-                  <span className="relative">
-                    <select value={activeType} onChange={event => setActiveType(event.target.value)} aria-label="Filter research type" className="appearance-none rounded-lg border py-2 pl-3 pr-8 text-xs font-semibold outline-none transition-all hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#18281c]/15" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}99`, color: HOME_COLORS.onSurface, fontFamily: 'inherit', boxShadow: '0 1px 2px rgba(24, 40, 28, 0.03)' }}>
-                      <option value="all">All research</option>
-                      {researchTypes.map(type => <option key={type} value={type}>{INTERVIEW_TYPE_LABELS[type] ?? type}</option>)}
-                    </select>
-                    <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: HOME_COLORS.primary }} />
-                  </span>
-                </label>
+                  <span className="hidden sm:inline">Filter</span>
+                  <div className="relative">
+                    <button type="button" onClick={() => setFilterOpen(open => !open)} aria-haspopup="listbox" aria-expanded={filterOpen} className="inline-flex items-center gap-2 rounded-lg border py-2 pl-3 pr-2 text-xs font-semibold normal-case tracking-normal outline-none transition-all hover:bg-white focus:ring-2 focus:ring-[#18281c]/15" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}99`, color: HOME_COLORS.onSurface, fontFamily: 'inherit', boxShadow: '0 1px 2px rgba(24, 40, 28, 0.03)' }}>
+                      <span>{activeType === 'all' ? 'All research' : INTERVIEW_TYPE_LABELS[activeType] ?? activeType}</span>
+                      <ChevronDown size={14} className={`transition-transform duration-200 ${filterOpen ? 'rotate-180' : ''}`} style={{ color: HOME_COLORS.primary }} />
+                    </button>
+                    {filterOpen && (
+                      <div role="listbox" aria-label="Filter research type" className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border p-1" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}99`, boxShadow: '0 12px 28px rgba(24, 40, 28, 0.12)' }}>
+                        {['all', ...researchTypes].map(type => {
+                          const label = type === 'all' ? 'All research' : INTERVIEW_TYPE_LABELS[type] ?? type
+                          const selected = activeType === type
+                          return (
+                            <button key={type} type="button" role="option" aria-selected={selected} onClick={() => { setActiveType(type); setFilterOpen(false) }} className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-xs font-semibold normal-case tracking-normal transition-colors hover:bg-[#f0eded]" style={{ color: selected ? HOME_COLORS.primary : HOME_COLORS.onSurface }}>
+                              {label}
+                              {selected && <span className="h-1.5 w-1.5 rounded-full" style={{ background: HOME_COLORS.primary }} />}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="flex flex-col gap-4">
                 {visibleReports.map(report => <InsightCard key={report.id} report={report} deleting={deleting === report.id} onDelete={handleDelete} />)}
