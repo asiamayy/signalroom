@@ -2,13 +2,39 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Building2, Plus, X, Trash2, Loader2, Lock, Crown } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Building2, Plus, X, Trash2, Loader2, Lock, Crown, ShieldCheck, Users, Verified,
+  FileText, MessagesSquare, ArrowRight, UserPlus,
+} from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
-import { CARD_SHADOW, getInitials, getAvatarColor } from '@/lib/utils'
+import { getInitials, getAvatarColor, formatRelativeTime } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
-import type { Plan, Workspace, WorkspaceMember, WorkspaceInvite } from '@/types'
+import type { Plan, Workspace, WorkspaceMember, WorkspaceInvite, Persona, Interview, Report } from '@/types'
+
+// Dark glass-morphism system, ported from the approved design mock —
+// distinct from the light HOME_COLORS surfaces the rest of the dashboard
+// uses, scoped to just this page.
+const DARK_BG = '#18281c'
+const gridBackground = {
+  backgroundImage:
+    'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
+  backgroundSize: '80px 80px',
+}
+const glass: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.03)',
+  backdropFilter: 'blur(24px)',
+  border: '0.5px solid rgba(255,255,255,0.1)',
+}
+const glassActive: React.CSSProperties = {
+  background: 'rgba(252,249,248,0.06)',
+  backdropFilter: 'blur(16px)',
+  border: '0.5px solid rgba(255,255,255,0.15)',
+}
+
+type ContentTab = 'personas' | 'interviews' | 'reports'
 
 export function WorkspacesClient() {
   const [plan, setPlan] = useState<Plan | null>(null)
@@ -21,6 +47,16 @@ export function WorkspacesClient() {
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [allSeats, setAllSeats] = useState<Set<string>>(new Set())
 
+  // Real content scoped to the selected workspace — replaces the mock's
+  // fabricated "4,821 signals / 96.4% synthesis accuracy" stats with
+  // actual counts and actual records.
+  const [workspacePersonas, setWorkspacePersonas] = useState<Persona[]>([])
+  const [workspaceInterviews, setWorkspaceInterviews] = useState<(Interview & { persona: Persona })[]>([])
+  const [workspaceReports, setWorkspaceReports] = useState<(Report & { interview: Interview })[]>([])
+  const [loadingContent, setLoadingContent] = useState(false)
+  const [contentTab, setContentTab] = useState<ContentTab>('personas')
+
+  const [showCreatePanel, setShowCreatePanel] = useState(false)
   const [newWorkspaceName, setNewWorkspaceName] = useState('')
   const [creating, setCreating] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
@@ -64,15 +100,24 @@ export function WorkspacesClient() {
 
   const loadDetail = async (workspaceId: string) => {
     setLoadingDetail(true)
-    const [mRes, iRes] = await Promise.all([
+    setLoadingContent(true)
+    const supabase = createClient()
+    const [mRes, iRes, personasRes, interviewsRes, reportsRes] = await Promise.all([
       fetch(`/api/workspaces/${workspaceId}/members`),
       fetch(`/api/workspaces/${workspaceId}/invites`),
+      supabase.from('personas').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
+      supabase.from('interviews').select('*, persona:personas(*)').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
+      supabase.from('reports').select('*, interview:interviews(*)').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
     ])
     const mJson = await mRes.json()
     const iJson = await iRes.json()
     setMembers(mJson.data ?? [])
     setInvites(iJson.data ?? [])
+    setWorkspacePersonas(personasRes.data ?? [])
+    setWorkspaceInterviews((interviewsRes.data ?? []) as (Interview & { persona: Persona })[])
+    setWorkspaceReports((reportsRes.data ?? []) as (Report & { interview: Interview })[])
     setLoadingDetail(false)
+    setLoadingContent(false)
   }
 
   useEffect(() => {
@@ -92,6 +137,7 @@ export function WorkspacesClient() {
       const json = await res.json()
       if (!res.ok) { setError(json.error ?? 'Failed to create workspace'); return }
       setNewWorkspaceName('')
+      setShowCreatePanel(false)
       setSelectedId(json.data.id)
       await loadWorkspaces()
     } catch {
@@ -155,28 +201,25 @@ export function WorkspacesClient() {
   const selectedWorkspace = workspaces.find(w => w.id === selectedId)
 
   if (loadingPlan) {
-    return <div className="min-h-full p-4 sm:p-10" style={{ background: HOME_COLORS.surface }} />
+    return <div className="min-h-full" style={{ background: DARK_BG }} />
   }
 
   if (plan !== 'agency') {
     return (
-      <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full p-4 sm:p-10 max-w-2xl">
-        <div
-          className="rounded-2xl p-10 text-center"
-          style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})`, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}
-        >
-          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.1)' }}>
+      <div style={{ background: DARK_BG, fontFamily: HOME_FONT_BODY, ...gridBackground }} className="min-h-full p-6 sm:p-16 flex items-center justify-center">
+        <div className="rounded-[40px] p-10 sm:p-14 text-center max-w-lg" style={glass}>
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-6 flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
             <Lock size={22} style={{ color: HOME_COLORS.primaryFixedDim }} />
           </div>
-          <h1 className="text-2xl font-semibold mb-2" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspaces</h1>
-          <p className="text-sm mb-2 opacity-80">Broadcast plan required</p>
-          <p className="text-sm mb-6 max-w-sm mx-auto leading-relaxed opacity-70">
+          <h1 className="text-3xl mb-3" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 700, color: 'white' }}>Workspaces</h1>
+          <p className="text-sm mb-2" style={{ color: HOME_COLORS.primaryFixedDim }}>Broadcast plan required</p>
+          <p className="text-sm mb-8 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
             Create up to {seatLimit} team seats across isolated workspaces — one per client, or however you want to split your research. Each member gets full create/edit access, scoped to just what you share with them.
           </p>
           <Link
             href="/settings"
             className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-full transition-opacity hover:opacity-90"
-            style={{ background: HOME_COLORS.primaryFixedDim, color: HOME_COLORS.onPrimaryFixedVariant }}
+            style={{ background: HOME_COLORS.primaryFixedDim, color: '#18281c' }}
           >
             Upgrade plan →
           </Link>
@@ -185,198 +228,438 @@ export function WorkspacesClient() {
     )
   }
 
+  const realPersonaCount = workspacePersonas.length
+  const realInterviewCount = workspaceInterviews.length
+  const realReportCount = workspaceReports.length
+
   return (
-    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full p-4 sm:p-10">
-      {/* Hero — dark-green premium treatment, matching Home/Audience Panel */}
-      <div
-        className="mb-8 rounded-2xl p-6 sm:p-8"
-        style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})`, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}
-      >
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.1)' }}>
-              <Building2 size={20} style={{ color: HOME_COLORS.primaryFixedDim }} />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-[28px] leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>Workspaces</h1>
-              <p className="text-sm mt-1 opacity-75">Isolated workspaces — each member only sees what they&rsquo;ve been added to.</p>
-            </div>
+    <div style={{ background: DARK_BG, fontFamily: HOME_FONT_BODY, ...gridBackground }} className="min-h-full">
+      <main className="p-6 sm:p-16 max-w-[1500px] mx-auto">
+        {/* Hero */}
+        <section className="max-w-5xl mb-16 sm:mb-20">
+          <div className="flex items-center gap-4 mb-6">
+            <span className="h-[0.5px] w-12" style={{ background: 'rgba(255,255,255,0.4)' }} />
+            <span className="text-[11px] font-bold uppercase tracking-[0.4em]" style={{ color: 'rgba(255,255,255,0.6)' }}>Isolated Research Workspaces</span>
           </div>
-          <span
-            className="text-xs font-semibold px-3 py-1.5 rounded-full flex-shrink-0"
-            style={{
-              background: allSeats.size >= seatLimit ? '#FFB4AB' : 'rgba(255,255,255,0.12)',
-              color: allSeats.size >= seatLimit ? '#410E0B' : HOME_COLORS.primaryFixedDim,
-            }}
-          >
-            {allSeats.size} / {seatLimit} seats used
-          </span>
-        </div>
-      </div>
-
-      {error && <p className="text-sm rounded-lg px-3 py-2 mb-4" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{error}</p>}
-
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-        {/* Workspace list */}
-        <section className="p-5 rounded-xl h-fit" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-          <h3 className="text-sm font-semibold mb-4" style={{ color: HOME_COLORS.onSurface }}>Workspaces</h3>
-          {loadingWorkspaces ? (
-            <div className="space-y-2">{[1, 2].map(i => <div key={i} className="h-10 rounded-lg animate-pulse" style={{ background: HOME_COLORS.surfaceContainer }} />)}</div>
-          ) : workspaces.length === 0 ? (
-            <p className="text-xs mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>No workspaces yet — create one below.</p>
-          ) : (
-            <div className="space-y-1.5 mb-4">
-              {workspaces.map(w => (
-                <button
-                  key={w.id}
-                  onClick={() => setSelectedId(w.id)}
-                  className="w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors"
-                  style={selectedId === w.id
-                    ? { background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary, fontWeight: 600, border: 'none', cursor: 'pointer' }
-                    : { color: HOME_COLORS.onSurface, background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  {w.name}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="flex items-center gap-2 pt-3" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
-            <input
-              value={newWorkspaceName}
-              onChange={e => setNewWorkspaceName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleCreate()}
-              placeholder="New workspace name"
-              maxLength={120}
-              className="flex-1 min-w-0 text-sm px-3 py-2 rounded-lg outline-none"
-              style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }}
-            />
+          <h1 className="text-[56px] sm:text-[80px] font-bold text-white tracking-tighter leading-[0.95] mb-8" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspaces</h1>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <p className="text-lg sm:text-xl leading-relaxed max-w-xl font-light" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              Dedicated environments for <span className="italic" style={{ fontFamily: HOME_FONT_DISPLAY, color: 'white' }}>client and brand research</span> — invite your team, and each member sees only what they&rsquo;ve been added to.
+            </p>
             <button
-              onClick={handleCreate}
-              disabled={creating || !newWorkspaceName.trim()}
-              className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center disabled:opacity-40"
-              style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' }}
+              onClick={() => setShowCreatePanel(v => !v)}
+              className="whitespace-nowrap px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-[12px] sm:text-[13px] tracking-widest uppercase hover:opacity-90 transition-all group flex items-center gap-2 flex-shrink-0"
+              style={{ background: HOME_COLORS.primaryFixedDim, color: '#18281c', border: 'none', cursor: 'pointer' }}
             >
-              {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+              Initiate Workspace
+              <Plus size={18} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </section>
 
-        {/* Selected workspace detail */}
-        <main className="flex flex-col gap-6 min-w-0">
-          {!selectedWorkspace ? (
-            <div className="rounded-xl p-10 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-              <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Select or create a workspace to manage its members.</p>
-            </div>
-          ) : (
-            <>
-              <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                <div className="flex items-center justify-between mb-1 gap-3">
-                  <h2 className="text-lg font-semibold" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{selectedWorkspace.name}</h2>
+        <AnimatePresence>
+          {showCreatePanel && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-10"
+            >
+              <div className="rounded-[32px] p-8 flex items-center gap-3 flex-wrap" style={glass}>
+                <input
+                  autoFocus
+                  value={newWorkspaceName}
+                  onChange={e => setNewWorkspaceName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleCreate()}
+                  placeholder="Name this workspace — e.g. a client or brand"
+                  maxLength={120}
+                  className="flex-1 min-w-[200px] bg-transparent text-lg outline-none placeholder:text-white/20"
+                  style={{ color: 'white', border: 'none' }}
+                />
+                <button
+                  onClick={handleCreate}
+                  disabled={creating || !newWorkspaceName.trim()}
+                  className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest px-6 py-3 rounded-full disabled:opacity-40 flex-shrink-0"
+                  style={{ background: HOME_COLORS.primaryFixedDim, color: '#18281c', border: 'none', cursor: 'pointer' }}
+                >
+                  {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                  Create
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {error && (
+          <p className="text-sm rounded-2xl px-4 py-3 mb-8" style={{ color: '#FFB4AB', background: 'rgba(255,180,171,0.1)', border: '0.5px solid rgba(255,180,171,0.2)' }}>{error}</p>
+        )}
+
+        {/* Workspace switcher */}
+        {!loadingWorkspaces && workspaces.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap mb-16">
+            {workspaces.map(w => (
+              <button
+                key={w.id}
+                onClick={() => setSelectedId(w.id)}
+                className="px-5 py-2.5 rounded-full text-sm font-medium transition-all"
+                style={w.id === selectedId
+                  ? { background: 'rgba(184,204,186,0.15)', border: '0.5px solid rgba(184,204,186,0.4)', color: HOME_COLORS.primaryFixedDim, cursor: 'pointer' }
+                  : { ...glass, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
+              >
+                {w.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {loadingWorkspaces ? (
+          <div className="h-[400px] rounded-[40px] animate-pulse" style={glass} />
+        ) : workspaces.length === 0 ? (
+          <div className="rounded-[40px] p-16 text-center" style={glass}>
+            <Building2 size={28} className="mx-auto mb-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+            <p className="text-lg" style={{ color: 'rgba(255,255,255,0.6)' }}>No workspaces yet — create one to invite your team.</p>
+          </div>
+        ) : !selectedWorkspace ? null : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            {/* Left column */}
+            <div className="col-span-1 lg:col-span-8 space-y-12">
+              {/* Active workspace highlight */}
+              <div
+                className="rounded-[40px] p-10 relative overflow-hidden"
+                style={{ ...glass, background: `linear-gradient(135deg, rgba(184,204,186,0.06), rgba(255,255,255,0.02))` }}
+              >
+                <div className="relative z-10 flex items-start justify-between gap-4 mb-10">
+                  <div>
+                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4" style={{ background: 'rgba(184,204,186,0.15)', color: HOME_COLORS.primaryFixedDim }}>Active Workspace</span>
+                    <h2 className="text-[32px] sm:text-[44px] font-bold text-white leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY }}>{selectedWorkspace.name}</h2>
+                  </div>
                   <button
                     onClick={() => handleDeleteWorkspace(selectedWorkspace.id)}
-                    className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors flex-shrink-0"
-                    style={{ border: `1px solid ${HOME_COLORS.outlineVariant}`, color: HOME_COLORS.error, background: 'none', cursor: 'pointer' }}
+                    className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                    style={{ border: '0.5px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.4)', background: 'none', cursor: 'pointer' }}
+                    title="Delete workspace"
                   >
-                    <Trash2 size={12} /> Delete workspace
+                    <Trash2 size={14} />
                   </button>
                 </div>
-                <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                  Personas, interviews, and reports assigned here are visible and editable by every member below — and only them.
-                </p>
-              </section>
+                <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8 pt-8" style={{ borderTop: '0.5px solid rgba(255,255,255,0.1)' }}>
+                  <div className="flex gap-10 sm:gap-12">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Members</p>
+                      <p className="text-lg text-white font-medium">{members.length} {members.length === 1 ? 'person' : 'people'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Personas</p>
+                      <p className="text-lg text-white font-medium">{realPersonaCount} active</p>
+                    </div>
+                  </div>
+                  <div className="flex -space-x-3">
+                    {members.slice(0, 4).map(m => (
+                      <div key={m.id} className="w-10 h-10 rounded-full flex-shrink-0" style={{ border: `2px solid ${DARK_BG}` }}>
+                        <PersonaAvatar avatarUrl={m.avatar_url} avatarInitials={getInitials(m.full_name || m.email)} avatarColor={getAvatarColor(m.full_name || m.email)} name={m.full_name ?? m.email} size="md" />
+                      </div>
+                    ))}
+                    {members.length > 4 && (
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0" style={{ border: `2px solid ${DARK_BG}`, background: 'white', color: '#18281c' }}>
+                        +{members.length - 4}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-              <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Members</h3>
+              {/* Content tabs */}
+              <div className="space-y-8">
+                <div className="flex items-center justify-between flex-wrap gap-4 pb-4" style={{ borderBottom: '0.5px solid rgba(255,255,255,0.05)' }}>
+                  <h2 className="text-[11px] font-black uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.4)' }}>Workspace Content</h2>
+                  <div className="flex gap-6">
+                    {([
+                      { key: 'personas', label: 'Personas' },
+                      { key: 'interviews', label: 'Interviews' },
+                      { key: 'reports', label: 'Reports' },
+                    ] as { key: ContentTab; label: string }[]).map(t => (
+                      <button
+                        key={t.key}
+                        onClick={() => setContentTab(t.key)}
+                        className="text-[10px] font-bold uppercase tracking-widest pb-1 transition-colors"
+                        style={contentTab === t.key
+                          ? { color: 'rgba(255,255,255,0.9)', borderBottom: `1px solid ${HOME_COLORS.primaryFixedDim}`, background: 'none', cursor: 'pointer' }
+                          : { color: 'rgba(255,255,255,0.3)', border: 'none', background: 'none', cursor: 'pointer' }}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[32px] p-8 sm:p-10" style={glassActive}>
+                  {loadingContent ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                      {[1, 2, 3].map(i => <div key={i} className="h-20 rounded-2xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />)}
+                    </div>
+                  ) : contentTab === 'personas' ? (
+                    workspacePersonas.length === 0 ? (
+                      <EmptyContentState icon={Users} text="No personas assigned to this workspace yet." />
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        {workspacePersonas.slice(0, 6).map(p => (
+                          <Link key={p.id} href={`/personas/${p.id}`} className="rounded-2xl p-4 border flex items-center gap-4 transition-colors hover:bg-white/[0.04]" style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                            <PersonaAvatar avatarUrl={p.avatar_url} avatarInitials={p.avatar_initials} avatarColor={p.avatar_color} name={p.name} size="md" className="flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-[13px] font-bold text-white truncate">{p.name}</p>
+                              <p className="text-[10px] uppercase tracking-widest font-black truncate" style={{ color: 'rgba(255,255,255,0.35)' }}>{p.traits?.job_title || 'No role set'}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )
+                  ) : contentTab === 'interviews' ? (
+                    workspaceInterviews.length === 0 ? (
+                      <EmptyContentState icon={MessagesSquare} text="No interviews run in this workspace yet." />
+                    ) : (
+                      <div className="space-y-3">
+                        {workspaceInterviews.slice(0, 6).map(iv => (
+                          <Link key={iv.id} href={`/interviews/${iv.id}`} className="flex items-center justify-between gap-3 rounded-2xl p-4 border transition-colors hover:bg-white/[0.04]" style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                            <div className="flex items-center gap-3 min-w-0">
+                              <PersonaAvatar avatarUrl={iv.persona?.avatar_url} avatarInitials={iv.persona?.avatar_initials} avatarColor={iv.persona?.avatar_color} name={iv.persona?.name} size="sm" className="flex-shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-[13px] font-bold text-white truncate">{iv.title}</p>
+                                <p className="text-[10px] uppercase tracking-widest font-black" style={{ color: 'rgba(255,255,255,0.35)' }}>{iv.persona?.name ?? 'Unknown persona'}</p>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest flex-shrink-0" style={{ color: HOME_COLORS.primaryFixedDim }}>{iv.status}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )
+                  ) : (
+                    workspaceReports.length === 0 ? (
+                      <EmptyContentState icon={FileText} text="No reports generated in this workspace yet." />
+                    ) : (
+                      <div className="space-y-3">
+                        {workspaceReports.slice(0, 6).map(r => (
+                          <Link key={r.id} href={`/reports/${r.id}`} className="flex items-center justify-between gap-3 rounded-2xl p-4 border transition-colors hover:bg-white/[0.04]" style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                            <div className="min-w-0">
+                              <p className="text-[13px] font-bold text-white truncate">{r.interview?.title ?? 'Untitled interview'}</p>
+                              <p className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.executive_summary}</p>
+                            </div>
+                            <span className="text-[13px] font-bold flex-shrink-0" style={{ color: HOME_COLORS.primaryFixedDim }}>{r.confidence_score}%</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )
+                  )}
+
+                  <div className="flex items-center gap-10 sm:gap-12 mt-10 pt-8" style={{ borderTop: '0.5px solid rgba(255,255,255,0.05)' }}>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Personas</p>
+                      <p className="text-2xl text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>{realPersonaCount}</p>
+                    </div>
+                    <div className="w-[0.5px] h-10" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Interviews</p>
+                      <p className="text-2xl text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>{realInterviewCount}</p>
+                    </div>
+                    <div className="w-[0.5px] h-10" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Reports</p>
+                      <p className="text-2xl text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>{realReportCount}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Secondary summary cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  <Link href="/reports" className="rounded-[32px] p-8 group transition-all hover:bg-white/[0.02]" style={glass}>
+                    <div className="flex items-center gap-6 mb-6">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)' }}>
+                        <FileText size={22} />
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-bold text-white/70 group-hover:text-white transition-colors" style={{ fontFamily: HOME_FONT_DISPLAY }}>Reports</h3>
+                    </div>
+                    <p className="text-[13px] leading-relaxed mb-6 font-light" style={{ color: 'rgba(255,255,255,0.35)' }}>Executive-ready summaries generated from this workspace&rsquo;s interviews.</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest italic" style={{ color: HOME_COLORS.primaryFixedDim }}>{realReportCount} report{realReportCount === 1 ? '' : 's'}</span>
+                      <ArrowRight size={16} style={{ color: 'rgba(255,255,255,0.2)' }} />
+                    </div>
+                  </Link>
+                  <Link href="/interviews" className="rounded-[32px] p-8 group transition-all hover:bg-white/[0.02]" style={glass}>
+                    <div className="flex items-center gap-6 mb-6">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)' }}>
+                        <MessagesSquare size={22} />
+                      </div>
+                      <h3 className="text-xl sm:text-2xl font-bold text-white/70 group-hover:text-white transition-colors" style={{ fontFamily: HOME_FONT_DISPLAY }}>Interviews</h3>
+                    </div>
+                    <p className="text-[13px] leading-relaxed mb-6 font-light" style={{ color: 'rgba(255,255,255,0.35)' }}>A shared library of every interview run inside this workspace.</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest italic" style={{ color: HOME_COLORS.primaryFixedDim }}>{realInterviewCount} interview{realInterviewCount === 1 ? '' : 's'}</span>
+                      <ArrowRight size={16} style={{ color: 'rgba(255,255,255,0.2)' }} />
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column */}
+            <div className="col-span-1 lg:col-span-4 space-y-10">
+              {/* Isolation model explainer */}
+              <div className="rounded-[40px] p-10 space-y-8" style={glass}>
+                <div className="space-y-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.4em]" style={{ color: 'rgba(255,255,255,0.3)' }}>Access Model</p>
+                  <h3 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY }}>Data <span className="italic font-normal block">Isolation</span></h3>
+                </div>
+                <div className="flex items-start gap-4 p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.02)', border: '0.5px solid rgba(255,255,255,0.05)' }}>
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ border: `0.5px solid ${HOME_COLORS.primaryFixedDim}33`, background: `${HOME_COLORS.primaryFixedDim}0d` }}>
+                    <Verified size={17} style={{ color: HOME_COLORS.primaryFixedDim }} />
+                  </div>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    Personas, interviews, and reports assigned here are visible and editable by <span className="text-white font-medium">every member below — and only them</span>.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-6 pt-6" style={{ borderTop: '0.5px solid rgba(255,255,255,0.1)' }}>
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.2)' }}>Isolation</p>
+                    <p className="text-lg text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>Full</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-widest mb-2" style={{ color: 'rgba(255,255,255,0.2)' }}>Seats used</p>
+                    <p className="text-lg text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>{allSeats.size} / {seatLimit}</p>
+                  </div>
+                </div>
+                <Link
+                  href="/faq"
+                  className="w-full py-4 rounded-2xl transition-all text-[11px] font-black uppercase tracking-[0.4em] text-white flex items-center justify-center gap-3"
+                  style={{ border: '0.5px solid rgba(255,255,255,0.1)' }}
+                >
+                  <ShieldCheck size={18} />
+                  Workspace Guidelines
+                </Link>
+              </div>
+
+              {/* Team */}
+              <div className="rounded-[40px] p-10 space-y-8" style={{ ...glass, border: `0.5px solid ${HOME_COLORS.primaryFixedDim}33` }}>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-bold text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>Research Team</h3>
+                    <p className="text-[10px] uppercase tracking-widest font-black italic" style={{ color: 'rgba(255,255,255,0.3)' }}>Members of this workspace</p>
+                  </div>
                   <button
                     onClick={() => setInvitingOpen(o => !o)}
-                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
-                    style={{ border: `1px solid ${HOME_COLORS.outlineVariant}`, color: HOME_COLORS.onSurface, background: 'none', cursor: 'pointer' }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+                    style={{ border: '0.5px solid rgba(255,255,255,0.1)', color: 'white', background: 'none', cursor: 'pointer' }}
                   >
-                    <Crown size={12} /> Invite member
+                    <UserPlus size={17} />
                   </button>
                 </div>
 
-                {invitingOpen && (
-                  <div className="flex items-center gap-2 mb-4 p-3 rounded-lg" style={{ background: HOME_COLORS.surfaceContainerLow }}>
-                    <input
-                      type="email"
-                      value={inviteEmail}
-                      onChange={e => setInviteEmail(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleInvite()}
-                      placeholder="teammate@company.com"
-                      className="flex-1 min-w-0 text-sm px-3 py-2 rounded-lg outline-none"
-                      style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }}
-                    />
-                    <button
-                      onClick={handleInvite}
-                      disabled={inviting || !inviteEmail.trim()}
-                      className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-lg disabled:opacity-40"
-                      style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' }}
-                    >
-                      {inviting ? 'Sending...' : 'Send invite'}
-                    </button>
-                  </div>
-                )}
+                <AnimatePresence>
+                  {invitingOpen && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                      <div className="flex items-center gap-2 p-3 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                        <input
+                          type="email"
+                          value={inviteEmail}
+                          onChange={e => setInviteEmail(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleInvite()}
+                          placeholder="teammate@company.com"
+                          className="flex-1 min-w-0 text-sm px-2 py-2 bg-transparent outline-none placeholder:text-white/20"
+                          style={{ color: 'white', border: 'none' }}
+                        />
+                        <button
+                          onClick={handleInvite}
+                          disabled={inviting || !inviteEmail.trim()}
+                          className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-lg disabled:opacity-40"
+                          style={{ background: HOME_COLORS.primaryFixedDim, color: '#18281c', border: 'none', cursor: 'pointer' }}
+                        >
+                          {inviting ? 'Sending...' : 'Send'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                {loadingDetail ? (
-                  <div className="space-y-2">{[1, 2].map(i => <div key={i} className="h-12 rounded-lg animate-pulse" style={{ background: HOME_COLORS.surfaceContainer }} />)}</div>
-                ) : (
-                  <div className="space-y-2">
-                    {members.map(m => {
-                      const initials = getInitials(m.full_name || m.email)
-                      const color = getAvatarColor(m.full_name || m.email)
-                      return (
-                        <div key={m.id} className="flex items-center gap-3 px-3 py-2.5 rounded-lg" style={{ background: HOME_COLORS.surfaceContainerLow }}>
-                          <PersonaAvatar avatarUrl={m.avatar_url} avatarInitials={initials} avatarColor={color} name={m.full_name ?? m.email} size="sm" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate" style={{ color: HOME_COLORS.onSurface }}>{m.full_name || m.email}</p>
-                            <p className="text-[11px] truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{m.email}</p>
+                <div className="space-y-4">
+                  {loadingDetail ? (
+                    [1, 2].map(i => <div key={i} className="h-16 rounded-[24px] animate-pulse" style={{ background: 'rgba(255,255,255,0.03)' }} />)
+                  ) : (
+                    <>
+                      {members.map(m => (
+                        <div key={m.id} className="flex items-center justify-between p-5 rounded-[24px]" style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0" style={{ border: '0.5px solid rgba(255,255,255,0.1)' }}>
+                              <PersonaAvatar avatarUrl={m.avatar_url} avatarInitials={getInitials(m.full_name || m.email)} avatarColor={getAvatarColor(m.full_name || m.email)} name={m.full_name ?? m.email} size="lg" shape="square" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[15px] font-bold text-white tracking-tight truncate">{m.full_name || m.email}</p>
+                              {m.role === 'owner' ? (
+                                <p className="text-[10px] uppercase tracking-widest font-black italic flex items-center gap-1" style={{ color: HOME_COLORS.primaryFixedDim }}><Crown size={10} /> Owner</p>
+                              ) : (
+                                <p className="text-[10px] uppercase tracking-widest font-black italic truncate" style={{ color: 'rgba(255,255,255,0.3)' }}>{m.email}</p>
+                              )}
+                            </div>
                           </div>
                           {m.role === 'owner' ? (
-                            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>
-                              <Crown size={10} /> Owner
-                            </span>
+                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#34d399' }} />
                           ) : (
                             <button
                               onClick={() => handleRemoveMember(m.id)}
                               aria-label={`Remove ${m.full_name || m.email}`}
                               className="flex-shrink-0"
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: HOME_COLORS.onSurfaceVariant }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)' }}
                             >
                               <X size={16} />
                             </button>
                           )}
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </section>
+                      ))}
 
-              {invites.length > 0 && (
-                <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                  <h3 className="text-sm font-semibold mb-4" style={{ color: HOME_COLORS.onSurface }}>Pending invites</h3>
-                  <div className="space-y-2">
-                    {invites.map(inv => (
-                      <div key={inv.id} className="flex items-center justify-between px-3 py-2.5 rounded-lg" style={{ background: HOME_COLORS.surfaceContainerLow }}>
-                        <span className="text-sm" style={{ color: HOME_COLORS.onSurface }}>{inv.invited_email}</span>
-                        <button
-                          onClick={() => handleRevokeInvite(inv.id)}
-                          className="text-xs font-medium transition-colors"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: HOME_COLORS.error }}
-                        >
-                          Revoke
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-            </>
-          )}
-        </main>
-      </div>
+                      {invites.map(inv => (
+                        <div key={inv.id} className="flex items-center justify-between p-5 rounded-[24px] opacity-50" style={{ border: '0.5px solid transparent' }}>
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className="w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 grayscale flex items-center justify-center" style={{ border: '0.5px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)' }}>
+                              <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.4)' }}>Inv</span>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[15px] font-bold text-white/40 tracking-tight truncate">{inv.invited_email}</p>
+                              <p className="text-[10px] uppercase tracking-widest font-black italic" style={{ color: 'rgba(255,255,255,0.2)' }}>Invite pending</p>
+                            </div>
+                          </div>
+                          <button onClick={() => handleRevokeInvite(inv.id)} className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest" style={{ color: '#FFB4AB', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            Revoke
+                          </button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+
+                <div className="pt-6" style={{ borderTop: '0.5px solid rgba(255,255,255,0.05)' }}>
+                  <p className="text-[10px] text-center font-bold uppercase tracking-[0.3em] italic" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                    {members.length} team member{members.length === 1 ? '' : 's'} in this workspace
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="pt-24 pb-8">
+          <div className="w-full mb-8" style={{ height: '0.5px', background: 'rgba(255,255,255,0.1)' }} />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            <span className="italic" style={{ fontFamily: HOME_FONT_DISPLAY }}>SignalRoom — Isolated Workspace Layer</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+  )
+}
+
+function EmptyContentState({ icon: Icon, text }: { icon: typeof Users; text: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-14 text-center">
+      <Icon size={22} className="mb-3" style={{ color: 'rgba(255,255,255,0.15)' }} />
+      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>{text}</p>
     </div>
   )
 }
