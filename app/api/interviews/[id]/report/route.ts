@@ -6,6 +6,7 @@ import { logError } from '@/lib/logger'
 import { generateReport } from '@/lib/anthropic/persona-engine'
 import { generateSignalsFromInterview, titleSimilarity, statusForInterviewCount, SIGNAL_TITLE_MATCH_THRESHOLD } from '@/lib/anthropic/signal-engine'
 import { appendHistoryEntry } from '@/lib/utils/signals'
+import { pushReportCreated, pushSignalCreated } from '@/lib/integrations/push'
 import type { Persona, Interview, Signal } from '@/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
@@ -17,6 +18,7 @@ type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 async function syncSignalsForInterview(
   supabase: SupabaseClient,
   userId: string,
+  planCheckUserId: string,
   projectId: string,
   interview: Pick<Interview, 'type' | 'context' | 'messages'>,
   interviewId: string,
@@ -79,7 +81,17 @@ async function syncSignalsForInterview(
         })
         .select()
         .single()
-      if (inserted) existingSignals.push(inserted as Signal)
+      if (inserted) {
+        existingSignals.push(inserted as Signal)
+        // Only the brand-new-signal path pushes — the merge/update branch
+        // above does not, so reinforcing an existing signal never spams the
+        // connected Slack channel.
+        try {
+          await pushSignalCreated(planCheckUserId, inserted as Signal)
+        } catch (e: any) {
+          logError('integrations.push_signal', e, { userId, signalId: inserted.id })
+        }
+      }
     }
   }
 }
@@ -196,6 +208,19 @@ export async function POST(
       .update({ status: 'completed', report_id: report.id })
       .eq('id', id)
 
+    // Push to Slack/Notion if planCheckUserId has either connected
+    // (Signal/Broadcast only — gated inside pushReportCreated itself).
+    // Unlike the signal sync below, this doesn't require a project — every
+    // report qualifies. Fire-and-forget via after(), never allowed to
+    // affect the response.
+    after(async () => {
+      try {
+        await pushReportCreated(planCheckUserId, report, interview)
+      } catch (e: any) {
+        logError('integrations.push_report', e, { userId: user.id, interviewId: id })
+      }
+    })
+
     // Signals require a project (see supabase-migration-projects-signals.sql
     // — project_id is not-null on the signals table), so interviews that
     // aren't assigned to a project simply don't generate signals yet. This
@@ -206,7 +231,7 @@ export async function POST(
     if (interview.project_id) {
       after(async () => {
         try {
-          await syncSignalsForInterview(supabase, user.id, interview.project_id, interview, id, interview.persona_id, interview.persona, reportData)
+          await syncSignalsForInterview(supabase, user.id, planCheckUserId, interview.project_id, interview, id, interview.persona_id, interview.persona, reportData)
         } catch (e: any) {
           logError('signals.sync', e, { userId: user.id, interviewId: id, projectId: interview.project_id })
         }

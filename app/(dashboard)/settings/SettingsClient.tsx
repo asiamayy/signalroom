@@ -1,12 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X } from 'lucide-react'
+import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X, MessageSquare, FileText, CheckCircle2 } from 'lucide-react'
 import { cn, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { createClient } from '@/lib/supabase/client'
-import type { Plan } from '@/types'
+import type { Plan, IntegrationConnection, NotionIntegrationMetadata } from '@/types'
 import { PLAN_LIMITS } from '@/types'
 
 // ─── Plan definitions ─────────────────────────────────────────────────────────
@@ -84,9 +84,10 @@ interface SettingsClientProps {
   user: any
   personaCount: number
   interviewCount: number
+  integrations: IntegrationConnection[]
 }
 
-export default function SettingsClient({ profile, user, personaCount, interviewCount }: SettingsClientProps) {
+export default function SettingsClient({ profile, user, personaCount, interviewCount, integrations }: SettingsClientProps) {
   const router = useRouter()
   const [upgrading, setUpgrading] = useState<Plan | null>(null)
   const [openingPortal, setOpeningPortal] = useState(false)
@@ -100,6 +101,78 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const [savingColor, setSavingColor] = useState(false)
   const [brandingError, setBrandingError] = useState('')
   const logoInputRef = useRef<HTMLInputElement>(null)
+
+  const [integrationsList, setIntegrationsList] = useState<IntegrationConnection[]>(integrations)
+  const [disconnectingProvider, setDisconnectingProvider] = useState<string | null>(null)
+  const [notionPages, setNotionPages] = useState<{ id: string; title: string }[] | null>(null)
+  const [loadingNotionPages, setLoadingNotionPages] = useState(false)
+  const [savingNotionPage, setSavingNotionPage] = useState(false)
+  const [integrationsError, setIntegrationsError] = useState('')
+  // Read once on mount, client-side only — avoids useSearchParams' Suspense
+  // boundary requirement for a one-time banner that doesn't need SSR access.
+  const [integrationsBanner, setIntegrationsBanner] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const slackIntegration = integrationsList.find(i => i.provider === 'slack')
+  const notionIntegration = integrationsList.find(i => i.provider === 'notion')
+  const notionMetadata = notionIntegration?.metadata as NotionIntegrationMetadata | undefined
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('slack') === 'connected') setIntegrationsBanner({ type: 'success', text: 'Slack connected.' })
+    else if (params.get('notion') === 'connected') setIntegrationsBanner({ type: 'success', text: 'Notion connected.' })
+    else if (params.get('integration_error') === 'plan') setIntegrationsBanner({ type: 'error', text: 'Integrations require the Signal plan or above.' })
+    else if (params.get('integration_error')) setIntegrationsBanner({ type: 'error', text: 'Something went wrong connecting that integration — please try again.' })
+  }, [])
+
+  useEffect(() => {
+    if (notionIntegration && !notionMetadata?.parent_page_id && notionPages === null && !loadingNotionPages) {
+      setLoadingNotionPages(true)
+      fetch('/api/integrations/notion/pages')
+        .then(res => res.json())
+        .then(json => setNotionPages(json.data ?? []))
+        .catch(() => setIntegrationsError('Failed to load Notion pages — please try again.'))
+        .finally(() => setLoadingNotionPages(false))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notionIntegration, notionMetadata?.parent_page_id])
+
+  const handleDisconnect = async (provider: 'slack' | 'notion') => {
+    setIntegrationsError('')
+    setDisconnectingProvider(provider)
+    try {
+      const res = await fetch(`/api/integrations/${provider}/disconnect`, { method: 'POST' })
+      if (!res.ok) {
+        const json = await res.json()
+        setIntegrationsError(json.error ?? `Failed to disconnect ${provider}`)
+        return
+      }
+      setIntegrationsList(list => list.filter(i => i.provider !== provider))
+      if (provider === 'notion') setNotionPages(null)
+    } catch {
+      setIntegrationsError(`Failed to disconnect ${provider} — please try again.`)
+    } finally {
+      setDisconnectingProvider(null)
+    }
+  }
+
+  const handleSelectNotionPage = async (pageId: string, pageTitle: string) => {
+    setIntegrationsError('')
+    setSavingNotionPage(true)
+    try {
+      const res = await fetch('/api/integrations/notion/select-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page_id: pageId, page_title: pageTitle }),
+      })
+      const json = await res.json()
+      if (!res.ok) { setIntegrationsError(json.error ?? 'Failed to save destination page'); return }
+      setIntegrationsList(list => list.map(i => i.provider === 'notion' ? { ...i, metadata: json.data } : i))
+    } catch {
+      setIntegrationsError('Failed to save destination page — please try again.')
+    } finally {
+      setSavingNotionPage(false)
+    }
+  }
 
   const currentPlan = profile?.plan ?? 'free'
   const currentPlanData = PLANS.find(p => p.id === currentPlan)
@@ -447,6 +520,142 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                   )}
                 </div>
                 <p className="text-[11px] mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Used for the confidence score, sentiment, and links on your shared report pages.</p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Integrations (Signal & Broadcast) ───────────────────────────────── */}
+        {(currentPlan === 'pro' || currentPlan === 'agency') && (
+          <section className="mb-8">
+            <h2 className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>Integrations</h2>
+            <div className="rounded-2xl p-5 space-y-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+              <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                Push new reports and signals automatically to where your team already works.
+              </p>
+
+              {integrationsBanner && (
+                <div
+                  className="flex items-start gap-2 rounded-xl px-4 py-3"
+                  style={integrationsBanner.type === 'success'
+                    ? { background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }
+                    : { background: '#FFDAD6', color: HOME_COLORS.error }}
+                >
+                  {integrationsBanner.type === 'success' ? <CheckCircle2 size={15} className="flex-shrink-0 mt-0.5" /> : <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />}
+                  <p className="text-sm">{integrationsBanner.text}</p>
+                </div>
+              )}
+
+              {integrationsError && (
+                <div className="flex items-start gap-2 rounded-xl px-4 py-3" style={{ background: '#FFDAD6', color: HOME_COLORS.error }}>
+                  <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+                  <p className="text-sm">{integrationsError}</p>
+                </div>
+              )}
+
+              {/* Slack */}
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer }}>
+                    <MessageSquare size={16} style={{ color: HOME_COLORS.primary }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Slack</p>
+                    <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                      {slackIntegration ? slackIntegration.display_name : 'New reports and signals post here automatically.'}
+                    </p>
+                  </div>
+                </div>
+                {slackIntegration ? (
+                  <button
+                    onClick={() => handleDisconnect('slack')}
+                    disabled={disconnectingProvider === 'slack'}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:bg-black/[0.03]"
+                    style={{ color: HOME_COLORS.onSurfaceVariant, border: `1px solid ${HOME_COLORS.outlineVariant}66`, background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    {disconnectingProvider === 'slack' ? 'Disconnecting...' : 'Disconnect'}
+                  </button>
+                ) : (
+                  <a
+                    href="/api/integrations/slack/authorize"
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-90"
+                    style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}
+                  >
+                    Connect
+                  </a>
+                )}
+              </div>
+
+              <hr style={{ border: 'none', borderTop: `1px solid ${HOME_COLORS.outlineVariant}33` }} />
+
+              {/* Notion */}
+              <div>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer }}>
+                      <FileText size={16} style={{ color: HOME_COLORS.primary }} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Notion</p>
+                      <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                        {notionIntegration ? notionIntegration.display_name : 'New reports are added as pages automatically.'}
+                      </p>
+                    </div>
+                  </div>
+                  {notionIntegration ? (
+                    <button
+                      onClick={() => handleDisconnect('notion')}
+                      disabled={disconnectingProvider === 'notion'}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:bg-black/[0.03]"
+                      style={{ color: HOME_COLORS.onSurfaceVariant, border: `1px solid ${HOME_COLORS.outlineVariant}66`, background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      {disconnectingProvider === 'notion' ? 'Disconnecting...' : 'Disconnect'}
+                    </button>
+                  ) : (
+                    <a
+                      href="/api/integrations/notion/authorize"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-90"
+                      style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}
+                    >
+                      Connect
+                    </a>
+                  )}
+                </div>
+
+                {notionIntegration && !notionMetadata?.parent_page_id && (
+                  <div className="mt-3 pl-12">
+                    {loadingNotionPages ? (
+                      <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading your Notion pages...</p>
+                    ) : notionPages && notionPages.length > 0 ? (
+                      <div>
+                        <p className="text-xs mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Choose a destination page for new reports:</p>
+                        <select
+                          disabled={savingNotionPage}
+                          defaultValue=""
+                          onChange={e => {
+                            const page = notionPages.find(p => p.id === e.target.value)
+                            if (page) handleSelectNotionPage(page.id, page.title)
+                          }}
+                          className="text-sm px-3 py-2 rounded-lg w-full max-w-xs"
+                          style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface, background: 'none', fontFamily: 'inherit' }}
+                        >
+                          <option value="" disabled>Select a page...</option>
+                          {notionPages.map(p => (
+                            <option key={p.id} value={p.id}>{p.title}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : notionPages ? (
+                      <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>No pages were shared with SignalRoom during setup — reconnect Notion and share at least one page.</p>
+                    ) : null}
+                  </div>
+                )}
+
+                {notionIntegration && notionMetadata?.parent_page_id && (
+                  <p className="text-xs mt-2 pl-12" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                    Reports post into: <span className="font-semibold">{notionMetadata.parent_page_title ?? 'Selected page'}</span>
+                  </p>
+                )}
               </div>
             </div>
           </section>

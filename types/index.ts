@@ -308,6 +308,37 @@ export interface Signal {
   updated_at: string
 }
 
+// ─── Integrations (Slack / Notion — Signal & Broadcast plans only) ──────────
+// Real-time push, not a scheduled digest — hooked into report/signal
+// creation in app/api/interviews/[id]/report/route.ts. Account-level only:
+// a workspace member's activity pushes through the WORKSPACE OWNER's
+// connection, not their own (see lib/integrations/push.ts).
+
+export type IntegrationProvider = 'slack' | 'notion'
+
+export interface SlackIntegrationMetadata {
+  channel_name: string
+  channel_id: string
+  team_id: string
+}
+
+export interface NotionIntegrationMetadata {
+  workspace_id: string
+  bot_id: string
+  parent_page_id: string | null
+  parent_page_title: string | null
+}
+
+// Client-facing shape only. Deliberately has no access_token field — the
+// integrations table's access_token column must never be selected into any
+// client-facing API response; routes only ever return this shape.
+export interface IntegrationConnection {
+  provider: IntegrationProvider
+  display_name: string | null
+  metadata: SlackIntegrationMetadata | NotionIntegrationMetadata
+  created_at: string
+}
+
 // ─── Project files ──────────────────────────────────────────────────────────
 
 export interface ProjectFile {
@@ -389,6 +420,7 @@ export interface PlanLimits {
   audience_panel_max: number
   team_seats: number
   white_label: boolean
+  integrations_enabled: boolean
 }
 
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
@@ -402,6 +434,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     audience_panel_max: 0,
     team_seats: 1,
     white_label: false,
+    integrations_enabled: false,
   },
   starter: {
     personas: 10,
@@ -413,6 +446,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     audience_panel_max: 0,
     team_seats: 1,
     white_label: false,
+    integrations_enabled: false,
   },
   pro: {
     personas: 50,
@@ -424,6 +458,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     audience_panel_max: 5,
     team_seats: 1,
     white_label: false,
+    integrations_enabled: true,
   },
   agency: {
     personas: Infinity,
@@ -435,6 +470,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     audience_panel_max: 10,
     team_seats: 10,
     white_label: true,
+    integrations_enabled: true,
   },
 }
 

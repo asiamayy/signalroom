@@ -69,6 +69,17 @@ export async function countWorkspaceSeats(
   return new Set((members ?? []).map(m => m.user_id)).size
 }
 
+// Gate for Slack/Notion integrations (Signal/pro and Broadcast/agency only).
+// Reused across every /api/integrations/* route rather than duplicating the
+// getPlanForUser + limits.integrations_enabled check per route.
+export async function requireIntegrationsEnabled(
+  supabase: SupabaseServerClient,
+  userId: string
+): Promise<boolean> {
+  const { limits } = await getPlanForUser(supabase, userId)
+  return limits.integrations_enabled
+}
+
 // Lifetime usage counters (interviews_used / personas_used on profiles).
 // Call only after the operation has succeeded; failures are logged, never
 // surfaced — tracking must not break the feature it tracks.
