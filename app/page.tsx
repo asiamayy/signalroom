@@ -235,10 +235,10 @@ export default function LandingPage() {
 
         /* Integration flow lines — a soft gradient streak travels from
            SignalRoom out to each connected tool (that's the real direction:
-           SignalRoom pushes reports/signals out to Slack/Notion), sparking
-           on arrival. A slow, symmetric ease and a longer streak read as one
-           continuous glide rather than a repeating tick. Same loop duration
-           on every dash/spark pair so they land in sync without JS timing. */
+           SignalRoom pushes reports/signals out to Slack/Notion). A slow,
+           symmetric ease and a longer streak read as one continuous glide
+           rather than a repeating tick. Same duration on both lines so they
+           stay in sync without JS timing. */
         @keyframes flowDash {
           to { stroke-dashoffset: -160; }
         }
@@ -247,19 +247,6 @@ export default function LandingPage() {
           animation: flowDash 3.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
         }
         .flow-dash-delay {
-          animation-delay: 1.8s;
-        }
-        @keyframes flowSpark {
-          0%, 70% { opacity: 0; transform: scale(0.5); }
-          82% { opacity: 1; transform: scale(1.35); }
-          92% { opacity: 0.5; transform: scale(1); }
-          100% { opacity: 0; transform: scale(0.5); }
-        }
-        .flow-spark {
-          animation: flowSpark 3.6s ease-in-out infinite;
-          transform-origin: center;
-        }
-        .flow-spark-delay {
           animation-delay: 1.8s;
         }
 
@@ -660,7 +647,7 @@ export default function LandingPage() {
                           fill="transparent"
                           strokeOpacity="0.6"
                         />
-                        {/* Active Ring — Animates dynamically from 615.75 to the 97% offset value when scrolled into view */}
+                        {/* Active Ring — Animates dynamically from 615.75 to the 95% offset value when scrolled into view */}
                         <circle
                           cx="112"
                           cy="112"
@@ -672,7 +659,7 @@ export default function LandingPage() {
                           strokeLinecap="round"
                           style={{
                             strokeDashoffset: hasLoaded
-                              ? "calc(615.75 - (615.75 * 97) / 100)"
+                              ? "calc(615.75 - (615.75 * 95) / 100)"
                               : "615.75",
                             transition: "stroke-dashoffset 2.5s cubic-bezier(0.16, 1, 0.3, 1)"
                           }}
@@ -681,10 +668,10 @@ export default function LandingPage() {
 
                       {/* Internal Center Typography Panel */}
                       <div className="text-center z-10 flex flex-col items-center justify-center">
-                        <span className="text-[56px] font-normal leading-none text-[#121314] tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                          97
+                        <span className="text-[56px] font-normal leading-none text-[#121314] tracking-tighter mb-2.5" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                          95
                         </span>
-                        <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#1A3024] mt-1 bg-[#e9edea] px-2.5 py-0.5 rounded-[4px]">
+                        <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#1A3024] bg-[#e9edea] px-2.5 py-0.5 rounded-[4px]">
                           Confidence Score
                         </span>
                       </div>
@@ -832,9 +819,6 @@ export default function LandingPage() {
                         real direction: SignalRoom pushes reports/signals out) */}
                     <path d="M4,50 C 34,50 34,22 64,22" stroke="url(#flow-grad-a)" strokeWidth="2" strokeLinecap="round" className="flow-dash" />
                     <path d="M4,50 C 34,50 34,78 64,78" stroke="url(#flow-grad-b)" strokeWidth="2" strokeLinecap="round" className="flow-dash flow-dash-delay" />
-                    {/* Spark on arrival at Slack / Notion */}
-                    <circle cx="64" cy="22" r="4" fill="#1A3024" className="flow-spark" />
-                    <circle cx="64" cy="78" r="4" fill="#1A3024" className="flow-spark flow-spark-delay" />
                     <defs>
                       <linearGradient id="flow-grad-a" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#1A3024" stopOpacity="0" />
