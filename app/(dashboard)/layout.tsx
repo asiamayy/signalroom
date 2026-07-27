@@ -272,7 +272,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Search */}
-          <div className="group hidden max-w-xl flex-1 items-center gap-3 rounded-full bg-[#f0eded] px-5 py-2.5 transition-all focus-within:bg-[#eae7e7] md:flex" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+          <div className="group mr-auto hidden max-w-xl flex-1 items-center gap-3 rounded-full bg-[#f0eded] px-5 py-2.5 transition-all focus-within:bg-[#eae7e7] md:flex" style={{ color: HOME_COLORS.onSurfaceVariant }}>
             <Search size={20} />
             <input
               type="text"
