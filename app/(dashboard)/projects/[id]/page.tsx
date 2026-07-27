@@ -27,12 +27,18 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
     { data: signals },
     { data: files },
     { data: workspaces },
+    { data: compareRuns },
+    { data: audiencePanelRuns },
+    { data: conceptTestRuns },
   ] = await Promise.all([
     supabase.from('personas').select('*').order('created_at', { ascending: false }),
     supabase.from('interviews').select('*, persona:personas(*)').order('created_at', { ascending: false }),
     supabase.from('signals').select('*').eq('project_id', id).order('confidence_score', { ascending: false }),
     supabase.from('project_files').select('*').eq('project_id', id).order('created_at', { ascending: false }),
     supabase.from('workspaces').select('id, name').order('name'),
+    supabase.from('compare_runs').select('*').eq('project_id', id).order('created_at', { ascending: false }),
+    supabase.from('audience_panel_runs').select('*').eq('project_id', id).order('created_at', { ascending: false }),
+    supabase.from('concept_test_runs').select('*').eq('project_id', id).order('created_at', { ascending: false }),
   ])
 
   const projectInterviewIds = (allInterviews ?? []).filter(iv => iv.project_id === id).map(iv => iv.id)
@@ -50,6 +56,9 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
       reports={reports ?? []}
       files={files ?? []}
       workspaces={workspaces ?? []}
+      compareRuns={compareRuns ?? []}
+      audiencePanelRuns={audiencePanelRuns ?? []}
+      conceptTestRuns={conceptTestRuns ?? []}
       initialTab={tab}
     />
   )

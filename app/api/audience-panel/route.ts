@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
   buildUserMessageContent,
@@ -6,12 +7,38 @@ import {
   buildPanelSystemPrompt,
   parsePanelResponses,
 } from '@/lib/anthropic/persona-engine'
+import { generateSignalsFromAggregateResponses } from '@/lib/anthropic/signal-engine'
+import { syncSignals } from '@/lib/signals/sync'
 import { quoteInText } from '@/lib/utils/quotes'
+import { logError } from '@/lib/logger'
 import Anthropic from '@anthropic-ai/sdk'
 import { PLAN_LIMITS } from '@/types'
-import type { Plan } from '@/types'
+import type { Plan, PanelResult } from '@/types'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
+
+// Past panels for the History view — same RLS-scoped list pattern as every
+// other history route. Optional ?project_id= narrows to one project.
+export async function GET(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const projectId = request.nextUrl.searchParams.get('project_id')
+
+  let query = supabase.from('audience_panel_runs').select('*').order('created_at', { ascending: false })
+  if (projectId) query = query.eq('project_id', projectId)
+
+  const { data, error } = await query
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ data })
+}
 
 export async function POST(request: NextRequest) {
   // Real wall-clock start — "Time to Complete" in the UI reports measured
@@ -25,11 +52,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const { persona_ids, question, image, imageMediaType, project_id, workspace_id } = await request.json()
+
+  // A member running this inside a shared workspace operates under the
+  // OWNER's plan/entitlement, not their own — same reasoning as every other
+  // workspace-aware route.
+  let planCheckUserId = user.id
+  if (workspace_id) {
+    const { data: workspace } = await supabase.from('workspaces').select('owner_id').eq('id', workspace_id).single()
+    if (workspace) planCheckUserId = workspace.owner_id
+  }
+
   // Check plan — Audience Panel is pro and agency only
   const { data: profile } = await supabase
     .from('profiles')
     .select('plan')
-    .eq('id', user.id)
+    .eq('id', planCheckUserId)
     .single()
 
   const plan = (profile?.plan ?? 'free') as Plan
@@ -38,8 +76,6 @@ export async function POST(request: NextRequest) {
   if (!limits.audience_panel) {
     return NextResponse.json({ error: 'Upgrade to Signal or Broadcast to use Audience Panel' }, { status: 403 })
   }
-
-  const { persona_ids, question, image, imageMediaType } = await request.json()
 
   if (!persona_ids || persona_ids.length < 5) {
     return NextResponse.json({ error: 'Select at least 5 personas' }, { status: 400 })
@@ -61,12 +97,12 @@ export async function POST(request: NextRequest) {
 
     const wantsScore = questionRequestsScore(question ?? '')
 
-    // Load all selected personas
+    // No user_id filter — RLS scopes this to personas the caller owns plus
+    // any workspace-shared ones they're a member of.
     const { data: personas, error } = await supabase
       .from('personas')
       .select('*')
       .in('id', persona_ids)
-      .eq('user_id', user.id)
 
     if (error || !personas?.length) {
       return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
@@ -224,17 +260,59 @@ Return ONLY the JSON, no preamble, no markdown.`
     const maxSentimentCount = Math.max(...Object.values(sentimentCounts))
     const consensusScore = Math.round((maxSentimentCount / responses.length) * 100)
 
-    return NextResponse.json({
-      data: {
-        responses,
-        themes,
-        sentiment_distribution: sentimentCounts,
-        consensus_score: consensusScore,
-        total_personas: responses.length,
-        question,
-        summary,
+    const result: PanelResult = {
+      responses,
+      themes,
+      sentiment_distribution: sentimentCounts,
+      consensus_score: consensusScore,
+      total_personas: responses.length,
+      question,
+      summary,
+    }
+
+    // Persisting (and therefore signal extraction) requires a project — no
+    // project means the run just isn't saved, exactly like today's ephemeral
+    // behavior. Picking a project is what turns a run into real history.
+    let runId: string | null = null
+    if (project_id) {
+      const { data: run, error: insertError } = await supabase
+        .from('audience_panel_runs')
+        .insert({
+          user_id: user.id,
+          project_id,
+          workspace_id: workspace_id ?? null,
+          question: question ?? '',
+          persona_ids,
+          result,
+        })
+        .select('id')
+        .single()
+
+      if (insertError) {
+        logError('audience_panel_runs.insert', insertError, { userId: user.id, projectId: project_id })
+      } else if (run) {
+        runId = run.id
+
+        after(async () => {
+          try {
+            const aggregateResponses = responses
+              .filter(r => r.response)
+              .map(r => ({ persona_name: r.persona_name, job_title: r.job_title, text: r.response! }))
+            if (aggregateResponses.length === 0) return
+
+            const candidates = await generateSignalsFromAggregateResponses(question ?? '', aggregateResponses)
+            await syncSignals({
+              supabase, userId: user.id, planCheckUserId, projectId: project_id,
+              sourceType: 'audience_panel', sourceId: run.id, personaIds: persona_ids, candidates,
+            })
+          } catch (e: any) {
+            logError('signals.sync', e, { userId: user.id, projectId: project_id, panelRunId: run.id })
+          }
+        })
       }
-    })
+    }
+
+    return NextResponse.json({ data: result, run_id: runId })
   } catch (e: any) {
     console.error('[audience-panel] request failed:', e)
     return NextResponse.json({ error: 'The panel failed to complete. Please try again.' }, { status: 500 })

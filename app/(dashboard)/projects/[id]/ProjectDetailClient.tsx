@@ -6,6 +6,7 @@ import Link from 'next/link'
 import {
   ArrowLeft, Briefcase, Users, MessageSquare, Activity, FileText, Folder, Clock,
   Plus, Trash2, Pencil, Copy, Search, Upload, Download, Archive, ArchiveRestore,
+  GitCompare, BarChart3, Layers,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { SignalCard } from '@/components/signals/SignalCard'
@@ -15,9 +16,9 @@ import { formatDate, formatRelativeTime, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { buildTimelineEvents, type TimelineEvent } from '@/lib/utils/timeline'
 import { FUNNEL_STAGE_LABELS } from '@/types'
-import type { Project, Persona, Interview, Signal, Report, ProjectFile } from '@/types'
+import type { Project, Persona, Interview, Signal, Report, ProjectFile, CompareRun, AudiencePanelRun, ConceptTestRun } from '@/types'
 
-const TABS = ['Overview', 'Personas', 'Interviews', 'Signals', 'Reports', 'Files', 'Timeline', 'Settings'] as const
+const TABS = ['Overview', 'Personas', 'Interviews', 'Signals', 'Reports', 'Comparisons', 'Audience Panels', 'Concept Tests', 'Files', 'Timeline', 'Settings'] as const
 type Tab = typeof TABS[number]
 
 const cardStyle = { background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }
@@ -30,10 +31,13 @@ interface ProjectDetailClientProps {
   reports: (Report & { interview: Interview })[]
   files: ProjectFile[]
   workspaces: { id: string; name: string }[]
+  compareRuns: CompareRun[]
+  audiencePanelRuns: AudiencePanelRun[]
+  conceptTestRuns: ConceptTestRun[]
   initialTab?: string
 }
 
-export function ProjectDetailClient({ project: initialProject, allPersonas, allInterviews, signals, reports, files: initialFiles, workspaces, initialTab }: ProjectDetailClientProps) {
+export function ProjectDetailClient({ project: initialProject, allPersonas, allInterviews, signals, reports, files: initialFiles, workspaces, compareRuns, audiencePanelRuns, conceptTestRuns, initialTab }: ProjectDetailClientProps) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>((TABS as readonly string[]).includes(initialTab ?? '') ? (initialTab as Tab) : 'Overview')
   const [project, setProject] = useState(initialProject)
@@ -162,6 +166,12 @@ export function ProjectDetailClient({ project: initialProject, allPersonas, allI
       {tab === 'Signals' && <SignalsTab signals={signals} />}
 
       {tab === 'Reports' && <ReportsTab reports={reports} />}
+
+      {tab === 'Comparisons' && <CompareRunsTab runs={compareRuns} />}
+
+      {tab === 'Audience Panels' && <AudiencePanelRunsTab runs={audiencePanelRuns} />}
+
+      {tab === 'Concept Tests' && <ConceptTestRunsTab runs={conceptTestRuns} />}
 
       {tab === 'Files' && (
         <FilesTab
@@ -417,6 +427,65 @@ function ReportsTab({ reports }: { reports: (Report & { interview: Interview })[
             <DownloadReportButton href={`/reports/${report.id}`} />
           </div>
         </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Compare / Audience Panel / Concept Test runs ────────────────────────────
+// No per-run detail page exists yet — each links back to the feature's own
+// page rather than a deep link to this exact result (that page's own
+// "History" tab is where a run's full result is actually re-viewable).
+
+function CompareRunsTab({ runs }: { runs: CompareRun[] }) {
+  if (runs.length === 0) {
+    return <EmptyState icon={GitCompare} title="No comparisons yet" description="Run a comparison with this project selected to see it here." />
+  }
+  return (
+    <div className="space-y-3">
+      {runs.map(run => (
+        <Link key={run.id} href="/compare" className="rounded-2xl p-4 flex items-center justify-between gap-3 block transition-all hover:shadow-xl" style={cardStyle}>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{run.question || 'Reaction to shared image'}&rdquo;</p>
+            <p className="text-xs mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{run.persona_ids.length} personas · {formatRelativeTime(run.created_at)}</p>
+          </div>
+        </Link>
+      ))}
+    </div>
+  )
+}
+
+function AudiencePanelRunsTab({ runs }: { runs: AudiencePanelRun[] }) {
+  if (runs.length === 0) {
+    return <EmptyState icon={BarChart3} title="No audience panels yet" description="Run a panel with this project selected to see it here." />
+  }
+  return (
+    <div className="space-y-3">
+      {runs.map(run => (
+        <Link key={run.id} href="/audience-panel" className="rounded-2xl p-4 flex items-center justify-between gap-3 block transition-all hover:shadow-xl" style={cardStyle}>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{run.question || 'Reaction to shared image'}&rdquo;</p>
+            <p className="text-xs mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{run.persona_ids.length} personas · {run.result.consensus_score}% consensus · {formatRelativeTime(run.created_at)}</p>
+          </div>
+        </Link>
+      ))}
+    </div>
+  )
+}
+
+function ConceptTestRunsTab({ runs }: { runs: ConceptTestRun[] }) {
+  if (runs.length === 0) {
+    return <EmptyState icon={Layers} title="No concept tests yet" description="Run a concept test with this project selected to see it here." />
+  }
+  return (
+    <div className="space-y-3">
+      {runs.map(run => (
+        <Link key={run.id} href="/concept-test" className="rounded-2xl p-4 flex items-center justify-between gap-3 block transition-all hover:shadow-xl" style={cardStyle}>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{run.concepts.map(c => c.label).join(' vs ')}</p>
+            <p className="text-xs mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{run.persona_ids.length} personas · {formatRelativeTime(run.created_at)}</p>
+          </div>
+        </Link>
       ))}
     </div>
   )

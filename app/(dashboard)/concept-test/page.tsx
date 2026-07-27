@@ -3,15 +3,16 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Layers, Loader2, Lock, Sparkles, Trophy, CheckSquare, Square, ImagePlus, X, Plus, Trash2, ChevronDown } from 'lucide-react'
+import { Layers, Loader2, Lock, Sparkles, Trophy, CheckSquare, Square, ImagePlus, X, Plus, Trash2, ChevronDown, History } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
+import { Dropdown } from '@/components/ui/Dropdown'
 import { ScoreRing } from '@/components/ui/ScoreRing'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
-import { CARD_SHADOW } from '@/lib/utils'
+import { CARD_SHADOW, formatRelativeTime } from '@/lib/utils'
 import { compressImageFile } from '@/lib/utils/image'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
-import type { Persona, Plan, ConceptTestResult } from '@/types'
+import type { Persona, Plan, ConceptTestResult, ConceptTestRun, Workspace } from '@/types'
 
 interface ConceptDraft {
   label: string
@@ -25,6 +26,106 @@ const emptyConcept = (): ConceptDraft => ({ label: '', description: '', imageDat
 const MIN_PERSONAS = 3
 const MAX_CONCEPTS = 4
 
+// Extracted so the exact same rendering drives both a freshly-generated
+// result and a historical run's stored result — no second, dumbed-down
+// history view to build or keep in sync.
+function ConceptTestResultsView({ result, expandedId, onToggleExpand }: { result: ConceptTestResult; expandedId: string | null; onToggleExpand: (id: string) => void }) {
+  return (
+    <section className="flex flex-col gap-5">
+      {result.overall_recommendation && (
+        <div className="rounded-xl p-6" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles size={15} style={{ color: HOME_COLORS.primaryFixedDim }} />
+            <span className="text-[11px] font-bold uppercase tracking-widest opacity-70">Recommendation</span>
+          </div>
+          <p className="text-sm leading-relaxed">{result.overall_recommendation}</p>
+          <p className="text-[11px] mt-3 opacity-60">{result.total_personas} personas · {result.completed_in_seconds}s</p>
+        </div>
+      )}
+
+      {result.concepts.map(c => {
+        const isWinner = c.id === result.winner_id
+        const isOpen = expandedId === c.id
+        return (
+          <motion.article
+            key={c.id}
+            layout
+            className="rounded-xl p-5 sm:p-6"
+            style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: isWinner ? `2px solid ${HOME_COLORS.primary}` : '2px solid transparent' }}
+          >
+            <div className="flex items-start gap-4">
+              {c.avg_score !== null && <ScoreRing score={c.avg_score} size={52} />}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="text-[11px] font-bold" style={{ color: HOME_COLORS.onSurfaceVariant }}>#{c.rank}</span>
+                  <h3 className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{c.label}</h3>
+                  {isWinner && (
+                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+                      <Trophy size={10} /> Winner
+                    </span>
+                  )}
+                </div>
+                {c.verdict && <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{c.verdict}</p>}
+              </div>
+            </div>
+
+            {(c.strength || c.weakness) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                {c.strength && (
+                  <div className="rounded-lg p-3" style={{ background: HOME_COLORS.secondaryContainer }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.primary }}>Strength</p>
+                    <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{c.strength}</p>
+                  </div>
+                )}
+                {c.weakness && (
+                  <div className="rounded-lg p-3" style={{ background: '#FFDAD6' }}>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.error }}>Weakness</p>
+                    <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{c.weakness}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {c.reactions.length > 0 && (
+              <>
+                <button
+                  onClick={() => onToggleExpand(c.id)}
+                  className="flex items-center gap-1.5 text-xs font-semibold mt-4 transition-colors"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: HOME_COLORS.primary }}
+                >
+                  <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  {isOpen ? 'Hide' : 'Show'} {c.reactions.length} panelist reaction{c.reactions.length === 1 ? '' : 's'}
+                </button>
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                        {c.reactions.map(r => (
+                          <div key={r.persona_id} className="rounded-lg p-3 flex flex-col gap-2" style={{ background: HOME_COLORS.surfaceContainerLow }}>
+                            <div className="flex items-center gap-2">
+                              <PersonaAvatar avatarUrl={r.avatar_url} avatarInitials={r.avatar_initials} avatarColor={r.avatar_color} name={r.persona_name} size="sm" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{r.persona_name}</p>
+                                {r.job_title && <p className="text-[10px] uppercase truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{r.job_title}</p>}
+                              </div>
+                              {r.score !== null && <ScoreRing score={r.score} size={34} />}
+                            </div>
+                            <p className="text-xs leading-relaxed italic" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{r.reaction}&rdquo;</p>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
+          </motion.article>
+        )
+      })}
+    </section>
+  )
+}
+
 export default function ConceptTestPage() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -35,6 +136,19 @@ export default function ConceptTestPage() {
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [plan, setPlan] = useState<Plan>('free')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  // Project/workspace — both optional, same as Compare/Audience Panel:
+  // picking a project is what turns a run into persisted history with
+  // signal extraction.
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
+  const [projectId, setProjectId] = useState('')
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
+  const [workspaceId, setWorkspaceId] = useState('personal')
+
+  const [viewMode, setViewMode] = useState<'new' | 'history'>('new')
+  const [historyRuns, setHistoryRuns] = useState<ConceptTestRun[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [selectedRun, setSelectedRun] = useState<ConceptTestRun | null>(null)
 
   const maxPersonas = PLAN_LIMITS[plan].audience_panel_max
   const hasAccess = PLAN_LIMITS[plan].audience_panel
@@ -49,7 +163,28 @@ export default function ConceptTestPage() {
       setPlan((profile?.plan ?? 'free') as Plan)
       setLoadingPersonas(false)
     })
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(json => setProjects((json.data ?? []).filter((p: any) => !p.archived)))
+      .catch(() => {})
+    fetch('/api/workspaces')
+      .then(r => r.json())
+      .then(json => setWorkspaces(json.data ?? []))
+      .catch(() => {})
   }, [])
+
+  const loadHistory = () => {
+    setLoadingHistory(true)
+    fetch('/api/concept-test')
+      .then(r => r.json())
+      .then(json => setHistoryRuns(json.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingHistory(false))
+  }
+
+  useEffect(() => {
+    if (viewMode === 'history') loadHistory()
+  }, [viewMode])
 
   const togglePersona = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : prev.length < maxPersonas ? [...prev, id] : prev)
@@ -94,6 +229,8 @@ export default function ConceptTestPage() {
             image: c.imageData,
             imageMediaType: c.imageMediaType,
           })),
+          project_id: projectId || null,
+          workspace_id: workspaceId === 'personal' ? null : workspaceId,
         }),
       })
       const json = await res.json()
@@ -106,6 +243,9 @@ export default function ConceptTestPage() {
       setLoading(false)
     }
   }
+
+  const projectOptions = [{ value: '', label: 'No project (not saved)' }, ...projects.map(p => ({ value: p.id, label: p.name }))]
+  const workspaceOptions = [{ value: 'personal', label: 'Personal (not shared)' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]
 
   if (!loadingPersonas && !hasAccess) {
     return (
@@ -137,20 +277,66 @@ export default function ConceptTestPage() {
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
       {/* Hero */}
       <section className="relative px-4 sm:px-10 pt-10 sm:pt-14 pb-8">
-        <div className="max-w-3xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Concept Testing</span>
+        <div className="max-w-3xl flex items-start justify-between gap-6 flex-wrap">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Concept Testing</span>
+            </div>
+            <h1 className="mb-4 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
+              Put your concepts <span className="italic" style={{ fontWeight: 400 }}>head to head</span>.
+            </h1>
+            <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              The same panel reacts to every concept, so you get an apples-to-apples comparison — each concept scored, ranked, and explained, with a clear winner.
+            </p>
           </div>
-          <h1 className="mb-4 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
-            Put your concepts <span className="italic" style={{ fontWeight: 400 }}>head to head</span>.
-          </h1>
-          <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            The same panel reacts to every concept, so you get an apples-to-apples comparison — each concept scored, ranked, and explained, with a clear winner.
-          </p>
+          <div className="flex items-center gap-1 p-1 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
+            <button
+              onClick={() => setViewMode('new')}
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-colors"
+              style={viewMode === 'new' ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' } : { color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              <Sparkles size={13} /> New
+            </button>
+            <button
+              onClick={() => setViewMode('history')}
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-colors"
+              style={viewMode === 'history' ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' } : { color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              <History size={13} /> History
+            </button>
+          </div>
         </div>
       </section>
 
+      {viewMode === 'history' ? (
+        <div className="px-4 sm:px-10 pb-20 max-w-3xl">
+          {loadingHistory ? (
+            <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading...</p>
+          ) : historyRuns.length === 0 ? (
+            <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>No saved concept tests yet — run one with a project selected to see it here.</p>
+          ) : selectedRun ? (
+            <div className="flex flex-col gap-5">
+              <button onClick={() => setSelectedRun(null)} className="text-xs font-semibold self-start" style={{ color: HOME_COLORS.primary, background: 'none', border: 'none', cursor: 'pointer' }}>← Back to history</button>
+              <ConceptTestResultsView result={selectedRun.result} expandedId={expandedId} onToggleExpand={id => setExpandedId(expandedId === id ? null : id)} />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {historyRuns.map(run => (
+                <button
+                  key={run.id}
+                  onClick={() => setSelectedRun(run)}
+                  className="w-full text-left p-4 rounded-xl transition-colors hover:shadow-md"
+                  style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: 'none', cursor: 'pointer' }}
+                >
+                  <p className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>{run.concepts.map(c => c.label).join(' vs ')}</p>
+                  <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(run.created_at)} · {run.persona_ids.length} personas</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
       <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-20">
         {/* Sidebar — persona selection */}
         <aside className="lg:col-span-4 flex flex-col gap-6 order-2 lg:order-1">
@@ -192,6 +378,23 @@ export default function ConceptTestPage() {
                 })}
               </div>
             )}
+          </section>
+
+          {/* Project / workspace — optional, saves this run as history + signals */}
+          <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+            <h3 className="text-sm font-semibold mb-4" style={{ color: HOME_COLORS.onSurface }}>Save to project</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Project <span className="normal-case font-normal">(optional)</span></label>
+                <Dropdown value={projectId} onChange={setProjectId} options={projectOptions} className="w-full" />
+              </div>
+              {workspaces.length > 0 && (
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share with workspace</label>
+                  <Dropdown value={workspaceId} onChange={setWorkspaceId} options={workspaceOptions} className="w-full" />
+                </div>
+              )}
+            </div>
           </section>
 
           <button
@@ -263,102 +466,10 @@ export default function ConceptTestPage() {
           </section>
 
           {/* Results */}
-          {result && (
-            <section className="flex flex-col gap-5">
-              {result.overall_recommendation && (
-                <div className="rounded-xl p-6" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles size={15} style={{ color: HOME_COLORS.primaryFixedDim }} />
-                    <span className="text-[11px] font-bold uppercase tracking-widest opacity-70">Recommendation</span>
-                  </div>
-                  <p className="text-sm leading-relaxed">{result.overall_recommendation}</p>
-                  <p className="text-[11px] mt-3 opacity-60">{result.total_personas} personas · {result.completed_in_seconds}s</p>
-                </div>
-              )}
-
-              {result.concepts.map(c => {
-                const isWinner = c.id === result.winner_id
-                const isOpen = expandedId === c.id
-                return (
-                  <motion.article
-                    key={c.id}
-                    layout
-                    className="rounded-xl p-5 sm:p-6"
-                    style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: isWinner ? `2px solid ${HOME_COLORS.primary}` : '2px solid transparent' }}
-                  >
-                    <div className="flex items-start gap-4">
-                      {c.avg_score !== null && <ScoreRing score={c.avg_score} size={52} />}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-[11px] font-bold" style={{ color: HOME_COLORS.onSurfaceVariant }}>#{c.rank}</span>
-                          <h3 className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{c.label}</h3>
-                          {isWinner && (
-                            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
-                              <Trophy size={10} /> Winner
-                            </span>
-                          )}
-                        </div>
-                        {c.verdict && <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{c.verdict}</p>}
-                      </div>
-                    </div>
-
-                    {(c.strength || c.weakness) && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                        {c.strength && (
-                          <div className="rounded-lg p-3" style={{ background: HOME_COLORS.secondaryContainer }}>
-                            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.primary }}>Strength</p>
-                            <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{c.strength}</p>
-                          </div>
-                        )}
-                        {c.weakness && (
-                          <div className="rounded-lg p-3" style={{ background: '#FFDAD6' }}>
-                            <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.error }}>Weakness</p>
-                            <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{c.weakness}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {c.reactions.length > 0 && (
-                      <>
-                        <button
-                          onClick={() => setExpandedId(isOpen ? null : c.id)}
-                          className="flex items-center gap-1.5 text-xs font-semibold mt-4 transition-colors"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: HOME_COLORS.primary }}
-                        >
-                          <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                          {isOpen ? 'Hide' : 'Show'} {c.reactions.length} panelist reaction{c.reactions.length === 1 ? '' : 's'}
-                        </button>
-                        <AnimatePresence>
-                          {isOpen && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                                {c.reactions.map(r => (
-                                  <div key={r.persona_id} className="rounded-lg p-3 flex flex-col gap-2" style={{ background: HOME_COLORS.surfaceContainerLow }}>
-                                    <div className="flex items-center gap-2">
-                                      <PersonaAvatar avatarUrl={r.avatar_url} avatarInitials={r.avatar_initials} avatarColor={r.avatar_color} name={r.persona_name} size="sm" />
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{r.persona_name}</p>
-                                        {r.job_title && <p className="text-[10px] uppercase truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{r.job_title}</p>}
-                                      </div>
-                                      {r.score !== null && <ScoreRing score={r.score} size={34} />}
-                                    </div>
-                                    <p className="text-xs leading-relaxed italic" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{r.reaction}&rdquo;</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </>
-                    )}
-                  </motion.article>
-                )
-              })}
-            </section>
-          )}
+          {result && <ConceptTestResultsView result={result} expandedId={expandedId} onToggleExpand={id => setExpandedId(expandedId === id ? null : id)} />}
         </main>
       </div>
+      )}
     </div>
   )
 }

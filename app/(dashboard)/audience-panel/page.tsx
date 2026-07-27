@@ -3,64 +3,17 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves, Terminal, ArrowRight, CheckSquare, Square, ImagePlus, X } from 'lucide-react'
+import { Users, Loader2, BarChart3, Lock, Sparkles, TrendingUp, AlertTriangle, Quote, Target, Clock, Waves, Terminal, ArrowRight, CheckSquare, Square, ImagePlus, X, History } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
+import { Dropdown } from '@/components/ui/Dropdown'
 import { ScoreRing } from '@/components/ui/ScoreRing'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
-import { CARD_SHADOW, stripLeadingScore } from '@/lib/utils'
+import { CARD_SHADOW, stripLeadingScore, formatRelativeTime } from '@/lib/utils'
 import { compressImageFile } from '@/lib/utils/image'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
-import type { Persona, Plan } from '@/types'
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface PanelResponse {
-  persona_id: string
-  persona_name: string
-  avatar_initials: string
-  avatar_color: any
-  avatar_url: string | null
-  job_title: string
-  location: string
-  age: number | null
-  industry: string
-  response: string | null
-  score: number | null
-  sentiment: 'positive' | 'neutral' | 'negative' | 'mixed'
-  error: string | null
-}
-
-interface Theme {
-  title: string
-  count: number
-  sentiment: string
-  summary: string
-}
-
-interface PanelSummary {
-  overall_recommendation: string
-  top_opportunity: string
-  biggest_risk: string
-  likelihood_of_purchase: number
-  recommended_actions: string[]
-  most_representative_quote: string
-  most_representative_quote_persona: string
-  biggest_objection_quote: string
-  biggest_objection_quote_persona: string
-  completed_in_seconds: number
-}
-
-interface PanelResult {
-  responses: PanelResponse[]
-  themes: Theme[]
-  sentiment_distribution: Record<string, number>
-  consensus_score: number
-  total_personas: number
-  question: string
-  summary: PanelSummary
-}
+import type { Persona, Plan, PanelResponse, PanelTheme as Theme, PanelSummary, PanelResult, AudiencePanelRun, Workspace } from '@/types'
 
 // ─── Color system — ported to the shared editorial palette ───────────────────
 
@@ -213,6 +166,135 @@ function QuoteCard({ label, quote, source, accent }: { label: string; quote: str
   )
 }
 
+// Extracted so the exact same rendering drives both a freshly-generated
+// result and a historical run's stored result — no second, dumbed-down
+// history view to build or keep in sync.
+function PanelResultsView({ result, idPrefix, onOpenResponse }: { result: PanelResult; idPrefix: string; onOpenResponse: (id: string) => void }) {
+  return (
+    <>
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {([
+          { Icon: Users, value: result.total_personas, label: 'Personas Interviewed' },
+          { Icon: Sparkles, value: result.themes.length, label: 'Key Themes Identified' },
+          { Icon: Target, value: `${result.consensus_score}%`, label: 'Consensus Score' },
+          { Icon: Clock, value: `${result.summary.completed_in_seconds}s`, label: 'Time to Complete' },
+        ] as { Icon: typeof Users; value: string | number; label: string }[]).map((s, i) => (
+          <div key={i} className="rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+            <s.Icon size={16} style={{ color: HOME_COLORS.primary }} className="mb-3" />
+            <p className="text-2xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{s.value}</p>
+            <p className="text-[11px] mt-1.5 font-medium" style={{ color: HOME_COLORS.onSurfaceVariant }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Executive summary */}
+      <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles size={15} style={{ color: 'rgba(255,255,255,0.8)' }} />
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.7)' }}>Executive Summary</span>
+        </div>
+        <p className="text-lg leading-relaxed mb-5" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{result.summary.overall_recommendation}</p>
+        <div className="flex flex-col lg:flex-row gap-5">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <TrendingUp size={13} style={{ color: 'rgba(255,255,255,0.8)' }} />
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Top Opportunity</span>
+              </div>
+              <p className="text-xs leading-relaxed">{result.summary.top_opportunity}</p>
+            </div>
+            <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <AlertTriangle size={13} style={{ color: 'rgba(255,255,255,0.8)' }} />
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Biggest Risk</span>
+              </div>
+              <p className="text-xs leading-relaxed">{result.summary.biggest_risk}</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-center lg:pl-5 lg:border-l" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
+            <PurchaseGauge value={result.summary.likelihood_of_purchase} />
+          </div>
+        </div>
+        {result.summary.recommended_actions?.length > 0 && (
+          <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-wider mb-2.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Recommended Actions</p>
+            <div className="space-y-1.5">
+              {result.summary.recommended_actions.map((action, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <ArrowRight size={12} className="mt-0.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.5)' }} />
+                  <p className="text-xs leading-relaxed">{action}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Sentiment / Themes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+          <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Sentiment Overall</p>
+          {Object.keys(result.sentiment_distribution).length === 1 ? (
+            <UnanimousSentiment sentiment={Object.keys(result.sentiment_distribution)[0]} total={result.total_personas} />
+          ) : (
+            <SentimentBar distribution={result.sentiment_distribution} total={result.total_personas} />
+          )}
+        </div>
+        <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+          <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Theme Frequency</p>
+          <ThemeList themes={result.themes} total={result.total_personas} />
+        </div>
+      </div>
+
+      {/* Individual responses — editorial quote cards */}
+      <div>
+        <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Individual Responses</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {result.responses.map(r => (
+            <motion.article
+              key={r.persona_id}
+              layoutId={`${idPrefix}-response-${r.persona_id}`}
+              onClick={() => onOpenResponse(r.persona_id)}
+              className="rounded-xl p-5 cursor-pointer transition-all hover:shadow-xl flex flex-col"
+              style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
+            >
+              <div className="flex items-center gap-2.5 mb-3">
+                {r.score !== null && <ScoreRing score={r.score} size={38} />}
+                <PersonaAvatar avatarUrl={r.avatar_url} avatarInitials={r.avatar_initials} avatarColor={r.avatar_color} name={r.persona_name} size="sm" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{r.persona_name}</p>
+                  {r.job_title && <p className="text-[10px] uppercase truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{r.job_title}</p>}
+                </div>
+                <SentimentBadge sentiment={r.sentiment} />
+              </div>
+              {r.error ? (
+                <p className="text-xs" style={{ color: HOME_COLORS.error }}>{r.error}</p>
+              ) : (
+                <p className="text-sm leading-relaxed italic line-clamp-3" style={{ color: HOME_COLORS.onSurface }}>
+                  &ldquo;{r.score !== null && r.response ? stripLeadingScore(r.response) : r.response}&rdquo;
+                </p>
+              )}
+            </motion.article>
+          ))}
+        </div>
+      </div>
+
+      {/* Quote highlights */}
+      {(result.summary.most_representative_quote || result.summary.biggest_objection_quote) && (
+        <div className="space-y-3">
+          {result.summary.most_representative_quote && (
+            <QuoteCard label="Most Representative Quote" quote={result.summary.most_representative_quote} source={result.summary.most_representative_quote_persona} accent={SENTIMENT_COLORS.positive} />
+          )}
+          {result.summary.biggest_objection_quote && (
+            <QuoteCard label="Biggest Objection" quote={result.summary.biggest_objection_quote} source={result.summary.biggest_objection_quote_persona} accent={SENTIMENT_COLORS.negative} />
+          )}
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function AudiencePanelPage() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -227,6 +309,18 @@ export default function AudiencePanelPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageMediaType, setImageMediaType] = useState<string>('image/jpeg')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Project/workspace — both optional, same as Compare: picking a project
+  // is what turns a run into persisted history with signal extraction.
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
+  const [projectId, setProjectId] = useState('')
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
+  const [workspaceId, setWorkspaceId] = useState('personal')
+
+  const [viewMode, setViewMode] = useState<'new' | 'history'>('new')
+  const [historyRuns, setHistoryRuns] = useState<AudiencePanelRun[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [selectedRun, setSelectedRun] = useState<AudiencePanelRun | null>(null)
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -257,7 +351,28 @@ export default function AudiencePanelPage() {
       setPlan((profile?.plan ?? 'free') as Plan)
       setLoadingPersonas(false)
     })
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(json => setProjects((json.data ?? []).filter((p: any) => !p.archived)))
+      .catch(() => {})
+    fetch('/api/workspaces')
+      .then(r => r.json())
+      .then(json => setWorkspaces(json.data ?? []))
+      .catch(() => {})
   }, [])
+
+  const loadHistory = () => {
+    setLoadingHistory(true)
+    fetch('/api/audience-panel')
+      .then(r => r.json())
+      .then(json => setHistoryRuns(json.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingHistory(false))
+  }
+
+  useEffect(() => {
+    if (viewMode === 'history') loadHistory()
+  }, [viewMode])
 
   const togglePersona = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : prev.length < maxPersonas ? [...prev, id] : prev)
@@ -273,7 +388,11 @@ export default function AudiencePanelPage() {
       const res = await fetch('/api/audience-panel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persona_ids: selectedIds, question, image: imageData, imageMediaType }),
+        body: JSON.stringify({
+          persona_ids: selectedIds, question, image: imageData, imageMediaType,
+          project_id: projectId || null,
+          workspace_id: workspaceId === 'personal' ? null : workspaceId,
+        }),
       })
       const json = await res.json()
       if (!res.ok) { setError(json.error ?? 'Something went wrong'); return }
@@ -286,6 +405,8 @@ export default function AudiencePanelPage() {
   }
 
   const canRun = !loading && selectedIds.length >= 5 && (question.trim() || !!imageData)
+  const projectOptions = [{ value: '', label: 'No project (not saved)' }, ...projects.map(p => ({ value: p.id, label: p.name }))]
+  const workspaceOptions = [{ value: 'personal', label: 'Personal (not shared)' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]
 
   if (!loadingPersonas && !hasAccess) {
     return (
@@ -317,17 +438,35 @@ export default function AudiencePanelPage() {
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
       {/* Hero */}
       <section className="relative px-4 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-12 overflow-hidden">
-        <div className="relative z-10 max-w-3xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Audience Intelligence</span>
+        <div className="relative z-10 max-w-3xl flex items-start justify-between gap-6 flex-wrap">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Audience Intelligence</span>
+            </div>
+            <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
+              Synthesize market voice through <span className="italic" style={{ fontWeight: 400 }}>neural modeling</span>.
+            </h1>
+            <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              Bridge the gap between raw data and human resonance. Ask one question, get real answers from every selected persona — analyzed, themed, and summarized instantly.
+            </p>
           </div>
-          <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
-            Synthesize market voice through <span className="italic" style={{ fontWeight: 400 }}>neural modeling</span>.
-          </h1>
-          <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            Bridge the gap between raw data and human resonance. Ask one question, get real answers from every selected persona — analyzed, themed, and summarized instantly.
-          </p>
+          <div className="flex items-center gap-1 p-1 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
+            <button
+              onClick={() => setViewMode('new')}
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-colors"
+              style={viewMode === 'new' ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' } : { color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              <Sparkles size={13} /> New
+            </button>
+            <button
+              onClick={() => setViewMode('history')}
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-colors"
+              style={viewMode === 'history' ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' } : { color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              <History size={13} /> History
+            </button>
+          </div>
         </div>
         <div className="absolute right-4 sm:right-10 bottom-2 flex-col items-end opacity-20 hidden lg:flex pointer-events-none">
           <span style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '84px', color: HOME_COLORS.primary, lineHeight: 1 }}>{String(personas.length).padStart(2, '0')}</span>
@@ -335,6 +474,46 @@ export default function AudiencePanelPage() {
         </div>
       </section>
 
+      {viewMode === 'history' ? (
+        <div className="px-4 sm:px-10 pb-20 max-w-4xl">
+          {loadingHistory ? (
+            <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading...</p>
+          ) : historyRuns.length === 0 ? (
+            <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>No saved panels yet — run one with a project selected to see it here.</p>
+          ) : selectedRun ? (
+            <div className="flex flex-col gap-8">
+              <button onClick={() => setSelectedRun(null)} className="text-xs font-semibold self-start" style={{ color: HOME_COLORS.primary, background: 'none', border: 'none', cursor: 'pointer' }}>← Back to history</button>
+              <PanelResultsView result={selectedRun.result} idPrefix="ap-history" onOpenResponse={id => setOpenResponseId(id)} />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {historyRuns.map(run => (
+                <button
+                  key={run.id}
+                  onClick={() => setSelectedRun(run)}
+                  className="w-full text-left p-4 rounded-xl transition-colors hover:shadow-md"
+                  style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: 'none', cursor: 'pointer' }}
+                >
+                  <p className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{run.question || 'Reaction to shared image'}&rdquo;</p>
+                  <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(run.created_at)} · {run.persona_ids.length} personas · {run.result.consensus_score}% consensus</p>
+                </button>
+              ))}
+            </div>
+          )}
+          <AnimatePresence>
+            {openResponseId && selectedRun && (() => {
+              const response = selectedRun.result.responses.find(r => r.persona_id === openResponseId)
+              if (!response) return null
+              return (
+                <Modal key="ap-history-modal" onClose={() => setOpenResponseId(null)} maxWidth={540} layoutId={`ap-history-response-${openResponseId}`}>
+                  <ResponseModalContent response={response} />
+                </Modal>
+              )
+            })()}
+          </AnimatePresence>
+        </div>
+      ) : (
+      <>
       {/* Content grid */}
       <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 pb-20">
         {/* Sidebar */}
@@ -379,6 +558,23 @@ export default function AudiencePanelPage() {
             )}
           </section>
 
+          {/* Project / workspace — optional, saves this run as history + signals */}
+          <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+            <h3 className="text-sm font-semibold mb-4" style={{ color: HOME_COLORS.onSurface }}>Save to project</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Project <span className="normal-case font-normal">(optional)</span></label>
+                <Dropdown value={projectId} onChange={setProjectId} options={projectOptions} className="w-full" />
+              </div>
+              {workspaces.length > 0 && (
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share with workspace</label>
+                  <Dropdown value={workspaceId} onChange={setWorkspaceId} options={workspaceOptions} className="w-full" />
+                </div>
+              )}
+            </div>
+          </section>
+
           {/* Readiness / neural pulse — real status, not a fabricated insight */}
           <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
             <div className="flex justify-between items-start mb-4">
@@ -392,18 +588,6 @@ export default function AudiencePanelPage() {
               {result && ` Last run reached a ${result.consensus_score}% consensus score.`}
             </p>
           </section>
-
-          {/* Quote highlights */}
-          {result && (
-            <div className="space-y-3">
-              {result.summary.most_representative_quote && (
-                <QuoteCard label="Most Representative Quote" quote={result.summary.most_representative_quote} source={result.summary.most_representative_quote_persona} accent={SENTIMENT_COLORS.positive} />
-              )}
-              {result.summary.biggest_objection_quote && (
-                <QuoteCard label="Biggest Objection" quote={result.summary.biggest_objection_quote} source={result.summary.biggest_objection_quote_persona} accent={SENTIMENT_COLORS.negative} />
-              )}
-            </div>
-          )}
         </aside>
 
         {/* Main column */}
@@ -489,117 +673,7 @@ export default function AudiencePanelPage() {
             </div>
           )}
 
-          {result && (
-            <>
-              {/* Stat cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {([
-                  { Icon: Users, value: result.total_personas, label: 'Personas Interviewed' },
-                  { Icon: Sparkles, value: result.themes.length, label: 'Key Themes Identified' },
-                  { Icon: Target, value: `${result.consensus_score}%`, label: 'Consensus Score' },
-                  { Icon: Clock, value: `${result.summary.completed_in_seconds}s`, label: 'Time to Complete' },
-                ] as { Icon: typeof Users; value: string | number; label: string }[]).map((s, i) => (
-                  <div key={i} className="rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                    <s.Icon size={16} style={{ color: HOME_COLORS.primary }} className="mb-3" />
-                    <p className="text-2xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{s.value}</p>
-                    <p className="text-[11px] mt-1.5 font-medium" style={{ color: HOME_COLORS.onSurfaceVariant }}>{s.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Executive summary */}
-              <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles size={15} style={{ color: 'rgba(255,255,255,0.8)' }} />
-                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.7)' }}>Executive Summary</span>
-                </div>
-                <p className="text-lg leading-relaxed mb-5" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{result.summary.overall_recommendation}</p>
-                <div className="flex flex-col lg:flex-row gap-5">
-                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <TrendingUp size={13} style={{ color: 'rgba(255,255,255,0.8)' }} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Top Opportunity</span>
-                      </div>
-                      <p className="text-xs leading-relaxed">{result.summary.top_opportunity}</p>
-                    </div>
-                    <div className="rounded-xl p-3.5" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <AlertTriangle size={13} style={{ color: 'rgba(255,255,255,0.8)' }} />
-                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.6)' }}>Biggest Risk</span>
-                      </div>
-                      <p className="text-xs leading-relaxed">{result.summary.biggest_risk}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-center lg:pl-5 lg:border-l" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
-                    <PurchaseGauge value={result.summary.likelihood_of_purchase} />
-                  </div>
-                </div>
-                {result.summary.recommended_actions?.length > 0 && (
-                  <div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-2.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Recommended Actions</p>
-                    <div className="space-y-1.5">
-                      {result.summary.recommended_actions.map((action, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <ArrowRight size={12} className="mt-0.5 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.5)' }} />
-                          <p className="text-xs leading-relaxed">{action}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Sentiment / Themes */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Sentiment Overall</p>
-                  {Object.keys(result.sentiment_distribution).length === 1 ? (
-                    <UnanimousSentiment sentiment={Object.keys(result.sentiment_distribution)[0]} total={result.total_personas} />
-                  ) : (
-                    <SentimentBar distribution={result.sentiment_distribution} total={result.total_personas} />
-                  )}
-                </div>
-                <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Theme Frequency</p>
-                  <ThemeList themes={result.themes} total={result.total_personas} />
-                </div>
-              </div>
-
-              {/* Individual responses — editorial quote cards */}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Individual Responses</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {result.responses.map(r => (
-                    <motion.article
-                      key={r.persona_id}
-                      layoutId={`ap-response-${r.persona_id}`}
-                      onClick={() => setOpenResponseId(r.persona_id)}
-                      className="rounded-xl p-5 cursor-pointer transition-all hover:shadow-xl flex flex-col"
-                      style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
-                    >
-                      <div className="flex items-center gap-2.5 mb-3">
-                        {r.score !== null && <ScoreRing score={r.score} size={38} />}
-                        <PersonaAvatar avatarUrl={r.avatar_url} avatarInitials={r.avatar_initials} avatarColor={r.avatar_color} name={r.persona_name} size="sm" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{r.persona_name}</p>
-                          {r.job_title && <p className="text-[10px] uppercase truncate" style={{ color: HOME_COLORS.onSurfaceVariant }}>{r.job_title}</p>}
-                        </div>
-                        <SentimentBadge sentiment={r.sentiment} />
-                      </div>
-                      {r.error ? (
-                        <p className="text-xs" style={{ color: HOME_COLORS.error }}>{r.error}</p>
-                      ) : (
-                        <p className="text-sm leading-relaxed italic line-clamp-3" style={{ color: HOME_COLORS.onSurface }}>
-                          &ldquo;{r.score !== null && r.response ? stripLeadingScore(r.response) : r.response}&rdquo;
-                        </p>
-                      )}
-                    </motion.article>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+          {result && <PanelResultsView result={result} idPrefix="ap" onOpenResponse={id => setOpenResponseId(id)} />}
         </main>
       </div>
 
@@ -614,6 +688,8 @@ export default function AudiencePanelPage() {
           )
         })()}
       </AnimatePresence>
+      </>
+      )}
     </div>
   )
 }

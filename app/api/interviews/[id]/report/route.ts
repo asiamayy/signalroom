@@ -4,17 +4,17 @@ import { createClient } from '@/lib/supabase/server'
 import { getPlanForUser } from '@/lib/utils/entitlements'
 import { logError } from '@/lib/logger'
 import { generateReport } from '@/lib/anthropic/persona-engine'
-import { generateSignalsFromInterview, titleSimilarity, statusForInterviewCount, SIGNAL_TITLE_MATCH_THRESHOLD } from '@/lib/anthropic/signal-engine'
-import { appendHistoryEntry } from '@/lib/utils/signals'
-import { pushReportCreated, pushSignalCreated } from '@/lib/integrations/push'
-import type { Persona, Interview, Signal } from '@/types'
+import { generateSignalsFromInterview } from '@/lib/anthropic/signal-engine'
+import { syncSignals } from '@/lib/signals/sync'
+import { pushReportCreated } from '@/lib/integrations/push'
+import type { Persona, Interview } from '@/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
-// For each candidate signal: merge into an existing signal in the project
-// with the same type and a similar title (bumping confidence/status and
-// appending evidence), or insert a fresh one. Keeps repeated interviews from
-// spamming near-duplicate signals — see judgment call #4 in the build plan.
+// Thin wrapper: build interview-specific candidates (verbatim-quote-checked
+// against this interview's transcript), stamp each quote with this
+// persona/interview, then hand off to the shared merge-or-insert logic in
+// lib/signals/sync.ts (also used by Compare/Audience Panel/Concept Test).
 async function syncSignalsForInterview(
   supabase: SupabaseClient,
   userId: string,
@@ -27,73 +27,20 @@ async function syncSignalsForInterview(
   reportData: { executive_summary: string; key_themes: any[]; recommendations: any[] }
 ) {
   const candidates = await generateSignalsFromInterview(interview, persona, reportData)
-
   if (candidates.length === 0) return
 
-  const { data: existing } = await supabase
-    .from('signals')
-    .select('*')
-    .eq('project_id', projectId)
+  const stamped = candidates.map(c => ({
+    ...c,
+    supporting_quotes: c.supporting_quotes.map(q => ({ ...q, persona_id: personaId, interview_id: interviewId })),
+  }))
 
-  const existingSignals = (existing ?? []) as Signal[]
-
-  for (const candidate of candidates) {
-    const match = existingSignals.find(
-      s => s.type === candidate.type && titleSimilarity(s.title, candidate.title) >= SIGNAL_TITLE_MATCH_THRESHOLD
-    )
-
-    const quotes = candidate.supporting_quotes.map(q => ({ ...q, persona_id: personaId, interview_id: interviewId }))
-
-    if (match) {
-      const relatedInterviewIds = Array.from(new Set([...match.related_interview_ids, interviewId]))
-      const relatedPersonaIds = Array.from(new Set([...match.related_persona_ids, personaId]))
-      const newConfidence = Math.max(match.confidence_score, candidate.confidence_score)
-      await supabase
-        .from('signals')
-        .update({
-          confidence_score: newConfidence,
-          supporting_quotes: [...match.supporting_quotes, ...quotes].slice(-10),
-          related_interview_ids: relatedInterviewIds,
-          related_persona_ids: relatedPersonaIds,
-          status: statusForInterviewCount(relatedInterviewIds.length),
-          strategic_recommendation: match.strategic_recommendation || candidate.strategic_recommendation,
-          impact: candidate.impact ?? match.impact,
-          history: appendHistoryEntry(match.history ?? [], relatedInterviewIds.length, newConfidence),
-        })
-        .eq('id', match.id)
-    } else {
-      const { data: inserted } = await supabase
-        .from('signals')
-        .insert({
-          user_id: userId,
-          project_id: projectId,
-          title: candidate.title,
-          type: candidate.type,
-          summary: candidate.summary,
-          confidence_score: candidate.confidence_score,
-          supporting_quotes: quotes,
-          related_persona_ids: [personaId],
-          related_interview_ids: [interviewId],
-          status: 'emerging',
-          strategic_recommendation: candidate.strategic_recommendation,
-          impact: candidate.impact,
-          history: appendHistoryEntry([], 1, candidate.confidence_score),
-        })
-        .select()
-        .single()
-      if (inserted) {
-        existingSignals.push(inserted as Signal)
-        // Only the brand-new-signal path pushes — the merge/update branch
-        // above does not, so reinforcing an existing signal never spams the
-        // connected Slack channel.
-        try {
-          await pushSignalCreated(planCheckUserId, inserted as Signal)
-        } catch (e: any) {
-          logError('integrations.push_signal', e, { userId, signalId: inserted.id })
-        }
-      }
-    }
-  }
+  await syncSignals({
+    supabase, userId, planCheckUserId, projectId,
+    sourceType: 'interview',
+    sourceId: interviewId,
+    personaIds: [personaId],
+    candidates: stamped,
+  })
 }
 
 export async function POST(

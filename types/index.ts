@@ -289,6 +289,11 @@ export const SIGNAL_IMPACT_LABELS: Record<SignalImpact, string> = {
   high: 'High impact',
 }
 
+// Which feature produced a signal. Defaults to 'interview' on every row
+// that existed before Compare/Audience Panel/Concept Test could also
+// produce them — see supabase-migration-persisted-runs.sql.
+export type SignalSourceType = 'interview' | 'compare' | 'audience_panel' | 'concept_test'
+
 export interface Signal {
   id: string
   user_id: string
@@ -300,6 +305,12 @@ export interface Signal {
   supporting_quotes: SignalQuote[]
   related_persona_ids: string[]
   related_interview_ids: string[]
+  // Generic sibling to related_interview_ids for the 3 non-interview
+  // sources — holds compare_runs/audience_panel_runs/concept_test_runs
+  // ids. Interview-sourced signals leave this empty and keep using
+  // related_interview_ids instead.
+  related_run_ids: string[]
+  source_type: SignalSourceType
   status: SignalStatus
   strategic_recommendation: string
   impact: SignalImpact | null
@@ -394,6 +405,112 @@ export interface ConceptTestResult {
   overall_recommendation: string
   total_personas: number
   completed_in_seconds: number
+}
+
+// ─── Compare (2-4 personas answer one question) ─────────────────────────────
+
+export interface CompareResult {
+  persona_id: string
+  persona_name: string
+  avatar_initials: string
+  avatar_color: any
+  avatar_url: string | null
+  job_title: string
+  location: string
+  response: string | null
+  score: number | null
+  error: string | null
+}
+
+// ─── Audience Panel (5+ personas, aggregated themes/sentiment) ──────────────
+
+export interface PanelResponse {
+  persona_id: string
+  persona_name: string
+  avatar_initials: string
+  avatar_color: any
+  avatar_url: string | null
+  job_title: string
+  location: string
+  age: number | null
+  industry: string
+  response: string | null
+  score: number | null
+  sentiment: 'positive' | 'neutral' | 'negative' | 'mixed'
+  error: string | null
+}
+
+export interface PanelTheme {
+  title: string
+  count: number
+  sentiment: string
+  summary: string
+}
+
+export interface PanelSummary {
+  overall_recommendation: string
+  top_opportunity: string
+  biggest_risk: string
+  likelihood_of_purchase: number
+  recommended_actions: string[]
+  most_representative_quote: string
+  most_representative_quote_persona: string
+  biggest_objection_quote: string
+  biggest_objection_quote_persona: string
+  completed_in_seconds: number
+}
+
+export interface PanelResult {
+  responses: PanelResponse[]
+  themes: PanelTheme[]
+  sentiment_distribution: Record<string, number>
+  consensus_score: number
+  total_personas: number
+  question: string
+  summary: PanelSummary
+}
+
+// ─── Persisted runs (Compare / Audience Panel / Concept Test) ───────────────
+// Unlike interviews/reports, these three had no persistence at all until
+// supabase-migration-persisted-runs.sql — a run is an immutable snapshot
+// (input + full result), never edited after creation, which is why there's
+// no updated_at here (matches the `reports` convention).
+
+export interface CompareRun {
+  id: string
+  user_id: string
+  project_id: string
+  workspace_id?: string | null
+  question: string
+  context: string
+  interview_type: InterviewType
+  persona_ids: string[]
+  result: CompareResult[]
+  created_at: string
+}
+
+export interface AudiencePanelRun {
+  id: string
+  user_id: string
+  project_id: string
+  workspace_id?: string | null
+  question: string
+  persona_ids: string[]
+  result: PanelResult
+  created_at: string
+}
+
+export interface ConceptTestRun {
+  id: string
+  user_id: string
+  project_id: string
+  workspace_id?: string | null
+  context: string
+  interview_type: InterviewType
+  persona_ids: string[]
+  concepts: ConceptInput[] // labels/descriptions only — images are never persisted
+  result: ConceptTestResult
+  created_at: string
 }
 
 // ─── API Response shapes ──────────────────────────────────────────────────────

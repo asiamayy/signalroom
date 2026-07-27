@@ -82,17 +82,72 @@ If nothing meaningfully recurring or actionable emerged, return an empty array [
     ],
   })
 
-  const raw = extractText(response)
-
-  const parsed = parseJsonResponse<any[]>(raw, () => [])
-  if (!Array.isArray(parsed)) return []
-
   // "Verbatim" supporting quotes must actually appear in what the persona
   // said in this interview — paraphrases and inventions are dropped.
   const personaText = (interview.messages ?? [])
     .filter(m => m.role === 'persona')
     .map(m => m.content)
     .join('\n')
+
+  return parseCandidateSignals(extractText(response), personaText)
+}
+
+// Synthesizes 0-5 candidate signals from an aggregate panel — Compare,
+// Audience Panel, or Concept Test — instead of a single interview
+// transcript. Same taxonomy/contract as generateSignalsFromInterview; the
+// only real difference is the input shape (a flat list of persona
+// responses instead of one persona's chat messages plus a report).
+export async function generateSignalsFromAggregateResponses(
+  context: string,
+  responses: { persona_name: string; job_title?: string; text: string }[]
+): Promise<CandidateSignal[]> {
+  const responsesBlock = responses
+    .map(r => `- ${r.persona_name}${r.job_title ? ` (${r.job_title})` : ''}: ${r.text}`)
+    .join('\n\n')
+
+  const response = await anthropic.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 2000,
+    messages: [
+      {
+        role: 'user',
+        content: `You are a market research analyst synthesizing recurring customer intelligence ("signals") from a panel of customer personas.
+
+What was being tested: ${context || 'a research question'}
+
+Persona responses:
+${responsesBlock || 'none'}
+
+Identify 1-5 discrete "signals" — recurring customer behaviors, beliefs, or reactions worth tracking across future research, not just a restatement of individual responses. Each signal must be classified into exactly one of these types: ${SIGNAL_TYPES.join(', ')}.
+
+Return ONLY a JSON array with this exact shape, no preamble, no markdown fences:
+[
+  {
+    "title": "Short, specific title (e.g. 'Customers fear migration complexity')",
+    "type": "pain_point" | "objection" | "desired_outcome" | "feature_request" | "buying_trigger" | "trend" | "opportunity" | "risk",
+    "summary": "1-2 sentence explanation of what this signal means and why it matters",
+    "confidence_score": a number 0-100 reflecting how many personas support this signal and how strongly (a lone/vague mention = 40-60, multiple personas or a strongly-stated reaction = 70-90),
+    "supporting_quotes": ["verbatim quote from a persona's response that supports this signal"],
+    "strategic_recommendation": "One concrete action a product/marketing team should take in response",
+    "impact": "low" | "medium" | "high" — how much this would matter to revenue, retention, or positioning if true across the broader customer base, not just how confident you are it's true
+  }
+]
+
+If nothing meaningfully recurring or actionable emerged, return an empty array [].`,
+      },
+    ],
+  })
+
+  // Same verbatim-quote guarantee as the interview path, checked against the
+  // joined corpus of persona responses instead of a single persona's messages.
+  const corpusText = responses.map(r => r.text).join('\n')
+
+  return parseCandidateSignals(extractText(response), corpusText)
+}
+
+function parseCandidateSignals(raw: string, corpusText: string): CandidateSignal[] {
+  const parsed = parseJsonResponse<any[]>(raw, () => [])
+  if (!Array.isArray(parsed)) return []
 
   return parsed
     .filter(s => s && typeof s.title === 'string' && SIGNAL_TYPES.includes(s.type))
@@ -103,7 +158,7 @@ If nothing meaningfully recurring or actionable emerged, return an empty array [
       confidence_score: Math.max(0, Math.min(100, Math.round(Number(s.confidence_score) || 50))),
       supporting_quotes: Array.isArray(s.supporting_quotes)
         ? s.supporting_quotes
-            .filter((q: unknown): q is string => typeof q === 'string' && quoteInText(q, personaText))
+            .filter((q: unknown): q is string => typeof q === 'string' && quoteInText(q, corpusText))
             .map((text: string) => ({ text, persona_id: null, interview_id: null }))
         : [],
       strategic_recommendation: String(s.strategic_recommendation ?? ''),
@@ -133,8 +188,11 @@ export function titleSimilarity(a: string, b: string): number {
 
 export const SIGNAL_TITLE_MATCH_THRESHOLD = 0.5
 
-// emerging (1 supporting interview) -> growing (2-3) -> validated (4+)
-export function statusForInterviewCount(count: number): 'emerging' | 'growing' | 'validated' {
+// emerging (1 supporting source) -> growing (2-3) -> validated (4+). "Source"
+// is any interview, Compare run, Audience Panel run, or Concept Test run
+// that reinforced the signal — not interview-specific despite the name's
+// origin (this only ever generated from interviews when first written).
+export function statusForSourceCount(count: number): 'emerging' | 'growing' | 'validated' {
   if (count >= 4) return 'validated'
   if (count >= 2) return 'growing'
   return 'emerging'

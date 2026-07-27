@@ -2,30 +2,17 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GitCompare, Loader2, Radar, Compass, CheckSquare, Square, ImagePlus, X } from 'lucide-react'
+import { GitCompare, Loader2, Radar, Compass, CheckSquare, Square, ImagePlus, X, History, Sparkles } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Modal } from '@/components/ui/Modal'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { ScoreRing } from '@/components/ui/ScoreRing'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
-import { CARD_SHADOW, INTERVIEW_TYPE_LABELS, stripLeadingScore } from '@/lib/utils'
+import { CARD_SHADOW, INTERVIEW_TYPE_LABELS, stripLeadingScore, formatRelativeTime } from '@/lib/utils'
 import { compressImageFile } from '@/lib/utils/image'
-import type { Persona, InterviewType } from '@/types'
+import type { Persona, InterviewType, CompareResult, CompareRun, Workspace } from '@/types'
 
 const INTERVIEW_TYPE_OPTIONS = Object.entries(INTERVIEW_TYPE_LABELS).map(([value, label]) => ({ value, label }))
-
-interface CompareResult {
-  persona_id: string
-  persona_name: string
-  avatar_initials: string
-  avatar_color: any
-  avatar_url: string | null
-  job_title: string
-  location: string
-  response: string | null
-  score: number | null
-  error: string | null
-}
 
 function CompareResponseModalBody({ result }: { result: CompareResult }) {
   return (
@@ -49,6 +36,52 @@ function CompareResponseModalBody({ result }: { result: CompareResult }) {
   )
 }
 
+// Extracted so the exact same rendering drives both a freshly-generated
+// result and a historical run's stored result — no second, dumbed-down
+// history view to build or keep in sync.
+function CompareResultsView({ results, question, onSelect }: { results: CompareResult[]; question: string; onSelect: (personaId: string) => void }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between pb-3" style={{ borderBottom: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
+        <h2 className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface }}>Synthesis Results</h2>
+        <span className="text-[11px] uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>&ldquo;{question || 'Reaction to shared image'}&rdquo;</span>
+      </div>
+      {results.map((result, i) => (
+        <motion.article
+          key={result.persona_id}
+          layoutId={`compare-response-${result.persona_id}`}
+          onClick={() => onSelect(result.persona_id)}
+          className="rounded-xl p-6 sm:p-8 cursor-pointer transition-all hover:shadow-xl"
+          style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
+        >
+          <div className="flex justify-between items-start mb-6">
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+                Response {String(i + 1).padStart(2, '0')}
+              </span>
+              <div className="flex items-center gap-2">
+                <PersonaAvatar avatarUrl={result.avatar_url} avatarInitials={result.avatar_initials} avatarColor={result.avatar_color} name={result.persona_name} size="sm" />
+                <div>
+                  <p className="text-sm font-semibold leading-tight" style={{ color: HOME_COLORS.onSurface }}>{result.persona_name}</p>
+                  <p className="text-[10px] uppercase" style={{ color: HOME_COLORS.onSurfaceVariant }}>{result.job_title}</p>
+                </div>
+              </div>
+            </div>
+            {result.score !== null && <ScoreRing score={result.score} size={48} />}
+          </div>
+          {result.error ? (
+            <p className="text-sm rounded-lg p-3" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{result.error}</p>
+          ) : (
+            <p className="leading-relaxed" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '19px', color: HOME_COLORS.onSurface }}>
+              &ldquo;{result.score !== null && result.response ? stripLeadingScore(result.response) : result.response}&rdquo;
+            </p>
+          )}
+        </motion.article>
+      ))}
+    </div>
+  )
+}
+
 export default function ComparePage() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -57,6 +90,7 @@ export default function ComparePage() {
   const [interviewType, setInterviewType] = useState<InterviewType>('concept_testing')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<CompareResult[]>([])
+  const [resultQuestion, setResultQuestion] = useState('')
   const [error, setError] = useState('')
   const [loadingPersonas, setLoadingPersonas] = useState(true)
   const [openResponseId, setOpenResponseId] = useState<string | null>(null)
@@ -64,6 +98,19 @@ export default function ComparePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageMediaType, setImageMediaType] = useState<string>('image/jpeg')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Project/workspace — both optional. Picking a project is what turns a
+  // run into persisted history with signal extraction; omitting one keeps
+  // today's ephemeral, results-only-in-memory behavior.
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
+  const [projectId, setProjectId] = useState('')
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
+  const [workspaceId, setWorkspaceId] = useState('personal')
+
+  const [viewMode, setViewMode] = useState<'new' | 'history'>('new')
+  const [historyRuns, setHistoryRuns] = useState<CompareRun[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [selectedRun, setSelectedRun] = useState<CompareRun | null>(null)
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -86,7 +133,28 @@ export default function ComparePage() {
       .then(r => r.json())
       .then(json => setPersonas(json.data ?? []))
       .finally(() => setLoadingPersonas(false))
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(json => setProjects((json.data ?? []).filter((p: any) => !p.archived)))
+      .catch(() => {})
+    fetch('/api/workspaces')
+      .then(r => r.json())
+      .then(json => setWorkspaces(json.data ?? []))
+      .catch(() => {})
   }, [])
+
+  const loadHistory = () => {
+    setLoadingHistory(true)
+    fetch('/api/compare')
+      .then(r => r.json())
+      .then(json => setHistoryRuns(json.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingHistory(false))
+  }
+
+  useEffect(() => {
+    if (viewMode === 'history') loadHistory()
+  }, [viewMode])
 
   const togglePersona = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : prev.length < 4 ? [...prev, id] : prev)
@@ -123,11 +191,16 @@ export default function ComparePage() {
       const res = await fetch('/api/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persona_ids: selectedIds, question, context, interview_type: interviewType, image: imageData, imageMediaType }),
+        body: JSON.stringify({
+          persona_ids: selectedIds, question, context, interview_type: interviewType, image: imageData, imageMediaType,
+          project_id: projectId || null,
+          workspace_id: workspaceId === 'personal' ? null : workspaceId,
+        }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
       setResults(json.data)
+      setResultQuestion(question)
     } catch (e: any) {
       setError(e.message ?? 'Failed to run comparison')
     } finally {
@@ -135,24 +208,85 @@ export default function ComparePage() {
     }
   }
 
+  const projectOptions = [{ value: '', label: 'No project (not saved)' }, ...projects.map(p => ({ value: p.id, label: p.name }))]
+  const workspaceOptions = [{ value: 'personal', label: 'Personal (not shared)' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]
+
   return (
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
       {/* Hero */}
       <section className="px-4 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-12">
-        <div className="max-w-3xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Stream</span>
+        <div className="max-w-3xl flex items-start justify-between gap-6 flex-wrap">
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Intelligence Stream</span>
+            </div>
+            <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
+              Persona <span className="italic" style={{ fontWeight: 400 }}>Synthesis</span>
+            </h1>
+            <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              Ask the same question to 2–4 personas and see how their real answers diverge. Select personas from the panel, then run the synthesis.
+            </p>
           </div>
-          <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
-            Persona <span className="italic" style={{ fontWeight: 400 }}>Synthesis</span>
-          </h1>
-          <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            Ask the same question to 2–4 personas and see how their real answers diverge. Select personas from the panel, then run the synthesis.
-          </p>
+          <div className="flex items-center gap-1 p-1 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
+            <button
+              onClick={() => setViewMode('new')}
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-colors"
+              style={viewMode === 'new' ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' } : { color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              <Sparkles size={13} /> New
+            </button>
+            <button
+              onClick={() => setViewMode('history')}
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-colors"
+              style={viewMode === 'history' ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' } : { color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              <History size={13} /> History
+            </button>
+          </div>
         </div>
       </section>
 
+      {viewMode === 'history' ? (
+        <div className="px-4 sm:px-10 pb-20 max-w-3xl">
+          {loadingHistory ? (
+            <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading...</p>
+          ) : historyRuns.length === 0 ? (
+            <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>No saved comparisons yet — run one with a project selected to see it here.</p>
+          ) : selectedRun ? (
+            <div>
+              <button onClick={() => setSelectedRun(null)} className="text-xs font-semibold mb-4" style={{ color: HOME_COLORS.primary, background: 'none', border: 'none', cursor: 'pointer' }}>← Back to history</button>
+              <CompareResultsView results={selectedRun.result} question={selectedRun.question} onSelect={id => setOpenResponseId(id)} />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {historyRuns.map(run => (
+                <button
+                  key={run.id}
+                  onClick={() => setSelectedRun(run)}
+                  className="w-full text-left p-4 rounded-xl transition-colors hover:shadow-md"
+                  style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: 'none', cursor: 'pointer' }}
+                >
+                  <p className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>&ldquo;{run.question || 'Reaction to shared image'}&rdquo;</p>
+                  <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(run.created_at)} · {run.persona_ids.length} personas</p>
+                </button>
+              ))}
+            </div>
+          )}
+          <AnimatePresence>
+            {openResponseId && selectedRun && (() => {
+              const response = selectedRun.result.find(r => r.persona_id === openResponseId)
+              if (!response) return null
+              return (
+                <Modal key="compare-history-modal" onClose={() => setOpenResponseId(null)} maxWidth={540} layoutId={`compare-history-response-${openResponseId}`}>
+                  <CompareResponseModalBody result={response} />
+                </Modal>
+              )
+            })()}
+          </AnimatePresence>
+        </div>
+      ) : (
+      <>
       {/* Content grid */}
       <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 pb-20">
         {/* Left column — setup + results */}
@@ -163,7 +297,17 @@ export default function ComparePage() {
                 <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Interview type</label>
                 <Dropdown value={interviewType} onChange={v => setInterviewType(v as InterviewType)} options={INTERVIEW_TYPE_OPTIONS} className="w-full" />
               </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Project <span className="normal-case font-normal">(optional — saves this run)</span></label>
+                <Dropdown value={projectId} onChange={setProjectId} options={projectOptions} className="w-full" />
+              </div>
             </div>
+            {workspaces.length > 0 && (
+              <div className="mb-5">
+                <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share with workspace</label>
+                <Dropdown value={workspaceId} onChange={setWorkspaceId} options={workspaceOptions} className="w-full" />
+              </div>
+            )}
             <div className="mb-5">
               <label className="block text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Context <span className="normal-case font-normal">(optional)</span></label>
               <textarea
@@ -228,44 +372,7 @@ export default function ComparePage() {
 
           {/* Results — one editorial "vector" card per persona response */}
           {results.length > 0 && (
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center justify-between pb-3" style={{ borderBottom: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
-                <h2 className="text-base font-semibold" style={{ color: HOME_COLORS.onSurface }}>Synthesis Results</h2>
-                <span className="text-[11px] uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>&ldquo;{question || 'Reaction to shared image'}&rdquo;</span>
-              </div>
-              {results.map((result, i) => (
-                <motion.article
-                  key={result.persona_id}
-                  layoutId={`compare-response-${result.persona_id}`}
-                  onClick={() => setOpenResponseId(result.persona_id)}
-                  className="rounded-xl p-6 sm:p-8 cursor-pointer transition-all hover:shadow-xl"
-                  style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
-                >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-3">
-                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
-                        Response {String(i + 1).padStart(2, '0')}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <PersonaAvatar avatarUrl={result.avatar_url} avatarInitials={result.avatar_initials} avatarColor={result.avatar_color} name={result.persona_name} size="sm" />
-                        <div>
-                          <p className="text-sm font-semibold leading-tight" style={{ color: HOME_COLORS.onSurface }}>{result.persona_name}</p>
-                          <p className="text-[10px] uppercase" style={{ color: HOME_COLORS.onSurfaceVariant }}>{result.job_title}</p>
-                        </div>
-                      </div>
-                    </div>
-                    {result.score !== null && <ScoreRing score={result.score} size={48} />}
-                  </div>
-                  {result.error ? (
-                    <p className="text-sm rounded-lg p-3" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{result.error}</p>
-                  ) : (
-                    <p className="leading-relaxed" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, fontSize: '19px', color: HOME_COLORS.onSurface }}>
-                      &ldquo;{result.score !== null && result.response ? stripLeadingScore(result.response) : result.response}&rdquo;
-                    </p>
-                  )}
-                </motion.article>
-              ))}
-            </div>
+            <CompareResultsView results={results} question={resultQuestion} onSelect={id => setOpenResponseId(id)} />
           )}
         </div>
 
@@ -370,6 +477,8 @@ export default function ComparePage() {
           )
         })()}
       </AnimatePresence>
+      </>
+      )}
     </div>
   )
 }

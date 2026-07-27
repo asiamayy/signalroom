@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
   buildConceptTestSystemPrompt,
@@ -7,12 +8,39 @@ import {
   parseConceptBackfillResponse,
   computePersonaTemperature,
 } from '@/lib/anthropic/persona-engine'
+import { generateSignalsFromAggregateResponses } from '@/lib/anthropic/signal-engine'
+import { syncSignals } from '@/lib/signals/sync'
 import { getPlanForUser } from '@/lib/utils/entitlements'
+import { logError } from '@/lib/logger'
+import type { ConceptTestResult } from '@/types'
 import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 const VALID_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+
+// Past concept tests for the History view. Optional ?project_id= narrows to
+// one project.
+export async function GET(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const projectId = request.nextUrl.searchParams.get('project_id')
+
+  let query = supabase.from('concept_test_runs').select('*').order('created_at', { ascending: false })
+  if (projectId) query = query.eq('project_id', projectId)
+
+  const { data, error } = await query
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ data })
+}
 
 // The persona×concept matrix is the heaviest call in the app; give it room so
 // the platform doesn't kill it mid-generation (which would return a non-JSON
@@ -33,18 +61,27 @@ export async function POST(request: NextRequest) {
   // LLM call, timeout mid-await) returns a JSON error the client can show,
   // instead of an unhandled 500/504 that arrives as HTML.
   try {
+    const body = await request.json()
+    const { persona_ids, interview_type, context, project_id, workspace_id } = body
+    const rawConcepts = Array.isArray(body.concepts) ? body.concepts : []
+
+    // A member running this inside a shared workspace operates under the
+    // OWNER's plan/entitlement, not their own — same reasoning as every
+    // other workspace-aware route.
+    let planCheckUserId = user.id
+    if (workspace_id) {
+      const { data: workspace } = await supabase.from('workspaces').select('owner_id').eq('id', workspace_id).single()
+      if (workspace) planCheckUserId = workspace.owner_id
+    }
+
     // Concept test is a multi-persona panel surface — pro and agency only.
-    const { limits } = await getPlanForUser(supabase, user.id)
+    const { limits } = await getPlanForUser(supabase, planCheckUserId)
     if (!limits.audience_panel) {
       return NextResponse.json({
         error: 'Concept testing is available on the Signal plan and above.',
         limit_reached: true,
       }, { status: 403 })
     }
-
-    const body = await request.json()
-    const { persona_ids, interview_type, context } = body
-    const rawConcepts = Array.isArray(body.concepts) ? body.concepts : []
 
     if (!persona_ids || persona_ids.length < 3) {
       return NextResponse.json({ error: 'Select at least 3 personas' }, { status: 400 })
@@ -71,12 +108,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Compare up to 4 concepts at a time' }, { status: 400 })
     }
 
-    // Load personas
+    // No user_id filter — RLS scopes this to personas the caller owns plus
+    // any workspace-shared ones they're a member of.
     const { data: personas, error } = await supabase
       .from('personas')
       .select('*')
       .in('id', persona_ids)
-      .eq('user_id', user.id)
 
     if (error || !personas?.length) {
       return NextResponse.json({ error: 'Personas not found' }, { status: 404 })
@@ -240,15 +277,79 @@ Return ONLY this JSON (no markdown):
       }
     })
 
-    return NextResponse.json({
-      data: {
-        concepts: conceptResults,
-        winner_id: winnerId,
-        overall_recommendation: summary.overall_recommendation ?? '',
-        total_personas: personas.length,
-        completed_in_seconds: Math.max(1, Math.round((Date.now() - startedAt) / 1000)),
-      },
-    })
+    const result: ConceptTestResult = {
+      concepts: conceptResults,
+      winner_id: winnerId,
+      overall_recommendation: summary.overall_recommendation ?? '',
+      total_personas: personas.length,
+      completed_in_seconds: Math.max(1, Math.round((Date.now() - startedAt) / 1000)),
+    }
+
+    // Persisting (and therefore signal extraction) requires a project — no
+    // project means the run just isn't saved, exactly like today's ephemeral
+    // behavior. Picking a project is what turns a run into real history.
+    // Images are never persisted — only labels/descriptions.
+    let runId: string | null = null
+    if (project_id) {
+      const conceptsForStorage = concepts.map((c: any) => ({ id: c.id, label: c.label, description: c.description }))
+
+      const { data: run, error: insertError } = await supabase
+        .from('concept_test_runs')
+        .insert({
+          user_id: user.id,
+          project_id,
+          workspace_id: workspace_id ?? null,
+          context: context ?? '',
+          interview_type: interview_type ?? 'concept_testing',
+          persona_ids,
+          concepts: conceptsForStorage,
+          result,
+        })
+        .select('id')
+        .single()
+
+      if (insertError) {
+        logError('concept_test_runs.insert', insertError, { userId: user.id, projectId: project_id })
+      } else if (run) {
+        runId = run.id
+
+        after(async () => {
+          try {
+            // One aggregate text per persona — their reactions across every
+            // concept joined into a single block — rather than per-concept,
+            // since a signal here is about the PERSONA's underlying belief,
+            // not any single concept's reaction.
+            const aggregateResponses = personas
+              .map((p) => {
+                const cells = matrix.get(p.id)
+                if (!cells) return null
+                const text = concepts
+                  .map((c: any) => {
+                    const cell = cells.get(c.id)
+                    return cell ? `On "${c.label}": ${cell.reaction}` : null
+                  })
+                  .filter(Boolean)
+                  .join(' ')
+                return text ? { persona_name: p.name as string, job_title: p.traits?.job_title as string | undefined, text } : null
+              })
+              .filter((r) => r !== null) as { persona_name: string; job_title?: string; text: string }[]
+
+            if (aggregateResponses.length === 0) return
+
+            const signalContext = `Testing concepts: ${concepts.map((c: any) => c.label).join(', ')}. ${context ?? ''}`.trim()
+            const candidates = await generateSignalsFromAggregateResponses(signalContext, aggregateResponses)
+            await syncSignals({
+              supabase, userId: user.id, planCheckUserId, projectId: project_id,
+              sourceType: 'concept_test', sourceId: run.id, personaIds: persona_ids, candidates,
+            })
+          } catch (e: any) {
+            logError('signals.sync', e, { userId: user.id, projectId: project_id, conceptTestRunId: run.id })
+          }
+        })
+      }
+    }
+
+    return NextResponse.json({ data: result, run_id: runId })
   } catch (e: any) {
     console.error('[concept-test] request failed:', e)
     return NextResponse.json({ error: 'The concept test failed to complete. Please try again.' }, { status: 500 })
