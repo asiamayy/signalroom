@@ -231,7 +231,7 @@ export function WorkspacesClient() {
 
   if (plan === 'agency') {
     return (
-      <div className="min-h-full" style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }}>
+      <div className="min-h-full" style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, backgroundImage: 'linear-gradient(rgba(24,40,28,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(24,40,28,0.045) 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
         <main className="mx-auto max-w-[1440px] px-4 pb-14 sm:px-10">
           <motion.section initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="flex flex-col justify-between gap-6 pb-8 pt-8 xl:flex-row xl:items-end xl:gap-10 sm:pt-10">
             <div className="max-w-xl">
@@ -254,7 +254,7 @@ export function WorkspacesClient() {
 
           <motion.section initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.9, ease: 'easeOut' }} className="relative mb-9 min-h-[220px] overflow-hidden rounded-[1.5rem] p-6 shadow-[0_18px_30px_-20px_rgba(24,40,28,0.5)] sm:min-h-[280px] sm:p-8" style={{ background: HOME_COLORS.primary }}>
             <div className="pointer-events-none absolute inset-0 opacity-30">
-              <svg className="h-full w-full" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true">
+              <svg className="h-full w-full" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
                 <path d="M50,450 L950,450 M50,50 L50,450" fill="none" stroke="white" strokeWidth="0.5" opacity="0.3" />
                 <path d="M100,380 Q300,320 400,390 T700,350 T900,410" fill="none" stroke={HOME_COLORS.primaryFixed} strokeWidth="1.5" strokeDasharray="8 10"><animate attributeName="stroke-dashoffset" dur="4s" repeatCount="indefinite" values="0;-72" /></path>
                 <circle cx="400" cy="390" fill={HOME_COLORS.primaryFixed} r="5"><animate attributeName="r" dur="3s" repeatCount="indefinite" values="5;10;5" /></circle>
@@ -264,11 +264,11 @@ export function WorkspacesClient() {
             <div className="relative z-10 flex flex-col justify-between gap-10 lg:flex-row lg:items-start">
               <div>
                 <span className="mb-3 inline-block rounded-full bg-white/10 px-2 py-1 text-[7px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.primaryFixed }}>Workspace activity</span>
-                <h2 className="text-2xl leading-tight text-white sm:text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace Activity <br /><span className="italic font-normal text-white/45">Pulse Monitor</span></h2>
+                <h2 className="text-2xl leading-tight text-white sm:text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace Activity <br /><span className="italic font-normal text-white/45">Research Overview</span></h2>
               </div>
-              <div className="min-w-0 rounded-2xl border p-4 sm:min-w-[210px]" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(18px)', borderColor: 'rgba(255,255,255,0.1)' }}>
-                <span className="text-[7px] font-bold uppercase tracking-[0.22em] text-white/35">In this workspace</span>
-                <div className="mt-4 space-y-3 text-[10px] text-white">
+              <div className="min-w-0 rounded-2xl border p-5 sm:min-w-[260px]" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(18px)', borderColor: 'rgba(255,255,255,0.1)' }}>
+                <span className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/35">In this workspace</span>
+                <div className="mt-5 space-y-4 text-[11px] text-white">
                   <MetricLine label="Personas" value={`${realPersonaCount} active`} percent={Math.min(100, Math.max(8, realPersonaCount * 12))} />
                   <MetricLine label="Interviews" value={`${realInterviewCount} tracked`} percent={Math.min(100, Math.max(8, realInterviewCount * 12))} />
                   <MetricLine label="Reports" value={`${realReportCount} synthesized`} percent={Math.min(100, Math.max(8, realReportCount * 12))} />
@@ -307,7 +307,7 @@ export function WorkspacesClient() {
               <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
                 {workspaces.map((workspace, index) => {
                   const selected = workspace.id === selectedId
-                  const darkTile = index === 1
+                  const darkTile = selected
                   return <button key={workspace.id} onClick={() => setSelectedId(workspace.id)} className={`group text-left transition-all duration-500 ${index === 0 ? 'md:col-span-7' : 'md:col-span-5'}`} style={{ cursor: 'pointer', border: 'none', background: 'none' }}>
                     <div className={`relative flex min-h-[190px] h-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 transition-all duration-700 sm:min-h-[230px] sm:p-7 ${darkTile ? 'hover:-translate-y-2 hover:shadow-[0_22px_38px_-20px_rgba(24,40,28,0.5)]' : 'hover:-translate-y-1 hover:bg-white hover:shadow-[0_20px_32px_-22px_rgba(24,40,28,0.35)]'}`} style={darkTile ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: '0 12px 26px -18px rgba(24,40,28,0.32)' } : { background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
                       {darkTile && <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full blur-3xl transition-opacity duration-700 group-hover:opacity-100" style={{ background: `${HOME_COLORS.primaryFixed}1f`, opacity: 0.45 }} />}
@@ -320,13 +320,13 @@ export function WorkspacesClient() {
                     </div>
                   </button>
                 })}
-                <Link href="/faq" className="group rounded-[1.25rem] p-5 transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.35)] md:col-span-4" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
-                  <span className="block text-[8px] font-semibold uppercase tracking-[0.22em] opacity-45">Workspace access</span>
-                  <div className="mt-5 flex items-end justify-between"><div><h3 className="text-base" style={{ fontFamily: HOME_FONT_DISPLAY }}>Audit Protocol</h3><p className="mt-1 text-[9px] opacity-45">Member access is kept up to date.</p></div><ShieldCheck size={20} className="opacity-30" /></div>
+                <Link href="/reports" className="group rounded-[1.25rem] p-5 transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.35)] md:col-span-4" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
+                  <span className="block text-[8px] font-semibold uppercase tracking-[0.22em] opacity-45">Shared research</span>
+                  <div className="mt-5 flex items-end justify-between"><div><h3 className="text-base" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace Content</h3><p className="mt-1 text-[9px] opacity-45">{realPersonaCount + realInterviewCount + realReportCount} shared research items.</p></div><FileText size={20} className="opacity-30" /></div>
                 </Link>
                 <button type="button" onClick={() => setInvitingOpen(true)} className="group rounded-[1.25rem] p-5 text-left transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.35)] md:col-span-4" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22`, cursor: 'pointer' }}>
-                  <span className="block text-[8px] font-semibold uppercase tracking-[0.22em] opacity-45">Team access</span>
-                  <div className="mt-4 flex items-center gap-3">{members[0] ? <div className="h-10 w-10 overflow-hidden rounded-xl"><PersonaAvatar avatarUrl={members[0].avatar_url} avatarInitials={getInitials(members[0].full_name || members[0].email)} avatarColor={getAvatarColor(members[0].full_name || members[0].email)} name={members[0].full_name ?? members[0].email} size="sm" shape="square" /></div> : <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${HOME_COLORS.primary}12` }}><Users size={16} /></div>}<div className="min-w-0"><h3 className="truncate text-sm" style={{ fontFamily: HOME_FONT_DISPLAY }}>{members[0]?.full_name || members[0]?.email || 'Invite your team'}</h3><p className="mt-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] opacity-45">{members.length ? `${members.length} members` : 'Add a member'}</p></div></div>
+                  <span className="block text-[8px] font-semibold uppercase tracking-[0.22em] opacity-45">Workspace members</span>
+                  <div className="mt-4 flex items-center gap-3">{members[0] ? <div className="h-10 w-10 overflow-hidden rounded-xl"><PersonaAvatar avatarUrl={members[0].avatar_url} avatarInitials={getInitials(members[0].full_name || members[0].email)} avatarColor={getAvatarColor(members[0].full_name || members[0].email)} name={members[0].full_name ?? members[0].email} size="sm" shape="square" /></div> : <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${HOME_COLORS.primary}12` }}><Users size={16} /></div>}<div className="min-w-0"><h3 className="truncate text-sm" style={{ fontFamily: HOME_FONT_DISPLAY }}>{members[0]?.full_name || members[0]?.email || 'Invite your team'}</h3><p className="mt-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] opacity-45">{members.length ? `${members.length} members with access` : 'Add a member'}</p></div></div>
                 </button>
                 <Link href="/reports" className="flex flex-col justify-between rounded-[1.25rem] p-5 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.5)] md:col-span-4" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.primaryFixed }}>
                   <div className="flex items-start justify-between"><span className="text-[8px] font-semibold uppercase tracking-[0.22em] opacity-60">Quick action</span><ArrowRight size={14} className="opacity-50" /></div>
