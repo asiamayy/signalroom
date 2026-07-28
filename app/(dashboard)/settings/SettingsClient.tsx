@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X, MessageSquare, FileText, CheckCircle2 } from 'lucide-react'
-import { cn, CARD_SHADOW } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { createClient } from '@/lib/supabase/client'
 import type { Plan, IntegrationConnection, NotionIntegrationMetadata } from '@/types'
@@ -300,23 +300,28 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
 
   return (
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-10 sm:py-12">
-        <header className="mb-9 flex flex-col gap-5 border-b pb-8 sm:flex-row sm:items-end sm:justify-between" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}>
+      <div className="mx-auto flex max-w-[1400px] flex-col gap-20 px-4 py-12 sm:px-10 sm:py-16">
+        <header className="flex flex-col items-start justify-between gap-8 pb-4 sm:flex-row sm:items-end sm:gap-12">
           <div>
             <div className="mb-3 flex items-center gap-3">
               <span className="h-px w-9" style={{ background: HOME_COLORS.primary }} />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: HOME_COLORS.primary }}>Your workspace</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: HOME_COLORS.primary }}>Workspace administration</span>
             </div>
-            <h1 style={{ ...DISPLAY_LG_STYLE, fontSize: '40px', lineHeight: '44px', color: HOME_COLORS.onSurface }}>
+            <h1 style={{ ...DISPLAY_LG_STYLE, fontSize: '40px', lineHeight: '48px', color: HOME_COLORS.onSurface }}>
               Account <span className="italic">Settings</span>
             </h1>
-            <p className="mt-2 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Manage your plan, research capacity, and workspace preferences.</p>
+            <p className="mt-2 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Manage your intelligence infrastructure and account access.</p>
           </div>
           {profile?.stripe_subscription_id && (
-            <button onClick={handleManageBilling} disabled={openingPortal} className="inline-flex items-center justify-center gap-2 self-start rounded-full px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-85 sm:self-auto" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={handleManageBilling} disabled={openingPortal} className="inline-flex items-center justify-center gap-2 self-start rounded-full px-7 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5 hover:shadow-lg sm:self-auto" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               <ExternalLink size={14} />
               {openingPortal ? 'Opening billing...' : 'Manage billing'}
             </button>
+          )}
+          {!profile?.stripe_subscription_id && (
+            <a href="#plans" className="inline-flex items-center justify-center self-start rounded-full px-7 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5 hover:shadow-lg sm:self-auto" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+              Explore plans
+            </a>
           )}
         </header>
 
@@ -328,26 +333,26 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
         )}
 
         {/* ── Account ──────────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <section className="lg:col-span-8">
-            <div className="h-full rounded-[20px] p-6 sm:p-7" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Profile</p>
-              <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
+          <section className="lg:col-span-5">
+            <div className="h-full">
+              <p className="mb-8 text-[10px] font-semibold uppercase tracking-[0.3em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Profile identity</p>
+              <div className="flex flex-col gap-7 sm:flex-row sm:items-center sm:gap-8">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full text-lg font-semibold" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>
+                  <div className="flex h-28 w-28 items-center justify-center rounded-full border p-2 text-3xl font-semibold sm:h-32 sm:w-32" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}55`, color: HOME_COLORS.primary }}>
                     {(profile?.full_name ?? user?.email ?? 'Y').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-lg font-semibold" style={{ color: HOME_COLORS.onSurface }}>{profile?.full_name ?? 'Your account'}</p>
-                    <p className="mt-0.5 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>{user?.email}</p>
+                    <p className="text-2xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{profile?.full_name ?? 'Your account'}</p>
+                    <p className="mt-1 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>{user?.email}</p>
                   </div>
                 </div>
-                <button onClick={handleSignOut} disabled={signingOut} className="inline-flex items-center gap-1.5 self-start rounded-full border px-3.5 py-2 text-sm transition-colors hover:text-red-600 sm:self-auto" style={{ color: HOME_COLORS.onSurfaceVariant, borderColor: `${HOME_COLORS.outlineVariant}99`, background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button onClick={handleSignOut} disabled={signingOut} className="inline-flex items-center gap-2 self-start py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition-transform hover:translate-x-1 hover:text-red-600 sm:self-auto" style={{ color: HOME_COLORS.error, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                   <LogOut size={14} />
                   {signingOut ? 'Signing out...' : 'Sign out'}
                 </button>
               </div>
-              <div className="mt-6 grid grid-cols-1 gap-3 border-t pt-5 sm:grid-cols-2" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
+              <div className="hidden mt-6 grid-cols-1 gap-3 border-t pt-5 sm:grid-cols-2" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
                 <div><p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace plan</p><p className="mt-1 text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{currentPlanData?.name ?? 'Free'}</p></div>
                 <div><p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research workspace</p><p className="mt-1 text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Active and ready</p></div>
               </div>
@@ -355,26 +360,28 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
           </section>
 
         {/* ── Usage ────────────────────────────────────────────────────────── */}
-        <section className="lg:col-span-8">
-          <div className="rounded-[20px] p-6 sm:p-7" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-            <div className="mb-6 flex items-end justify-between gap-4">
+        <section className="lg:col-span-7 lg:border-l lg:pl-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}44` }}>
+          <div>
+            <div className="mb-10 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research capacity</p>
-                <h2 className="mt-2 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Usage at a glance</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.35em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Intelligence capacity</p>
               </div>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="space-y-10">
             {/* Personas */}
             <div>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span style={{ color: HOME_COLORS.onSurfaceVariant }}>Personas</span>
-                <span className="font-semibold" style={{ color: HOME_COLORS.onSurface }}>
+              <div className="mb-4 flex items-end justify-between gap-4">
+                <div>
+                  <span className="text-xl" style={{ color: HOME_COLORS.onSurface }}>AI Personas</span>
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Compute allocation</p>
+                </div>
+                <span className="whitespace-nowrap text-3xl font-light" style={{ color: HOME_COLORS.onSurface }}>
                   {personaCount} / {personaLimit === Infinity ? '∞' : personaLimit}
                 </span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: HOME_COLORS.surfaceContainer }}>
+              <div className="h-[2px] overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
                 <div
-                  className="h-1.5 rounded-full transition-all"
+                  className="h-full rounded-full transition-all"
                   style={{
                     background: personaLimit !== Infinity && personaCount >= personaLimit ? HOME_COLORS.error : HOME_COLORS.primary,
                     width: personaLimit === Infinity ? '10%' : `${Math.min(100, (personaCount / personaLimit) * 100)}%`,
@@ -385,15 +392,18 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
 
             {/* Interviews */}
             <div>
-              <div className="flex justify-between text-sm mb-1.5">
-                <span style={{ color: HOME_COLORS.onSurfaceVariant }}>Interviews</span>
-                <span className="font-semibold" style={{ color: HOME_COLORS.onSurface }}>
+              <div className="mb-4 flex items-end justify-between gap-4">
+                <div>
+                  <span className="text-xl" style={{ color: HOME_COLORS.onSurface }}>Active Interviews</span>
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research volume</p>
+                </div>
+                <span className="whitespace-nowrap text-3xl font-light" style={{ color: HOME_COLORS.onSurface }}>
                   {interviewCount} / {interviewLimit === Infinity ? '∞' : interviewLimit}
                 </span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: HOME_COLORS.surfaceContainer }}>
+              <div className="h-[2px] overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
                 <div
-                  className="h-1.5 rounded-full transition-all"
+                  className="h-full rounded-full transition-all"
                   style={{ background: HOME_COLORS.primary, width: interviewLimit === Infinity ? '10%' : `${Math.min(100, (interviewCount / interviewLimit) * 100)}%` }}
                 />
               </div>
@@ -409,7 +419,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
         </section>
 
         {/* ── Current plan ─────────────────────────────────────────────────── */}
-        <section className="lg:col-span-4 lg:row-span-2">
+        <section className="hidden lg:col-span-4 lg:row-span-2">
           <div className="flex h-full flex-col rounded-[20px] p-6 sm:p-7" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimaryContainer }}>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-70">Current plan</p>
             <div className="mt-6 flex items-center justify-between flex-wrap gap-3">
@@ -442,11 +452,11 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
 
         {/* ── White-label branding (Broadcast only) ──────────────────────────── */}
         {currentPlan === 'agency' && (
-          <section className="lg:col-span-8">
-            <div className="rounded-[20px] p-6 space-y-5 sm:p-7" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+          <section className="border-t pt-12 lg:col-span-7" style={{ borderColor: `${HOME_COLORS.outlineVariant}44` }}>
+            <div className="space-y-7">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Brand sovereignty</p>
-                <h2 className="mt-2 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Make every report unmistakably yours</h2>
+                <h2 className="text-[32px]" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Brand <span className="italic">Sovereignty</span></h2>
+                <p className="mt-3 max-w-xl text-sm leading-6" style={{ color: HOME_COLORS.onSurfaceVariant }}>Customize the platform interface to match your corporate identity for high-fidelity exports.</p>
               </div>
               <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 Shared report links already hide SignalRoom&apos;s branding for your account. Add your own logo and accent color so they read as your agency&apos;s deliverable.
@@ -553,11 +563,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
 
         {/* ── Integrations (Signal & Broadcast) ───────────────────────────────── */}
         {(currentPlan === 'pro' || currentPlan === 'agency') && (
-          <section className="lg:col-span-4">
-            <div className="rounded-[20px] p-6 space-y-5 sm:p-7" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+          <section className="border-t pt-12 lg:col-span-5 lg:border-l lg:pl-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}44` }}>
+            <div className="space-y-5">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Intelligence ecosystem</p>
-                <h2 className="mt-2 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Connected tools</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.35em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Intelligence ecosystem</p>
               </div>
               <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 Push new reports and signals automatically to where your team already works.
@@ -692,10 +701,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
 
         {/* ── Plans ────────────────────────────────────────────────────────── */}
         </div>
-        <section id="plans" className="mt-10 border-t pt-9" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}>
-          <div className="mb-9 text-center">
-            <h2 className="text-[32px] leading-10 sm:text-[40px] sm:leading-[48px]" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Select Your <span className="italic">Intelligence Tier</span></h2>
-            <p className="mt-2 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Scale your research capabilities as your team grows.</p>
+        <section id="plans" className="border-t pt-16 sm:pt-20" style={{ borderColor: `${HOME_COLORS.outlineVariant}44` }}>
+          <div className="mb-12">
+            <h2 className="text-[40px] leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Strategic <span className="italic">Architecture</span></h2>
+            <p className="mt-3 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Scale your research capabilities as your team grows.</p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PLANS.map(plan => {
@@ -707,15 +716,11 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
               return (
                 <div
                   key={plan.id}
-                  className="flex flex-col rounded-[20px] p-6"
+                  className="flex flex-col rounded-[2rem] p-8 transition-all duration-300 hover:-translate-y-1"
                   style={{
-                    background: HOME_COLORS.surfaceContainerLowest,
-                    boxShadow: CARD_SHADOW,
-                    border: isCurrent
-                      ? `1.5px solid ${HOME_COLORS.primary}`
-                      : plan.highlight
-                      ? `1.5px solid ${HOME_COLORS.primary}66`
-                      : `1.5px solid ${HOME_COLORS.outlineVariant}33`,
+                    background: isCurrent ? HOME_COLORS.primaryContainer : HOME_COLORS.surfaceContainerLow,
+                    boxShadow: isCurrent ? '0 24px 48px -20px rgba(24, 40, 28, 0.28)' : 'none',
+                    border: isCurrent ? `1px solid ${HOME_COLORS.primaryContainer}` : `1px solid ${HOME_COLORS.outlineVariant}22`,
                   }}
                 >
                   {/* Badge */}
@@ -725,37 +730,37 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                     </span>
                   )}
                   {isCurrent && (
-                    <span className="self-start text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full mb-3" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+                    <span className="self-start text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-1.5 rounded-full mb-6" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>
                       Current plan
                     </span>
                   )}
 
                   {/* Header */}
                   <div className="flex items-center gap-2 mb-1">
-                    <Icon size={15} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-                    <h3 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{plan.name}</h3>
+                    <Icon size={15} style={{ color: isCurrent ? HOME_COLORS.primaryFixed : HOME_COLORS.onSurfaceVariant }} />
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.18em]" style={{ color: isCurrent ? HOME_COLORS.onPrimary : HOME_COLORS.onSurface }}>{plan.name}</h3>
                   </div>
-                  <p className="text-xs mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>{plan.tagline}</p>
+                  <p className="text-xs mb-8 italic" style={{ color: isCurrent ? HOME_COLORS.primaryFixed : HOME_COLORS.onSurfaceVariant }}>{plan.tagline}</p>
 
                   {/* Price */}
                   <div className="mb-4">
                     {plan.price === 0 ? (
-                      <span className="text-3xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>Free</span>
+                      <span className="text-4xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: isCurrent ? HOME_COLORS.onPrimary : HOME_COLORS.onSurface }}>Free</span>
                     ) : (
                       <>
-                        <span className="text-3xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>${plan.price}</span>
-                        <span className="text-xs ml-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>/month</span>
+                        <span className="text-4xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: isCurrent ? HOME_COLORS.onPrimary : HOME_COLORS.onSurface }}>${plan.price}</span>
+                        <span className="text-xs ml-1" style={{ color: isCurrent ? HOME_COLORS.primaryFixed : HOME_COLORS.onSurfaceVariant }}>/month</span>
                       </>
                     )}
                   </div>
 
-                  <hr className="mb-4" style={{ border: 'none', borderTop: `1px solid ${HOME_COLORS.outlineVariant}33` }} />
+                  <hr className="mb-6" style={{ border: 'none', borderTop: `1px solid ${isCurrent ? `${HOME_COLORS.primaryFixed}33` : `${HOME_COLORS.outlineVariant}33`}` }} />
 
                   {/* Features */}
-                  <ul className="space-y-2 flex-1 mb-5">
+                  <ul className="space-y-3 flex-1 mb-10">
                     {plan.features.map(f => (
-                      <li key={f} className="flex items-start gap-2 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                        <Check size={12} className="mt-0.5 flex-shrink-0" style={{ color: HOME_COLORS.primary }} strokeWidth={2.5} />
+                      <li key={f} className="flex items-start gap-3 text-xs" style={{ color: isCurrent ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}>
+                        <Check size={13} className="mt-0.5 flex-shrink-0" style={{ color: isCurrent ? HOME_COLORS.primaryFixed : HOME_COLORS.primary }} strokeWidth={2.5} />
                         {f}
                       </li>
                     ))}
@@ -772,12 +777,12 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                     }}
                     disabled={isCurrent || isLoading || (plan.id === 'free' && openingPortal)}
                     className={cn(
-                      'w-full text-sm py-2.5 rounded-full font-semibold transition-colors',
+                      'w-full text-[10px] uppercase tracking-[0.14em] py-3.5 rounded-full font-semibold transition-colors',
                       isCurrent ? 'cursor-default' : 'cursor-pointer'
                     )}
                     style={
                       isCurrent
-                        ? { background: HOME_COLORS.surfaceContainer, color: HOME_COLORS.onSurfaceVariant, border: 'none' }
+                        ? { background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed, border: 'none' }
                         : isUpgrade
                         ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none' }
                         : { background: 'none', color: HOME_COLORS.onSurfaceVariant, border: `1px solid ${HOME_COLORS.outlineVariant}66` }
