@@ -799,8 +799,12 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                     }}
                     disabled={isCurrent || isLoading || (plan.id === 'free' && openingPortal)}
                     className={cn(
-                      'w-full text-[10px] uppercase tracking-[0.14em] py-3.5 rounded-full font-semibold transition-colors',
-                      isCurrent ? 'cursor-default' : 'cursor-pointer'
+                      'w-full rounded-full py-3.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition-all duration-200',
+                      isCurrent
+                        ? 'cursor-default'
+                        : isUpgrade
+                        ? 'cursor-pointer hover:-translate-y-0.5 hover:brightness-95 hover:shadow-md'
+                        : 'cursor-pointer hover:-translate-y-0.5 hover:bg-[#eae7e7] hover:shadow-sm'
                     )}
                     style={
                       isCurrent
