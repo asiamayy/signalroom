@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { logError } from '@/lib/logger'
 import { AcceptInviteButton, SignOutAndRetryLink } from './AcceptInviteButton'
 
 // Unlisted, invite-only links — keep out of search indexes.
@@ -14,11 +15,24 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
   // yet. Same "cross RLS boundaries safely for one legitimate operation"
   // pattern the report share_token page already uses.
   const admin = await createAdminClient()
-  const { data: invite } = await admin
+  const { data: invite, error: inviteError } = await admin
     .from('workspace_invites')
     .select('id, invited_email, status, workspace:workspaces(name)')
     .eq('token', token)
     .single()
+
+  // Temporary diagnostic — "invite is no longer valid" has been showing up
+  // for invites that should still be pending. Logging the raw lookup
+  // outcome (never the token itself) so the next occurrence is debuggable
+  // instead of a silent dead end.
+  if (!invite || invite.status !== 'pending') {
+    logError('invite.page_showed_invalid', inviteError ?? new Error('invite missing or not pending'), {
+      found: !!invite,
+      status: invite?.status ?? null,
+      error_code: (inviteError as { code?: string } | null)?.code ?? null,
+      token_prefix: token.slice(0, 8),
+    })
+  }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

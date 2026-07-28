@@ -37,18 +37,32 @@ function SignupForm() {
     setLoading(true)
     setError('')
 
+    const redirect = searchParams.get('redirect')
+    const safeRedirect = redirect && redirect.startsWith('/') ? redirect : null
+
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm`,
+        // Preserve where the user was headed (e.g. a pending workspace
+        // invite) through the confirmation email, via /auth/confirm's own
+        // `next` param — it already supports this, it just wasn't being set.
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm${safeRedirect ? `?next=${encodeURIComponent(safeRedirect)}` : ''}`,
       },
     })
 
     if (error) {
       setError(error.message)
+      setLoading(false)
+    } else if (!data.session) {
+      // Email confirmation is required on this project — signUp() succeeds
+      // but doesn't create a session yet. Redirecting immediately here (the
+      // old behavior) sent people to a page where they weren't actually
+      // logged in yet, e.g. bounced right off an invite they should've been
+      // able to accept. Show the real "check your email" state instead.
+      setConfirmed(true)
       setLoading(false)
     } else {
       // Fire welcome email — non-blocking
@@ -58,11 +72,7 @@ function SignupForm() {
         body: JSON.stringify({ email }),
       }).catch(err => console.error('Welcome email failed:', err))
 
-      // Redirect straight to dashboard — no email confirmation needed. Honor
-      // ?redirect= (e.g. a pending workspace invite) if present; only ever a
-      // same-origin relative path (an invite link we generated ourselves).
-      const redirect = searchParams.get('redirect')
-      router.push(redirect && redirect.startsWith('/') ? redirect : '/home')
+      router.push(safeRedirect ?? '/home')
     }
   }
 

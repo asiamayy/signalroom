@@ -122,6 +122,18 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // Temporary diagnostic — paired with the lookup-side log in
+  // /invite/[token]/page.tsx, so the next "invite is no longer valid"
+  // report can be traced from creation through to the failing lookup.
+  console.log(JSON.stringify({
+    level: 'info',
+    scope: 'invite.created',
+    token_prefix: invite.token.slice(0, 8),
+    status: invite.status,
+    workspace_id: invite.workspace_id,
+    timestamp: new Date().toISOString(),
+  }))
+
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invite.token}`
   const emailResult = await sendEmail({
     to: normalizedEmail,
