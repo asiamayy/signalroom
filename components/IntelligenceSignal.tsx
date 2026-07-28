@@ -134,13 +134,13 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
         ))}
 
         {nodes.map(({ key, pt }) => (
-          <circle key={`halo-${key}`} cx={pt.x} cy={pt.y} r="11" className="node-halo" />
+          <circle key={`halo-${key}`} cx={pt.x} cy={pt.y} r="11" fill="#FCFCFB" className="node-halo" />
         ))}
 
         {nodes.map(({ key, pt }) => (
           <g key={key}>
             <circle
-              cx={pt.x} cy={pt.y} r="9"
+              cx={pt.x} cy={pt.y} r="9" fill="none" opacity={0}
               className={`concept-pulse pulse-${key}`}
             />
             <circle

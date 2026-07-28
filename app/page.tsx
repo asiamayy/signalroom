@@ -189,15 +189,22 @@ export default function LandingPage() {
 
       <style jsx global>{`
         html { scroll-behavior: smooth; }
-        @keyframes premiumCharIn {
-          0% { opacity: 0; transform: translateY(0.18em) scale(0.99); filter: blur(1.5px); }
-          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        /* Whole-word reveal — the word stays one continuous text node so the
+           italic serif's connected letterforms shape/kern normally. An
+           earlier per-character span version broke those connections
+           (each letter got its own isolated box), which showed up as
+           small disconnected marks between letters, worst on mobile where
+           the glyphs are smallest. */
+        @keyframes wordRevealIn {
+          0% { opacity: 0; clip-path: inset(0 100% 0 0); filter: blur(2px); }
+          60% { filter: blur(0); }
+          100% { opacity: 1; clip-path: inset(0 0 0 0); filter: blur(0); }
         }
-        .char-reveal-span {
+        .word-reveal-span {
           display: inline-block;
           opacity: 0;
-          will-change: transform, opacity;
-          animation: premiumCharIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          will-change: clip-path, opacity;
+          animation: wordRevealIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .mobile-crisp-vector {
           image-rendering: -webkit-optimize-contrast;
@@ -320,18 +327,9 @@ export default function LandingPage() {
               <span className="block lg:whitespace-nowrap">
                 Your market has {' '}
                 <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
-                  <span className="relative inline-flex overflow-visible">
-                    {displayedWord.split('').map((char, idx) => (
-                      <span
-                        key={`${currentWordIndex}-${idx}`}
-                        className="char-reveal-span"
-                        style={{ animationDelay: `${idx * 40}ms` }}
-                      >
-                        {char === ' ' ? '\u00A0' : char}
-                      </span>
-                    ))}
+                  <span key={currentWordIndex} className="word-reveal-span">
+                    {displayedWord}.
                   </span>
-                  <span>.</span>
                 </span>
               </span>
               <span className="block mt-1 lg:mt-2"><span ref={nAnchorRef}>N</span>ow you can ask.</span>

@@ -285,12 +285,12 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
     }
   }
 
-  const handleSaveColor = async () => {
+  const saveColor = async (hex: string) => {
     setBrandingError('')
     setSavingColor(true)
     try {
       const body = new FormData()
-      body.append('color', colorDraft)
+      body.append('color', hex)
       const res = await fetch('/api/settings/branding', { method: 'POST', body })
       const json = await res.json()
       if (!res.ok) { setBrandingError(json.error ?? 'Failed to save color'); return }
@@ -301,6 +301,16 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
       setSavingColor(false)
     }
   }
+
+  // Presets are a one-click "choose and apply" action — no separate Save
+  // step to discover. The custom picker/hex field below still needs an
+  // explicit Save since you're actively fine-tuning a value there.
+  const handlePresetClick = (hex: string) => {
+    setColorDraft(hex)
+    saveColor(hex)
+  }
+
+  const handleSaveColor = () => saveColor(colorDraft)
 
   const handleResetColor = async () => {
     setBrandingError('')
@@ -517,10 +527,11 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                       <button
                         key={preset.hex}
                         type="button"
-                        onClick={() => setColorDraft(preset.hex)}
+                        onClick={() => handlePresetClick(preset.hex)}
+                        disabled={savingColor}
                         title={preset.name}
-                        aria-label={preset.name}
-                        className={`h-10 w-10 rounded-full transition-transform hover:scale-110 ${active ? 'ring-2 ring-[#18281c] ring-offset-4 ring-offset-white' : ''}`}
+                        aria-label={`Use ${preset.name}`}
+                        className={`h-10 w-10 rounded-full transition-transform hover:scale-110 disabled:opacity-60 ${active ? 'ring-2 ring-[#18281c] ring-offset-4 ring-offset-white' : ''}`}
                         style={{
                           background: preset.hex,
                           border: active ? 'none' : `1px solid ${HOME_COLORS.outlineVariant}66`,
