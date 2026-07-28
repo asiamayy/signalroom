@@ -249,9 +249,6 @@ export default function LandingPage() {
           stroke-dasharray: 16 28;
           animation: flowDash 3.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
         }
-        .flow-dash-delay {
-          animation-delay: 1.8s;
-        }
 
         .eyebrow-shine-wrap {
           position: relative;
@@ -821,7 +818,7 @@ export default function LandingPage() {
                     {/* Traveling gradient streak, SignalRoom → icon (that's the
                         real direction: SignalRoom pushes reports/signals out) */}
                     <path d="M4,50 C 34,50 34,22 64,22" stroke="url(#flow-grad-a)" strokeWidth="2" strokeLinecap="round" className="flow-dash" />
-                    <path d="M4,50 C 34,50 34,78 64,78" stroke="url(#flow-grad-b)" strokeWidth="2" strokeLinecap="round" className="flow-dash flow-dash-delay" />
+                    <path d="M4,50 C 34,50 34,78 64,78" stroke="url(#flow-grad-b)" strokeWidth="2" strokeLinecap="round" className="flow-dash" />
                     <defs>
                       <linearGradient id="flow-grad-a" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#1A3024" stopOpacity="0" />

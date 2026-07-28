@@ -94,7 +94,7 @@ export function SignalFeedCard({ signal, variant = 'standard', onPreview }: Sign
     <motion.article
       layoutId={layoutId}
       onClick={() => onPreview(signal, layoutId)}
-      className="group rounded-xl p-6 sm:p-8 transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+      className="group rounded-xl p-6 sm:p-8 transition-shadow hover:shadow-xl cursor-pointer"
       style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
     >
       <div className="flex justify-between items-start mb-6">
