@@ -9,6 +9,19 @@ import { createClient } from '@/lib/supabase/client'
 import type { Plan, IntegrationConnection, NotionIntegrationMetadata } from '@/types'
 import { PLAN_LIMITS } from '@/types'
 
+// ─── Accent color presets — a tasteful, professional spread for report branding ──
+
+const ACCENT_PRESETS: { hex: string; name: string }[] = [
+  { hex: '#18281c', name: 'Signal Forest' },
+  { hex: '#33417A', name: 'Indigo' },
+  { hex: '#1F6F6F', name: 'Ocean Teal' },
+  { hex: '#4A6FA5', name: 'Slate Blue' },
+  { hex: '#B5533C', name: 'Terracotta' },
+  { hex: '#B8860B', name: 'Amber' },
+  { hex: '#7A2E3B', name: 'Burgundy' },
+  { hex: '#33383A', name: 'Charcoal' },
+]
+
 // ─── Plan definitions ─────────────────────────────────────────────────────────
 // Names inspired by momentum/signal theme — not Sprint/Grow/Scale from Zibble
 
@@ -520,6 +533,27 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
               {/* Accent color */}
               <div>
                 <p className="text-sm font-semibold mb-2" style={{ color: HOME_COLORS.onSurface }}>Accent color</p>
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  {ACCENT_PRESETS.map(preset => {
+                    const active = colorDraft.toLowerCase() === preset.hex.toLowerCase()
+                    return (
+                      <button
+                        key={preset.hex}
+                        type="button"
+                        onClick={() => setColorDraft(preset.hex)}
+                        title={preset.name}
+                        aria-label={preset.name}
+                        className="w-7 h-7 rounded-full transition-transform hover:scale-110"
+                        style={{
+                          background: preset.hex,
+                          border: active ? `2px solid ${HOME_COLORS.onSurface}` : `1px solid ${HOME_COLORS.outlineVariant}66`,
+                          boxShadow: active ? `0 0 0 2px ${HOME_COLORS.surfaceContainerLowest}` : undefined,
+                          cursor: 'pointer',
+                        }}
+                      />
+                    )
+                  })}
+                </div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <input
                     type="color"
