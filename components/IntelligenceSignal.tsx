@@ -244,9 +244,9 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
           100%    { opacity: 0; r: 9; }
         }
         @keyframes labelA {
-          0%, 22% { opacity: 0; }
-          23%     { opacity: 1; }
-          25%     { opacity: 1; }
+          0%, 12% { opacity: 0; }
+          16%     { opacity: 1; }
+          22%     { opacity: 1; }
           26%     { opacity: 0; }
           100%    { opacity: 0; }
         }
@@ -272,9 +272,9 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
           100%    { opacity: 0; r: 9; }
         }
         @keyframes labelB {
-          0%, 46% { opacity: 0; }
-          47%     { opacity: 1; }
-          49%     { opacity: 1; }
+          0%, 36% { opacity: 0; }
+          40%     { opacity: 1; }
+          46%     { opacity: 1; }
           50%     { opacity: 0; }
           100%    { opacity: 0; }
         }
@@ -300,9 +300,9 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
           100%    { opacity: 0; r: 9; }
         }
         @keyframes labelC {
-          0%, 70% { opacity: 0; }
-          71%     { opacity: 1; }
-          73%     { opacity: 1; }
+          0%, 60% { opacity: 0; }
+          64%     { opacity: 1; }
+          70%     { opacity: 1; }
           74%     { opacity: 0; }
           100%    { opacity: 0; }
         }
@@ -328,10 +328,10 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
           100%    { opacity: 0; r: 9; }
         }
         @keyframes labelD {
-          0%, 94% { opacity: 0; }
-          95%     { opacity: 1; }
-          97%     { opacity: 1; }
-          99%     { opacity: 0; }
+          0%, 84% { opacity: 0; }
+          88%     { opacity: 1; }
+          94%     { opacity: 1; }
+          98%     { opacity: 0; }
           100%    { opacity: 0; }
         }
       `}</style>
