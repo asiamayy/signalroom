@@ -235,20 +235,18 @@ export function WorkspacesClient() {
         <main className="mx-auto max-w-[1800px] px-4 pb-16 sm:px-10">
           <section className="flex flex-col justify-between gap-10 pb-14 pt-16 xl:flex-row xl:items-end xl:gap-16 sm:pt-24">
             <div className="max-w-4xl">
-              <h1 className="text-[50px] leading-[0.95] tracking-[-0.04em] sm:text-[76px]" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.primary }}>
-                Workspace <br /><span className="italic font-normal opacity-30">Command Center.</span>
-              </h1>
+              <h1 className="text-[50px] leading-[0.95] tracking-[-0.04em] sm:text-[76px]" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.primary }}>Workspaces</h1>
               <p className="mt-8 max-w-2xl text-xl leading-snug italic sm:text-[26px]" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>
-                A curated architecture for shared research. Keep teams, personas, interviews, and reports aligned in every environment.
+                Dedicated environments for client and brand research. Invite your team and keep every shared persona, interview, and report organized.
               </p>
             </div>
             <div className="flex flex-col gap-8 border-l py-3 pl-8 sm:pl-12" style={{ borderColor: `${HOME_COLORS.primary}1a` }}>
               <div>
                 <span className="block text-4xl font-light leading-none" style={{ color: HOME_COLORS.primary }}>{workspaces.length || '0'}</span>
-                <span className="mt-3 block text-[10px] font-semibold uppercase tracking-[0.25em]" style={{ color: `${HOME_COLORS.primary}66` }}>Active environments</span>
+                <span className="mt-3 block text-[10px] font-semibold uppercase tracking-[0.25em]" style={{ color: `${HOME_COLORS.primary}66` }}>Active workspaces</span>
               </div>
               <button onClick={() => setShowCreatePanel(v => !v)} className="inline-flex items-center justify-center gap-3 self-start rounded-full px-7 py-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' }}>
-                Deploy new hub <Plus size={15} />
+                Initiate workspace <Plus size={15} />
               </button>
             </div>
           </section>
@@ -264,11 +262,11 @@ export function WorkspacesClient() {
             </div>
             <div className="relative z-10 flex flex-col justify-between gap-10 lg:flex-row lg:items-start">
               <div>
-                <span className="mb-6 inline-block rounded-full bg-white/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.primaryFixed }}>Real-time synthesis map</span>
-                <h2 className="text-4xl leading-tight text-white sm:text-5xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace Intelligence <br /><span className="italic font-normal text-white/45">Pulse Monitor</span></h2>
+                <span className="mb-6 inline-block rounded-full bg-white/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.primaryFixed }}>Workspace activity</span>
+                <h2 className="text-4xl leading-tight text-white sm:text-5xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>Your shared research <br /><span className="italic font-normal text-white/45">at a glance</span></h2>
               </div>
               <div className="min-w-0 rounded-3xl border p-6 sm:min-w-[270px]" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(18px)', borderColor: 'rgba(255,255,255,0.1)' }}>
-                <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">Active threads</span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">In this workspace</span>
                 <div className="mt-6 space-y-4 text-xs text-white">
                   <MetricLine label="Personas" value={`${realPersonaCount} active`} percent={Math.min(100, Math.max(8, realPersonaCount * 12))} />
                   <MetricLine label="Interviews" value={`${realInterviewCount} tracked`} percent={Math.min(100, Math.max(8, realInterviewCount * 12))} />
@@ -281,7 +279,7 @@ export function WorkspacesClient() {
                 {members.slice(0, 4).map(m => <div key={m.id} className="h-9 w-9 rounded-full border-2" style={{ borderColor: HOME_COLORS.primary }}><PersonaAvatar avatarUrl={m.avatar_url} avatarInitials={getInitials(m.full_name || m.email)} avatarColor={getAvatarColor(m.full_name || m.email)} name={m.full_name ?? m.email} size="sm" /></div>)}
                 {members.length > 4 && <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 text-[9px]" style={{ borderColor: HOME_COLORS.primary, background: `${HOME_COLORS.primaryFixed}33`, color: HOME_COLORS.primaryFixed }}>+{members.length - 4}</div>}
               </div>
-              <span>{members.length > 0 ? `Coordinating ${members.length} team members` : 'Ready for your research team'}</span>
+              <span>{members.length > 0 ? `${members.length} team members with access` : 'Ready for your research team'}</span>
             </div>
           </section>
 
@@ -299,11 +297,11 @@ export function WorkspacesClient() {
 
           <section className="mb-16">
             <div className="mb-8 flex items-center justify-between gap-6">
-              <h2 className="text-3xl sm:text-4xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Active <span className="italic font-normal">Environments</span></h2>
+              <h2 className="text-3xl sm:text-4xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Your <span className="italic font-normal">Workspaces</span></h2>
               <span className="rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ borderColor: `${HOME_COLORS.outlineVariant}88`, color: HOME_COLORS.onSurfaceVariant }}>{allSeats.size} / {seatLimit} seats in use</span>
             </div>
             {loadingWorkspaces ? <div className="h-72 animate-pulse rounded-[2rem]" style={{ background: HOME_COLORS.surfaceContainerLow }} /> : workspaces.length === 0 ? (
-              <div className="rounded-[2rem] border border-dashed px-6 py-20 text-center" style={{ borderColor: HOME_COLORS.outlineVariant, background: HOME_COLORS.surfaceContainerLow }}><Building2 size={26} className="mx-auto mb-4" style={{ color: HOME_COLORS.primary }} /><p style={{ color: HOME_COLORS.onSurfaceVariant }}>No workspaces yet — deploy a hub to invite your team.</p></div>
+              <div className="rounded-[2rem] border border-dashed px-6 py-20 text-center" style={{ borderColor: HOME_COLORS.outlineVariant, background: HOME_COLORS.surfaceContainerLow }}><Building2 size={26} className="mx-auto mb-4" style={{ color: HOME_COLORS.primary }} /><p style={{ color: HOME_COLORS.onSurfaceVariant }}>No workspaces yet — create one to invite your team.</p></div>
             ) : (
               <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
                 {workspaces.map((workspace, index) => {
@@ -311,9 +309,9 @@ export function WorkspacesClient() {
                   return <button key={workspace.id} onClick={() => setSelectedId(workspace.id)} className={`group text-left transition-all duration-500 ${index === 0 ? 'lg:col-span-7' : 'lg:col-span-5'}`} style={{ cursor: 'pointer', border: 'none', background: 'none' }}>
                     <div className={`flex min-h-[290px] h-full flex-col justify-between overflow-hidden rounded-[2rem] p-8 sm:p-10 ${selected ? 'hover:-translate-y-1' : 'hover:-translate-y-1 hover:bg-white'}`} style={selected ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: '0 24px 48px -22px rgba(24,40,28,0.3)' } : { background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
                       <div>
-                        <div className="mb-10 flex items-start justify-between"><div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: selected ? 'rgba(255,255,255,0.1)' : HOME_COLORS.primary, color: selected ? HOME_COLORS.primaryFixed : HOME_COLORS.onPrimary }}><Building2 size={26} /></div><span className="rounded-full px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ background: selected ? `${HOME_COLORS.primaryFixed}22` : `${HOME_COLORS.primary}0d`, color: selected ? HOME_COLORS.primaryFixed : HOME_COLORS.primary }}>{selected ? 'Active workspace' : 'Research hub'}</span></div>
+                        <div className="mb-10 flex items-start justify-between"><div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: selected ? 'rgba(255,255,255,0.1)' : HOME_COLORS.primary, color: selected ? HOME_COLORS.primaryFixed : HOME_COLORS.onPrimary }}><Building2 size={26} /></div><span className="rounded-full px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ background: selected ? `${HOME_COLORS.primaryFixed}22` : `${HOME_COLORS.primary}0d`, color: selected ? HOME_COLORS.primaryFixed : HOME_COLORS.primary }}>{selected ? 'Active workspace' : 'Workspace'}</span></div>
                         <h3 className="text-3xl sm:text-4xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>{workspace.name}</h3>
-                        <p className="mt-4 max-w-md text-sm leading-6" style={{ color: selected ? 'rgba(255,255,255,0.55)' : HOME_COLORS.onSurfaceVariant }}>A focused environment for shared personas, interviews, and executive-ready reports.</p>
+                        <p className="mt-4 max-w-md text-sm leading-6" style={{ color: selected ? 'rgba(255,255,255,0.55)' : HOME_COLORS.onSurfaceVariant }}>A focused space for your team’s shared personas, interviews, and reports.</p>
                       </div>
                       <div className="flex items-end justify-between border-t pt-6" style={{ borderColor: selected ? 'rgba(255,255,255,0.1)' : `${HOME_COLORS.primary}12` }}><div className="flex gap-8"><WorkspaceStat value={selected ? realPersonaCount : '—'} label="Personas" /><WorkspaceStat value={selected ? realInterviewCount : '—'} label="Interviews" /></div><span className="flex h-11 w-11 items-center justify-center rounded-full transition-colors" style={{ background: selected ? HOME_COLORS.primaryFixed : HOME_COLORS.primary, color: selected ? HOME_COLORS.onPrimaryFixed : HOME_COLORS.onPrimary }}><ArrowRight size={18} /></span></div>
                     </div>
