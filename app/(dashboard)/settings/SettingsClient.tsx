@@ -104,6 +104,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const [openingPortal, setOpeningPortal] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [billingError, setBillingError] = useState('')
+  const [usageReady, setUsageReady] = useState(false)
 
   const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(profile?.brand_logo_url ?? null)
   const [brandColor, setBrandColor] = useState<string | null>(profile?.brand_color ?? null)
@@ -134,6 +135,11 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
     else if (params.get('notion') === 'connected') setIntegrationsBanner({ type: 'success', text: 'Notion connected.' })
     else if (params.get('integration_error') === 'plan') setIntegrationsBanner({ type: 'error', text: 'Integrations require the Signal plan or above.' })
     else if (params.get('integration_error')) setIntegrationsBanner({ type: 'error', text: 'Something went wrong connecting that integration — please try again.' })
+  }, [])
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setUsageReady(true), 180)
+    return () => window.clearTimeout(timeout)
   }, [])
 
   useEffect(() => {
@@ -190,12 +196,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const currentPlanData = PLANS.find(p => p.id === currentPlan)
   const personaLimit = PLAN_LIMITS[currentPlan as Plan].personas
   const interviewLimit = PLAN_LIMITS[currentPlan as Plan].interviews_per_month
-  const profileInitials = (profile?.full_name ?? user?.email ?? 'Your account')
-    .split(/[\s@._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part: string) => part[0]?.toUpperCase())
-    .join('')
+  const profileNameParts = (profile?.full_name ?? '').trim().split(/\s+/).filter(Boolean)
+  const profileInitials = profileNameParts.length >= 2
+    ? `${profileNameParts[0][0]}${profileNameParts[profileNameParts.length - 1]?.[0]}`.toUpperCase()
+    : (profileNameParts[0] ?? user?.email?.split('@')[0] ?? 'YR').slice(0, 2).toUpperCase()
 
   // Every path resets the loading state and surfaces an error — previously
   // a non-2xx response (e.g. Stripe rejecting a placeholder API key) left
@@ -396,7 +400,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                   className="h-full rounded-full transition-all"
                   style={{
                     background: personaLimit !== Infinity && personaCount >= personaLimit ? HOME_COLORS.error : HOME_COLORS.primary,
-                    width: personaLimit === Infinity ? '10%' : `${Math.min(100, (personaCount / personaLimit) * 100)}%`,
+                    width: usageReady ? (personaLimit === Infinity ? '10%' : `${Math.min(100, (personaCount / personaLimit) * 100)}%`) : '0%',
                   }}
                 />
               </div>
@@ -416,7 +420,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
               <div className="h-[2px] overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
                 <div
                   className="h-full rounded-full transition-all"
-                  style={{ background: HOME_COLORS.primary, width: interviewLimit === Infinity ? '10%' : `${Math.min(100, (interviewCount / interviewLimit) * 100)}%` }}
+                  style={{ background: HOME_COLORS.primary, width: usageReady ? (interviewLimit === Infinity ? '10%' : `${Math.min(100, (interviewCount / interviewLimit) * 100)}%`) : '0%' }}
                 />
               </div>
             </div>
@@ -489,14 +493,14 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                   type="button"
                   onClick={() => logoInputRef.current?.click()}
                   disabled={uploadingLogo}
-                  className="group relative flex aspect-[4/2] w-full flex-col items-center justify-center overflow-hidden rounded-lg border transition-all hover:bg-white hover:shadow-xl"
+                  className="group relative flex aspect-[4/2] w-full flex-col items-center justify-center overflow-hidden rounded-lg border transition-all duration-300 hover:bg-[#f8f6f5] hover:shadow-sm"
                   style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}33`, cursor: 'pointer' }}
                 >
                   {brandLogoUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={brandLogoUrl} alt="Your logo" className="absolute inset-0 h-full w-full object-contain p-5" />
                   )}
-                  {!brandLogoUrl && <Upload size={32} className="mb-3 opacity-50 transition-all group-hover:scale-110 group-hover:opacity-100" style={{ color: HOME_COLORS.onSurfaceVariant }} />}
+                  {!brandLogoUrl && <Upload size={32} className="mb-3 opacity-50 transition-all duration-300 group-hover:scale-[1.03] group-hover:opacity-70" style={{ color: HOME_COLORS.onSurfaceVariant }} />}
                   <span className="relative text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurface }}>{uploadingLogo ? 'Uploading identity...' : brandLogoUrl ? 'Replace identity' : 'Upload identity'}</span>
                 </button>
                 <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={handleLogoSelect} />
@@ -516,11 +520,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                         onClick={() => setColorDraft(preset.hex)}
                         title={preset.name}
                         aria-label={preset.name}
-                        className="h-10 w-10 rounded-full transition-transform hover:scale-110"
+                        className={`h-10 w-10 rounded-full transition-transform hover:scale-110 ${active ? 'ring-2 ring-[#18281c] ring-offset-4 ring-offset-white' : ''}`}
                         style={{
                           background: preset.hex,
-                          border: active ? `2px solid ${HOME_COLORS.primary}` : `1px solid ${HOME_COLORS.outlineVariant}66`,
-                          boxShadow: active ? `0 0 0 4px ${HOME_COLORS.surfaceContainerLowest}` : undefined,
+                          border: active ? 'none' : `1px solid ${HOME_COLORS.outlineVariant}66`,
                           cursor: 'pointer',
                         }}
                       />
@@ -713,6 +716,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
         {/* ── Plans ────────────────────────────────────────────────────────── */}
         </div>
         <section id="plans" className="border-t pt-16 sm:pt-20" style={{ borderColor: `${HOME_COLORS.outlineVariant}44` }}>
+          <p className="mb-10 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Scale your research capabilities as your team grows.</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PLANS.map(plan => {
               const isCurrent = plan.id === currentPlan
