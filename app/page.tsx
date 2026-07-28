@@ -235,10 +235,12 @@ export default function LandingPage() {
 
         /* Integration flow lines — a soft gradient streak travels from
            SignalRoom out to each connected tool (that's the real direction:
-           SignalRoom pushes reports/signals out to Slack/Notion). A slow,
-           symmetric ease and a longer streak read as one continuous glide
-           rather than a repeating tick. Same duration on both lines so they
-           stay in sync without JS timing. */
+           SignalRoom pushes reports/signals out to Slack/Notion). Linear
+           timing keeps the speed constant through the loop point — an
+           ease-in-out here decelerates to a standstill right at the reset
+           and then has to accelerate again, which reads as a visible
+           stop-and-restart instead of one continuous glide. Same duration
+           on both lines so they stay in sync without JS timing. */
         /* -176 is a clean multiple of the 44px dash pattern (16 dash + 28
            gap) below, so the loop point lands on an identical phase of the
            pattern instead of snapping visibly when it resets. */
@@ -247,7 +249,7 @@ export default function LandingPage() {
         }
         .flow-dash {
           stroke-dasharray: 16 28;
-          animation: flowDash 3.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+          animation: flowDash 3.6s linear infinite;
         }
 
         .eyebrow-shine-wrap {
