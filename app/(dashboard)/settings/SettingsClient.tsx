@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X, MessageSquare, FileText, CheckCircle2 } from 'lucide-react'
+import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X, Plus, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { createClient } from '@/lib/supabase/client'
@@ -13,13 +13,9 @@ import { PLAN_LIMITS } from '@/types'
 
 const ACCENT_PRESETS: { hex: string; name: string }[] = [
   { hex: '#18281c', name: 'Signal Forest' },
-  { hex: '#33417A', name: 'Indigo' },
-  { hex: '#1F6F6F', name: 'Ocean Teal' },
-  { hex: '#4A6FA5', name: 'Slate Blue' },
-  { hex: '#B5533C', name: 'Terracotta' },
-  { hex: '#B8860B', name: 'Amber' },
-  { hex: '#7A2E3B', name: 'Burgundy' },
-  { hex: '#33383A', name: 'Charcoal' },
+  { hex: '#516354', name: 'Sage' },
+  { hex: '#2D3E31', name: 'Evergreen' },
+  { hex: '#7e9080', name: 'Moss' },
 ]
 
 // ─── Plan definitions ─────────────────────────────────────────────────────────
@@ -116,6 +112,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const [savingColor, setSavingColor] = useState(false)
   const [brandingError, setBrandingError] = useState('')
   const logoInputRef = useRef<HTMLInputElement>(null)
+  const colorInputRef = useRef<HTMLInputElement>(null)
 
   const [integrationsList, setIntegrationsList] = useState<IntegrationConnection[]>(integrations)
   const [disconnectingProvider, setDisconnectingProvider] = useState<string | null>(null)
@@ -193,6 +190,12 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const currentPlanData = PLANS.find(p => p.id === currentPlan)
   const personaLimit = PLAN_LIMITS[currentPlan as Plan].personas
   const interviewLimit = PLAN_LIMITS[currentPlan as Plan].interviews_per_month
+  const profileInitials = (profile?.full_name ?? user?.email ?? 'Your account')
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase())
+    .join('')
 
   // Every path resets the loading state and surfaces an error — previously
   // a non-2xx response (e.g. Stripe rejecting a placeholder API key) left
@@ -316,10 +319,6 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
       <div className="mx-auto flex max-w-[1400px] flex-col gap-20 px-4 py-12 sm:px-10 sm:py-16">
         <header className="flex flex-col items-start justify-between gap-8 pb-4 sm:flex-row sm:items-end sm:gap-12">
           <div>
-            <div className="mb-3 flex items-center gap-3">
-              <span className="h-px w-9" style={{ background: HOME_COLORS.primary }} />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: HOME_COLORS.primary }}>Workspace administration</span>
-            </div>
             <h1 style={{ ...DISPLAY_LG_STYLE, fontSize: '40px', lineHeight: '48px', color: HOME_COLORS.onSurface }}>
               Account <span className="italic">Settings</span>
             </h1>
@@ -349,11 +348,11 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
           <section className="lg:col-span-5">
             <div className="h-full">
-              <p className="mb-8 text-[10px] font-semibold uppercase tracking-[0.3em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Profile identity</p>
+              <p className="mb-8 text-[10px] font-semibold uppercase tracking-[0.3em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Profile</p>
               <div className="flex flex-col gap-7 sm:flex-row sm:items-center sm:gap-8">
                 <div className="flex items-center gap-4">
                   <div className="flex h-28 w-28 items-center justify-center rounded-full border p-2 text-3xl font-semibold sm:h-32 sm:w-32" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}55`, color: HOME_COLORS.primary }}>
-                    {(profile?.full_name ?? user?.email ?? 'Y').charAt(0).toUpperCase()}
+                    {profileInitials}
                   </div>
                   <div>
                     <p className="text-2xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{profile?.full_name ?? 'Your account'}</p>
@@ -377,7 +376,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
           <div>
             <div className="mb-10 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.35em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Intelligence capacity</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.35em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Capacity</p>
               </div>
             </div>
             <div className="space-y-10">
@@ -468,7 +467,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
           <section className="border-t pt-12 lg:col-span-7" style={{ borderColor: `${HOME_COLORS.outlineVariant}44` }}>
             <div className="space-y-7">
               <div>
-                <h2 className="text-[32px]" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Brand <span className="italic">Sovereignty</span></h2>
+                <h2 className="text-[32px]" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Workspace identity</h2>
                 <p className="mt-3 max-w-xl text-sm leading-6" style={{ color: HOME_COLORS.onSurfaceVariant }}>Customize the platform interface to match your corporate identity for high-fidelity exports.</p>
               </div>
               <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
@@ -482,58 +481,32 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                 </div>
               )}
 
+              <div className="grid gap-10 md:grid-cols-2 md:gap-12">
               {/* Logo */}
-              <div>
-                <p className="text-sm font-semibold mb-2" style={{ color: HOME_COLORS.onSurface }}>Logo</p>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-                    style={{ background: HOME_COLORS.surfaceContainer, border: `1px solid ${HOME_COLORS.outlineVariant}66` }}
-                  >
-                    {brandLogoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={brandLogoUrl} alt="Your logo" className="w-full h-full object-contain" />
-                    ) : (
-                      <Upload size={16} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <button
-                      onClick={() => logoInputRef.current?.click()}
-                      disabled={uploadingLogo}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:bg-black/[0.03]"
-                      style={{ color: HOME_COLORS.onSurfaceVariant, border: `1px solid ${HOME_COLORS.outlineVariant}66`, background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                    >
-                      {uploadingLogo ? 'Uploading...' : brandLogoUrl ? 'Replace logo' : 'Upload logo'}
-                    </button>
-                    {brandLogoUrl && (
-                      <button
-                        onClick={handleRemoveLogo}
-                        disabled={uploadingLogo}
-                        className="flex items-center gap-1 text-xs transition-colors hover:text-red-600"
-                        style={{ color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                      >
-                        <X size={11} /> Remove
-                      </button>
-                    )}
-                  </div>
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                    className="hidden"
-                    onChange={handleLogoSelect}
-                  />
-                </div>
-                <p className="text-[11px] mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>PNG, JPEG, WebP, or SVG. Up to 2MB.</p>
+              <div className="space-y-6">
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Platform logo</label>
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  disabled={uploadingLogo}
+                  className="group relative flex aspect-[4/2] w-full flex-col items-center justify-center overflow-hidden rounded-lg border transition-all hover:bg-white hover:shadow-xl"
+                  style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}33`, cursor: 'pointer' }}
+                >
+                  {brandLogoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={brandLogoUrl} alt="Your logo" className="absolute inset-0 h-full w-full object-contain p-5" />
+                  )}
+                  {!brandLogoUrl && <Upload size={32} className="mb-3 opacity-50 transition-all group-hover:scale-110 group-hover:opacity-100" style={{ color: HOME_COLORS.onSurfaceVariant }} />}
+                  <span className="relative text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurface }}>{uploadingLogo ? 'Uploading identity...' : brandLogoUrl ? 'Replace identity' : 'Upload identity'}</span>
+                </button>
+                <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={handleLogoSelect} />
+                {brandLogoUrl && <button onClick={handleRemoveLogo} disabled={uploadingLogo} className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.error, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}><X size={12} /> Remove logo</button>}
               </div>
 
-              <hr style={{ border: 'none', borderTop: `1px solid ${HOME_COLORS.outlineVariant}33` }} />
-
               {/* Accent color */}
-              <div>
-                <p className="text-sm font-semibold mb-2" style={{ color: HOME_COLORS.onSurface }}>Accent color</p>
-                <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <div className="space-y-6">
+                <label className="block text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Accent chroma</label>
+                <div className="flex flex-wrap gap-4">
                   {ACCENT_PRESETS.map(preset => {
                     const active = colorDraft.toLowerCase() === preset.hex.toLowerCase()
                     return (
@@ -543,32 +516,33 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                         onClick={() => setColorDraft(preset.hex)}
                         title={preset.name}
                         aria-label={preset.name}
-                        className="w-7 h-7 rounded-full transition-transform hover:scale-110"
+                        className="h-10 w-10 rounded-full transition-transform hover:scale-110"
                         style={{
                           background: preset.hex,
-                          border: active ? `2px solid ${HOME_COLORS.onSurface}` : `1px solid ${HOME_COLORS.outlineVariant}66`,
-                          boxShadow: active ? `0 0 0 2px ${HOME_COLORS.surfaceContainerLowest}` : undefined,
+                          border: active ? `2px solid ${HOME_COLORS.primary}` : `1px solid ${HOME_COLORS.outlineVariant}66`,
+                          boxShadow: active ? `0 0 0 4px ${HOME_COLORS.surfaceContainerLowest}` : undefined,
                           cursor: 'pointer',
                         }}
                       />
                     )
                   })}
+                  <button type="button" onClick={() => colorInputRef.current?.click()} aria-label="Choose a custom accent color" className="flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-white" style={{ borderColor: HOME_COLORS.outlineVariant, color: HOME_COLORS.onSurfaceVariant, background: 'none', cursor: 'pointer' }}><Plus size={16} /></button>
                 </div>
-                <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-3 pt-2 flex-wrap">
                   <input
+                    ref={colorInputRef}
                     type="color"
                     value={colorDraft}
                     onChange={e => setColorDraft(e.target.value)}
-                    className="w-10 h-10 rounded-lg cursor-pointer"
-                    style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66`, padding: 0, background: 'none' }}
+                    className="hidden"
                   />
                   <input
                     type="text"
                     value={colorDraft}
                     onChange={e => setColorDraft(e.target.value)}
                     placeholder="#1A2B3C"
-                    className="text-sm px-3 py-2 rounded-lg w-32"
-                    style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface, background: 'none', fontFamily: 'inherit' }}
+                    className="w-28 rounded bg-transparent px-3 py-1 text-[13px] uppercase tracking-wider outline-none"
+                    style={{ color: HOME_COLORS.onSurfaceVariant, background: HOME_COLORS.surfaceContainerLow, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
                   />
                   <button
                     onClick={handleSaveColor}
@@ -591,6 +565,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                 </div>
                 <p className="text-[11px] mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Used for the confidence score, sentiment, and links on your shared report pages.</p>
               </div>
+            </div>
             </div>
           </section>
         )}
@@ -627,9 +602,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
 
               {/* Slack */}
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer }}>
-                    <MessageSquare size={16} style={{ color: HOME_COLORS.primary }} />
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/integrations/slack.svg" alt="Slack" className="h-6 w-6" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Slack</p>
@@ -663,9 +639,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
               {/* Notion */}
               <div>
                 <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: HOME_COLORS.secondaryContainer }}>
-                      <FileText size={16} style={{ color: HOME_COLORS.primary }} />
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/integrations/notion.svg" alt="Notion" className="h-6 w-6" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Notion</p>
@@ -736,10 +713,6 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
         {/* ── Plans ────────────────────────────────────────────────────────── */}
         </div>
         <section id="plans" className="border-t pt-16 sm:pt-20" style={{ borderColor: `${HOME_COLORS.outlineVariant}44` }}>
-          <div className="mb-12">
-            <h2 className="text-[40px] leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Strategic <span className="italic">Architecture</span></h2>
-            <p className="mt-3 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Scale your research capabilities as your team grows.</p>
-          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PLANS.map(plan => {
               const isCurrent = plan.id === currentPlan
