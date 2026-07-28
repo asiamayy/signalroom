@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X, Plus, CheckCircle2 } from 'lucide-react'
+import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X, Plus, CheckCircle2, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { createClient } from '@/lib/supabase/client'
@@ -112,6 +112,12 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [savingColor, setSavingColor] = useState(false)
   const [brandingError, setBrandingError] = useState('')
+
+  // Personal saved-color lineup — up to 8, with up to 4 pinned as
+  // favorites shown first. Purely a Settings convenience: the report page
+  // always uses the single brand_color above, unchanged by any of this.
+  const [palette, setPalette] = useState<string[]>(profile?.brand_palette ?? ACCENT_PRESETS.map(p => p.hex))
+  const [favorites, setFavorites] = useState<string[]>(profile?.brand_favorites ?? [])
   const logoInputRef = useRef<HTMLInputElement>(null)
   const colorInputRef = useRef<HTMLInputElement>(null)
 
@@ -302,15 +308,70 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
     }
   }
 
-  // Presets are a one-click "choose and apply" action — no separate Save
-  // step to discover. The custom picker/hex field below still needs an
-  // explicit Save since you're actively fine-tuning a value there.
+  // Swatches are a one-click "choose and apply" action — no separate Save
+  // step to discover. The hex field below still needs an explicit Save
+  // since you're actively fine-tuning a value there.
   const handlePresetClick = (hex: string) => {
     setColorDraft(hex)
     saveColor(hex)
   }
 
   const handleSaveColor = () => saveColor(colorDraft)
+
+  const persistPalette = async (next: string[]) => {
+    setPalette(next)
+    try {
+      await fetch('/api/settings/branding', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ palette: next }),
+      })
+    } catch {
+      setBrandingError('Failed to save your color lineup — please try again.')
+    }
+  }
+
+  const persistFavorites = async (next: string[]) => {
+    setFavorites(next)
+    try {
+      await fetch('/api/settings/branding', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ favorites: next }),
+      })
+    } catch {
+      setBrandingError('Failed to save your favorites — please try again.')
+    }
+  }
+
+  const toggleFavorite = (e: React.MouseEvent, hex: string) => {
+    e.stopPropagation()
+    setBrandingError('')
+    const isFavorite = favorites.some(c => c.toLowerCase() === hex.toLowerCase())
+    if (isFavorite) {
+      persistFavorites(favorites.filter(c => c.toLowerCase() !== hex.toLowerCase()))
+      return
+    }
+    if (favorites.length >= 4) {
+      setBrandingError('You can pin up to 4 favorites — unpin one first.')
+      return
+    }
+    persistFavorites([...favorites, hex])
+  }
+
+  // Fires once the native color picker popup closes (not on every drag
+  // frame) — that "final choice" moment is what both applies the color to
+  // the report and saves it into the personal lineup, capped at 8 with the
+  // oldest evicted first.
+  const handleCustomColorChosen = (hex: string) => {
+    setColorDraft(hex)
+    if (!palette.some(c => c.toLowerCase() === hex.toLowerCase())) {
+      const next = [...palette, hex]
+      if (next.length > 8) next.shift()
+      persistPalette(next)
+    }
+    saveColor(hex)
+  }
 
   const handleResetColor = async () => {
     setBrandingError('')
@@ -519,25 +580,41 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
 
               {/* Accent color */}
               <div className="space-y-6">
-                <label className="block text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Accent chroma</label>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="block text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Accent chroma</label>
+                  <span className="text-[10px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{palette.length} / 8 saved · {favorites.length} / 4 pinned</span>
+                </div>
                 <div className="flex flex-wrap gap-4">
-                  {ACCENT_PRESETS.map(preset => {
-                    const active = colorDraft.toLowerCase() === preset.hex.toLowerCase()
+                  {[...favorites, ...palette.filter(c => !favorites.some(f => f.toLowerCase() === c.toLowerCase()))].map(hex => {
+                    const active = colorDraft.toLowerCase() === hex.toLowerCase()
+                    const isFavorite = favorites.some(c => c.toLowerCase() === hex.toLowerCase())
+                    const preset = ACCENT_PRESETS.find(p => p.hex.toLowerCase() === hex.toLowerCase())
+                    const name = preset?.name ?? hex.toUpperCase()
                     return (
-                      <button
-                        key={preset.hex}
-                        type="button"
-                        onClick={() => handlePresetClick(preset.hex)}
-                        disabled={savingColor}
-                        title={preset.name}
-                        aria-label={`Use ${preset.name}`}
-                        className={`h-10 w-10 rounded-full transition-transform hover:scale-110 disabled:opacity-60 ${active ? 'ring-2 ring-[#18281c] ring-offset-4 ring-offset-white' : ''}`}
-                        style={{
-                          background: preset.hex,
-                          border: active ? 'none' : `1px solid ${HOME_COLORS.outlineVariant}66`,
-                          cursor: 'pointer',
-                        }}
-                      />
+                      <div key={hex} className="group relative">
+                        <button
+                          type="button"
+                          onClick={() => handlePresetClick(hex)}
+                          disabled={savingColor}
+                          title={name}
+                          aria-label={`Use ${name}`}
+                          className={`h-10 w-10 rounded-full transition-transform hover:scale-110 disabled:opacity-60 ${active ? 'ring-2 ring-[#18281c] ring-offset-4 ring-offset-white' : ''}`}
+                          style={{
+                            background: hex,
+                            border: active ? 'none' : `1px solid ${HOME_COLORS.outlineVariant}66`,
+                            cursor: 'pointer',
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={e => toggleFavorite(e, hex)}
+                          aria-label={isFavorite ? `Unpin ${name}` : `Pin ${name} as a favorite`}
+                          className={`absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full border transition-opacity ${isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                          style={{ background: 'white', borderColor: HOME_COLORS.outlineVariant, color: isFavorite ? '#B8860B' : HOME_COLORS.onSurfaceVariant, cursor: 'pointer' }}
+                        >
+                          <Star size={11} fill={isFavorite ? '#B8860B' : 'none'} />
+                        </button>
+                      </div>
                     )
                   })}
                   <div className="relative h-10 w-10">
@@ -552,6 +629,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                       type="color"
                       value={colorDraft}
                       onChange={e => setColorDraft(e.target.value)}
+                      onBlur={e => handleCustomColorChosen(e.target.value)}
                       className="absolute inset-0 h-10 w-10 cursor-pointer opacity-0"
                       tabIndex={-1}
                       aria-hidden="true"

@@ -80,6 +80,61 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ data })
 }
 
+// Palette/favorites are saved-swatches convenience only — the report itself
+// always uses the single brand_color column above, unchanged. The client
+// computes the resulting array (append a new custom color, evict the oldest
+// once at the 8/4 cap, toggle favorite membership) and this just validates
+// and persists whatever array it sends.
+export async function PATCH(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!(await requireAgency(supabase, user.id))) {
+    return NextResponse.json({ error: 'White-label branding requires the Broadcast plan.' }, { status: 403 })
+  }
+
+  const body = await request.json()
+  const updates: { brand_palette?: string[]; brand_favorites?: string[] } = {}
+
+  const isHexArray = (value: unknown, max: number) =>
+    Array.isArray(value) && value.length <= max && value.every(c => typeof c === 'string' && HEX_COLOR.test(c))
+
+  if (body.palette !== undefined) {
+    if (!isHexArray(body.palette, 8)) {
+      return NextResponse.json({ error: 'Palette must be an array of up to 8 hex colors.' }, { status: 400 })
+    }
+    updates.brand_palette = body.palette
+  }
+
+  if (body.favorites !== undefined) {
+    if (!isHexArray(body.favorites, 4)) {
+      return NextResponse.json({ error: 'Favorites must be an array of up to 4 hex colors.' }, { status: 400 })
+    }
+    updates.brand_favorites = body.favorites
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'No palette or favorites provided' }, { status: 400 })
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', user.id)
+    .select('brand_palette, brand_favorites')
+    .single()
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ data })
+}
+
 export async function DELETE(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
