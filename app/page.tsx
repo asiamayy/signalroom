@@ -189,27 +189,15 @@ export default function LandingPage() {
 
       <style jsx global>{`
         html { scroll-behavior: smooth; }
-        /* Whole-word reveal — the word stays one continuous text node so the
-           italic serif's connected letterforms shape/kern normally. An
-           earlier per-character span version broke those connections
-           (each letter got its own isolated box), which showed up as
-           small disconnected marks between letters, worst on mobile where
-           the glyphs are smallest. A later clip-path version fixed that
-           but introduced a new problem: clip-path establishes a hard
-           clipping box at the element's edges even at "no clip" (inset
-           0 0 0 0), and animation-fill-mode:forwards keeps that box
-           applied permanently — so any glyph ink extending past it
-           (italic descenders on p/j/g) got cropped. Opacity/blur/
-           translateY don't clip anything, so they're safe here.  */
-        @keyframes wordRevealIn {
-          0% { opacity: 0; transform: translateY(0.15em); filter: blur(3px); }
-          100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+        @keyframes premiumCharIn {
+          0% { opacity: 0; transform: translateY(0.18em) scale(0.99); filter: blur(1.5px); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
-        .word-reveal-span {
+        .char-reveal-span {
           display: inline-block;
           opacity: 0;
-          will-change: transform, opacity, filter;
-          animation: wordRevealIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          will-change: transform, opacity;
+          animation: premiumCharIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .mobile-crisp-vector {
           image-rendering: -webkit-optimize-contrast;
@@ -332,9 +320,18 @@ export default function LandingPage() {
               <span className="block lg:whitespace-nowrap">
                 Your market has {' '}
                 <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
-                  <span key={currentWordIndex} className="word-reveal-span">
-                    {displayedWord}.
+                  <span className="relative inline-flex overflow-visible">
+                    {displayedWord.split('').map((char, idx) => (
+                      <span
+                        key={`${currentWordIndex}-${idx}`}
+                        className="char-reveal-span"
+                        style={{ animationDelay: `${idx * 40}ms` }}
+                      >
+                        {char === ' ' ? ' ' : char}
+                      </span>
+                    ))}
                   </span>
+                  <span>.</span>
                 </span>
               </span>
               <span className="block mt-1 lg:mt-2"><span ref={nAnchorRef}>N</span>ow you can ask.</span>
