@@ -540,16 +540,25 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                       />
                     )
                   })}
-                  <button type="button" onClick={() => colorInputRef.current?.click()} aria-label="Choose a custom accent color" className="flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-white" style={{ borderColor: HOME_COLORS.outlineVariant, color: HOME_COLORS.onSurfaceVariant, background: 'none', cursor: 'pointer' }}><Plus size={16} /></button>
+                  <div className="relative h-10 w-10">
+                    <button type="button" onClick={() => colorInputRef.current?.click()} aria-label="Choose a custom accent color" className="flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-white" style={{ borderColor: HOME_COLORS.outlineVariant, color: HOME_COLORS.onSurfaceVariant, background: 'none', cursor: 'pointer' }}><Plus size={16} /></button>
+                    {/* Kept in normal layout (not display:none) so the browser
+                        has a real on-screen rect to anchor the native color
+                        picker popup to — display:none elements have no box,
+                        which is why the picker was opening at the page's
+                        top-left corner instead of near this button. */}
+                    <input
+                      ref={colorInputRef}
+                      type="color"
+                      value={colorDraft}
+                      onChange={e => setColorDraft(e.target.value)}
+                      className="absolute inset-0 h-10 w-10 cursor-pointer opacity-0"
+                      tabIndex={-1}
+                      aria-hidden="true"
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 pt-2 flex-wrap">
-                  <input
-                    ref={colorInputRef}
-                    type="color"
-                    value={colorDraft}
-                    onChange={e => setColorDraft(e.target.value)}
-                    className="hidden"
-                  />
                   <input
                     type="text"
                     value={colorDraft}
