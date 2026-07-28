@@ -231,7 +231,7 @@ export function WorkspacesClient() {
 
   if (plan === 'agency') {
     return (
-      <div className="min-h-full" style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, backgroundImage: 'linear-gradient(rgba(24,40,28,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(24,40,28,0.045) 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+      <div className="min-h-full" style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, backgroundImage: 'linear-gradient(rgba(24,40,28,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(24,40,28,0.045) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
         <main className="mx-auto max-w-[1440px] px-4 pb-14 sm:px-10">
           <motion.section initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="flex flex-col justify-between gap-6 pb-8 pt-8 xl:flex-row xl:items-end xl:gap-10 sm:pt-10">
             <div className="max-w-xl">
