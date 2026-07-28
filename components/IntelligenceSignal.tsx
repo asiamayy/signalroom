@@ -144,7 +144,7 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
               className={`concept-pulse pulse-${key}`}
             />
             <circle
-              cx={pt.x} cy={pt.y} r="6.5" fill="#B2B7AB"
+              cx={pt.x} cy={pt.y} r="6.5" fill="#B2B7AB" opacity={0}
               className={`concept-node node-${key}`}
             />
           </g>
@@ -184,7 +184,7 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
           animation-iteration-count: infinite;
         }
         .concept-node {
-          opacity: 0.28;
+          opacity: 0;
           animation-duration: 24s;
           animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
           animation-iteration-count: infinite;
@@ -224,12 +224,17 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
         .label-c { animation-name: labelC; }
         .label-d { animation-name: labelD; }
 
-        /* ── node 1: opens the sequence immediately ── */
+        /* ── node 1: opens the sequence immediately ──
+           Opacity starts at 0 (not 0.28) so the node is genuinely
+           invisible until the line reaches it, instead of sitting there
+           dimly visible from page load — that's what made all four look
+           like they "just appear" together with only the connecting
+           lines animating. */
         @keyframes nodeA {
-          0%, 3%  { opacity: 0.28; }
+          0%, 3%  { opacity: 0; }
           10%     { opacity: 0.85; }
           88%     { opacity: 0.85; }
-          100%    { opacity: 0.28; }
+          100%    { opacity: 0; }
         }
         @keyframes pulseA {
           0%, 3%  { opacity: 0; r: 9; }
@@ -253,10 +258,10 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
 
         /* ── node 2: up-right ── */
         @keyframes nodeB {
-          0%, 27% { opacity: 0.28; }
+          0%, 27% { opacity: 0; }
           34%     { opacity: 0.85; }
           88%     { opacity: 0.85; }
-          100%    { opacity: 0.28; }
+          100%    { opacity: 0; }
         }
         @keyframes pulseB {
           0%, 27% { opacity: 0; r: 9; }
@@ -280,10 +285,10 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
 
         /* ── node 3: drop down past the start line ── */
         @keyframes nodeC {
-          0%, 51% { opacity: 0.28; }
+          0%, 51% { opacity: 0; }
           58%     { opacity: 0.85; }
           88%     { opacity: 0.85; }
-          100%    { opacity: 0.28; }
+          100%    { opacity: 0; }
         }
         @keyframes pulseC {
           0%, 51% { opacity: 0; r: 9; }
@@ -307,10 +312,10 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
 
         /* ── node 4: back up-right, sequence closes ── */
         @keyframes nodeD {
-          0%, 75% { opacity: 0.28; }
+          0%, 75% { opacity: 0; }
           82%     { opacity: 0.85; }
           90%     { opacity: 0.85; }
-          100%    { opacity: 0.28; }
+          100%    { opacity: 0; }
         }
         @keyframes pulseD {
           0%, 75% { opacity: 0; r: 9; }

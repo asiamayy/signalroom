@@ -194,17 +194,22 @@ export default function LandingPage() {
            earlier per-character span version broke those connections
            (each letter got its own isolated box), which showed up as
            small disconnected marks between letters, worst on mobile where
-           the glyphs are smallest. */
+           the glyphs are smallest. A later clip-path version fixed that
+           but introduced a new problem: clip-path establishes a hard
+           clipping box at the element's edges even at "no clip" (inset
+           0 0 0 0), and animation-fill-mode:forwards keeps that box
+           applied permanently — so any glyph ink extending past it
+           (italic descenders on p/j/g) got cropped. Opacity/blur/
+           translateY don't clip anything, so they're safe here.  */
         @keyframes wordRevealIn {
-          0% { opacity: 0; clip-path: inset(0 100% 0 0); filter: blur(2px); }
-          60% { filter: blur(0); }
-          100% { opacity: 1; clip-path: inset(0 0 0 0); filter: blur(0); }
+          0% { opacity: 0; transform: translateY(0.15em); filter: blur(3px); }
+          100% { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
         .word-reveal-span {
           display: inline-block;
           opacity: 0;
-          will-change: clip-path, opacity;
-          animation: wordRevealIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          will-change: transform, opacity, filter;
+          animation: wordRevealIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .mobile-crisp-vector {
           image-rendering: -webkit-optimize-contrast;
