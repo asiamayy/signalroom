@@ -58,7 +58,9 @@ export function SignalFeedCard({ signal, variant = 'standard', onPreview }: Sign
       <motion.article
         layoutId={layoutId}
         onClick={() => onPreview(signal, layoutId)}
-        className="rounded-xl overflow-hidden transition-all hover:shadow-xl cursor-pointer"
+        className="rounded-xl overflow-hidden cursor-pointer"
+        whileHover={{ y: -4, boxShadow: '0 10px 24px -8px rgba(0,0,0,0.14)' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
       >
         <div className="grid grid-cols-12">
@@ -94,7 +96,9 @@ export function SignalFeedCard({ signal, variant = 'standard', onPreview }: Sign
     <motion.article
       layoutId={layoutId}
       onClick={() => onPreview(signal, layoutId)}
-      className="group rounded-xl p-6 sm:p-8 transition-shadow hover:shadow-xl cursor-pointer"
+      className="group rounded-xl p-6 sm:p-8 cursor-pointer"
+      whileHover={{ y: -4, boxShadow: '0 10px 24px -8px rgba(0,0,0,0.14)' }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
     >
       <div className="flex justify-between items-start mb-6">
