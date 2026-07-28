@@ -811,7 +811,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                         ? { background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed, border: 'none' }
                         : isUpgrade
                         ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none' }
-                        : { background: 'none', color: HOME_COLORS.onSurfaceVariant, border: `1px solid ${HOME_COLORS.outlineVariant}66` }
+                        : { color: HOME_COLORS.onSurfaceVariant, border: `1px solid ${HOME_COLORS.outlineVariant}66` }
                     }
                   >
                     {plan.id === 'free' && !isCurrent

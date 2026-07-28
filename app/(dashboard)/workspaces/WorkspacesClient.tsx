@@ -231,17 +231,17 @@ export function WorkspacesClient() {
 
   if (plan === 'agency') {
     return (
-      <div className="min-h-full" style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, backgroundImage: 'linear-gradient(rgba(24,40,28,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(24,40,28,0.018) 1px, transparent 1px)', backgroundSize: '88px 88px' }}>
+      <div className="min-h-full" style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }}>
         <main className="mx-auto max-w-[1440px] px-4 pb-14 sm:px-10">
-          <section className="flex flex-col justify-between gap-8 pb-10 pt-12 xl:flex-row xl:items-end xl:gap-12 sm:pt-16">
-            <div className="max-w-3xl">
-              <div className="mb-4 flex items-center gap-3"><span className="h-px w-9" style={{ background: `${HOME_COLORS.primary}66` }} /><span className="text-[10px] font-semibold uppercase tracking-[0.25em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Isolated Research Workspaces</span></div>
-              <h1 className="text-[40px] leading-tight tracking-[-0.02em]" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.primary }}>Workspaces</h1>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed sm:text-base" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+          <motion.section initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="flex flex-col justify-between gap-6 pb-8 pt-8 xl:flex-row xl:items-end xl:gap-10 sm:pt-10">
+            <div className="max-w-xl">
+              <div className="mb-3 flex items-center gap-3"><span className="h-px w-8" style={{ background: `${HOME_COLORS.primary}66` }} /><span className="text-[9px] font-semibold uppercase tracking-[0.22em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Isolated Research Workspaces</span></div>
+              <h1 className="text-[32px] leading-tight tracking-[-0.02em]" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.primary }}>Workspaces</h1>
+              <p className="mt-2 max-w-xl text-[13px] leading-relaxed sm:text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 Dedicated environments for client and brand research. Invite your team and each member sees only what they&apos;ve been added to.
               </p>
             </div>
-            <div className="flex flex-col gap-6 border-l py-2 pl-7 sm:pl-9" style={{ borderColor: `${HOME_COLORS.primary}1a` }}>
+            <div className="flex flex-col gap-4 border-l py-1 pl-6 sm:pl-8" style={{ borderColor: `${HOME_COLORS.primary}1a` }}>
               <div>
                 <span className="block text-3xl font-light leading-none" style={{ color: HOME_COLORS.primary }}>{workspaces.length || '0'}</span>
                 <span className="mt-3 block text-[10px] font-semibold uppercase tracking-[0.25em]" style={{ color: `${HOME_COLORS.primary}66` }}>Active workspaces</span>
@@ -250,39 +250,39 @@ export function WorkspacesClient() {
                 <Plus size={13} /> Initiate Workspace <ArrowRight size={12} className="absolute right-2.5 opacity-0 transition-all duration-300 ease-out group-hover:opacity-100" />
               </button>
             </div>
-          </section>
+          </motion.section>
 
-          <section className="relative mb-12 min-h-[370px] overflow-hidden rounded-[2rem] p-7 shadow-2xl sm:p-10 lg:p-12" style={{ background: HOME_COLORS.primary }}>
+          <motion.section initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.9, ease: 'easeOut' }} className="relative mb-9 min-h-[220px] overflow-hidden rounded-[1.5rem] p-6 shadow-[0_18px_30px_-20px_rgba(24,40,28,0.5)] sm:min-h-[280px] sm:p-8" style={{ background: HOME_COLORS.primary }}>
             <div className="pointer-events-none absolute inset-0 opacity-30">
               <svg className="h-full w-full" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true">
                 <path d="M50,450 L950,450 M50,50 L50,450" fill="none" stroke="white" strokeWidth="0.5" opacity="0.3" />
-                <path d="M100,380 Q300,320 400,390 T700,350 T900,410" fill="none" stroke={HOME_COLORS.primaryFixed} strokeWidth="1.5" />
+                <path d="M100,380 Q300,320 400,390 T700,350 T900,410" fill="none" stroke={HOME_COLORS.primaryFixed} strokeWidth="1.5" strokeDasharray="8 10"><animate attributeName="stroke-dashoffset" dur="4s" repeatCount="indefinite" values="0;-72" /></path>
                 <circle cx="400" cy="390" fill={HOME_COLORS.primaryFixed} r="5"><animate attributeName="r" dur="3s" repeatCount="indefinite" values="5;10;5" /></circle>
                 <circle cx="700" cy="350" fill="white" r="4" opacity="0.6" />
               </svg>
             </div>
             <div className="relative z-10 flex flex-col justify-between gap-10 lg:flex-row lg:items-start">
               <div>
-                <span className="mb-6 inline-block rounded-full bg-white/10 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.primaryFixed }}>Workspace activity</span>
-                <h2 className="text-3xl leading-tight text-white sm:text-4xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>Your shared research <br /><span className="italic font-normal text-white/45">at a glance</span></h2>
+                <span className="mb-3 inline-block rounded-full bg-white/10 px-2 py-1 text-[7px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.primaryFixed }}>Workspace activity</span>
+                <h2 className="text-2xl leading-tight text-white sm:text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace Activity <br /><span className="italic font-normal text-white/45">Pulse Monitor</span></h2>
               </div>
-              <div className="min-w-0 rounded-3xl border p-6 sm:min-w-[270px]" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(18px)', borderColor: 'rgba(255,255,255,0.1)' }}>
-                <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/35">In this workspace</span>
-                <div className="mt-6 space-y-4 text-xs text-white">
+              <div className="min-w-0 rounded-2xl border p-4 sm:min-w-[210px]" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(18px)', borderColor: 'rgba(255,255,255,0.1)' }}>
+                <span className="text-[7px] font-bold uppercase tracking-[0.22em] text-white/35">In this workspace</span>
+                <div className="mt-4 space-y-3 text-[10px] text-white">
                   <MetricLine label="Personas" value={`${realPersonaCount} active`} percent={Math.min(100, Math.max(8, realPersonaCount * 12))} />
                   <MetricLine label="Interviews" value={`${realInterviewCount} tracked`} percent={Math.min(100, Math.max(8, realInterviewCount * 12))} />
                   <MetricLine label="Reports" value={`${realReportCount} synthesized`} percent={Math.min(100, Math.max(8, realReportCount * 12))} />
                 </div>
               </div>
             </div>
-            <div className="relative z-10 mt-8 flex flex-wrap items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/40 sm:mt-12">
+            <div className="relative z-10 mt-6 flex flex-wrap items-center gap-4 text-[8px] font-bold uppercase tracking-[0.18em] text-white/40 sm:mt-8">
               <div className="flex -space-x-3">
                 {members.slice(0, 4).map(m => <div key={m.id} className="h-9 w-9 rounded-full border-2" style={{ borderColor: HOME_COLORS.primary }}><PersonaAvatar avatarUrl={m.avatar_url} avatarInitials={getInitials(m.full_name || m.email)} avatarColor={getAvatarColor(m.full_name || m.email)} name={m.full_name ?? m.email} size="sm" /></div>)}
                 {members.length > 4 && <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 text-[9px]" style={{ borderColor: HOME_COLORS.primary, background: `${HOME_COLORS.primaryFixed}33`, color: HOME_COLORS.primaryFixed }}>+{members.length - 4}</div>}
               </div>
               <span>{members.length > 0 ? `${members.length} team members with access` : 'Ready for your research team'}</span>
             </div>
-          </section>
+          </motion.section>
 
           <AnimatePresence>
             {showCreatePanel && (
@@ -296,31 +296,45 @@ export function WorkspacesClient() {
           </AnimatePresence>
           {error && <p className="mb-8 rounded-xl px-4 py-3 text-sm" style={{ background: '#ffdad6', color: HOME_COLORS.error }}>{error}</p>}
 
-          <section className="mb-12">
-            <div className="mb-7 flex items-center justify-between gap-6">
-              <h2 className="text-2xl sm:text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Your <span className="italic font-normal">Workspaces</span></h2>
+          <motion.section initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }} transition={{ duration: 0.9, ease: 'easeOut' }} className="mb-10">
+            <div className="mb-5 flex items-center justify-between gap-6">
+              <h2 className="text-lg sm:text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Active <span className="italic font-normal">Environments</span></h2>
               <span className="rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ borderColor: `${HOME_COLORS.outlineVariant}88`, color: HOME_COLORS.onSurfaceVariant }}>{allSeats.size} / {seatLimit} seats in use</span>
             </div>
             {loadingWorkspaces ? <div className="h-72 animate-pulse rounded-[2rem]" style={{ background: HOME_COLORS.surfaceContainerLow }} /> : workspaces.length === 0 ? (
               <div className="rounded-[2rem] border border-dashed px-6 py-20 text-center" style={{ borderColor: HOME_COLORS.outlineVariant, background: HOME_COLORS.surfaceContainerLow }}><Building2 size={26} className="mx-auto mb-4" style={{ color: HOME_COLORS.primary }} /><p style={{ color: HOME_COLORS.onSurfaceVariant }}>No workspaces yet — create one to invite your team.</p></div>
             ) : (
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
                 {workspaces.map((workspace, index) => {
                   const selected = workspace.id === selectedId
-                  return <button key={workspace.id} onClick={() => setSelectedId(workspace.id)} className={`group text-left transition-all duration-500 ${index === 0 ? 'lg:col-span-7' : 'lg:col-span-5'}`} style={{ cursor: 'pointer', border: 'none', background: 'none' }}>
-                    <div className={`flex min-h-[240px] h-full flex-col justify-between overflow-hidden rounded-[2rem] p-7 sm:p-8 ${selected ? 'hover:-translate-y-1' : 'hover:-translate-y-1 hover:bg-white'}`} style={selected ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: '0 20px 42px -22px rgba(24,40,28,0.3)' } : { background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
+                  const darkTile = index === 1
+                  return <button key={workspace.id} onClick={() => setSelectedId(workspace.id)} className={`group text-left transition-all duration-500 ${index === 0 ? 'md:col-span-7' : 'md:col-span-5'}`} style={{ cursor: 'pointer', border: 'none', background: 'none' }}>
+                    <div className={`relative flex min-h-[190px] h-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 transition-all duration-700 sm:min-h-[230px] sm:p-7 ${darkTile ? 'hover:-translate-y-2 hover:shadow-[0_22px_38px_-20px_rgba(24,40,28,0.5)]' : 'hover:-translate-y-1 hover:bg-white hover:shadow-[0_20px_32px_-22px_rgba(24,40,28,0.35)]'}`} style={darkTile ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: '0 12px 26px -18px rgba(24,40,28,0.32)' } : { background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
+                      {darkTile && <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full blur-3xl transition-opacity duration-700 group-hover:opacity-100" style={{ background: `${HOME_COLORS.primaryFixed}1f`, opacity: 0.45 }} />}
                       <div>
-                        <div className="mb-7 flex items-start justify-between"><div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: selected ? 'rgba(255,255,255,0.1)' : HOME_COLORS.primary, color: selected ? HOME_COLORS.primaryFixed : HOME_COLORS.onPrimary }}><Building2 size={22} /></div><span className="rounded-full px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ background: selected ? `${HOME_COLORS.primaryFixed}22` : `${HOME_COLORS.primary}0d`, color: selected ? HOME_COLORS.primaryFixed : HOME_COLORS.primary }}>{selected ? 'Active workspace' : 'Workspace'}</span></div>
+                        <div className="mb-7 flex items-start justify-between"><div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: darkTile ? 'rgba(255,255,255,0.1)' : HOME_COLORS.primary, color: darkTile ? HOME_COLORS.primaryFixed : HOME_COLORS.onPrimary }}><Building2 size={22} /></div><span className="rounded-full px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em]" style={{ background: darkTile ? `${HOME_COLORS.primaryFixed}22` : `${HOME_COLORS.primary}0d`, color: darkTile ? HOME_COLORS.primaryFixed : HOME_COLORS.primary }}>{selected ? 'Active workspace' : 'Workspace'}</span></div>
                         <h3 className="text-2xl sm:text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>{workspace.name}</h3>
-                        <p className="mt-4 max-w-md text-sm leading-6" style={{ color: selected ? 'rgba(255,255,255,0.55)' : HOME_COLORS.onSurfaceVariant }}>A focused space for your team’s shared personas, interviews, and reports.</p>
+                        <p className="mt-4 max-w-md text-sm leading-6" style={{ color: darkTile ? 'rgba(255,255,255,0.55)' : HOME_COLORS.onSurfaceVariant }}>A focused space for your team’s shared personas, interviews, and reports.</p>
                       </div>
-                      <div className="flex items-end justify-between border-t pt-6" style={{ borderColor: selected ? 'rgba(255,255,255,0.1)' : `${HOME_COLORS.primary}12` }}><div className="flex gap-8"><WorkspaceStat value={selected ? realPersonaCount : '—'} label="Personas" /><WorkspaceStat value={selected ? realInterviewCount : '—'} label="Interviews" /></div><span className="flex h-11 w-11 items-center justify-center rounded-full transition-colors" style={{ background: selected ? HOME_COLORS.primaryFixed : HOME_COLORS.primary, color: selected ? HOME_COLORS.onPrimaryFixed : HOME_COLORS.onPrimary }}><ArrowRight size={18} /></span></div>
+                      <div className="flex items-end justify-between border-t pt-6" style={{ borderColor: darkTile ? 'rgba(255,255,255,0.1)' : `${HOME_COLORS.primary}12` }}><div className="flex gap-8"><WorkspaceStat value={selected ? realPersonaCount : '—'} label="Personas" /><WorkspaceStat value={selected ? realInterviewCount : '—'} label="Interviews" /></div><span className="flex h-9 w-9 items-center justify-center rounded-full transition-colors" style={{ background: darkTile ? HOME_COLORS.primaryFixed : HOME_COLORS.primary, color: darkTile ? HOME_COLORS.onPrimaryFixed : HOME_COLORS.onPrimary }}><ArrowRight size={15} /></span></div>
                     </div>
                   </button>
                 })}
+                <Link href="/faq" className="group rounded-[1.25rem] p-5 transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.35)] md:col-span-4" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
+                  <span className="block text-[8px] font-semibold uppercase tracking-[0.22em] opacity-45">Workspace access</span>
+                  <div className="mt-5 flex items-end justify-between"><div><h3 className="text-base" style={{ fontFamily: HOME_FONT_DISPLAY }}>Audit Protocol</h3><p className="mt-1 text-[9px] opacity-45">Member access is kept up to date.</p></div><ShieldCheck size={20} className="opacity-30" /></div>
+                </Link>
+                <button type="button" onClick={() => setInvitingOpen(true)} className="group rounded-[1.25rem] p-5 text-left transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.35)] md:col-span-4" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22`, cursor: 'pointer' }}>
+                  <span className="block text-[8px] font-semibold uppercase tracking-[0.22em] opacity-45">Team access</span>
+                  <div className="mt-4 flex items-center gap-3">{members[0] ? <div className="h-10 w-10 overflow-hidden rounded-xl"><PersonaAvatar avatarUrl={members[0].avatar_url} avatarInitials={getInitials(members[0].full_name || members[0].email)} avatarColor={getAvatarColor(members[0].full_name || members[0].email)} name={members[0].full_name ?? members[0].email} size="sm" shape="square" /></div> : <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${HOME_COLORS.primary}12` }}><Users size={16} /></div>}<div className="min-w-0"><h3 className="truncate text-sm" style={{ fontFamily: HOME_FONT_DISPLAY }}>{members[0]?.full_name || members[0]?.email || 'Invite your team'}</h3><p className="mt-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] opacity-45">{members.length ? `${members.length} members` : 'Add a member'}</p></div></div>
+                </button>
+                <Link href="/reports" className="flex flex-col justify-between rounded-[1.25rem] p-5 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.5)] md:col-span-4" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.primaryFixed }}>
+                  <div className="flex items-start justify-between"><span className="text-[8px] font-semibold uppercase tracking-[0.22em] opacity-60">Quick action</span><ArrowRight size={14} className="opacity-50" /></div>
+                  <span className="mt-6 flex items-center justify-center rounded-md py-2 text-[8px] font-bold uppercase tracking-[0.16em]" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>View research reports</span>
+                </Link>
               </div>
             )}
-          </section>
+          </motion.section>
 
           {selectedWorkspace && <section className="grid grid-cols-1 gap-8 border-t pt-14 lg:grid-cols-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
             <div className="lg:col-span-8">
