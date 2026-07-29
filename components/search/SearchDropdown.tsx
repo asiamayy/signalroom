@@ -64,37 +64,37 @@ export function SearchDropdown({ query, open, onNavigate }: SearchDropdownProps)
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.15 }}
-          className="absolute left-0 right-0 top-full mt-2 max-h-[70vh] overflow-y-auto rounded-2xl"
+          className="absolute left-0 right-0 top-full mt-1.5 max-h-[60vh] overflow-y-auto rounded-xl"
           style={{ background: 'white', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.18)', border: '1px solid #E3E5E3' }}
         >
           {loading && !results ? (
-            <div className="flex items-center gap-2 px-5 py-6 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-              <Loader2 size={14} className="animate-spin" /> Searching...
+            <div className="flex items-center gap-2 px-4 py-3 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <Loader2 size={12} className="animate-spin" /> Searching...
             </div>
           ) : totalCount === 0 ? (
-            <div className="px-5 py-6 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+            <div className="px-4 py-3 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
               No results for &ldquo;{trimmed}&rdquo;
             </div>
           ) : (
-            <div className="py-2">
+            <div className="py-1">
               {GROUPS.map(g => {
                 const items = results?.[g.key] ?? []
                 if (items.length === 0) return null
                 const Icon = g.icon
                 return (
-                  <div key={g.key} className="px-2 py-1.5">
-                    <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>{g.label}</p>
+                  <div key={g.key} className="px-1.5 py-1">
+                    <p className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>{g.label}</p>
                     {items.map(item => (
                       <Link
                         key={item.id}
                         href={item.href}
                         onClick={onNavigate}
-                        className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[#f0eded]"
+                        className="flex items-center gap-2 rounded-md px-2.5 py-1.5 transition-colors hover:bg-[#f0eded]"
                       >
-                        <Icon size={15} style={{ color: HOME_COLORS.onSurfaceVariant }} className="flex-shrink-0" />
+                        <Icon size={13} style={{ color: HOME_COLORS.onSurfaceVariant }} className="flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium" style={{ color: HOME_COLORS.onSurface }}>{item.label}</p>
-                          {item.sublabel && <p className="truncate text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{item.sublabel}</p>}
+                          <p className="truncate text-xs font-medium" style={{ color: HOME_COLORS.onSurface }}>{item.label}</p>
+                          {item.sublabel && <p className="truncate text-[10px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{item.sublabel}</p>}
                         </div>
                       </Link>
                     ))}
