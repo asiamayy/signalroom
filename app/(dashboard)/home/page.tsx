@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import {
-  FolderOpen, Users, Mic, Radar, ArrowRight, RefreshCw,
+  FolderOpen, Users, Mic, Radar, ArrowRight,
   UserPlus2, FileCheck, Sparkles as SignalIcon, Upload as UploadIcon, MessageSquare,
   AlertTriangle, ShieldAlert, Target, Lightbulb, Zap, TrendingUp, Sparkles, AlertOctagon,
 } from 'lucide-react'
@@ -13,6 +13,7 @@ import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme
 import { BriefingCard } from '@/components/home/BriefingCard'
 import { StrategicFocus } from '@/components/home/StrategicFocus'
 import { PersonaSpotlight } from '@/components/home/PersonaSpotlight'
+import { RefreshButton } from '@/components/home/RefreshButton'
 import type { ExecutiveBriefing, Signal, Persona, SignalType } from '@/types'
 
 const ACTIVITY_ICONS: Record<TimelineEventType, typeof Users> = {
@@ -280,9 +281,7 @@ export default async function HomePage() {
           {profile?.briefing_generated_at && (
             <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Last synced: {formatRelativeTime(profile.briefing_generated_at)}</span>
           )}
-          <div className="p-2 rounded-full" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
-            <RefreshCw size={16} style={{ color: HOME_COLORS.onSurface }} />
-          </div>
+          <RefreshButton />
         </div>
       </footer>
     </div>

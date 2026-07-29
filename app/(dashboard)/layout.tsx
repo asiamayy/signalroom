@@ -17,6 +17,7 @@ import type { Project } from '@/types'
 import { SearchProvider, useSearch } from '@/lib/search-context'
 import { Modal } from '@/components/ui/Modal'
 import { CreateProjectForm } from '@/app/(dashboard)/projects/ProjectsClient'
+import { SearchDropdown } from '@/components/search/SearchDropdown'
 
 // Dashboard-only logo lockup (icon + wordmark + "AI Market Research" tagline
 // baked in). Scoped to the dashboard so the landing page's logo is untouched.
@@ -80,8 +81,19 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
   const [showCreateProject, setShowCreateProject] = useState(false)
   const { query: search, setQuery: setSearch } = useSearch()
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
   const accountMenuRef = useRef<HTMLDivElement>(null)
   const closeMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!searchOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [searchOpen])
 
   // Available from any dashboard page via the sidebar's "New Project" button
   // — no list to append to here (unlike the Projects page itself), so this
@@ -282,16 +294,20 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Search */}
-          <div className="group mr-auto hidden max-w-xl flex-1 items-center gap-3 rounded-full bg-[#f0eded] px-5 py-2.5 transition-all focus-within:bg-[#eae7e7] md:flex" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            <Search size={20} />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search personas, projects, insights, and more..."
-              className="w-full border-none bg-transparent text-sm outline-none placeholder:text-[#737873]"
-              style={{ color: HOME_COLORS.onSurfaceVariant, fontFamily: HOME_FONT_BODY }}
-            />
+          <div ref={searchRef} className="relative mr-auto hidden max-w-xl flex-1 md:block">
+            <div className="group flex items-center gap-3 rounded-full bg-[#f0eded] px-5 py-2.5 transition-all focus-within:bg-[#eae7e7]" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <Search size={20} />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onFocus={() => setSearchOpen(true)}
+                placeholder="Search personas, projects, insights, and more..."
+                className="w-full border-none bg-transparent text-sm outline-none placeholder:text-[#737873]"
+                style={{ color: HOME_COLORS.onSurfaceVariant, fontFamily: HOME_FONT_BODY }}
+              />
+            </div>
+            <SearchDropdown query={search} open={searchOpen} onNavigate={() => { setSearch(''); setSearchOpen(false) }} />
           </div>
 
           <div className="flex-1 md:hidden" />
