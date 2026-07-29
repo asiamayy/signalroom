@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Loader2, Dices } from 'lucide-react'
-import { Button, Input, Textarea, Select, Slider, TagInput, ListInput } from '@/components/ui'
-import { Dropdown } from '@/components/ui/Dropdown'
+import { Button } from '@/components/ui'
 import { HOME_FONT_BODY, HOME_FONT_DISPLAY } from '@/lib/home-theme'
 import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation, FunnelStage } from '@/types'
 
@@ -117,6 +116,155 @@ const FUNNEL_STAGE_OPTIONS = [
 
 const FUNNEL_STAGES: readonly FunnelStage[] = ['awareness', 'consideration', 'purchase', 'loyalty']
 
+// ─── Page-local field primitives ─────────────────────────────────────────────
+// The shared components/ui Input/Select/etc. use an older, unrelated visual
+// language (gray #E0E2E4 borders, #1C3D2E focus rings, non-uppercase labels)
+// that doesn't match this page's design reference. Rebuilt locally here
+// rather than changed globally, since components/ui is shared by every
+// other page in the app.
+
+const FIELD_BORDER = '1px solid #c3c8c14d'
+const FIELD_BG = '#f6f3f2'
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label className="block text-[10px] font-bold uppercase tracking-widest" style={{ color: '#434843' }}>
+      {children}
+    </label>
+  )
+}
+
+function FieldHint({ children }: { children: React.ReactNode }) {
+  return <p className="mt-1 text-[11px] italic" style={{ color: '#434843' }}>{children}</p>
+}
+
+function FieldInput({ label, hint, className, style, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel>{label}</FieldLabel>
+      <input
+        className={`w-full rounded-lg px-4 py-3 text-base outline-none transition-all focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15 ${className ?? ''}`}
+        style={{ background: FIELD_BG, border: FIELD_BORDER, color: '#1c1b1b', ...style }}
+        {...props}
+      />
+      {hint && <FieldHint>{hint}</FieldHint>}
+    </div>
+  )
+}
+
+function FieldSelect({ label, hint, options, className, style, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; hint?: string; options: { value: string; label: string }[] }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel>{label}</FieldLabel>
+      <select
+        className={`w-full cursor-pointer rounded-lg px-4 py-3 text-base outline-none transition-all focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15 ${className ?? ''}`}
+        style={{ background: FIELD_BG, border: FIELD_BORDER, color: '#1c1b1b', ...style }}
+        {...props}
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      {hint && <FieldHint>{hint}</FieldHint>}
+    </div>
+  )
+}
+
+function FieldTextarea({ label, hint, className, style, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; hint?: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel>{label}</FieldLabel>
+      <textarea
+        className={`w-full resize-none rounded-xl px-4 py-3 text-base outline-none transition-all focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15 ${className ?? ''}`}
+        style={{ background: FIELD_BG, border: FIELD_BORDER, color: '#1c1b1b', ...style }}
+        {...props}
+      />
+      {hint && <FieldHint>{hint}</FieldHint>}
+    </div>
+  )
+}
+
+function TagField({ label, hint, tags, onChange }: { label: string; hint?: string; tags: string[]; onChange: (tags: string[]) => void }) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      const val = e.currentTarget.value.trim()
+      if (val && !tags.includes(val)) {
+        onChange([...tags, val])
+        e.currentTarget.value = ''
+      }
+    }
+    if (e.key === 'Backspace' && e.currentTarget.value === '' && tags.length > 0) {
+      onChange(tags.slice(0, -1))
+    }
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel>{label}</FieldLabel>
+      <div className="flex min-h-[52px] flex-wrap items-center gap-1.5 rounded-lg p-2.5 focus-within:border-[#18281c] focus-within:ring-1 focus-within:ring-[#18281c]/15" style={{ background: FIELD_BG, border: FIELD_BORDER }}>
+        {tags.map(tag => (
+          <span key={tag} className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: '#dee5da', color: '#18281c' }}>
+            {tag}
+            <button type="button" onClick={() => onChange(tags.filter(t => t !== tag))} style={{ color: '#18281c99', background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
+          </span>
+        ))}
+        <input
+          type="text"
+          className="min-w-[120px] flex-1 bg-transparent text-base outline-none"
+          style={{ color: '#1c1b1b' }}
+          placeholder={tags.length === 0 ? 'Add tag...' : ''}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
+      {hint && <FieldHint>{hint}</FieldHint>}
+    </div>
+  )
+}
+
+function ListField({ label, hint, items, onChange, placeholder, max = 5 }: { label: string; hint?: string; items: string[]; onChange: (items: string[]) => void; placeholder?: string; max?: number }) {
+  const handleChange = (i: number, value: string) => { const next = [...items]; next[i] = value; onChange(next) }
+  const handleAdd = () => { if (items.length < max) onChange([...items, '']) }
+  const handleRemove = (i: number) => onChange(items.filter((_, idx) => idx !== i))
+  return (
+    <div className="flex flex-col gap-2">
+      <FieldLabel>{label}</FieldLabel>
+      <div className="space-y-2">
+        {items.map((item, i) => (
+          <div key={i} className="flex gap-2">
+            <input
+              type="text"
+              value={item}
+              onChange={e => handleChange(i, e.target.value)}
+              placeholder={placeholder}
+              className="flex-1 rounded-lg px-4 py-3 text-base outline-none transition-all focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15"
+              style={{ background: FIELD_BG, border: FIELD_BORDER, color: '#1c1b1b' }}
+            />
+            <button type="button" onClick={() => handleRemove(i)} className="px-1 transition-colors" style={{ color: '#8d938e', background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
+          </div>
+        ))}
+      </div>
+      {items.length < max && (
+        <button type="button" onClick={handleAdd} className="w-fit text-xs font-semibold transition-colors" style={{ color: '#434843', background: 'none', border: 'none', cursor: 'pointer' }}>+ Add another</button>
+      )}
+      {hint && <FieldHint>{hint}</FieldHint>}
+    </div>
+  )
+}
+
+function SliderField({ label, value, onChange, leftLabel, rightLabel }: { label: string; value: number; onChange: (v: number) => void; leftLabel?: string; rightLabel?: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <FieldLabel>{label}</FieldLabel>
+        <span className="text-sm font-semibold" style={{ color: '#18281c' }}>{value}</span>
+      </div>
+      <input type="range" min={1} max={5} step={1} value={value} onChange={e => onChange(Number(e.target.value))} className="w-full" style={{ accentColor: '#18281c' }} />
+      {(leftLabel || rightLabel) && (
+        <div className="flex justify-between text-xs" style={{ color: '#434843' }}>
+          <span>{leftLabel}</span><span>{rightLabel}</span>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -300,60 +448,65 @@ export default function PersonaBuilder() {
   const cardCopy = STEP_CARD_COPY[step]
 
   return (
-    <div className="min-h-full px-5 pb-20 pt-12 sm:px-10" style={{ background: '#fcf9f8', fontFamily: HOME_FONT_BODY }}>
+    <div className="min-h-full px-6 pb-20 pt-12" style={{ background: '#fcf9f8', fontFamily: HOME_FONT_BODY }}>
 
-      {/* Header */}
-      <div className="mx-auto mb-8 max-w-[1320px]">
-        <h1 className="mb-4" style={{ fontFamily: HOME_FONT_DISPLAY, fontSize: '40px', lineHeight: '48px', letterSpacing: '-.02em', fontWeight: 600, color: '#1c1b1b' }}>New Persona</h1>
-        <p className="max-w-2xl text-[16px] leading-relaxed" style={{ color: '#434843' }}>Build a realistic, research-backed persona with AI assistance.</p>
-        <div className="mt-8 flex flex-wrap gap-4">
-          <button type="button" onClick={() => router.push('/personas')} className="persona-header-outline rounded-full border px-8 py-3 text-[15px] font-semibold" style={{ borderColor: '#c3c8c1', color: '#1c1b1b' }}>Drafts</button>
-          <button type="button" className="persona-header-primary rounded-full bg-[#18281c] px-8 py-3 text-[15px] font-semibold text-white">Save Progress</button>
+      {/* Hero */}
+      <section className="relative mb-4 overflow-hidden">
+        <div className="relative z-10 max-w-4xl">
+          <h1 className="mb-6 leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, fontSize: '40px', lineHeight: '48px', letterSpacing: '-.02em', fontWeight: 600, color: '#1c1b1b' }}>New Persona</h1>
+          <p className="max-w-2xl text-base leading-relaxed" style={{ color: '#434843' }}>Build a realistic, research-backed persona with AI assistance.</p>
+          <div className="mt-8 flex gap-4">
+            <button type="button" onClick={() => router.push('/personas')} className="rounded-full border px-8 py-3 text-lg font-semibold transition-colors hover:bg-[#eae7e7]" style={{ borderColor: '#c3c8c1', color: '#1c1b1b', background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Drafts
+            </button>
+            <button type="button" className="rounded-full px-8 py-3 text-lg font-semibold text-white shadow-xl transition-all hover:-translate-y-px" style={{ background: '#18281c', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Save Progress
+            </button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Step progress — circles with connecting lines */}
-      <div className="mx-auto mb-8 flex max-w-[1320px] items-center overflow-x-auto border-b" style={{ borderColor: '#c3c8c155' }}>
+      {/* Step nav */}
+      <nav className="mb-8 flex gap-12 overflow-x-auto">
         {STEPS.map((s, i) => {
           const active = i === step
-          const done = i < step
+          const canJump = i <= step
           return (
-            <div key={s.id} className="flex items-center">
-              <button
-                onClick={() => i <= step && setStep(i)}
-                className="persona-step-button flex min-w-[200px] items-center gap-3 border-b-2 px-2 pb-4 text-left"
-                style={{ background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderColor: active ? '#18281c' : 'transparent', cursor: i <= step ? 'pointer' : 'default', fontFamily: 'inherit', opacity: active ? 1 : .42 }}
-              >
-                <span
-                  className="text-2xl flex-shrink-0"
-                  style={{ fontFamily: HOME_FONT_DISPLAY, color: '#18281c' }}
-                >
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div className="text-left hidden sm:block">
-                  <p className="text-[11px] font-semibold uppercase tracking-[.13em] leading-tight" style={{ color: '#18281c' }}>{s.label}</p>
-                  <p className="text-sm italic leading-tight" style={{ color: '#434843' }}>{s.sublabel}</p>
-                </div>
-              </button>
-            </div>
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => canJump && setStep(i)}
+              className={`group flex flex-shrink-0 items-center gap-4 border-b-2 pb-4 pr-8 text-left transition-opacity ${
+                active ? 'border-[#18281c] opacity-100' : 'border-transparent opacity-40 hover:border-[#c3c8c1] hover:opacity-100'
+              }`}
+              style={{ background: 'none', cursor: canJump ? 'pointer' : 'default', fontFamily: 'inherit' }}
+            >
+              <span className="flex-shrink-0 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: active ? '#18281c' : '#1c1b1b' }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div className="hidden text-left sm:block">
+                <p className="text-xs font-semibold uppercase leading-tight tracking-widest" style={{ color: active ? '#18281c' : '#1c1b1b' }}>{s.label}</p>
+                <p className="text-sm italic leading-tight" style={{ color: '#434843' }}>{s.sublabel}</p>
+              </div>
+            </button>
           )
         })}
-      </div>
+      </nav>
 
-      <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
 
         {/* ── Main form card ── */}
-        <div className="persona-reference-form rounded-xl p-7 shadow-sm lg:col-span-8 lg:p-10" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
-          <h2 className="mb-2 text-[24px]" style={{ fontFamily: HOME_FONT_DISPLAY, color: '#1c1b1b', fontWeight: 600 }}>{cardCopy.title}</h2>
-          <p className="mb-9 text-[15px] italic" style={{ color: '#434843' }}>{cardCopy.subtitle}</p>
+        <div className="rounded-xl border p-10 shadow-sm lg:col-span-8" style={{ background: 'white', borderColor: '#c3c8c14d' }}>
+          <h2 className="mb-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: '#1c1b1b', fontWeight: 600 }}>{cardCopy.title}</h2>
+          <p className="mb-10 italic" style={{ color: '#434843' }}>{cardCopy.subtitle}</p>
 
           {/* ── Step 0: Identity ─────────────────────────────────────────── */}
           {step === 0 && (
-            <div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-[12rem_minmax(0,1fr)]">
+            <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
               {/* Avatar column */}
-              <div className="flex flex-col items-center gap-4 lg:items-start">
-                <label className="self-start text-[10px] font-bold uppercase tracking-[.16em]" style={{ color: '#434843' }}>Avatar</label>
-                <div className="group relative aspect-square w-48 shrink-0 overflow-hidden rounded-full border" style={{ background: '#f0eded', borderColor: '#c3c8c14d' }}>
+              <div className="flex w-48 flex-shrink-0 flex-col gap-4">
+                <FieldLabel>Avatar</FieldLabel>
+                <div className="group relative aspect-square w-full overflow-hidden rounded-full border" style={{ background: '#f0eded', borderColor: '#c3c8c14d' }}>
                   {avatarUrl ? (
                     <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-full" />
                   ) : (
@@ -370,7 +523,7 @@ export default function PersonaBuilder() {
                   type="button"
                   onClick={handleGenerateAvatar}
                   disabled={generatingAvatar || !name}
-                  className="persona-avatar-generate flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] font-semibold transition-all disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] font-semibold uppercase tracking-widest transition-all disabled:opacity-50"
                   style={name && !generatingAvatar
                     ? { borderColor: '#c3c8c1', background: 'white', color: '#434843', cursor: 'pointer' }
                     : { borderColor: '#c3c8c14d', color: '#8d938e', cursor: 'not-allowed' }}
@@ -381,15 +534,15 @@ export default function PersonaBuilder() {
               </div>
 
               {/* Fields column */}
-              <div className="flex-1 min-w-0 space-y-7">
-                <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
-                  <Input
+              <div className="flex-1 min-w-0 space-y-8">
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                  <FieldInput
                     label="Full name *"
                     value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="e.g. Maya Chen"
                   />
-                  <Input
+                  <FieldInput
                     label="Age"
                     type="number"
                     min={18}
@@ -398,92 +551,82 @@ export default function PersonaBuilder() {
                     onChange={e => updateTrait('age', Number(e.target.value))}
                   />
                 </div>
-                <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
-                  <Select
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                  <FieldSelect
                     label="Gender"
                     value={traits.gender}
                     onChange={e => updateTrait('gender', e.target.value as PersonaGender)}
                     options={GENDER_OPTIONS}
                   />
-                  <Select
+                  <FieldSelect
                     label="Education"
                     value={traits.education}
                     onChange={e => updateTrait('education', e.target.value as PersonaEducation)}
                     options={EDUCATION_OPTIONS}
                   />
                 </div>
-                <Input
+                <FieldInput
                   label="Location *"
                   value={traits.location}
                   onChange={e => updateTrait('location', e.target.value)}
                   placeholder="e.g. Austin, TX"
                   maxLength={200}
                 />
-                <Input
+                <FieldInput
                   label="Ethnicity / heritage"
                   value={traits.ethnicity ?? ''}
                   onChange={e => updateTrait('ethnicity', e.target.value)}
                   placeholder="e.g. Chinese-American"
                   maxLength={100}
                 />
-                <div className="persona-reference-tags">
-                <TagInput
+                <TagField
                   label="Tags"
                   hint="Press Enter to add — e.g. 'bootstrapped', 'B2B', 'budget-conscious'"
                   tags={tags}
                   onChange={setTags}
                 />
-                </div>
-                <div className="persona-reference-dropdown space-y-2">
-                  <label className="block text-sm font-medium text-[#202124]">Funnel stage</label>
-                  <Dropdown
-                    size="md"
-                    fullWidth
-                    value={funnelStage}
-                    onChange={v => setFunnelStage(v as FunnelStage)}
-                    options={FUNNEL_STAGE_OPTIONS}
-                  />
-                  <p className="text-xs text-[#5F6368]">Where they sit in the buying journey — this shapes how they react (a new prospect vs. an experienced user). Filterable on the Personas page.</p>
-                </div>
-                <div className="persona-reference-dropdown space-y-1.5">
-                    <label className="block text-sm font-medium text-[#202124]">Workspace</label>
-                    <Dropdown
-                      size="md"
-                      fullWidth
-                      value={workspaceId}
-                      onChange={setWorkspaceId}
-                      options={[{ value: 'personal', label: 'Personal (not shared)' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
-                    />
-                    <p className="text-xs text-[#5F6368]">Share this persona with a workspace to make it visible and editable by every member of that workspace.</p>
-                  </div>
+                <FieldSelect
+                  label="Funnel stage"
+                  value={funnelStage}
+                  onChange={e => setFunnelStage(e.target.value as FunnelStage)}
+                  options={FUNNEL_STAGE_OPTIONS}
+                  hint="Where they sit in the buying journey — this shapes how they react (a new prospect vs. an experienced user). Filterable on the Personas page."
+                />
+                <FieldSelect
+                  label="Workspace"
+                  value={workspaceId}
+                  onChange={e => setWorkspaceId(e.target.value)}
+                  options={[{ value: 'personal', label: 'Personal (not shared)' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
+                  hint="Share this persona with a workspace to make it visible and editable by every member of that workspace."
+                />
               </div>
             </div>
           )}
 
           {/* ── Step 1: Professional ─────────────────────────────────────── */}
           {step === 1 && (
-            <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <Input
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                <FieldInput
                   label="Job title *"
                   value={traits.job_title}
                   onChange={e => updateTrait('job_title', e.target.value)}
                   placeholder="e.g. Founder & CEO"
                 />
-                <Input
+                <FieldInput
                   label="Industry *"
                   value={traits.industry}
                   onChange={e => updateTrait('industry', e.target.value)}
                   placeholder="e.g. SaaS / B2B Software"
                 />
               </div>
-              <Select
+              <FieldSelect
                 label="Annual income"
                 value={traits.income}
                 onChange={e => updateTrait('income', e.target.value as PersonaIncome)}
                 options={INCOME_OPTIONS}
               />
-              <ListInput
+              <ListField
                 label="Goals"
                 hint="What are they trying to achieve?"
                 items={traits.goals}
@@ -491,7 +634,7 @@ export default function PersonaBuilder() {
                 placeholder="e.g. Find product-market fit before runway runs out"
                 max={5}
               />
-              <ListInput
+              <ListField
                 label="Frustrations"
                 hint="What keeps them up at night?"
                 items={traits.frustrations}
@@ -499,14 +642,14 @@ export default function PersonaBuilder() {
                 placeholder="e.g. Traditional market research is too expensive and slow"
                 max={5}
               />
-              <Textarea
+              <FieldTextarea
                 label="Buying behavior"
                 value={traits.buying_behavior}
                 onChange={e => updateTrait('buying_behavior', e.target.value)}
                 placeholder="How do they research tools? What do they read, who do they trust, what makes them pull the trigger or walk away?"
                 rows={3}
               />
-              <ListInput
+              <ListField
                 label="Preferred tools"
                 hint="Products or tools they already rely on"
                 items={traits.preferred_tools ?? ['']}
@@ -519,22 +662,22 @@ export default function PersonaBuilder() {
 
           {/* ── Step 2: Psychology ───────────────────────────────────────── */}
           {step === 2 && (
-            <div className="space-y-6">
-              <Slider
+            <div className="space-y-8">
+              <SliderField
                 label="Tech savviness"
                 value={traits.tech_savviness}
                 onChange={v => updateTrait('tech_savviness', v as 1 | 2 | 3 | 4 | 5)}
                 leftLabel="Not technical"
                 rightLabel="Developer-level"
               />
-              <Slider
+              <SliderField
                 label="Risk tolerance"
                 value={traits.risk_tolerance}
                 onChange={v => updateTrait('risk_tolerance', v as 1 | 2 | 3 | 4 | 5)}
                 leftLabel="Very cautious"
                 rightLabel="Early adopter"
               />
-              <ListInput
+              <ListField
                 label="Motivations"
                 hint="What drives them, deep down?"
                 items={traits.motivations ?? ['']}
@@ -542,13 +685,13 @@ export default function PersonaBuilder() {
                 placeholder="e.g. Making an impact through their work"
                 max={5}
               />
-              <Input
+              <FieldInput
                 label="Key quote"
                 value={traits.key_quote ?? ''}
                 onChange={e => updateTrait('key_quote', e.target.value)}
                 placeholder="A first-person sentence that captures how they see the world"
               />
-              <Textarea
+              <FieldTextarea
                 label="Additional context"
                 value={traits.additional_context}
                 onChange={e => updateTrait('additional_context', e.target.value)}
@@ -567,17 +710,17 @@ export default function PersonaBuilder() {
             <button
               type="button"
               onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}
-              className="persona-form-cancel rounded-lg border px-8 py-2.5 text-sm font-semibold transition-all"
-              style={{ borderColor: '#c3c8c1', color: '#434843' }}
+              className="rounded-lg border px-8 py-2.5 text-lg font-semibold transition-all"
+              style={{ borderColor: '#c3c8c1', color: '#434843', background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
             >
               {step === 0 ? 'Cancel' : 'Back'}
             </button>
             {step < STEPS.length - 1 ? (
-              <button type="button" onClick={handleNext} className="persona-form-continue flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all active:scale-[.98]">
+              <button type="button" onClick={handleNext} className="flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-lg font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all active:scale-[.98]" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Save and continue <ChevronRight size={18} />
               </button>
             ) : (
-              <button type="button" onClick={handleSave} disabled={saving} className="persona-form-continue flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all active:scale-[.98] disabled:opacity-60">
+              <button type="button" onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-lg font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all active:scale-[.98] disabled:opacity-60" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 {saving ? 'Saving…' : 'Save persona'}
               </button>
             )}
@@ -585,18 +728,16 @@ export default function PersonaBuilder() {
         </div>
 
         {/* ── AI assistant panel ── */}
-        <div className="persona-ai-assistant rounded-xl p-7 shadow-sm lg:col-span-4 lg:p-8" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
+        <div className="rounded-xl p-8 shadow-sm lg:col-span-4" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
           <button
             onClick={() => setAiPanelOpen(o => !o)}
-            className="w-full flex items-center justify-between mb-1"
+            className="w-full flex items-center gap-3 mb-1"
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            <span className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: '#dee5da' }}><Sparkles size={19} style={{ color: '#18281c' }} /></span>
-              <span className="text-sm font-bold uppercase tracking-[.14em]" style={{ color: '#1c1b1b' }}>AI assistant</span>
-              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: '#d4e8d5', color: '#0f1f14' }}>BETA</span>
-            </span>
-            {aiPanelOpen ? <ChevronUp size={15} style={{ color: '#9CA3AF' }} /> : <ChevronDown size={15} style={{ color: '#9CA3AF' }} />}
+            <span className="flex h-10 w-10 items-center justify-center rounded-full flex-shrink-0" style={{ background: '#dee5da' }}><Sparkles size={19} style={{ color: '#18281c' }} /></span>
+            <span className="text-sm font-bold uppercase tracking-[.14em]" style={{ color: '#1c1b1b' }}>AI Assistant</span>
+            <span className="ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: '#2d3e31', color: '#d4e8d5' }}>BETA</span>
+            {aiPanelOpen ? <ChevronUp size={15} style={{ color: '#9CA3AF' }} className="flex-shrink-0" /> : <ChevronDown size={15} style={{ color: '#9CA3AF' }} className="flex-shrink-0" />}
           </button>
 
           {aiPanelOpen && (
@@ -623,7 +764,8 @@ export default function PersonaBuilder() {
                 size="sm"
                 onClick={handleGenerate}
                 loading={generating}
-                className="persona-ai-generate mb-6 w-full py-3 shadow-lg shadow-[#18281c]/10 active:scale-[.98]"
+                className="mb-6 w-full py-3 shadow-lg shadow-[#18281c]/10 active:scale-[.98]"
+                style={{ background: '#18281c' }}
               >
                 Generate
               </Button>
@@ -635,7 +777,7 @@ export default function PersonaBuilder() {
                     key={prompt}
                     onClick={() => { setAiPrompt(prompt); runGenerate(prompt) }}
                     disabled={generating}
-                    className="persona-example group flex w-full items-center justify-between gap-2 rounded-xl border p-3.5 text-left text-sm transition-all disabled:opacity-60"
+                    className="group flex w-full items-center justify-between gap-2 rounded-xl border p-3.5 text-left text-sm transition-all disabled:opacity-60"
                     style={{ background: 'white', borderColor: '#c3c8c14d', color: '#1c1b1b', cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     {prompt}
@@ -646,7 +788,7 @@ export default function PersonaBuilder() {
               <button
                 onClick={handleSurpriseMe}
                 disabled={generating}
-                className="persona-surprise flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[11px] font-bold uppercase tracking-[.14em] transition-all disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[11px] font-bold uppercase tracking-[.14em] transition-all disabled:opacity-60"
                 style={{ background: 'white', borderColor: '#c3c8c1', color: '#434843', cursor: surprising ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
               >
                 {surprising ? (
@@ -677,9 +819,9 @@ export default function PersonaBuilder() {
         </p>
       )}
 
-      <footer className="mx-auto mt-12 flex max-w-[1320px] items-center border-t py-8" style={{ borderColor: '#c3c8c133' }}>
+      <footer className="mt-12 flex items-center border-t py-8" style={{ borderColor: '#c3c8c133' }}>
         <span className="mr-8 h-6 w-px" style={{ background: '#c3c8c155' }} />
-        <button type="button" onClick={() => router.back()} className="text-[11px] font-bold uppercase tracking-[.16em] transition-opacity hover:opacity-70" style={{ color: '#ba1a1a' }}>
+        <button type="button" onClick={() => router.back()} className="text-[11px] font-bold uppercase tracking-[.16em] transition-opacity hover:opacity-70" style={{ color: '#ba1a1a', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
           Discard draft
         </button>
       </footer>
