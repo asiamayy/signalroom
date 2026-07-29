@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Loader2, Dices } from 'lucide-react'
 import { Button } from '@/components/ui'
@@ -152,19 +152,55 @@ function FieldInput({ label, hint, className, style, ...props }: React.InputHTML
   )
 }
 
-function FieldSelect({ label, hint, options, className, style, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; hint?: string; options: { value: string; label: string }[] }) {
+function FieldSelect({ label, hint, options, value, onChange }: { label: string; hint?: string; options: { value: string; label: string }[]; value: string; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const fieldRef = useRef<HTMLDivElement>(null)
+  const selected = options.find(option => option.value === value)
+
+  useEffect(() => {
+    if (!open) return
+    const closeMenu = (event: MouseEvent) => {
+      if (fieldRef.current && !fieldRef.current.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', closeMenu)
+    return () => document.removeEventListener('mousedown', closeMenu)
+  }, [open])
+
   return (
     <div className="flex flex-col gap-2">
       <FieldLabel>{label}</FieldLabel>
-      <div className="relative">
-        <select
-          className={`w-full cursor-pointer appearance-none rounded-lg px-3 py-2 pr-8 text-sm outline-none transition-all focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15 ${className ?? ''}`}
-          style={{ background: FIELD_BG, border: FIELD_BORDER, color: '#1c1b1b', ...style }}
-          {...props}
+      <div className="relative" ref={fieldRef}>
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen(current => !current)}
+          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm outline-none transition-all focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15"
+          style={{ background: FIELD_BG, border: FIELD_BORDER, color: '#1c1b1b' }}
         >
-          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-        <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: '#8d938e' }} />
+          <span className="min-w-0 truncate">{selected?.label ?? 'Select an option'}</span>
+          <ChevronDown size={14} className={`ml-3 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} style={{ color: '#737873' }} />
+        </button>
+        {open && (
+          <div role="listbox" className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl py-1" style={{ background: '#ffffff', border: '1px solid #c3c8c199', boxShadow: '0 16px 32px rgba(28, 27, 27, 0.10)' }}>
+            {options.map(option => {
+              const active = option.value === value
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => { onChange(option.value); setOpen(false) }}
+                  className="flex w-full items-center px-3 py-2.5 text-left text-sm transition-colors hover:bg-[#f6f3f2]"
+                  style={{ color: active ? '#18281c' : '#1c1b1b', fontWeight: active ? 600 : 400 }}
+                >
+                  {option.label}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
       {hint && <FieldHint>{hint}</FieldHint>}
     </div>
@@ -559,13 +595,13 @@ export default function PersonaBuilder() {
                   <FieldSelect
                     label="Gender"
                     value={traits.gender}
-                    onChange={e => updateTrait('gender', e.target.value as PersonaGender)}
+                    onChange={value => updateTrait('gender', value as PersonaGender)}
                     options={GENDER_OPTIONS}
                   />
                   <FieldSelect
                     label="Education"
                     value={traits.education}
-                    onChange={e => updateTrait('education', e.target.value as PersonaEducation)}
+                    onChange={value => updateTrait('education', value as PersonaEducation)}
                     options={EDUCATION_OPTIONS}
                   />
                 </div>
@@ -592,14 +628,14 @@ export default function PersonaBuilder() {
                 <FieldSelect
                   label="Funnel stage"
                   value={funnelStage}
-                  onChange={e => setFunnelStage(e.target.value as FunnelStage)}
+                  onChange={value => setFunnelStage(value as FunnelStage)}
                   options={FUNNEL_STAGE_OPTIONS}
                   hint="Where they sit in the buying journey — this shapes how they react (a new prospect vs. an experienced user). Filterable on the Personas page."
                 />
                 <FieldSelect
                   label="Workspace"
                   value={workspaceId}
-                  onChange={e => setWorkspaceId(e.target.value)}
+                  onChange={setWorkspaceId}
                   options={[{ value: 'personal', label: 'Personal (not shared)' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
                   hint="Share this persona with a workspace to make it visible and editable by every member of that workspace."
                 />
@@ -627,7 +663,7 @@ export default function PersonaBuilder() {
               <FieldSelect
                 label="Annual income"
                 value={traits.income}
-                onChange={e => updateTrait('income', e.target.value as PersonaIncome)}
+                onChange={value => updateTrait('income', value as PersonaIncome)}
                 options={INCOME_OPTIONS}
               />
               <ListField
