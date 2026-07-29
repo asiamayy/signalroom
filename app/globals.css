@@ -82,6 +82,20 @@ body {
   line-height: 24px !important;
 }
 
+/* The tags field is a flexible token input. Its inner text input must stay
+   unboxed so it reads as one clean field, just like the reference. */
+.persona-reference-form .persona-reference-tags > div > div {
+  min-height: 48px;
+  padding: 10px 12px !important;
+}
+
+.persona-reference-form .persona-reference-tags input {
+  min-height: 0 !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+}
+
 .persona-reference-form input:focus,
 .persona-reference-form select:focus,
 .persona-reference-form textarea:focus,
@@ -106,8 +120,62 @@ body {
   font-size: 16px !important;
 }
 
-.persona-ai-assistant button:hover {
+.persona-header-outline,
+.persona-header-primary,
+.persona-step-button,
+.persona-avatar-generate,
+.persona-ai-generate,
+.persona-example,
+.persona-surprise,
+.persona-form-cancel,
+.persona-form-continue {
+  will-change: transform;
+}
+
+.persona-header-outline:hover {
+  background: #eae7e7;
+}
+
+.persona-header-primary:hover {
+  box-shadow: 0 10px 20px rgb(24 40 28 / .14);
+  transform: translateY(-1px);
+}
+
+.persona-step-button:hover {
+  border-color: #c3c8c1 !important;
+  opacity: 1 !important;
+}
+
+.persona-step-button:hover span,
+.persona-step-button:hover p:first-child {
+  color: #18281c !important;
+}
+
+.persona-avatar-generate:not(:disabled):hover {
+  background: #f6f3f2 !important;
+  border-color: #737873 !important;
+}
+
+.persona-ai-generate:hover,
+.persona-form-continue:hover {
+  background: #233a29 !important;
+  box-shadow: 0 10px 20px rgb(24 40 28 / .15) !important;
+  transform: translateY(-1px);
+}
+
+.persona-example:hover {
+  background: #fcf9f8 !important;
   border-color: #18281c !important;
+}
+
+.persona-surprise:hover,
+.persona-form-cancel:hover {
+  background: #f6f3f2 !important;
+  border-color: #737873 !important;
+}
+
+.persona-ai-assistant button:hover {
+  border-color: #18281c;
 }
 
 @media print {

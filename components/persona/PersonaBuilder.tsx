@@ -302,9 +302,13 @@ export default function PersonaBuilder() {
     <div className="min-h-full px-5 pb-20 pt-12 sm:px-10" style={{ background: '#fcf9f8', fontFamily: 'var(--nf-hanken), system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div className="mx-auto mb-10 max-w-[1320px]">
+      <div className="mx-auto mb-8 max-w-[1320px]">
         <h1 className="mb-4" style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', fontSize: '40px', lineHeight: '48px', letterSpacing: '-.02em', fontWeight: 600, color: '#1c1b1b' }}>New Persona</h1>
-        <p className="max-w-2xl text-base leading-relaxed" style={{ color: '#434843' }}>Build a realistic, research-backed persona with AI assistance.</p>
+        <p className="max-w-2xl text-[16px] leading-relaxed" style={{ color: '#434843' }}>Build a realistic, research-backed persona with AI assistance.</p>
+        <div className="mt-8 flex flex-wrap gap-4">
+          <button type="button" onClick={() => router.push('/personas')} className="persona-header-outline rounded-full border px-8 py-3 text-[15px] font-semibold" style={{ borderColor: '#c3c8c1', color: '#1c1b1b' }}>Drafts</button>
+          <button type="button" className="persona-header-primary rounded-full bg-[#18281c] px-8 py-3 text-[15px] font-semibold text-white">Save Progress</button>
+        </div>
       </div>
 
       {/* Step progress — circles with connecting lines */}
@@ -316,7 +320,7 @@ export default function PersonaBuilder() {
             <div key={s.id} className="flex items-center">
               <button
                 onClick={() => i <= step && setStep(i)}
-                className="flex min-w-[200px] items-center gap-3 border-b-2 px-2 pb-4 text-left"
+                className="persona-step-button flex min-w-[200px] items-center gap-3 border-b-2 px-2 pb-4 text-left"
                 style={{ background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderColor: active ? '#18281c' : 'transparent', cursor: i <= step ? 'pointer' : 'default', fontFamily: 'inherit', opacity: active ? 1 : .42 }}
               >
                 <span
@@ -339,8 +343,8 @@ export default function PersonaBuilder() {
 
         {/* ── Main form card ── */}
         <div className="persona-reference-form rounded-xl p-7 shadow-sm lg:col-span-8 lg:p-10" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
-          <h2 className="mb-2 text-[28px]" style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', color: '#1c1b1b', fontWeight: 600 }}>{cardCopy.title}</h2>
-          <p className="mb-10 text-base italic" style={{ color: '#434843' }}>{cardCopy.subtitle}</p>
+          <h2 className="mb-2 text-[24px]" style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', color: '#1c1b1b', fontWeight: 600 }}>{cardCopy.title}</h2>
+          <p className="mb-9 text-[15px] italic" style={{ color: '#434843' }}>{cardCopy.subtitle}</p>
 
           {/* ── Step 0: Identity ─────────────────────────────────────────── */}
           {step === 0 && (
@@ -365,7 +369,7 @@ export default function PersonaBuilder() {
                   type="button"
                   onClick={handleGenerateAvatar}
                   disabled={generatingAvatar || !name}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] font-semibold transition-all enabled:hover:bg-[#f6f3f2] disabled:opacity-50"
+                  className="persona-avatar-generate flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] font-semibold transition-all disabled:opacity-50"
                   style={name && !generatingAvatar
                     ? { borderColor: '#c3c8c1', background: 'white', color: '#434843', cursor: 'pointer' }
                     : { borderColor: '#c3c8c14d', color: '#8d938e', cursor: 'not-allowed' }}
@@ -421,12 +425,14 @@ export default function PersonaBuilder() {
                   placeholder="e.g. Chinese-American"
                   maxLength={100}
                 />
+                <div className="persona-reference-tags">
                 <TagInput
                   label="Tags"
                   hint="Press Enter to add — e.g. 'bootstrapped', 'B2B', 'budget-conscious'"
                   tags={tags}
                   onChange={setTags}
                 />
+                </div>
                 <div className="persona-reference-dropdown space-y-2">
                   <label className="block text-sm font-medium text-[#202124]">Funnel stage</label>
                   <Dropdown
@@ -560,17 +566,17 @@ export default function PersonaBuilder() {
             <button
               type="button"
               onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}
-              className="rounded-lg border px-8 py-2.5 text-sm font-semibold transition-colors hover:bg-[#eae7e7]"
+              className="persona-form-cancel rounded-lg border px-8 py-2.5 text-sm font-semibold transition-all"
               style={{ borderColor: '#c3c8c1', color: '#434843' }}
             >
               {step === 0 ? 'Cancel' : 'Back'}
             </button>
             {step < STEPS.length - 1 ? (
-              <button type="button" onClick={handleNext} className="flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all hover:opacity-90 active:scale-[.98]">
+              <button type="button" onClick={handleNext} className="persona-form-continue flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all active:scale-[.98]">
                 Save and continue <ChevronRight size={18} />
               </button>
             ) : (
-              <button type="button" onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all hover:opacity-90 active:scale-[.98] disabled:opacity-60">
+              <button type="button" onClick={handleSave} disabled={saving} className="persona-form-continue flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all active:scale-[.98] disabled:opacity-60">
                 {saving ? 'Saving…' : 'Save persona'}
               </button>
             )}
@@ -616,7 +622,7 @@ export default function PersonaBuilder() {
                 size="sm"
                 onClick={handleGenerate}
                 loading={generating}
-                className="mb-6 w-full py-3 shadow-lg shadow-[#18281c]/10 active:scale-[.98]"
+                className="persona-ai-generate mb-6 w-full py-3 shadow-lg shadow-[#18281c]/10 active:scale-[.98]"
               >
                 Generate
               </Button>
@@ -628,7 +634,7 @@ export default function PersonaBuilder() {
                     key={prompt}
                     onClick={() => { setAiPrompt(prompt); runGenerate(prompt) }}
                     disabled={generating}
-                    className="group flex w-full items-center justify-between gap-2 rounded-xl border p-3.5 text-left text-sm transition-all hover:bg-[#fcf9f8] disabled:opacity-60"
+                    className="persona-example group flex w-full items-center justify-between gap-2 rounded-xl border p-3.5 text-left text-sm transition-all disabled:opacity-60"
                     style={{ background: 'white', borderColor: '#c3c8c14d', color: '#1c1b1b', cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     {prompt}
@@ -639,7 +645,7 @@ export default function PersonaBuilder() {
               <button
                 onClick={handleSurpriseMe}
                 disabled={generating}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[11px] font-bold uppercase tracking-[.14em] transition-all hover:bg-[#f6f3f2] disabled:opacity-60"
+                className="persona-surprise flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[11px] font-bold uppercase tracking-[.14em] transition-all disabled:opacity-60"
                 style={{ background: 'white', borderColor: '#c3c8c1', color: '#434843', cursor: surprising ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
               >
                 {surprising ? (
