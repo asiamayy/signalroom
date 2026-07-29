@@ -8,7 +8,7 @@ import { getSentimentColor, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
 import type { ReportTheme } from '@/types'
 
-export function ThemesClient({ themes, confidenceScore }: { themes: ReportTheme[]; confidenceScore: number }) {
+export function ThemesClient({ themes, confidenceScore, variant = 'default' }: { themes: ReportTheme[]; confidenceScore: number; variant?: 'default' | 'report-detail' }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const openTheme = openIndex !== null ? themes[openIndex] : null
 
@@ -16,7 +16,7 @@ export function ThemesClient({ themes, confidenceScore }: { themes: ReportTheme[
     <>
       <div className="space-y-3">
         {themes.map((theme, i) => (
-          <ThemeCard key={i} theme={theme} index={i} onClick={() => setOpenIndex(i)} />
+          <ThemeCard key={i} theme={theme} index={i} onClick={() => setOpenIndex(i)} variant={variant} />
         ))}
       </div>
 
@@ -76,13 +76,13 @@ function ThemeCardBody({ theme, index }: { theme: ReportTheme; index: number }) 
 
 // ─── Theme card ────────────────────────────────────────────────────────────────
 
-function ThemeCard({ theme, index, onClick }: { theme: ReportTheme; index: number; onClick: () => void }) {
+function ThemeCard({ theme, index, onClick, variant }: { theme: ReportTheme; index: number; onClick: () => void; variant: 'default' | 'report-detail' }) {
   return (
     <motion.div
       layoutId={`report-theme-${index}`}
       onClick={onClick}
-      className="rounded-2xl p-5 cursor-pointer transition-all hover:shadow-xl"
-      style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
+      className={variant === 'report-detail' ? 'group cursor-pointer rounded-2xl border p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg' : 'rounded-2xl p-5 cursor-pointer transition-all hover:shadow-xl'}
+      style={variant === 'report-detail' ? { background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}22`, boxShadow: CARD_SHADOW } : { background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
     >
       <ThemeCardBody theme={theme} index={index} />
     </motion.div>

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Download } from 'lucide-react'
 
-export function DownloadReportButton({ href }: { href?: string } = {}) {
+export function DownloadReportButton({ href, variant = 'default' }: { href?: string; variant?: 'default' | 'primary' } = {}) {
   const router = useRouter()
 
   const handleDownload = () => {
@@ -21,9 +21,9 @@ export function DownloadReportButton({ href }: { href?: string } = {}) {
   return (
     <button
       onClick={handleDownload}
-      className="flex items-center gap-1.5 text-xs text-neutral-500 border border-neutral-200 px-3 py-1.5 rounded-lg hover:border-neutral-300 hover:text-neutral-900 transition-colors"
+      className={variant === 'primary' ? 'flex items-center gap-2 rounded-lg bg-[#18281c] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md' : 'flex items-center gap-1.5 text-xs text-neutral-500 border border-neutral-200 px-3 py-1.5 rounded-lg hover:border-neutral-300 hover:text-neutral-900 transition-colors'}
     >
-      <Download size={13} />
+      <Download size={variant === 'primary' ? 18 : 13} />
       Download PDF
     </button>
   )

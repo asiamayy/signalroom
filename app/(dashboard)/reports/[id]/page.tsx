@@ -1,22 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import {
-  formatDate,
-  getPriorityColor,
-  INTERVIEW_TYPE_LABELS,
-  CARD_SHADOW,
-} from '@/lib/utils'
+import { formatDate, getPriorityColor, INTERVIEW_TYPE_LABELS, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
-import {
-  ArrowLeft,
-  MessageSquare,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle2,
-  Info,
-  Sparkles,
-} from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Download, Info, Lightbulb, MessageSquare, Share2, Sparkles } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
 import { CopyLinkButton } from '@/components/ui/CopyLinkButton'
@@ -26,323 +13,53 @@ import type { ReportTheme, ReportRecommendation } from '@/types'
 
 const cardStyle = { background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }
 
-export default async function ReportPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>
-  searchParams: Promise<{ print?: string }>
-}) {
+export default async function ReportPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ print?: string }> }) {
   const { id } = await params
   const { print } = await searchParams
   const supabase = await createClient()
-
-  const { data: report, error } = await supabase
-    .from('reports')
-    .select(`
-      *,
-      interview:interviews(
-        id, title, type, context, messages, created_at,
-        persona:personas(*)
-      )
-    `)
-    .eq('id', id)
-    .single()
-
+  const { data: report, error } = await supabase.from('reports').select(`*, interview:interviews(id, title, type, context, messages, created_at, persona:personas(*))`).eq('id', id).single()
   if (error || !report) notFound()
-
   const interview = report.interview
   const persona = interview?.persona
-
-  const score = report.confidence_score
+  const score = report.confidence_score ?? 0
   const scoreColor = score >= 75 ? HOME_COLORS.primary : score >= 50 ? '#B45309' : HOME_COLORS.error
-  const scoreBg = score >= 75 ? HOME_COLORS.secondaryContainer : score >= 50 ? '#FEF3C7' : '#FFDAD6'
-  const scoreLabel = score >= 75 ? 'High Confidence' : score >= 50 ? 'Moderate Confidence' : 'Low Confidence'
-
+  const scoreLabel = score >= 75 ? 'High' : score >= 50 ? 'Moderate' : 'Low'
   const themes: ReportTheme[] = report.key_themes ?? []
   const recommendations: ReportRecommendation[] = report.recommendations ?? []
   const messageCount = interview?.messages?.length ?? 0
+  const topRecommendation = recommendations[0]
 
-  return (
-    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, minHeight: '100%' }} className="p-4 sm:p-8 max-w-4xl">
-      <AutoPrint trigger={print === '1'} />
-
-      <Link href="/reports" className="flex items-center gap-1.5 text-sm mb-6 transition-colors w-fit" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-        <ArrowLeft size={14} />
-        All reports
-      </Link>
-
-      {/* Report header */}
-      <div className="rounded-2xl p-4 sm:p-6 mb-6" style={cardStyle}>
-        <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4 sm:gap-6">
-          <div className="flex items-start gap-4">
-            <PersonaAvatar avatarUrl={persona?.avatar_url} avatarInitials={persona?.avatar_initials} avatarColor={persona?.avatar_color} name={persona?.name} size="lg" />
-            <div className="min-w-0">
-              <h1 className="mb-0.5" style={{ ...DISPLAY_LG_STYLE, fontSize: '22px', lineHeight: '28px', color: HOME_COLORS.onSurface }}>
-                {interview?.title ?? 'Untitled interview'}
-              </h1>
-              <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                {persona?.name} · {INTERVIEW_TYPE_LABELS[interview?.type] ?? 'Interview'} · {formatDate(report.created_at)}
-              </p>
-              {interview?.context && (
-                <p className="text-xs mt-2 max-w-lg leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                  <span className="font-medium">Tested: </span>
-                  {interview.context}
-                </p>
-              )}
+  return <div className="min-h-full pb-20" style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }}>
+    <AutoPrint trigger={print === '1'} />
+    <div className="mx-auto max-w-[1440px] px-5 pt-7 sm:px-10 sm:pt-10">
+      <Link href="/reports" className="group mb-10 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors hover:text-[#18281c]" style={{ color: HOME_COLORS.onSurfaceVariant }}><ArrowLeft size={17} className="transition-transform group-hover:-translate-x-1" />All reports</Link>
+      <section className="mb-10">
+        <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-start">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-5">
+              <div className="relative shrink-0"><PersonaAvatar avatarUrl={persona?.avatar_url} avatarInitials={persona?.avatar_initials} avatarColor={persona?.avatar_color} name={persona?.name} size="xl" /><span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, borderColor: HOME_COLORS.surface }}><CheckCircle2 size={13} /></span></div>
+              <div className="min-w-0"><h1 className="mb-2" style={{ ...DISPLAY_LG_STYLE, fontSize: 'clamp(24px, 3vw, 32px)', lineHeight: 1.15, color: HOME_COLORS.onSurface }}>{interview?.title ?? 'Untitled interview'}</h1><div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}><strong style={{ color: HOME_COLORS.onSurface }}>{persona?.name ?? 'Research participant'}</strong><span>•</span><span>{INTERVIEW_TYPE_LABELS[interview?.type] ?? 'Interview'}</span><span>•</span><span>{formatDate(report.created_at)}</span></div></div>
             </div>
+            {interview?.context && <p className="mt-7 max-w-3xl text-base leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{interview.context}</p>}
           </div>
-
-          {/* Confidence score badge */}
-          <div className="flex-shrink-0 text-center rounded-xl px-4 py-3 self-start sm:self-auto" style={{ background: scoreBg }}>
-            <p className="text-3xl font-semibold leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, color: scoreColor }}>{score}</p>
-            <p className="text-[11px] font-semibold mt-1 uppercase tracking-wider" style={{ color: scoreColor }}>{scoreLabel}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence Score</p>
-          </div>
+          <div className="w-full rounded-xl border p-6 lg:w-72" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}33`, boxShadow: '0 2px 5px rgba(15,23,42,.04)' }}><div className="mb-4 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence score <Info size={15} /></div><div className="flex items-baseline gap-2"><span className="text-4xl" style={{ color: scoreColor, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{score}%</span><span className="text-[11px] font-semibold uppercase" style={{ color: scoreColor }}>{scoreLabel}</span></div><div className="mt-4 h-1.5 overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-full rounded-full" style={{ width: `${score}%`, background: scoreColor }} /></div><p className="mt-4 text-xs italic leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence reflects the depth and specificity of this interview.</p></div>
         </div>
-
-        {/* Stats row */}
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-5 pt-5" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
-          <div>
-            <p className="text-lg font-semibold" style={{ color: HOME_COLORS.onSurface }}>{themes.length}</p>
-            <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Key themes</p>
-          </div>
-          <div>
-            <p className="text-lg font-semibold" style={{ color: HOME_COLORS.onSurface }}>{recommendations.length}</p>
-            <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Recommendations</p>
-          </div>
-          <div>
-            <p className="text-lg font-semibold" style={{ color: HOME_COLORS.onSurface }}>{messageCount}</p>
-            <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Messages</p>
-          </div>
-          <div className="flex items-center gap-3 sm:ml-auto w-full sm:w-auto">
-            <DownloadReportButton />
-            <CopyLinkButton reportId={report.id} initialShared={!!report.share_token} />
-            <Link href={`/interviews/${interview?.id}`} className="flex items-center gap-1.5 text-xs transition-colors" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-              <MessageSquare size={13} />
-              View full transcript
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Verdict */}
-      {report.ai_verdict && (
-        <div className="rounded-2xl p-5 mb-6" style={{ background: HOME_COLORS.primaryFixed }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles size={15} style={{ color: HOME_COLORS.onPrimaryFixed }} />
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onPrimaryFixed }}>
-              AI Verdict
-            </h2>
-          </div>
-          <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>{report.ai_verdict.summary}</p>
-          <div className="mt-4 pt-4 space-y-2" style={{ borderTop: `1px solid ${HOME_COLORS.onPrimaryFixedVariant}33` }}>
-            <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>
-              <span className="font-semibold">Validate next: </span>{report.ai_verdict.validate_next}
-            </p>
-            <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>
-              <span className="font-semibold">Ask real users: </span>&ldquo;{report.ai_verdict.follow_up_question}&rdquo;
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-5">
-
-          {/* Executive summary */}
-          <div className="rounded-2xl p-5" style={cardStyle}>
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp size={15} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                Executive summary
-              </h2>
-            </div>
-            <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{report.executive_summary}</p>
-          </div>
-
-          {/* Key themes */}
-          {themes.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                Key themes
-              </h2>
-              <ThemesClient themes={themes} confidenceScore={score} />
-            </div>
-          )}
-
-          {/* Recommendations */}
-          {recommendations.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                Recommendations
-              </h2>
-              {recommendations.map((rec, i) => (
-                <RecommendationCard key={i} rec={rec} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Right sidebar */}
-        <div className="space-y-5">
-
-          {/* Confidence explainer */}
-          <div className="rounded-2xl p-4" style={cardStyle}>
-            <div className="flex items-center gap-2 mb-3">
-              <Info size={13} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-              <h3 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>About this score</h3>
-            </div>
-            <div className="space-y-2.5">
-              <ConfidenceBar label="Depth of responses" value={Math.min(100, messageCount * 12)} />
-              <ConfidenceBar label="Persona specificity" value={getPersonaSpecificity(persona)} />
-            </div>
-            <p className="text-xs mt-3 leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-              This score measures the depth and specificity of this AI interview session — not market certainty. Longer sessions with a well-defined persona score higher. Always validate key findings with real users.
-            </p>
-          </div>
-
-          {/* Sentiment breakdown */}
-          {themes.length > 0 && (
-            <div className="rounded-2xl p-4" style={cardStyle}>
-              <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                Sentiment breakdown
-              </h3>
-              <SentimentBreakdown themes={themes} />
-            </div>
-          )}
-
-          {/* Persona summary */}
-          {persona && (
-            <div className="rounded-2xl p-4" style={cardStyle}>
-              <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                Interviewed
-              </h3>
-              <div className="flex items-center gap-2.5 mb-3">
-                <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" />
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{persona.name}</p>
-                  <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{persona.traits?.job_title}</p>
-                </div>
-              </div>
-              <dl className="space-y-1.5">
-                {[
-                  ['Age', persona.traits?.age],
-                  ['Location', persona.traits?.location],
-                  ['Industry', persona.traits?.industry],
-                ].filter(([, v]) => v).map(([label, value]) => (
-                  <div key={String(label)} className="flex justify-between">
-                    <dt className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</dt>
-                    <dd className="text-xs font-medium" style={{ color: HOME_COLORS.onSurface }}>{value}</dd>
-                  </div>
-                ))}
-              </dl>
-              <Link href={`/personas/${persona.id}`} className="block text-xs mt-3 transition-colors" style={{ color: HOME_COLORS.primary }}>
-                View full persona →
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
+        <div className="mt-10 flex flex-wrap items-center gap-3"><DownloadReportButton variant="primary" /><span className="inline-flex items-center rounded-lg bg-[#eae7e7] px-5 py-2.5 text-sm font-medium"><Share2 size={18} className="mr-2" /><CopyLinkButton reportId={report.id} initialShared={!!report.share_token} variant="action" /></span><Link href={`/interviews/${interview?.id}`} className="inline-flex items-center rounded-lg bg-[#eae7e7] px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[#dedbda]" style={{ color: HOME_COLORS.onSurface }}><MessageSquare size={18} className="mr-2" />View full transcript</Link></div>
+      </section>
     </div>
-  )
+    <section className="mb-12 grid grid-cols-1 divide-y border-y md:grid-cols-3 md:divide-x md:divide-y-0" style={{ borderColor: `${HOME_COLORS.outlineVariant}77` }}>{[[themes.length,'Key themes identified'],[recommendations.length,'Recommendations'],[messageCount,'Critical messages']].map(([value,label]) => <div key={String(label)} className="flex flex-col items-center bg-[#fcf9f8] px-8 py-8 text-center"><span className="text-4xl" style={{ color: HOME_COLORS.primary, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{value}</span><span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</span></div>)}</section>
+    <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-8 px-5 sm:px-10 lg:grid-cols-12"><main className="space-y-8 lg:col-span-8">
+      {report.ai_verdict && <section className="relative overflow-hidden rounded-2xl p-7 sm:p-8" style={{ background: `${HOME_COLORS.secondaryContainer}88` }}><Sparkles className="absolute -right-4 -top-4 h-32 w-32 opacity-[.07]" /><div className="relative"><h2 className="mb-5 flex items-center gap-2 text-xl" style={{ color: HOME_COLORS.primary, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}><Sparkles size={20} />AI Verdict</h2><p className="text-base leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{report.ai_verdict.summary}</p><div className="mt-7 grid gap-7 md:grid-cols-2"><Brief label="Validate next" value={report.ai_verdict.validate_next} icon="check" /><Brief label="Ask real users" value={`“${report.ai_verdict.follow_up_question}”`} icon="ask" /></div></div></section>}
+      <section className="rounded-2xl p-7 sm:p-8" style={cardStyle}><h2 className="mb-5 text-xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>Executive Summary</h2><p className="text-base leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{report.executive_summary}</p></section>
+      {themes.length > 0 && <section className="space-y-6"><h2 className="text-xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>Key Themes</h2><ThemesClient themes={themes} confidenceScore={score} variant="report-detail" /></section>}
+      {recommendations.length > 0 && <section className="space-y-4"><h2 className="text-xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>Recommendations</h2>{recommendations.map((rec,i)=><RecommendationCard key={i} rec={rec} />)}</section>}
+    </main><aside className="space-y-6 lg:col-span-4"><ScoreCard label="About this score"><ConfidenceBar label="Depth of responses" value={Math.min(100,messageCount*12)} /><ConfidenceBar label="Persona specificity" value={getPersonaSpecificity(persona)} /><p className="mt-6 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>The score reflects a specific participant and detailed responses—not market certainty.</p></ScoreCard>{themes.length>0&&<ScoreCard label="Sentiment breakdown"><SentimentBreakdown themes={themes}/></ScoreCard>}{persona&&<PersonaCard persona={persona}/>} {topRecommendation&&<section className="rounded-2xl p-6" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: '0 12px 28px rgba(24,40,28,.16)' }}><Lightbulb size={20} className="mb-4"/><h2 className="text-xl" style={{fontFamily:HOME_FONT_DISPLAY,fontWeight:600}}>Key Recommendation</h2><p className="mt-2 text-sm leading-relaxed opacity-85">{topRecommendation.detail}</p></section>}</aside></div>
+  </div>
 }
-
-// ─── Recommendation card ───────────────────────────────────────────────────────
-
-function RecommendationCard({ rec }: { rec: ReportRecommendation }) {
-  const priorityClass = getPriorityColor(rec.priority)
-  const PriorityIcon = rec.priority === 'high' ? AlertCircle
-    : rec.priority === 'medium' ? Info
-    : CheckCircle2
-
-  return (
-    <div className="rounded-2xl p-5" style={cardStyle}>
-      <div className="flex items-start gap-3">
-        <div className={`flex-shrink-0 mt-0.5 p-1 rounded-md ${priorityClass}`}>
-          <PriorityIcon size={13} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{rec.title}</h3>
-            <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full capitalize ${priorityClass}`}>
-              {rec.priority}
-            </span>
-          </div>
-          <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{rec.detail}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Confidence bar ────────────────────────────────────────────────────────────
-
-function ConfidenceBar({ label, value }: { label: string; value: number }) {
-  const capped = Math.min(100, Math.max(0, value))
-  const color = capped >= 75 ? HOME_COLORS.primary : capped >= 50 ? '#D97706' : '#EF4444'
-
-  return (
-    <div>
-      <div className="flex justify-between text-xs mb-1">
-        <span style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</span>
-        <span className="font-medium" style={{ color: HOME_COLORS.onSurface }}>{capped}%</span>
-      </div>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: HOME_COLORS.surfaceContainer }}>
-        <div className="h-1.5 rounded-full transition-all" style={{ width: `${capped}%`, background: color }} />
-      </div>
-    </div>
-  )
-}
-
-// ─── Sentiment breakdown ───────────────────────────────────────────────────────
-
-function SentimentBreakdown({ themes }: { themes: ReportTheme[] }) {
-  const counts = themes.reduce((acc, t) => {
-    acc[t.sentiment] = (acc[t.sentiment] ?? 0) + 1
-    return acc
-  }, {} as Record<string, number>)
-
-  const total = themes.length
-  const sentiments: { key: string; label: string; color: string }[] = [
-    { key: 'positive', label: 'Positive', color: HOME_COLORS.primary },
-    { key: 'mixed', label: 'Mixed', color: '#D97706' },
-    { key: 'neutral', label: 'Neutral', color: HOME_COLORS.outline },
-    { key: 'negative', label: 'Negative', color: '#EF4444' },
-  ]
-
-  return (
-    <div className="space-y-2.5">
-      {sentiments.filter(s => counts[s.key]).map(s => {
-        const count = counts[s.key] ?? 0
-        const pct = Math.round((count / total) * 100)
-        return (
-          <div key={s.key}>
-            <div className="flex justify-between text-xs mb-1">
-              <span style={{ color: s.color }}>{s.label}</span>
-              <span style={{ color: HOME_COLORS.onSurfaceVariant }}>{count} theme{count !== 1 ? 's' : ''}</span>
-            </div>
-            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: HOME_COLORS.surfaceContainer }}>
-              <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: s.color }} />
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-function getPersonaSpecificity(persona: any): number {
-  if (!persona?.traits) return 30
-  const t = persona.traits
-  let score = 0
-  if (t.job_title) score += 15
-  if (t.location) score += 10
-  if (t.goals?.filter(Boolean).length > 0) score += 20
-  if (t.frustrations?.filter(Boolean).length > 0) score += 20
-  if (t.buying_behavior) score += 20
-  if (t.additional_context) score += 15
-  return Math.min(100, score)
-}
+function Brief({label,value,icon}:{label:string;value:string;icon:string}){return <div><h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider" style={{color:HOME_COLORS.primary}}>{label}</h3><p className="flex gap-2 text-sm leading-relaxed" style={{color:HOME_COLORS.onSurface}}><span>{icon==='check'?'✓':'?'}</span>{value}</p></div>}
+function ScoreCard({label,children}:{label:string;children:React.ReactNode}){return <section className="rounded-2xl p-6" style={cardStyle}><h2 className="mb-6 text-[11px] font-semibold uppercase tracking-[.15em]" style={{color:HOME_COLORS.onSurfaceVariant}}>{label}</h2><div className="space-y-5">{children}</div></section>}
+function PersonaCard({persona}:{persona:any}){return <section className="overflow-hidden rounded-2xl" style={cardStyle}><div className="p-6"><h2 className="mb-6 text-[11px] font-semibold uppercase tracking-[.15em]" style={{color:HOME_COLORS.onSurfaceVariant}}>Interviewed</h2><div className="mb-6 flex items-center gap-4"><PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg"/><div><p className="text-lg" style={{fontFamily:HOME_FONT_DISPLAY,fontWeight:600}}>{persona.name}</p><p className="text-sm" style={{color:HOME_COLORS.onSurfaceVariant}}>{persona.traits?.job_title}</p></div></div><dl className="space-y-3 text-sm">{[['Age',persona.traits?.age],['Location',persona.traits?.location],['Industry',persona.traits?.industry]].filter(([,v])=>v).map(([l,v])=><div className="flex justify-between border-b pb-3" style={{borderColor:`${HOME_COLORS.outlineVariant}33`}} key={String(l)}><dt style={{color:HOME_COLORS.onSurfaceVariant}}>{l}</dt><dd className="font-medium">{String(v)}</dd></div>)}</dl></div><Link href={`/personas/${persona.id}`} className="block py-4 text-center text-[11px] font-semibold uppercase tracking-wider transition-colors hover:text-white" style={{background:HOME_COLORS.surfaceContainer,color:HOME_COLORS.primary}}>View full persona</Link></section>}
+function RecommendationCard({rec}:{rec:ReportRecommendation}){return <div className="rounded-2xl p-5" style={cardStyle}><p className="mb-2 text-[10px] font-semibold uppercase tracking-wider" style={{color:HOME_COLORS.primary}}>{rec.priority} priority</p><h3 className="text-base font-semibold">{rec.title}</h3><p className="mt-2 text-sm leading-relaxed" style={{color:HOME_COLORS.onSurfaceVariant}}>{rec.detail}</p></div>}
+function ConfidenceBar({label,value}:{label:string;value:number}){const n=Math.min(100,Math.max(0,value));return <div><div className="mb-2 flex justify-between text-sm"><span className="font-medium">{label}</span><span style={{color:HOME_COLORS.primary}}>{n}%</span></div><div className="h-1.5 overflow-hidden rounded-full" style={{background:HOME_COLORS.surfaceContainer}}><div className="h-full rounded-full" style={{width:`${n}%`,background:HOME_COLORS.primary}}/></div></div>}
+function SentimentBreakdown({themes}:{themes:ReportTheme[]}){const counts=themes.reduce((a,t)=>{a[t.sentiment]=(a[t.sentiment]??0)+1;return a},{} as Record<string,number>);return <>{(['positive','mixed','neutral','negative'] as const).filter(s=>counts[s]).map(s=>{const p=Math.round(counts[s]/themes.length*100);return <div className="flex items-center gap-3" key={s}><span className="w-20 text-sm capitalize">{s}</span><div className="h-2 flex-1 overflow-hidden rounded-full" style={{background:HOME_COLORS.surfaceContainer}}><div className="h-full" style={{width:`${p}%`,background:s==='positive'?HOME_COLORS.primary:s==='negative'?HOME_COLORS.tertiary:HOME_COLORS.outline}}/></div><span className="w-8 text-right text-xs font-semibold">{p}%</span></div>})}</>}
+function getPersonaSpecificity(persona:any){if(!persona?.traits)return 30;const t=persona.traits;return Math.min(100,(t.job_title?15:0)+(t.location?10:0)+(t.goals?.filter(Boolean).length?20:0)+(t.frustrations?.filter(Boolean).length?20:0)+(t.buying_behavior?20:0)+(t.additional_context?15:0))}

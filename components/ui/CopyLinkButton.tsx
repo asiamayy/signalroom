@@ -9,9 +9,11 @@ import { useState } from 'react'
 export function CopyLinkButton({
   reportId,
   initialShared = false,
+  variant = 'default',
 }: {
   reportId?: string
   initialShared?: boolean
+  variant?: 'default' | 'action'
 } = {}) {
   const [copied, setCopied] = useState(false)
   const [shared, setShared] = useState(initialShared)
@@ -60,7 +62,7 @@ export function CopyLinkButton({
       <button
         onClick={handleCopy}
         disabled={busy}
-        className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+        className={variant === 'action' ? 'flex items-center gap-1.5 text-sm font-medium text-[#1c1b1b] transition-colors hover:text-[#18281c]' : 'flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors'}
         style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
       >
         {copied ? (
