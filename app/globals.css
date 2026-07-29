@@ -127,4 +127,19 @@ body {
   a[href*="/interviews/"] {
     display: none !important;
   }
+
+  .report-detail-print {
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .report-detail-print section,
+  .report-detail-print article {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-detail-print .lg\:col-span-4 {
+    margin-top: 20px;
+  }
 }
