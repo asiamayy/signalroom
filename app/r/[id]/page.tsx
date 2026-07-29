@@ -9,6 +9,7 @@ import {
 } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import {
+  ArrowDown,
   TrendingUp,
   AlertCircle,
   CheckCircle2,
@@ -20,7 +21,7 @@ import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
 import { CopyLinkButton } from '@/components/ui/CopyLinkButton'
 import { ThemesClient } from '@/app/(dashboard)/reports/[id]/ThemesClient'
 import { PLAN_LIMITS } from '@/types'
-import type { Plan, ReportTheme, ReportRecommendation } from '@/types'
+import type { Persona, Plan, ReportTheme, ReportRecommendation } from '@/types'
 
 const cardStyle = { background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }
 
@@ -75,7 +76,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
 
   const { data: ownerProfile } = await supabase
     .from('profiles')
-    .select('plan, brand_logo_url, brand_color')
+    .select('plan, full_name, brand_logo_url, brand_color')
     .eq('id', planCheckUserId)
     .single()
   const ownerPlan = (ownerProfile?.plan ?? 'free') as Plan
@@ -87,6 +88,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
   // (SignalRoom's brand accent, no logo) if the owner hasn't set one yet.
   const brandLogoUrl = isWhiteLabel ? ownerProfile?.brand_logo_url : null
   const accentColor = (isWhiteLabel && ownerProfile?.brand_color) || HOME_COLORS.primary
+  const brandName = ownerProfile?.full_name?.trim() || 'Private research'
 
   const interview = report.interview
   const persona = interview?.persona
@@ -99,9 +101,20 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
   const themes: ReportTheme[] = report.key_themes ?? []
   const recommendations: ReportRecommendation[] = report.recommendations ?? []
   const messageCount = interview?.messages?.length ?? 0
+  const reportDate = formatDate(report.created_at)
+  const accentWash = withAlpha(accentColor, 0.1)
+  const accentLine = withAlpha(accentColor, 0.28)
 
   return (
-    <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, minHeight: '100vh' }}>
+    <div
+      style={{
+        background: isWhiteLabel
+          ? `radial-gradient(circle at 88% 4%, ${accentWash} 0, transparent 28rem), ${HOME_COLORS.surface}`
+          : HOME_COLORS.surface,
+        fontFamily: HOME_FONT_BODY,
+        minHeight: '100vh',
+      }}
+    >
       <div className="p-4 sm:p-8 max-w-4xl mx-auto">
 
         {/* Public header — SignalRoom's own branding for everyone else; the
@@ -123,12 +136,53 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
         )}
         {isWhiteLabel && brandLogoUrl && (
           <div className="flex items-center mb-6">
-            <img src={brandLogoUrl} alt="" className="h-10 w-auto object-contain" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- tenant-provided Supabase logo URL */}
+            <img src={brandLogoUrl} alt={`${brandName} logo`} className="h-10 w-auto object-contain" />
           </div>
         )}
 
+        {/* Broadcast presentation cover. It intentionally only exists on the
+            white-label path: Signal reports retain their established layout. */}
+        {isWhiteLabel && (
+          <section
+            className="relative overflow-hidden rounded-[28px] px-6 py-8 mb-5 sm:px-9 sm:py-11"
+            style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: `1px solid ${accentLine}` }}
+          >
+            <div className="absolute top-0 left-0 h-1 w-full" style={{ background: accentColor }} />
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-10">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: accentColor }}>Confidential research brief</span>
+              <span className="text-[10px] font-medium uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{reportDate}</span>
+            </div>
+            <div className="max-w-2xl">
+              <p className="text-xs mb-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>Prepared for decision-makers</p>
+              <h1 className="mb-4" style={{ ...DISPLAY_LG_STYLE, fontSize: 'clamp(30px, 5vw, 48px)', lineHeight: 1.06, color: HOME_COLORS.onSurface }}>
+                {interview?.title ?? 'Untitled research brief'}
+              </h1>
+              {interview?.context && (
+                <p className="max-w-xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{interview.context}</p>
+              )}
+            </div>
+            <div className="mt-9 grid grid-cols-2 gap-y-5 border-t pt-6 sm:grid-cols-4" style={{ borderColor: accentLine }}>
+              <CoverMetric label="Research format" value={INTERVIEW_TYPE_LABELS[interview?.type] ?? 'Interview'} />
+              <CoverMetric label="Perspective" value={persona?.name ?? 'Persona'} />
+              <CoverMetric label="Key themes" value={String(themes.length)} />
+              <CoverMetric label="Recommendations" value={String(recommendations.length)} />
+            </div>
+          </section>
+        )}
+
+        {isWhiteLabel && (
+          <nav aria-label="Report sections" className="no-print mb-6 flex flex-wrap items-center gap-x-5 gap-y-2 px-1 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: accentColor }}>
+            <a href="#overview" className="transition-opacity hover:opacity-65">Overview</a>
+            {themes.length > 0 && <a href="#themes" className="transition-opacity hover:opacity-65">Themes</a>}
+            {recommendations.length > 0 && <a href="#recommendations" className="transition-opacity hover:opacity-65">Recommendations</a>}
+            <a href="#methodology" className="transition-opacity hover:opacity-65">Research scope</a>
+            <a href="#report-end" className="ml-auto inline-flex items-center gap-1 transition-opacity hover:opacity-65">Read report <ArrowDown size={12} /></a>
+          </nav>
+        )}
+
         {/* Report header */}
-        <div className="rounded-2xl p-4 sm:p-6 mb-6" style={cardStyle}>
+        <div id="overview" className="rounded-2xl p-4 sm:p-6 mb-6" style={isWhiteLabel ? { ...cardStyle, borderTop: `3px solid ${accentColor}` } : cardStyle}>
           <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4 sm:gap-6">
             <div className="flex items-start gap-4">
               <PersonaAvatar avatarUrl={persona?.avatar_url} avatarInitials={persona?.avatar_initials} avatarColor={persona?.avatar_color} name={persona?.name} size="lg" />
@@ -149,7 +203,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
             </div>
 
             {/* Confidence score badge */}
-            <div className="flex-shrink-0 text-center rounded-xl px-4 py-3 self-start sm:self-auto" style={{ background: scoreBg }}>
+            <div className="flex-shrink-0 text-center rounded-xl px-4 py-3 self-start sm:self-auto" style={{ background: isWhiteLabel && score >= 75 ? accentWash : scoreBg }}>
               <p className="text-3xl font-semibold leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, color: scoreColor }}>{score}</p>
               <p className="text-[11px] font-semibold mt-1 uppercase tracking-wider" style={{ color: scoreColor }}>{scoreLabel}</p>
               <p className="text-[10px] mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence Score</p>
@@ -179,19 +233,19 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
 
         {/* AI Verdict */}
         {report.ai_verdict && (
-          <div className="rounded-2xl p-5 mb-6" style={{ background: HOME_COLORS.primaryFixed }}>
+          <div className="rounded-2xl p-5 mb-6" style={{ background: isWhiteLabel ? accentWash : HOME_COLORS.primaryFixed, border: isWhiteLabel ? `1px solid ${accentLine}` : undefined }}>
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={15} style={{ color: HOME_COLORS.onPrimaryFixed }} />
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onPrimaryFixed }}>
-                AI Verdict
+              <Sparkles size={15} style={{ color: isWhiteLabel ? accentColor : HOME_COLORS.onPrimaryFixed }} />
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: isWhiteLabel ? accentColor : HOME_COLORS.onPrimaryFixed }}>
+                {isWhiteLabel ? 'Decision brief' : 'AI Verdict'}
               </h2>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>{report.ai_verdict.summary}</p>
-            <div className="mt-4 pt-4 space-y-2" style={{ borderTop: `1px solid ${HOME_COLORS.onPrimaryFixedVariant}33` }}>
-              <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>
+            <p className="text-sm leading-relaxed" style={{ color: isWhiteLabel ? HOME_COLORS.onSurface : HOME_COLORS.onPrimaryFixed }}>{report.ai_verdict.summary}</p>
+            <div className="mt-4 pt-4 space-y-2" style={{ borderTop: `1px solid ${isWhiteLabel ? accentLine : `${HOME_COLORS.onPrimaryFixedVariant}33`}` }}>
+              <p className="text-xs leading-relaxed" style={{ color: isWhiteLabel ? HOME_COLORS.onSurface : HOME_COLORS.onPrimaryFixed }}>
                 <span className="font-semibold">Validate next: </span>{report.ai_verdict.validate_next}
               </p>
-              <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onPrimaryFixed }}>
+              <p className="text-xs leading-relaxed" style={{ color: isWhiteLabel ? HOME_COLORS.onSurface : HOME_COLORS.onPrimaryFixed }}>
                 <span className="font-semibold">Ask real users: </span>&ldquo;{report.ai_verdict.follow_up_question}&rdquo;
               </p>
             </div>
@@ -205,7 +259,7 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
             <div className="rounded-2xl p-5" style={cardStyle}>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp size={15} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-                <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: isWhiteLabel ? accentColor : HOME_COLORS.onSurfaceVariant }}>
                   Executive summary
                 </h2>
               </div>
@@ -214,8 +268,8 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
 
             {/* Key themes */}
             {themes.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <div id="themes" className="space-y-3 scroll-mt-6">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: isWhiteLabel ? accentColor : HOME_COLORS.onSurfaceVariant }}>
                   Key themes
                 </h2>
                 <ThemesClient themes={themes} confidenceScore={score} />
@@ -224,12 +278,12 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
 
             {/* Recommendations */}
             {recommendations.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <div id="recommendations" className="space-y-3 scroll-mt-6">
+                <h2 className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: isWhiteLabel ? accentColor : HOME_COLORS.onSurfaceVariant }}>
                   Recommendations
                 </h2>
                 {recommendations.map((rec, i) => (
-                  <RecommendationCard key={i} rec={rec} />
+                  <RecommendationCard key={i} rec={rec} accentColor={isWhiteLabel ? accentColor : undefined} />
                 ))}
               </div>
             )}
@@ -293,8 +347,34 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
                 </Link>
               </div>
             )}
+
+            {isWhiteLabel && (
+              <div id="methodology" className="rounded-2xl p-4 scroll-mt-6" style={{ ...cardStyle, borderTop: `2px solid ${accentColor}` }}>
+                <h3 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: accentColor }}>Research scope</h3>
+                <dl className="space-y-2 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                  <div className="flex justify-between gap-3"><dt>Format</dt><dd className="text-right font-medium" style={{ color: HOME_COLORS.onSurface }}>{INTERVIEW_TYPE_LABELS[interview?.type] ?? 'Interview'}</dd></div>
+                  <div className="flex justify-between gap-3"><dt>Responses reviewed</dt><dd className="font-medium" style={{ color: HOME_COLORS.onSurface }}>{messageCount}</dd></div>
+                  <div className="flex justify-between gap-3"><dt>Perspective</dt><dd className="text-right font-medium" style={{ color: HOME_COLORS.onSurface }}>{persona?.name ?? 'Research persona'}</dd></div>
+                </dl>
+                <p className="mt-4 pt-3 text-[11px] leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant, borderTop: `1px solid ${accentLine}` }}>
+                  Findings are directional and should be validated with real customers before material decisions are made.
+                </p>
+              </div>
+            )}
           </div>
         </div>
+
+        {isWhiteLabel && (
+          <footer id="report-end" className="mt-10 border-t px-1 pt-5 pb-3 text-[10px] uppercase tracking-[0.14em]" style={{ borderColor: accentLine, color: HOME_COLORS.onSurfaceVariant }}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span>Confidential research deliverable</span>
+              {brandLogoUrl ? <>
+                {/* eslint-disable-next-line @next/next/no-img-element -- tenant-provided Supabase logo URL */}
+                <img src={brandLogoUrl} alt={`${brandName} logo`} className="h-5 w-auto object-contain" />
+              </> : <span>{brandName}</span>}
+            </div>
+          </footer>
+        )}
       </div>
     </div>
   )
@@ -302,14 +382,14 @@ export default async function PublicReportPage({ params }: { params: Promise<{ i
 
 // ─── Recommendation card ───────────────────────────────────────────────────────
 
-function RecommendationCard({ rec }: { rec: ReportRecommendation }) {
+function RecommendationCard({ rec, accentColor }: { rec: ReportRecommendation; accentColor?: string }) {
   const priorityClass = getPriorityColor(rec.priority)
   const PriorityIcon = rec.priority === 'high' ? AlertCircle
     : rec.priority === 'medium' ? Info
     : CheckCircle2
 
   return (
-    <div className="rounded-2xl p-5" style={cardStyle}>
+    <div className="rounded-2xl p-5" style={accentColor ? { ...cardStyle, borderLeft: `3px solid ${accentColor}` } : cardStyle}>
       <div className="flex items-start gap-3">
         <div className={`flex-shrink-0 mt-0.5 p-1 rounded-md ${priorityClass}`}>
           <PriorityIcon size={13} />
@@ -324,6 +404,15 @@ function RecommendationCard({ rec }: { rec: ReportRecommendation }) {
           <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{rec.detail}</p>
         </div>
       </div>
+    </div>
+  )
+}
+
+function CoverMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 pr-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.13em] mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</p>
+      <p className="truncate text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{value}</p>
     </div>
   )
 }
@@ -386,7 +475,7 @@ function SentimentBreakdown({ themes, accentColor }: { themes: ReportTheme[]; ac
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function getPersonaSpecificity(persona: any): number {
+function getPersonaSpecificity(persona: Pick<Persona, 'traits'> | null | undefined): number {
   if (!persona?.traits) return 30
   const t = persona.traits
   let score = 0
@@ -397,4 +486,13 @@ function getPersonaSpecificity(persona: any): number {
   if (t.buying_behavior) score += 20
   if (t.additional_context) score += 15
   return Math.min(100, score)
+}
+
+function withAlpha(hex: string, alpha: number) {
+  const normalized = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : HOME_COLORS.primary
+  const value = parseInt(normalized.slice(1), 16)
+  const red = (value >> 16) & 255
+  const green = (value >> 8) & 255
+  const blue = value & 255
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
 }

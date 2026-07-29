@@ -83,7 +83,7 @@ const PLANS: {
       'Unlimited interviews',
       'Everything in Signal',
       '10 collaborative team seats',
-      'White-label executive reports',
+      'Client-ready white-label report presentation',
       'Slack & Notion integrations',
       'Priority feature access and support',
     ],
@@ -606,10 +606,10 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
             <div className="space-y-7">
               <div>
                 <h2 className="text-[32px]" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Workspace identity</h2>
-                <p className="mt-3 max-w-xl text-sm leading-6" style={{ color: HOME_COLORS.onSurfaceVariant }}>Customize the platform interface to match your corporate identity for high-fidelity exports.</p>
+                <p className="mt-3 max-w-xl text-sm leading-6" style={{ color: HOME_COLORS.onSurfaceVariant }}>Make every shared report feel like a finished client deliverable under your own identity.</p>
               </div>
               <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                Shared report links already hide SignalRoom&apos;s branding for your account. Add your own logo and accent color so they read as your agency&apos;s deliverable.
+                Broadcast reports include a branded cover, decision brief, section navigation, research-scope panel, and confidential footer. Your logo and accent color bring that presentation to life on every shared report.
               </p>
 
               {brandingError && (
@@ -737,7 +737,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                     </button>
                   )}
                 </div>
-                <p className="text-[11px] mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Used for the confidence score, sentiment, and links on your shared report pages.</p>
+                <p className="text-[11px] mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Used across your shared report cover, decision brief, section navigation, confidence score, sentiment, and links.</p>
               </div>
             </div>
             </div>
