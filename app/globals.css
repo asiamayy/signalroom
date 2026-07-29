@@ -51,6 +51,65 @@ body {
   line-height: 1.2 !important;
 }
 
+/* Persona builder uses the editorial form system from the supplied design,
+   rather than the more compact dashboard-default fields. */
+.persona-reference-form label,
+.persona-reference-dropdown > label {
+  color: #434843 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .16em !important;
+  line-height: 16px !important;
+  text-transform: uppercase !important;
+}
+
+.persona-reference-form input:not([type='range']),
+.persona-reference-form select,
+.persona-reference-form textarea,
+.persona-reference-form .persona-reference-tags > div > div {
+  background: #f6f3f2 !important;
+  border-color: rgb(195 200 193 / .3) !important;
+  border-radius: 8px !important;
+  color: #1c1b1b !important;
+}
+
+.persona-reference-form input:not([type='range']),
+.persona-reference-form select,
+.persona-reference-form textarea {
+  min-height: 48px;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+  line-height: 24px !important;
+}
+
+.persona-reference-form input:focus,
+.persona-reference-form select:focus,
+.persona-reference-form textarea:focus,
+.persona-reference-form .persona-reference-tags > div > div:focus-within {
+  border-color: #18281c !important;
+  box-shadow: 0 0 0 1px rgb(24 40 28 / .15) !important;
+}
+
+.persona-reference-form .persona-reference-tags > div > p,
+.persona-reference-dropdown > p {
+  color: #434843 !important;
+  font-size: 11px !important;
+  font-style: italic;
+  line-height: 1.45 !important;
+}
+
+.persona-reference-dropdown > div > button {
+  background: #f6f3f2 !important;
+  border-color: rgb(195 200 193 / .3) !important;
+  min-height: 48px;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+}
+
+.persona-ai-assistant button:hover {
+  border-color: #18281c !important;
+}
+
 @media print {
   /* Hide nav, sidebar, buttons */
   nav,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Camera, Loader2, Check } from 'lucide-react'
+import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Loader2, Dices } from 'lucide-react'
 import { Button, Input, Textarea, Select, Slider, TagInput, ListInput } from '@/components/ui'
 import { Dropdown } from '@/components/ui/Dropdown'
 import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation, FunnelStage } from '@/types'
@@ -115,6 +115,7 @@ const FUNNEL_STAGE_OPTIONS = [
 ]
 
 const FUNNEL_STAGES: readonly FunnelStage[] = ['awareness', 'consideration', 'purchase', 'loyalty']
+
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -337,22 +338,23 @@ export default function PersonaBuilder() {
       <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
 
         {/* ── Main form card ── */}
-        <div className="rounded-xl p-7 shadow-sm lg:col-span-8 lg:p-10" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
+        <div className="persona-reference-form rounded-xl p-7 shadow-sm lg:col-span-8 lg:p-10" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
           <h2 className="mb-2 text-[28px]" style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', color: '#1c1b1b', fontWeight: 600 }}>{cardCopy.title}</h2>
           <p className="mb-10 text-base italic" style={{ color: '#434843' }}>{cardCopy.subtitle}</p>
 
           {/* ── Step 0: Identity ─────────────────────────────────────────── */}
           {step === 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-x-8 gap-y-6">
+            <div className="grid grid-cols-1 gap-x-12 gap-y-8 lg:grid-cols-[12rem_minmax(0,1fr)]">
               {/* Avatar column */}
-              <div className="flex flex-col items-center gap-3 lg:w-40 lg:items-start">
-                <label className="block text-sm font-medium self-start" style={{ color: '#202124' }}>Avatar</label>
-                <div className="relative w-32 h-32 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#F5F3EF' }}>
+              <div className="flex flex-col items-center gap-4 lg:items-start">
+                <label className="self-start text-[10px] font-bold uppercase tracking-[.16em]" style={{ color: '#434843' }}>Avatar</label>
+                <div className="group relative aspect-square w-48 shrink-0 overflow-hidden rounded-full border" style={{ background: '#f0eded', borderColor: '#c3c8c14d' }}>
                   {avatarUrl ? (
                     <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-full" />
                   ) : (
-                    <User size={44} strokeWidth={1.5} style={{ color: '#6B7280' }} />
+                    <User size={64} strokeWidth={1.2} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 group-hover:scale-110" style={{ color: '#c3c8c1' }} />
                   )}
+                  <div className="pointer-events-none absolute inset-0 bg-black/[.045] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                   {generatingAvatar && (
                     <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
                       <Loader2 size={18} className="text-white animate-spin" />
@@ -363,10 +365,10 @@ export default function PersonaBuilder() {
                   type="button"
                   onClick={handleGenerateAvatar}
                   disabled={generatingAvatar || !name}
-                  className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] font-semibold transition-all enabled:hover:bg-[#f6f3f2] disabled:opacity-50"
                   style={name && !generatingAvatar
-                    ? { border: '1px solid #E0E2E4', background: 'white', color: '#202124', cursor: 'pointer' }
-                    : { border: '1px solid #E0E2E4', color: '#9CA3AF', cursor: 'not-allowed' }}
+                    ? { borderColor: '#c3c8c1', background: 'white', color: '#434843', cursor: 'pointer' }
+                    : { borderColor: '#c3c8c14d', color: '#8d938e', cursor: 'not-allowed' }}
                 >
                   <Sparkles size={12} />
                   {generatingAvatar ? 'Generating…' : avatarUrl ? 'Regenerate' : 'Generate with AI'}
@@ -374,8 +376,8 @@ export default function PersonaBuilder() {
               </div>
 
               {/* Fields column */}
-              <div className="flex-1 space-y-5 min-w-0">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="flex-1 min-w-0 space-y-7">
+                <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
                   <Input
                     label="Full name *"
                     value={name}
@@ -391,7 +393,7 @@ export default function PersonaBuilder() {
                     onChange={e => updateTrait('age', Number(e.target.value))}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
                   <Select
                     label="Gender"
                     value={traits.gender}
@@ -425,7 +427,7 @@ export default function PersonaBuilder() {
                   tags={tags}
                   onChange={setTags}
                 />
-                <div className="space-y-1.5">
+                <div className="persona-reference-dropdown space-y-2">
                   <label className="block text-sm font-medium text-[#202124]">Funnel stage</label>
                   <Dropdown
                     size="md"
@@ -436,8 +438,7 @@ export default function PersonaBuilder() {
                   />
                   <p className="text-xs text-[#5F6368]">Where they sit in the buying journey — this shapes how they react (a new prospect vs. an experienced user). Filterable on the Personas page.</p>
                 </div>
-                {workspaces.length > 0 && (
-                  <div className="space-y-1.5">
+                <div className="persona-reference-dropdown space-y-1.5">
                     <label className="block text-sm font-medium text-[#202124]">Workspace</label>
                     <Dropdown
                       size="md"
@@ -448,7 +449,6 @@ export default function PersonaBuilder() {
                     />
                     <p className="text-xs text-[#5F6368]">Share this persona with a workspace to make it visible and editable by every member of that workspace.</p>
                   </div>
-                )}
               </div>
             </div>
           )}
@@ -555,30 +555,50 @@ export default function PersonaBuilder() {
           {name && (
             <p className="text-xs mt-6 pt-5" style={{ color: '#9CA3AF', borderTop: '1px solid #F1F1F1' }}>* Required fields</p>
           )}
+
+          <div className="mt-12 flex justify-end gap-4 border-t pt-8" style={{ borderColor: '#c3c8c133' }}>
+            <button
+              type="button"
+              onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}
+              className="rounded-lg border px-8 py-2.5 text-sm font-semibold transition-colors hover:bg-[#eae7e7]"
+              style={{ borderColor: '#c3c8c1', color: '#434843' }}
+            >
+              {step === 0 ? 'Cancel' : 'Back'}
+            </button>
+            {step < STEPS.length - 1 ? (
+              <button type="button" onClick={handleNext} className="flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all hover:opacity-90 active:scale-[.98]">
+                Save and continue <ChevronRight size={18} />
+              </button>
+            ) : (
+              <button type="button" onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#18281c] px-8 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#18281c]/10 transition-all hover:opacity-90 active:scale-[.98] disabled:opacity-60">
+                {saving ? 'Saving…' : 'Save persona'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── AI assistant panel ── */}
-        <div className="rounded-xl p-7 shadow-sm lg:col-span-4 lg:p-8" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
+        <div className="persona-ai-assistant rounded-xl p-7 shadow-sm lg:col-span-4 lg:p-8" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
           <button
             onClick={() => setAiPanelOpen(o => !o)}
             className="w-full flex items-center justify-between mb-1"
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            <span className="flex items-center gap-2">
-              <Sparkles size={15} style={{ color: '#1C3D2E' }} />
-              <span className="text-sm font-semibold" style={{ color: '#202124' }}>AI assistant</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: '#E8F3EF', color: '#1C3D2E' }}>Beta</span>
+            <span className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: '#dee5da' }}><Sparkles size={19} style={{ color: '#18281c' }} /></span>
+              <span className="text-sm font-bold uppercase tracking-[.14em]" style={{ color: '#1c1b1b' }}>AI assistant</span>
+              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: '#d4e8d5', color: '#0f1f14' }}>BETA</span>
             </span>
             {aiPanelOpen ? <ChevronUp size={15} style={{ color: '#9CA3AF' }} /> : <ChevronDown size={15} style={{ color: '#9CA3AF' }} />}
           </button>
 
           {aiPanelOpen && (
             <>
-              <p className="text-xs leading-relaxed mt-2 mb-4" style={{ color: '#5F6368' }}>
+              <p className="mb-6 mt-4 text-sm leading-relaxed" style={{ color: '#434843' }}>
                 I can help you create a well-rounded persona. Start with a prompt or try an example below.
               </p>
 
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: '#202124' }}>Describe your persona</label>
+              <label className="mb-2 block text-[10px] font-bold uppercase tracking-[.16em]" style={{ color: '#434843' }}>Describe your persona</label>
               <div className="relative mb-4">
                 <textarea
                   value={aiPrompt}
@@ -586,8 +606,8 @@ export default function PersonaBuilder() {
                   placeholder="e.g., A 28-year-old product designer who loves clean UI, works remotely, and cares about sustainability."
                   rows={4}
                   maxLength={300}
-                  className="w-full text-sm px-3 py-2 rounded-lg placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#1C3D2E] focus:border-transparent resize-none"
-                  style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124' }}
+                  className="w-full resize-none rounded-xl border p-4 text-[16px] italic leading-6 outline-none transition-all placeholder:text-[#434843]/55 focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15"
+                  style={{ background: '#f6f3f2', borderColor: '#c3c8c14d', color: '#1c1b1b' }}
                 />
                 <span className="absolute bottom-2 right-2.5 text-[10px]" style={{ color: '#9CA3AF' }}>{aiPrompt.length}/300</span>
               </div>
@@ -596,31 +616,31 @@ export default function PersonaBuilder() {
                 size="sm"
                 onClick={handleGenerate}
                 loading={generating}
-                className="w-full mb-5"
+                className="mb-6 w-full py-3 shadow-lg shadow-[#18281c]/10 active:scale-[.98]"
               >
                 Generate
               </Button>
 
-              <label className="block text-xs font-semibold mb-2" style={{ color: '#202124' }}>Or try an example</label>
-              <div className="space-y-1.5 mb-3">
+              <label className="mb-3 block pt-4 text-[10px] font-bold uppercase tracking-[.16em]" style={{ color: '#434843' }}>Or try an example</label>
+              <div className="mb-4 space-y-2">
                 {EXAMPLE_PROMPTS.map(prompt => (
                   <button
                     key={prompt}
                     onClick={() => { setAiPrompt(prompt); runGenerate(prompt) }}
                     disabled={generating}
-                    className="w-full flex items-center justify-between gap-2 text-left text-xs px-3 py-2.5 rounded-lg transition-colors"
-                    style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: 'pointer', fontFamily: 'inherit' }}
+                    className="group flex w-full items-center justify-between gap-2 rounded-xl border p-3.5 text-left text-sm transition-all hover:bg-[#fcf9f8] disabled:opacity-60"
+                    style={{ background: 'white', borderColor: '#c3c8c14d', color: '#1c1b1b', cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     {prompt}
-                    <Sparkles size={12} style={{ color: '#1C3D2E' }} className="flex-shrink-0" />
+                    <Sparkles size={16} className="flex-shrink-0 text-[#c3c8c1] transition-colors group-hover:text-[#18281c]" />
                   </button>
                 ))}
               </div>
               <button
                 onClick={handleSurpriseMe}
                 disabled={generating}
-                className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-lg transition-colors disabled:opacity-60"
-                style={{ background: 'white', border: '1px solid #E0E2E4', color: '#202124', cursor: surprising ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[11px] font-bold uppercase tracking-[.14em] transition-all hover:bg-[#f6f3f2] disabled:opacity-60"
+                style={{ background: 'white', borderColor: '#c3c8c1', color: '#434843', cursor: surprising ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
               >
                 {surprising ? (
                   <>
@@ -630,12 +650,12 @@ export default function PersonaBuilder() {
                 ) : (
                   <>
                     Surprise me
-                    <Sparkles size={12} style={{ color: '#1C3D2E' }} />
+                    <Dices size={14} style={{ color: '#18281c' }} />
                   </>
                 )}
               </button>
 
-              <p className="text-[11px] italic leading-relaxed mt-4" style={{ color: '#9CA3AF' }}>
+              <p className="mt-6 text-center text-[10px] italic leading-relaxed" style={{ color: '#43484399' }}>
                 AI suggestions may be inaccurate. Please review.
               </p>
             </>
@@ -650,26 +670,12 @@ export default function PersonaBuilder() {
         </p>
       )}
 
-      {/* Nav buttons */}
-      <div className="flex justify-end gap-3 mt-6">
-        <Button
-          variant="secondary"
-          onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}
-        >
-          {step === 0 ? 'Cancel' : 'Back'}
-        </Button>
-
-        {step < STEPS.length - 1 ? (
-          <Button onClick={handleNext}>
-            Save and continue
-            <ChevronRight size={14} />
-          </Button>
-        ) : (
-          <Button onClick={handleSave} loading={saving}>
-            Save persona
-          </Button>
-        )}
-      </div>
+      <footer className="mx-auto mt-12 flex max-w-[1320px] items-center border-t py-8" style={{ borderColor: '#c3c8c133' }}>
+        <span className="mr-8 h-6 w-px" style={{ background: '#c3c8c155' }} />
+        <button type="button" onClick={() => router.back()} className="text-[11px] font-bold uppercase tracking-[.16em] transition-opacity hover:opacity-70" style={{ color: '#ba1a1a' }}>
+          Discard draft
+        </button>
+      </footer>
     </div>
   )
 }
