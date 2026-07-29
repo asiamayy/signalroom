@@ -3,10 +3,10 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { formatDate, getPriorityColor, INTERVIEW_TYPE_LABELS, CARD_SHADOW } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
-import { ArrowLeft, BarChart3, CheckCircle2, Info, Lightbulb, MessageSquare, Share2, Sparkles } from 'lucide-react'
+import { ArrowLeft, BarChart3, CheckCircle2, Info, Lightbulb, MessageSquare, Sparkles } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { DownloadReportButton } from '@/components/ui/DownloadReportButton'
-import { CopyLinkButton } from '@/components/ui/CopyLinkButton'
+import { ShareReportMenu } from '@/components/ui/ShareReportMenu'
 import { AutoPrint } from '@/components/ui/AutoPrint'
 import { ThemesClient } from './ThemesClient'
 import type { ReportTheme, ReportRecommendation } from '@/types'
@@ -19,6 +19,9 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
   const supabase = await createClient()
   const { data: report, error } = await supabase.from('reports').select(`*, interview:interviews(id, title, type, context, messages, created_at, persona:personas(*))`).eq('id', id).single()
   if (error || !report) notFound()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = user ? await supabase.from('profiles').select('plan').eq('id', user.id).single() : { data: null }
+  const canSlack = profile?.plan === 'pro' || profile?.plan === 'agency'
   const interview = report.interview
   const persona = interview?.persona
   const score = report.confidence_score ?? 0
@@ -42,9 +45,9 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
             </div>
             {interview?.context && <p className="mt-7 max-w-3xl text-base leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{interview.context}</p>}
           </div>
-          <div className="w-full rounded-xl border p-6 lg:w-72" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}33`, boxShadow: '0 2px 5px rgba(15,23,42,.04)' }}><div className="mb-4 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence score <span className="group relative flex cursor-help"><Info size={15} /><span className="pointer-events-none absolute right-0 top-6 z-20 w-52 rounded-lg px-3 py-2 text-[11px] font-normal normal-case leading-relaxed opacity-0 shadow-lg transition-opacity group-hover:opacity-100" style={{background:HOME_COLORS.primary,color:HOME_COLORS.onPrimary}}>Measures response depth and persona specificity. It is not a market-certainty score.</span></span></div><div className="flex items-baseline gap-2"><span className="text-4xl" style={{ color: scoreColor, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{score}%</span><span className="text-[11px] font-semibold uppercase" style={{ color: scoreColor }}>{scoreLabel}</span></div><div className="mt-4 h-1.5 overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-full rounded-full" style={{ width: `${score}%`, background: scoreColor }} /></div><p className="mt-4 text-xs italic leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence reflects the depth and specificity of this interview.</p></div>
+          <div className="w-full rounded-xl border p-6 lg:w-72" style={{ background: '#dfe4da', borderColor: `${HOME_COLORS.outlineVariant}33`, boxShadow: '0 2px 5px rgba(15,23,42,.04)' }}><div className="mb-4 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence score <span className="group relative flex cursor-help"><Info size={15} /><span className="pointer-events-none absolute right-0 top-6 z-20 w-52 rounded-lg px-3 py-2 text-[11px] font-normal normal-case leading-relaxed opacity-0 shadow-lg transition-opacity group-hover:opacity-100" style={{background:HOME_COLORS.primary,color:HOME_COLORS.onPrimary}}>Measures response depth and persona specificity. It is not a market-certainty score.</span></span></div><div className="flex items-baseline gap-2"><span className="text-4xl" style={{ color: scoreColor, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{score}%</span><span className="text-[11px] font-semibold uppercase" style={{ color: scoreColor }}>{scoreLabel}</span></div><div className="mt-4 h-1.5 overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-full rounded-full" style={{ width: `${score}%`, background: scoreColor }} /></div><p className="mt-4 text-xs italic leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence reflects the depth and specificity of this interview.</p></div>
         </div>
-        <div className="mt-10 flex flex-wrap items-center gap-3"><DownloadReportButton variant="primary" /><span className="inline-flex items-center rounded-lg bg-[#eae7e7] px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[#dedbda]" style={{ color: HOME_COLORS.onSurface }}><Share2 size={18} className="mr-2" /><CopyLinkButton reportId={report.id} initialShared={!!report.share_token} variant="action" /></span><Link href={`/interviews/${interview?.id}`} className="inline-flex items-center rounded-lg bg-[#eae7e7] px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[#dedbda]" style={{ color: HOME_COLORS.onSurface }}><MessageSquare size={18} className="mr-2" />View full transcript</Link></div>
+        <div className="mt-10 flex flex-wrap items-center gap-3"><DownloadReportButton variant="primary" /><ShareReportMenu reportId={report.id} title={interview?.title ?? 'SignalRoom research report'} canSlack={canSlack} /><Link href={`/interviews/${interview?.id}`} className="inline-flex items-center rounded-lg bg-[#eae7e7] px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[#dedbda]" style={{ color: HOME_COLORS.onSurface }}><MessageSquare size={18} className="mr-2" />View full transcript</Link></div>
       </section>
     </div>
     <section className="mb-12 grid grid-cols-1 divide-y border-y md:grid-cols-3 md:divide-x md:divide-y-0" style={{ borderColor: `${HOME_COLORS.outlineVariant}77` }}>{[[themes.length,'Key themes identified'],[recommendations.length,'Recommendations'],[messageCount,'Critical messages']].map(([value,label]) => <div key={String(label)} className="flex flex-col items-center bg-[#f9f9f8] px-8 py-8 text-center"><span className="text-4xl" style={{ color: HOME_COLORS.primary, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{value}</span><span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</span></div>)}</section>
