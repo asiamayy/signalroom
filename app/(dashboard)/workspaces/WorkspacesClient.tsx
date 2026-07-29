@@ -8,7 +8,7 @@ import {
   FileText, MessagesSquare, ArrowRight, UserPlus,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
-import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY } from '@/lib/home-theme'
+import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { getInitials, getAvatarColor } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
@@ -250,9 +250,9 @@ export function WorkspacesClient() {
         <main className="mx-auto max-w-[1440px] px-4 pb-14 sm:px-10">
           <motion.section initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="flex flex-col justify-between gap-6 pb-8 pt-8 xl:flex-row xl:items-end xl:gap-10 sm:pt-10">
             <div className="max-w-xl">
-              <div className="mb-3 flex items-center gap-3"><span className="h-px w-8" style={{ background: `${HOME_COLORS.primary}66` }} /><span className="text-[9px] font-semibold uppercase tracking-[0.22em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Isolated Research Workspaces</span></div>
-              <h1 className="text-[32px] leading-tight tracking-[-0.02em]" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.primary }}>Workspaces</h1>
-              <p className="mt-2 max-w-xl text-[13px] leading-relaxed sm:text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <div className="mb-4 flex items-center gap-3"><span className="h-px w-12" style={{ background: `${HOME_COLORS.primary}33` }} /><span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Isolated Research Workspaces</span></div>
+              <h1 className="mb-4" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.primary }}>Workspaces</h1>
+              <p className="max-w-2xl text-base leading-relaxed sm:text-lg" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 Dedicated environments for client and brand research. Invite your team and each member sees only what they&apos;ve been added to.
               </p>
             </div>
