@@ -156,13 +156,16 @@ function FieldSelect({ label, hint, options, className, style, ...props }: React
   return (
     <div className="flex flex-col gap-2">
       <FieldLabel>{label}</FieldLabel>
-      <select
-        className={`w-full cursor-pointer rounded-lg px-4 py-3 text-base outline-none transition-all focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15 ${className ?? ''}`}
-        style={{ background: FIELD_BG, border: FIELD_BORDER, color: '#1c1b1b', ...style }}
-        {...props}
-      >
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+      <div className="relative">
+        <select
+          className={`w-full cursor-pointer appearance-none rounded-lg px-3 py-2 pr-8 text-sm outline-none transition-all focus:border-[#18281c] focus:ring-1 focus:ring-[#18281c]/15 ${className ?? ''}`}
+          style={{ background: FIELD_BG, border: FIELD_BORDER, color: '#1c1b1b', ...style }}
+          {...props}
+        >
+          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2" style={{ color: '#8d938e' }} />
+      </div>
       {hint && <FieldHint>{hint}</FieldHint>}
     </div>
   )
@@ -451,15 +454,15 @@ export default function PersonaBuilder() {
     <div className="min-h-full px-6 pb-12 pt-8" style={{ background: '#fcf9f8', fontFamily: HOME_FONT_BODY }}>
 
       {/* Hero */}
-      <section className="relative mb-3 overflow-hidden">
+      <section className="relative mb-9 overflow-hidden">
         <div className="relative z-10 max-w-2xl">
           <h1 className="mb-3 leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, fontSize: '26px', lineHeight: '32px', letterSpacing: '-.01em', fontWeight: 600, color: '#1c1b1b' }}>New Persona</h1>
           <p className="max-w-xl text-sm leading-relaxed" style={{ color: '#434843' }}>Build a realistic, research-backed persona with AI assistance.</p>
           <div className="mt-4 flex gap-2.5">
-            <button type="button" onClick={() => router.push('/personas')} className="rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors hover:bg-[#eae7e7]" style={{ borderColor: '#c3c8c1', color: '#1c1b1b', background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button type="button" onClick={() => router.push('/personas')} className="rounded-full border border-[#c3c8c1] bg-transparent px-4 py-1.5 text-xs font-semibold text-[#1c1b1b] transition-colors hover:bg-[#eae7e7]" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
               Drafts
             </button>
-            <button type="button" className="rounded-full px-4 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:-translate-y-px" style={{ background: '#18281c', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button type="button" className="rounded-full bg-[#18281c] px-4 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:-translate-y-px hover:bg-[#0f1911]" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               Save Progress
             </button>
           </div>
@@ -504,13 +507,13 @@ export default function PersonaBuilder() {
           {step === 0 && (
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               {/* Avatar column */}
-              <div className="flex w-28 flex-shrink-0 flex-col gap-2.5">
+              <div className="flex w-48 flex-shrink-0 flex-col gap-4">
                 <FieldLabel>Avatar</FieldLabel>
                 <div className="group relative aspect-square w-full overflow-hidden rounded-full border" style={{ background: '#f0eded', borderColor: '#c3c8c14d' }}>
                   {avatarUrl ? (
                     <img src={avatarUrl} alt={name} className="w-full h-full object-cover rounded-full" />
                   ) : (
-                    <User size={36} strokeWidth={1.2} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 group-hover:scale-110" style={{ color: '#c3c8c1' }} />
+                    <User size={64} strokeWidth={1.2} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 group-hover:scale-110" style={{ color: '#c3c8c1' }} />
                   )}
                   <div className="pointer-events-none absolute inset-0 bg-black/[.045] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                   {generatingAvatar && (
@@ -523,12 +526,13 @@ export default function PersonaBuilder() {
                   type="button"
                   onClick={handleGenerateAvatar}
                   disabled={generatingAvatar || !name}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg border px-2 py-1.5 text-[10px] font-semibold uppercase tracking-widest transition-all disabled:opacity-50"
-                  style={name && !generatingAvatar
-                    ? { borderColor: '#c3c8c1', background: 'white', color: '#434843', cursor: 'pointer' }
-                    : { borderColor: '#c3c8c14d', color: '#8d938e', cursor: 'not-allowed' }}
+                  className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[12px] font-semibold uppercase tracking-widest transition-all disabled:opacity-50 ${
+                    name && !generatingAvatar
+                      ? 'border-[#c3c8c1] bg-white text-[#434843] hover:border-[#18281c] hover:bg-[#f0eded] hover:text-[#18281c] cursor-pointer'
+                      : 'border-[#c3c8c14d] text-[#8d938e] cursor-not-allowed'
+                  }`}
                 >
-                  <Sparkles size={10} />
+                  <Sparkles size={12} />
                   {generatingAvatar ? 'Generating…' : avatarUrl ? 'Regenerate' : 'Generate with AI'}
                 </button>
               </div>
@@ -710,17 +714,17 @@ export default function PersonaBuilder() {
             <button
               type="button"
               onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}
-              className="rounded-lg border px-4 py-2 text-sm font-semibold transition-all"
-              style={{ borderColor: '#c3c8c1', color: '#434843', background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+              className="rounded-lg border border-[#c3c8c1] bg-transparent px-4 py-2 text-sm font-semibold text-[#434843] transition-all hover:border-[#18281c] hover:bg-[#f0eded] hover:text-[#18281c]"
+              style={{ cursor: 'pointer', fontFamily: 'inherit' }}
             >
               {step === 0 ? 'Cancel' : 'Back'}
             </button>
             {step < STEPS.length - 1 ? (
-              <button type="button" onClick={handleNext} className="flex items-center gap-1.5 rounded-lg bg-[#18281c] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#18281c]/10 transition-all active:scale-[.98]" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button type="button" onClick={handleNext} className="flex items-center gap-1.5 rounded-lg bg-[#18281c] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#18281c]/10 transition-all hover:bg-[#0f1911] active:scale-[.98]" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Save and continue <ChevronRight size={15} />
               </button>
             ) : (
-              <button type="button" onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-lg bg-[#18281c] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#18281c]/10 transition-all active:scale-[.98] disabled:opacity-60" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button type="button" onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-lg bg-[#18281c] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#18281c]/10 transition-all hover:bg-[#0f1911] active:scale-[.98] disabled:opacity-60" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 {saving ? 'Saving…' : 'Save persona'}
               </button>
             )}
@@ -728,7 +732,7 @@ export default function PersonaBuilder() {
         </div>
 
         {/* ── AI assistant panel ── */}
-        <div className="rounded-xl p-5 shadow-sm lg:col-span-4" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
+        <div className="self-start rounded-xl p-5 shadow-sm lg:col-span-4" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
           <button
             onClick={() => setAiPanelOpen(o => !o)}
             className="w-full flex items-center gap-2 mb-1"
@@ -764,8 +768,7 @@ export default function PersonaBuilder() {
                 size="sm"
                 onClick={handleGenerate}
                 loading={generating}
-                className="mb-4 w-full py-2 shadow-md shadow-[#18281c]/10 active:scale-[.98]"
-                style={{ background: '#18281c' }}
+                className="mb-4 w-full py-2 !bg-[#18281c] shadow-md shadow-[#18281c]/10 transition-all hover:!bg-[#0f1911] active:scale-[.98]"
               >
                 Generate
               </Button>
@@ -788,8 +791,8 @@ export default function PersonaBuilder() {
               <button
                 onClick={handleSurpriseMe}
                 disabled={generating}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border px-2.5 py-2 text-[10px] font-bold uppercase tracking-[.14em] transition-all disabled:opacity-60"
-                style={{ background: 'white', borderColor: '#c3c8c1', color: '#434843', cursor: surprising ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#c3c8c1] bg-white px-2.5 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-[#434843] transition-all hover:border-[#18281c] hover:bg-[#f0eded] hover:text-[#18281c] disabled:opacity-60 disabled:hover:border-[#c3c8c1] disabled:hover:bg-white disabled:hover:text-[#434843]"
+                style={{ cursor: surprising ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
               >
                 {surprising ? (
                   <>
