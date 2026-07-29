@@ -122,12 +122,16 @@ export default function PersonaBuilder() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const projectId = searchParams.get('project_id')
+  // Pre-select when arriving from within a workspace (e.g. its content
+  // tabs) — an invitee shouldn't have to remember to switch this off
+  // "Personal" themselves for content that's obviously meant to be shared.
+  const preselectedWorkspaceId = searchParams.get('workspace_id') ?? 'personal'
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [funnelStage, setFunnelStage] = useState<FunnelStage>('awareness')
   const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([])
-  const [workspaceId, setWorkspaceId] = useState<string>('personal')
+  const [workspaceId, setWorkspaceId] = useState<string>(preselectedWorkspaceId)
   const [traits, setTraits] = useState<PersonaTraits>(DEFAULT_TRAITS)
   const [aiPrompt, setAiPrompt] = useState('')
   const [generating, setGenerating] = useState(false)

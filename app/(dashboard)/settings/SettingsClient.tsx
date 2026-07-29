@@ -359,6 +359,19 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
     persistFavorites([...favorites, hex])
   }
 
+  const removeFromPalette = (e: React.MouseEvent, hex: string) => {
+    e.stopPropagation()
+    setBrandingError('')
+    persistPalette(palette.filter(c => c.toLowerCase() !== hex.toLowerCase()))
+    // A removed color can't stay pinned, and if it was the active report
+    // color there's nothing wrong with leaving it active (it's still a
+    // valid hex, just no longer saved in the lineup) — only the two saved
+    // lists need to drop it.
+    if (favorites.some(c => c.toLowerCase() === hex.toLowerCase())) {
+      persistFavorites(favorites.filter(c => c.toLowerCase() !== hex.toLowerCase()))
+    }
+  }
+
   // Fires once the native color picker popup closes (not on every drag
   // frame) — that "final choice" moment is what both applies the color to
   // the report and saves it into the personal lineup, capped at 8 with the
@@ -613,6 +626,16 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                           style={{ background: 'white', borderColor: HOME_COLORS.outlineVariant, color: isFavorite ? '#B8860B' : HOME_COLORS.onSurfaceVariant, cursor: 'pointer' }}
                         >
                           <Star size={11} fill={isFavorite ? '#B8860B' : 'none'} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={e => removeFromPalette(e, hex)}
+                          aria-label={`Remove ${name} from your saved colors`}
+                          title="Remove from saved colors"
+                          className="absolute -bottom-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full border opacity-0 transition-opacity group-hover:opacity-100"
+                          style={{ background: 'white', borderColor: HOME_COLORS.outlineVariant, color: HOME_COLORS.error, cursor: 'pointer' }}
+                        >
+                          <X size={11} />
                         </button>
                       </div>
                     )

@@ -32,6 +32,10 @@ function NewInterviewForm() {
   const searchParams = useSearchParams()
   const preselectedPersonaId = searchParams.get('persona_id') ?? ''
   const projectId = searchParams.get('project_id')
+  // Pre-select when arriving from within a workspace (e.g. its content
+  // tabs) — an invitee shouldn't have to remember to switch this off
+  // "Personal" themselves for content that's obviously meant to be shared.
+  const preselectedWorkspaceId = searchParams.get('workspace_id') ?? 'personal'
 
   const [personas, setPersonas] = useState<Persona[]>([])
   const [personaId, setPersonaId] = useState(preselectedPersonaId)
@@ -51,7 +55,7 @@ function NewInterviewForm() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([])
-  const [workspaceId, setWorkspaceId] = useState<string>('personal')
+  const [workspaceId, setWorkspaceId] = useState<string>(preselectedWorkspaceId)
 
   useEffect(() => {
     setLoading(true)
