@@ -173,9 +173,10 @@ body {
 .broadcast-print-only { display: none; }
 
 @media print {
-  @page { margin: 0; size: auto; }
+  @page { margin: 0.55in 0.48in 0.5in; size: auto; }
+  @page broadcast-cover { margin: 0; size: auto; }
   .broadcast-print-only { color: #1a1c1c; background: #f9f9f8; font-family: Arial, sans-serif; }
-  .broadcast-cover { height: 100vh; min-height: 100vh; box-sizing: border-box; padding: 70px 9% 55px; position: relative; background: color-mix(in srgb, var(--broadcast-accent) 8%, #f9f9f8); overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+  .broadcast-cover { page: broadcast-cover; height: 100vh; min-height: 100vh; box-sizing: border-box; padding: 70px 9% 55px; position: relative; background: color-mix(in srgb, var(--broadcast-accent) 8%, #f9f9f8); overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
   .broadcast-cover-mark { position:absolute; right:-8%; top:0; height:100%; width:33%; background:color-mix(in srgb, var(--broadcast-accent) 18%, transparent); transform:skewX(-12deg); }
   .broadcast-logo { position:absolute; top:55px; left:9%; width:180px; height:55px; display:flex; align-items:center; color:#434844; font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
   .broadcast-logo img { max-width:180px; max-height:55px; object-fit:contain; }

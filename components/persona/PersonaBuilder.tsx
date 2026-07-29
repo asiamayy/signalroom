@@ -298,51 +298,48 @@ export default function PersonaBuilder() {
   const cardCopy = STEP_CARD_COPY[step]
 
   return (
-    <div className="min-h-screen p-6 sm:p-8 max-w-6xl mx-auto" style={{ background: '#F9F9F9' }}>
+    <div className="min-h-full px-5 pb-20 pt-12 sm:px-10" style={{ background: '#fcf9f8', fontFamily: 'var(--nf-hanken), system-ui, sans-serif' }}>
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="heading-editorial text-3xl" style={{ color: '#202124' }}>New Persona</h1>
-        <p className="text-sm mt-1" style={{ color: '#5F6368' }}>Build a realistic, research-backed persona with AI assistance.</p>
+      <div className="mx-auto mb-10 max-w-[1320px]">
+        <h1 className="mb-4" style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', fontSize: '40px', lineHeight: '48px', letterSpacing: '-.02em', fontWeight: 600, color: '#1c1b1b' }}>New Persona</h1>
+        <p className="max-w-2xl text-base leading-relaxed" style={{ color: '#434843' }}>Build a realistic, research-backed persona with AI assistance.</p>
       </div>
 
       {/* Step progress — circles with connecting lines */}
-      <div className="flex items-center mb-8">
+      <div className="mx-auto mb-8 flex max-w-[1320px] items-center overflow-x-auto border-b" style={{ borderColor: '#c3c8c155' }}>
         {STEPS.map((s, i) => {
           const active = i === step
           const done = i < step
           return (
-            <div key={s.id} className={i < STEPS.length - 1 ? 'flex items-center flex-1' : 'flex items-center'}>
+            <div key={s.id} className="flex items-center">
               <button
                 onClick={() => i <= step && setStep(i)}
-                className="flex items-center gap-3 flex-shrink-0"
-                style={{ background: 'none', border: 'none', cursor: i <= step ? 'pointer' : 'default', fontFamily: 'inherit' }}
+                className="flex min-w-[200px] items-center gap-3 border-b-2 px-2 pb-4 text-left"
+                style={{ background: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none', borderColor: active ? '#18281c' : 'transparent', cursor: i <= step ? 'pointer' : 'default', fontFamily: 'inherit', opacity: active ? 1 : .42 }}
               >
                 <span
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={active || done ? { background: '#1C3D2E', color: 'white' } : { background: '#F1F1F1', color: '#9CA3AF' }}
+                  className="text-2xl flex-shrink-0"
+                  style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', color: '#18281c' }}
                 >
-                  {done ? <Check size={15} strokeWidth={3} /> : i + 1}
+                  {String(i + 1).padStart(2, '0')}
                 </span>
                 <div className="text-left hidden sm:block">
-                  <p className="text-sm font-semibold leading-tight" style={{ color: active ? '#202124' : done ? '#202124' : '#9CA3AF' }}>{s.label}</p>
-                  <p className="text-xs leading-tight" style={{ color: '#9CA3AF' }}>{s.sublabel}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[.13em] leading-tight" style={{ color: '#18281c' }}>{s.label}</p>
+                  <p className="text-sm italic leading-tight" style={{ color: '#434843' }}>{s.sublabel}</p>
                 </div>
               </button>
-              {i < STEPS.length - 1 && (
-                <div className="flex-1 h-px mx-4" style={{ background: '#E0E2E4' }} />
-              )}
             </div>
           )
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-start">
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
 
         {/* ── Main form card ── */}
-        <div className="rounded-2xl p-6 lg:p-8" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
-          <h2 className="heading-editorial text-2xl mb-1" style={{ color: '#202124' }}>{cardCopy.title}</h2>
-          <p className="text-sm mb-6" style={{ color: '#5F6368' }}>{cardCopy.subtitle}</p>
+        <div className="rounded-xl p-7 shadow-sm lg:col-span-8 lg:p-10" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
+          <h2 className="mb-2 text-[28px]" style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', color: '#1c1b1b', fontWeight: 600 }}>{cardCopy.title}</h2>
+          <p className="mb-10 text-base italic" style={{ color: '#434843' }}>{cardCopy.subtitle}</p>
 
           {/* ── Step 0: Identity ─────────────────────────────────────────── */}
           {step === 0 && (
@@ -561,7 +558,7 @@ export default function PersonaBuilder() {
         </div>
 
         {/* ── AI assistant panel ── */}
-        <div className="rounded-2xl p-6" style={{ background: 'white', border: '1px solid #E0E2E4' }}>
+        <div className="rounded-xl p-7 shadow-sm lg:col-span-4 lg:p-8" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
           <button
             onClick={() => setAiPanelOpen(o => !o)}
             className="w-full flex items-center justify-between mb-1"
