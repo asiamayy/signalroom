@@ -462,7 +462,7 @@ export default function PersonaBuilder() {
             <button type="button" onClick={() => router.push('/personas')} className="rounded-full border border-[#c3c8c1] bg-transparent px-4 py-1.5 text-xs font-semibold text-[#1c1b1b] transition-colors hover:bg-[#eae7e7]" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
               Drafts
             </button>
-            <button type="button" className="rounded-full bg-[#18281c] px-4 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:-translate-y-px hover:bg-[#0f1911]" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button type="button" className="rounded-full bg-[#18281c] px-4 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:-translate-y-px" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               Save Progress
             </button>
           </div>
@@ -528,7 +528,7 @@ export default function PersonaBuilder() {
                   disabled={generatingAvatar || !name}
                   className={`flex w-full items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-[12px] font-semibold uppercase tracking-widest transition-all disabled:opacity-50 ${
                     name && !generatingAvatar
-                      ? 'border-[#c3c8c1] bg-white text-[#434843] hover:border-[#18281c] hover:bg-[#f0eded] hover:text-[#18281c] cursor-pointer'
+                      ? 'border-[#c3c8c1] bg-white text-[#434843] hover:bg-[#f6f3f2] cursor-pointer'
                       : 'border-[#c3c8c14d] text-[#8d938e] cursor-not-allowed'
                   }`}
                 >
@@ -714,17 +714,17 @@ export default function PersonaBuilder() {
             <button
               type="button"
               onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}
-              className="rounded-lg border border-[#c3c8c1] bg-transparent px-4 py-2 text-sm font-semibold text-[#434843] transition-all hover:border-[#18281c] hover:bg-[#f0eded] hover:text-[#18281c]"
+              className="rounded-lg border border-[#c3c8c1] bg-transparent px-4 py-2 text-sm font-semibold text-[#434843] transition-colors hover:bg-[#eae7e7]"
               style={{ cursor: 'pointer', fontFamily: 'inherit' }}
             >
               {step === 0 ? 'Cancel' : 'Back'}
             </button>
             {step < STEPS.length - 1 ? (
-              <button type="button" onClick={handleNext} className="flex items-center gap-1.5 rounded-lg bg-[#18281c] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#18281c]/10 transition-all hover:bg-[#0f1911] active:scale-[.98]" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button type="button" onClick={handleNext} className="flex items-center gap-1.5 rounded-lg bg-[#18281c] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#18281c]/10 transition-all hover:opacity-90 hover:shadow-lg active:scale-[.98]" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 Save and continue <ChevronRight size={15} />
               </button>
             ) : (
-              <button type="button" onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-lg bg-[#18281c] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#18281c]/10 transition-all hover:bg-[#0f1911] active:scale-[.98] disabled:opacity-60" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button type="button" onClick={handleSave} disabled={saving} className="flex items-center gap-1.5 rounded-lg bg-[#18281c] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-[#18281c]/10 transition-all hover:opacity-90 hover:shadow-lg active:scale-[.98] disabled:opacity-60" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 {saving ? 'Saving…' : 'Save persona'}
               </button>
             )}
@@ -768,7 +768,7 @@ export default function PersonaBuilder() {
                 size="sm"
                 onClick={handleGenerate}
                 loading={generating}
-                className="mb-4 w-full py-2 !bg-[#18281c] shadow-md shadow-[#18281c]/10 transition-all hover:!bg-[#0f1911] active:scale-[.98]"
+                className="mb-4 w-full py-2 !bg-[#18281c] shadow-md shadow-[#18281c]/10 transition-all hover:opacity-90 active:scale-[.98]"
               >
                 Generate
               </Button>
@@ -791,7 +791,7 @@ export default function PersonaBuilder() {
               <button
                 onClick={handleSurpriseMe}
                 disabled={generating}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#c3c8c1] bg-white px-2.5 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-[#434843] transition-all hover:border-[#18281c] hover:bg-[#f0eded] hover:text-[#18281c] disabled:opacity-60 disabled:hover:border-[#c3c8c1] disabled:hover:bg-white disabled:hover:text-[#434843]"
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#c3c8c1] bg-white px-2.5 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-[#434843] transition-all hover:bg-[#f6f3f2] disabled:opacity-60 disabled:hover:bg-white"
                 style={{ cursor: surprising ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
               >
                 {surprising ? (
