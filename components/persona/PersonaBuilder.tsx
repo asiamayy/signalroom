@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Sparkles, ChevronRight, ChevronDown, ChevronUp, User, Loader2, Dices } from 'lucide-react'
 import { Button, Input, Textarea, Select, Slider, TagInput, ListInput } from '@/components/ui'
 import { Dropdown } from '@/components/ui/Dropdown'
+import { HOME_FONT_BODY, HOME_FONT_DISPLAY } from '@/lib/home-theme'
 import type { PersonaTraits, PersonaGender, PersonaIncome, PersonaEducation, FunnelStage } from '@/types'
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
@@ -299,11 +300,11 @@ export default function PersonaBuilder() {
   const cardCopy = STEP_CARD_COPY[step]
 
   return (
-    <div className="min-h-full px-5 pb-20 pt-12 sm:px-10" style={{ background: '#fcf9f8', fontFamily: 'var(--nf-hanken), system-ui, sans-serif' }}>
+    <div className="min-h-full px-5 pb-20 pt-12 sm:px-10" style={{ background: '#fcf9f8', fontFamily: HOME_FONT_BODY }}>
 
       {/* Header */}
       <div className="mx-auto mb-8 max-w-[1320px]">
-        <h1 className="mb-4" style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', fontSize: '40px', lineHeight: '48px', letterSpacing: '-.02em', fontWeight: 600, color: '#1c1b1b' }}>New Persona</h1>
+        <h1 className="mb-4" style={{ fontFamily: HOME_FONT_DISPLAY, fontSize: '40px', lineHeight: '48px', letterSpacing: '-.02em', fontWeight: 600, color: '#1c1b1b' }}>New Persona</h1>
         <p className="max-w-2xl text-[16px] leading-relaxed" style={{ color: '#434843' }}>Build a realistic, research-backed persona with AI assistance.</p>
         <div className="mt-8 flex flex-wrap gap-4">
           <button type="button" onClick={() => router.push('/personas')} className="persona-header-outline rounded-full border px-8 py-3 text-[15px] font-semibold" style={{ borderColor: '#c3c8c1', color: '#1c1b1b' }}>Drafts</button>
@@ -325,7 +326,7 @@ export default function PersonaBuilder() {
               >
                 <span
                   className="text-2xl flex-shrink-0"
-                  style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', color: '#18281c' }}
+                  style={{ fontFamily: HOME_FONT_DISPLAY, color: '#18281c' }}
                 >
                   {String(i + 1).padStart(2, '0')}
                 </span>
@@ -343,7 +344,7 @@ export default function PersonaBuilder() {
 
         {/* ── Main form card ── */}
         <div className="persona-reference-form rounded-xl p-7 shadow-sm lg:col-span-8 lg:p-10" style={{ background: 'white', border: '1px solid #c3c8c14d' }}>
-          <h2 className="mb-2 text-[24px]" style={{ fontFamily: 'var(--nf-source-serif), Georgia, serif', color: '#1c1b1b', fontWeight: 600 }}>{cardCopy.title}</h2>
+          <h2 className="mb-2 text-[24px]" style={{ fontFamily: HOME_FONT_DISPLAY, color: '#1c1b1b', fontWeight: 600 }}>{cardCopy.title}</h2>
           <p className="mb-9 text-[15px] italic" style={{ color: '#434843' }}>{cardCopy.subtitle}</p>
 
           {/* ── Step 0: Identity ─────────────────────────────────────────── */}
