@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X, Plus, CheckCircle2, Star } from 'lucide-react'
+import { Check, Sparkles, Zap, Users, Building2, ExternalLink, LogOut, AlertCircle, Upload, X, Plus, CheckCircle2, Star, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { createClient } from '@/lib/supabase/client'
@@ -106,6 +106,12 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const [billingError, setBillingError] = useState('')
   const [usageReady, setUsageReady] = useState(false)
 
+  const [displayName, setDisplayName] = useState<string>(profile?.full_name ?? '')
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState(profile?.full_name ?? '')
+  const [savingName, setSavingName] = useState(false)
+  const [nameError, setNameError] = useState('')
+
   const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(profile?.brand_logo_url ?? null)
   const [brandColor, setBrandColor] = useState<string | null>(profile?.brand_color ?? null)
   const [colorDraft, setColorDraft] = useState(profile?.brand_color ?? HOME_COLORS.primary)
@@ -202,10 +208,28 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
   const currentPlanData = PLANS.find(p => p.id === currentPlan)
   const personaLimit = PLAN_LIMITS[currentPlan as Plan].personas
   const interviewLimit = PLAN_LIMITS[currentPlan as Plan].interviews_per_month
-  const profileNameParts = (profile?.full_name ?? '').trim().split(/\s+/).filter(Boolean)
+  const profileNameParts = displayName.trim().split(/\s+/).filter(Boolean)
   const profileInitials = profileNameParts.length >= 2
     ? `${profileNameParts[0][0]}${profileNameParts[profileNameParts.length - 1]?.[0]}`.toUpperCase()
     : (profileNameParts[0] ?? user?.email?.split('@')[0] ?? 'YR').slice(0, 2).toUpperCase()
+
+  const handleSaveName = async () => {
+    const trimmed = nameDraft.trim()
+    if (!trimmed) { setNameError('Name cannot be empty'); return }
+    setNameError('')
+    setSavingName(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('profiles').update({ full_name: trimmed }).eq('id', user.id)
+      if (error) { setNameError('Failed to save — please try again'); return }
+      setDisplayName(trimmed)
+      setEditingName(false)
+    } catch {
+      setNameError('Failed to save — please try again')
+    } finally {
+      setSavingName(false)
+    }
+  }
 
   // Every path resets the loading state and surfaces an error — previously
   // a non-2xx response (e.g. Stripe rejecting a placeholder API key) left
@@ -443,7 +467,33 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                     {profileInitials}
                   </div>
                   <div>
-                    <p className="text-2xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{profile?.full_name ?? 'Your account'}</p>
+                    {editingName ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          autoFocus
+                          value={nameDraft}
+                          onChange={e => setNameDraft(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') { setEditingName(false); setNameDraft(displayName); setNameError('') } }}
+                          maxLength={80}
+                          className="rounded-lg px-2.5 py-1.5 text-xl outline-none"
+                          style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}88`, color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}
+                        />
+                        <button onClick={handleSaveName} disabled={savingName} aria-label="Save name" className="flex h-7 w-7 items-center justify-center rounded-full disabled:opacity-50" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' }}>
+                          <Check size={13} />
+                        </button>
+                        <button onClick={() => { setEditingName(false); setNameDraft(displayName); setNameError('') }} disabled={savingName} aria-label="Cancel" className="flex h-7 w-7 items-center justify-center rounded-full" style={{ color: HOME_COLORS.onSurfaceVariant, background: 'none', border: `1px solid ${HOME_COLORS.outlineVariant}88`, cursor: 'pointer' }}>
+                          <X size={13} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="group flex items-center gap-2">
+                        <p className="text-2xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{displayName || 'Your account'}</p>
+                        <button onClick={() => { setEditingName(true); setNameDraft(displayName) }} aria-label="Edit name" title="Edit name" className="opacity-0 transition-opacity group-hover:opacity-100" style={{ color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}>
+                          <Pencil size={14} />
+                        </button>
+                      </div>
+                    )}
+                    {nameError && <p className="mt-1 text-xs" style={{ color: HOME_COLORS.error }}>{nameError}</p>}
                     <p className="mt-1 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>{user?.email}</p>
                   </div>
                 </div>
