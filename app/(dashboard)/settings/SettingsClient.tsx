@@ -655,37 +655,48 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
                     const name = preset?.name ?? hex.toUpperCase()
                     return (
                       <div key={hex} className="group relative">
+                        {/* Favorite status lives on the swatch itself (a soft
+                            amber ring) instead of a permanently-visible badge
+                            — only the hover actions below need chrome. */}
                         <button
                           type="button"
                           onClick={() => handlePresetClick(hex)}
                           disabled={savingColor}
                           title={name}
                           aria-label={`Use ${name}`}
-                          className={`h-10 w-10 rounded-full transition-transform hover:scale-110 disabled:opacity-60 ${active ? 'ring-2 ring-[#18281c] ring-offset-4 ring-offset-white' : ''}`}
+                          className="h-10 w-10 rounded-full transition-transform hover:scale-110 disabled:opacity-60"
                           style={{
                             background: hex,
-                            border: active ? 'none' : `1px solid ${HOME_COLORS.outlineVariant}66`,
+                            boxShadow: active
+                              ? '0 0 0 2px white, 0 0 0 4px #18281c'
+                              : isFavorite
+                                ? '0 0 0 2px white, 0 0 0 3px #B8860B'
+                                : 'none',
+                            border: active || isFavorite ? 'none' : `1px solid ${HOME_COLORS.outlineVariant}66`,
                             cursor: 'pointer',
                           }}
                         />
-                        <button
-                          type="button"
-                          onClick={e => toggleFavorite(e, hex)}
-                          aria-label={isFavorite ? `Unpin ${name}` : `Pin ${name} as a favorite`}
-                          className={`absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full border transition-opacity ${isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-                          style={{ background: 'white', borderColor: HOME_COLORS.outlineVariant, color: isFavorite ? '#B8860B' : HOME_COLORS.onSurfaceVariant, cursor: 'pointer' }}
-                        >
-                          <Star size={11} fill={isFavorite ? '#B8860B' : 'none'} />
-                        </button>
+                        <div className="absolute -top-1 -right-1 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            type="button"
+                            onClick={e => toggleFavorite(e, hex)}
+                            aria-label={isFavorite ? `Unpin ${name}` : `Pin ${name} as a favorite`}
+                            title={isFavorite ? 'Unpin favorite' : 'Pin as favorite'}
+                            className="flex h-4 w-4 items-center justify-center rounded-full"
+                            style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.3)', color: isFavorite ? '#B8860B' : HOME_COLORS.onSurfaceVariant, cursor: 'pointer' }}
+                          >
+                            <Star size={9} fill={isFavorite ? '#B8860B' : 'none'} />
+                          </button>
+                        </div>
                         <button
                           type="button"
                           onClick={e => removeFromPalette(e, hex)}
                           aria-label={`Remove ${name} from your saved colors`}
                           title="Remove from saved colors"
-                          className="absolute -bottom-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full border opacity-0 transition-opacity group-hover:opacity-100"
-                          style={{ background: 'white', borderColor: HOME_COLORS.outlineVariant, color: HOME_COLORS.error, cursor: 'pointer' }}
+                          className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+                          style={{ background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.3)', color: HOME_COLORS.error, cursor: 'pointer' }}
                         >
-                          <X size={11} />
+                          <X size={9} />
                         </button>
                       </div>
                     )
