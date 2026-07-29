@@ -74,6 +74,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [fullName, setFullName] = useState<string | null>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [plan, setPlan] = useState<string | null>(null)
+  const [hasWorkspaceAccess, setHasWorkspaceAccess] = useState(false)
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
@@ -112,6 +113,15 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         setFullName(profile?.full_name ?? null)
         setAvatarUrl(profile?.avatar_url ?? null)
         setPlan(profile?.plan ?? null)
+
+        // Nav visibility for Workspaces shouldn't depend on the viewer's own
+        // plan — a Free/Pro member invited into someone else's Broadcast
+        // workspace still needs a way back to it. GET /api/workspaces
+        // already scopes to owner-or-member via RLS regardless of plan.
+        fetch('/api/workspaces')
+          .then(r => r.json())
+          .then(json => setHasWorkspaceAccess((json.data ?? []).length > 0))
+          .catch(() => {})
       }
     })
   }, [])
@@ -173,7 +183,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto" style={{ fontFamily: HOME_FONT_BODY }}>
-        {NAV_ITEMS.filter(item => !item.requiresAgency || plan === 'agency').map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.filter(item => !item.requiresAgency || plan === 'agency' || hasWorkspaceAccess).map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href)
           return (
             <Link
