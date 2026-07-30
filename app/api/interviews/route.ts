@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getPlanForUser, countInterviewsThisMonth, trackUsage } from '@/lib/utils/entitlements'
 import { interviewCreateSchema, parseBody } from '@/lib/validation'
+import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -140,6 +141,14 @@ export async function POST(request: NextRequest) {
   }
 
   await trackUsage(supabase, 'interview')
+  await logWorkspaceActivity(supabase, {
+    workspaceId: body.workspace_id,
+    actorId: user.id,
+    action: 'interview_started',
+    entityType: 'interview',
+    entityId: data.id,
+    entityLabel: data.title,
+  })
 
   return NextResponse.json({ data }, { status: 201 })
 }

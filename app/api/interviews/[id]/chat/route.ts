@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { streamPersonaResponse } from '@/lib/anthropic/persona-engine'
 import { chatMessageSchema, parseBody } from '@/lib/validation'
 import { logError } from '@/lib/logger'
+import { getWorkspaceContext } from '@/lib/workspaces/context'
 import type { Message } from '@/types'
 
 export async function POST(
@@ -44,6 +45,7 @@ export async function POST(
   }
 
   const updatedMessages: Message[] = [...(interview.messages ?? []), userMessage]
+  const workspaceContext = await getWorkspaceContext(supabase, interview.workspace_id)
 
   const encoder = new TextEncoder()
   let personaResponseText = ''
@@ -62,7 +64,8 @@ export async function POST(
           },
           image ?? null,
           interview.devils_advocate ?? false,
-          imageMediaType ?? 'image/jpeg'
+          imageMediaType ?? 'image/jpeg',
+          workspaceContext
         )
 
         const personaMessage: Message = {

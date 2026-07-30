@@ -131,6 +131,44 @@ export interface WorkspaceInvite {
   accepted_at?: string | null
 }
 
+export type WorkspaceActivityAction =
+  | 'workspace_created'
+  | 'workspace_renamed'
+  | 'member_invited'
+  | 'persona_created'
+  | 'interview_started'
+  | 'report_generated'
+
+export interface WorkspaceActivity {
+  id: string
+  workspace_id: string
+  actor_id: string | null
+  action: WorkspaceActivityAction
+  entity_type: string | null
+  entity_id: string | null
+  entity_label: string | null
+  created_at: string
+}
+
+export interface WorkspaceSource {
+  id: string
+  workspace_id: string
+  user_id: string | null
+  name: string
+  storage_path: string
+  file_type: string
+  size_bytes: number
+  extracted_text: string
+  created_at: string
+}
+
+export interface WorkspaceContext {
+  workspace_id: string
+  content: string
+  updated_by: string | null
+  updated_at: string
+}
+
 // ─── Journey ──────────────────────────────────────────────────────────────────
 
 export interface JourneyStep {

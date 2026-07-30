@@ -7,6 +7,8 @@ import { generateReport } from '@/lib/anthropic/persona-engine'
 import { generateSignalsFromInterview } from '@/lib/anthropic/signal-engine'
 import { syncSignals } from '@/lib/signals/sync'
 import { pushReportCreated } from '@/lib/integrations/push'
+import { logWorkspaceActivity } from '@/lib/workspaces/activity'
+import { getWorkspaceContext } from '@/lib/workspaces/context'
 import type { Persona, Interview } from '@/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
@@ -99,11 +101,13 @@ export async function POST(
   }
 
   try {
+    const workspaceContext = await getWorkspaceContext(supabase, interview.workspace_id)
     const reportData = await generateReport(
       interview.persona,
       interview.type,
       interview.context,
-      interview.messages
+      interview.messages,
+      workspaceContext
     )
 
     // Delete any existing report for this interview first — but carry its
@@ -154,6 +158,15 @@ export async function POST(
       .from('interviews')
       .update({ status: 'completed', report_id: report.id })
       .eq('id', id)
+
+    await logWorkspaceActivity(supabase, {
+      workspaceId: interview.workspace_id,
+      actorId: user.id,
+      action: 'report_generated',
+      entityType: 'report',
+      entityId: report.id,
+      entityLabel: interview.title,
+    })
 
     // Push to Slack/Notion if planCheckUserId has either connected
     // (Signal/Broadcast only — gated inside pushReportCreated itself).

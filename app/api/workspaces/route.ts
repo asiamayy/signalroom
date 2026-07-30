@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getPlanForUser } from '@/lib/utils/entitlements'
+import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 
 export async function GET() {
   const supabase = await createClient()
@@ -70,6 +71,15 @@ export async function POST(request: NextRequest) {
     await supabase.from('workspaces').delete().eq('id', workspace.id)
     return NextResponse.json({ error: memberError.message }, { status: 500 })
   }
+
+  await logWorkspaceActivity(supabase, {
+    workspaceId: workspace.id,
+    actorId: user.id,
+    action: 'workspace_created',
+    entityType: 'workspace',
+    entityId: workspace.id,
+    entityLabel: workspace.name,
+  })
 
   return NextResponse.json({ data: workspace }, { status: 201 })
 }

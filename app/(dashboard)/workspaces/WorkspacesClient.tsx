@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Building2, Plus, X, Trash2, Loader2, Lock, Crown, ShieldCheck, Users, Verified,
-  FileText, MessagesSquare, ArrowRight, UserPlus,
+  FileText, MessagesSquare, ArrowRight, UserPlus, Search, Pencil, Activity, BarChart3, Network, TrendingUp, Upload, BookOpen,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { getInitials, getAvatarColor } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
-import type { Plan, Workspace, WorkspaceMember, WorkspaceInvite, Persona, Interview, Report } from '@/types'
+import type { Plan, Workspace, WorkspaceMember, WorkspaceInvite, WorkspaceActivity, WorkspaceSource, WorkspaceContext, Persona, Interview, Report } from '@/types'
 
 // Dark glass-morphism system, ported from the approved design mock —
 // distinct from the light HOME_COLORS surfaces the rest of the dashboard
@@ -40,6 +40,7 @@ export function WorkspacesClient() {
   const [plan, setPlan] = useState<Plan | null>(null)
   const [loadingPlan, setLoadingPlan] = useState(true)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ name: string; avatarUrl: string | null } | null>(null)
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [loadingWorkspaces, setLoadingWorkspaces] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -54,6 +55,10 @@ export function WorkspacesClient() {
   const [workspaceReports, setWorkspaceReports] = useState<(Report & { interview: Interview })[]>([])
   const [loadingContent, setLoadingContent] = useState(false)
   const [contentTab, setContentTab] = useState<ContentTab>('personas')
+  const [contentQuery, setContentQuery] = useState('')
+  const [activity, setActivity] = useState<WorkspaceActivity[]>([])
+  const [activityLoading, setActivityLoading] = useState(false)
+  const [presence, setPresence] = useState<{ id: string; name: string; avatarUrl: string | null }[]>([])
 
   const [showCreatePanel, setShowCreatePanel] = useState(false)
   const [newWorkspaceName, setNewWorkspaceName] = useState('')
@@ -61,6 +66,9 @@ export function WorkspacesClient() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [invitingOpen, setInvitingOpen] = useState(false)
   const [inviting, setInviting] = useState(false)
+  const [editingWorkspaceName, setEditingWorkspaceName] = useState(false)
+  const [workspaceName, setWorkspaceName] = useState('')
+  const [savingWorkspaceName, setSavingWorkspaceName] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -68,8 +76,9 @@ export function WorkspacesClient() {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { setLoadingPlan(false); return }
       setCurrentUserId(data.user.id)
-      const { data: profile } = await supabase.from('profiles').select('plan').eq('id', data.user.id).single()
+      const { data: profile } = await supabase.from('profiles').select('plan, full_name, avatar_url, email').eq('id', data.user.id).single()
       setPlan((profile?.plan ?? 'free') as Plan)
+      setCurrentUser({ name: profile?.full_name || profile?.email || 'You', avatarUrl: profile?.avatar_url ?? null })
       setLoadingPlan(false)
     })
   }, [])
@@ -125,9 +134,50 @@ export function WorkspacesClient() {
     setLoadingContent(false)
   }
 
+  const loadActivity = async (workspaceId: string) => {
+    setActivityLoading(true)
+    try {
+      const res = await fetch(`/api/workspaces/${workspaceId}/activity`)
+      const json = await res.json()
+      if (res.ok) setActivity(json.data ?? [])
+    } catch {
+      setActivity([])
+    } finally {
+      setActivityLoading(false)
+    }
+  }
+
   useEffect(() => {
-    if (selectedId) loadDetail(selectedId)
-  }, [selectedId])
+    if (selectedId) {
+      loadDetail(selectedId)
+      loadActivity(selectedId)
+      setContentQuery('')
+      setEditingWorkspaceName(false)
+      setWorkspaceName(workspaces.find(workspace => workspace.id === selectedId)?.name ?? '')
+    }
+  }, [selectedId, workspaces])
+
+  useEffect(() => {
+    if (!selectedId || !currentUserId || !currentUser) return
+    const supabase = createClient()
+    const channel = supabase.channel(`workspace-presence:${selectedId}`, { config: { presence: { key: currentUserId } } })
+    const syncPresence = () => {
+      const state = channel.presenceState() as Record<string, { id: string; name: string; avatarUrl: string | null }[]>
+      const seen = new Set<string>()
+      setPresence(Object.values(state).flat().filter(person => !seen.has(person.id) && Boolean(seen.add(person.id))))
+    }
+
+    channel
+      .on('presence', { event: 'sync' }, syncPresence)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'workspace_activity', filter: `workspace_id=eq.${selectedId}` }, () => loadActivity(selectedId))
+      .subscribe(status => {
+        if (status === 'SUBSCRIBED') {
+          void channel.track({ id: currentUserId, name: currentUser.name, avatarUrl: currentUser.avatarUrl })
+        }
+      })
+
+    return () => { void supabase.removeChannel(channel) }
+  }, [selectedId, currentUserId, currentUser])
 
   const handleCreate = async () => {
     if (!newWorkspaceName.trim()) return
@@ -157,6 +207,28 @@ export function WorkspacesClient() {
     await fetch(`/api/workspaces/${id}`, { method: 'DELETE' })
     if (selectedId === id) setSelectedId(null)
     await loadWorkspaces()
+  }
+
+  const handleRenameWorkspace = async () => {
+    if (!selectedId || !workspaceName.trim()) return
+    setSavingWorkspaceName(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/workspaces/${selectedId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: workspaceName.trim() }),
+      })
+      const json = await res.json()
+      if (!res.ok) { setError(json.error ?? 'Failed to rename workspace'); return }
+      setWorkspaces(previous => previous.map(workspace => workspace.id === selectedId ? json.data : workspace))
+      setEditingWorkspaceName(false)
+      void loadActivity(selectedId)
+    } catch {
+      setError('Something went wrong — please try again')
+    } finally {
+      setSavingWorkspaceName(false)
+    }
   }
 
   const handleInvite = async () => {
@@ -205,6 +277,7 @@ export function WorkspacesClient() {
   const seatLimit = PLAN_LIMITS.agency.team_seats
   const selectedWorkspace = workspaces.find(w => w.id === selectedId)
   const isOwnerOfSelected = members.some(m => m.id === currentUserId && m.role === 'owner')
+  const activityActor = (actorId: string | null) => members.find(member => member.id === actorId)?.full_name || members.find(member => member.id === actorId)?.email || 'A teammate'
 
   if (loadingPlan || loadingWorkspaces) {
     return <div className="min-h-full" style={{ background: DARK_BG }} />
@@ -274,25 +347,22 @@ export function WorkspacesClient() {
           </motion.section>
 
           <motion.section initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.9, ease: 'easeOut' }} className="relative mb-9 min-h-[220px] overflow-hidden rounded-[1.5rem] p-6 shadow-[0_18px_30px_-20px_rgba(24,40,28,0.5)] sm:min-h-[280px] sm:p-8" style={{ background: HOME_COLORS.primary }}>
-            <div className="pointer-events-none absolute inset-0 opacity-30">
-              <svg className="h-full w-full" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-                <path d="M50,450 L950,450 M50,50 L50,450" fill="none" stroke="white" strokeWidth="0.5" opacity="0.3" />
-                <path d="M100,380 Q300,320 400,390 T700,350 T900,410" fill="none" stroke={HOME_COLORS.primaryFixed} strokeWidth="1.5" strokeDasharray="8 10"><animate attributeName="stroke-dashoffset" dur="4s" repeatCount="indefinite" values="0;-72" /></path>
-                <circle cx="400" cy="390" fill={HOME_COLORS.primaryFixed} r="5"><animate attributeName="r" dur="3s" repeatCount="indefinite" values="5;10;5" /></circle>
-                <circle cx="700" cy="350" fill="white" r="4" opacity="0.6" />
-              </svg>
-            </div>
             <div className="relative z-10 flex flex-col justify-between gap-10 lg:flex-row lg:items-start">
               <div>
                 <span className="mb-3 inline-block rounded-full bg-white/10 px-2 py-1 text-[7px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.primaryFixed }}>Workspace activity</span>
                 <h2 className="text-2xl leading-tight text-white sm:text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace Activity <br /><span className="italic font-normal text-white/45">Research Overview</span></h2>
+                <div className="mt-6 flex items-center gap-3">
+                  <span className="h-2 w-2 rounded-full" style={{ background: HOME_COLORS.primaryFixed, boxShadow: `0 0 0 4px ${HOME_COLORS.primaryFixed}1f` }} />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/60">{presence.length > 1 ? `${presence.length} teammates viewing now` : 'You are viewing now'}</span>
+                  <div className="flex -space-x-2">
+                    {presence.slice(0, 4).map(person => <div key={person.id} className="h-7 w-7 overflow-hidden rounded-full border-2" style={{ borderColor: HOME_COLORS.primary }}><PersonaAvatar avatarUrl={person.avatarUrl} avatarInitials={getInitials(person.name)} avatarColor={getAvatarColor(person.name)} name={person.name} size="sm" /></div>)}
+                  </div>
+                </div>
               </div>
               <div className="min-w-0 rounded-2xl border p-5 sm:min-w-[260px]" style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(18px)', borderColor: 'rgba(255,255,255,0.1)' }}>
-                <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/60" style={{ fontFamily: HOME_FONT_BODY }}>In this workspace</span>
-                <div className="mt-5 space-y-4 text-[11px] text-white">
-                  <MetricLine label="Personas" value={`${realPersonaCount} active`} percent={Math.min(100, Math.max(8, realPersonaCount * 12))} />
-                  <MetricLine label="Interviews" value={`${realInterviewCount} tracked`} percent={Math.min(100, Math.max(8, realInterviewCount * 12))} />
-                  <MetricLine label="Reports" value={`${realReportCount} synthesized`} percent={Math.min(100, Math.max(8, realReportCount * 12))} />
+                <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white/60" style={{ fontFamily: HOME_FONT_BODY }}><Activity size={13} />Latest activity</span>
+                <div className="mt-4 space-y-3">
+                  {activityLoading ? <div className="h-16 animate-pulse rounded-lg bg-white/10" /> : activity.length ? activity.slice(0, 3).map(item => <ActivityRow key={item.id} item={item} actor={activityActor(item.actor_id)} />) : <p className="text-xs leading-relaxed text-white/60">Activity will appear as your team creates research in this workspace.</p>}
                 </div>
               </div>
             </div>
@@ -357,10 +427,13 @@ export function WorkspacesClient() {
             )}
           </motion.section>
 
+          {selectedWorkspace && <WorkspaceIntelligence personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} />}
+          {selectedWorkspace && <WorkspaceKnowledgeHub workspaceId={selectedWorkspace.id} />}
+
           {selectedWorkspace && <section className="grid grid-cols-1 gap-8 border-t pt-14 lg:grid-cols-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
             <div className="lg:col-span-8">
               <div className="rounded-[2rem] p-7 sm:p-10" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
-                <div className="flex flex-wrap items-start justify-between gap-5"><div><span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Selected workspace</span><h2 className="mt-3 text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>{selectedWorkspace.name}</h2></div>{isOwnerOfSelected && <button onClick={() => handleDeleteWorkspace(selectedWorkspace.id)} title="Delete workspace" className="flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.18)', color: 'white', background: 'none', cursor: 'pointer' }}><Trash2 size={16} /></button>}</div>
+                <div className="flex flex-wrap items-start justify-between gap-5"><div><span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Selected workspace</span>{editingWorkspaceName ? <div className="mt-3 flex flex-wrap items-center gap-2"><input autoFocus value={workspaceName} onChange={event => setWorkspaceName(event.target.value)} onKeyDown={event => event.key === 'Enter' && handleRenameWorkspace()} className="min-w-[220px] rounded-lg bg-white/10 px-3 py-2 text-xl text-white outline-none" style={{ fontFamily: HOME_FONT_DISPLAY, border: '1px solid rgba(255,255,255,0.22)' }} /><button onClick={handleRenameWorkspace} disabled={savingWorkspaceName || !workspaceName.trim()} className="rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed, border: 'none', cursor: 'pointer' }}>{savingWorkspaceName ? 'Saving…' : 'Save'}</button><button onClick={() => { setEditingWorkspaceName(false); setWorkspaceName(selectedWorkspace.name) }} className="px-2 text-xs text-white/60 hover:text-white" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button></div> : <div className="mt-3 flex items-center gap-3"><h2 className="text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>{selectedWorkspace.name}</h2>{isOwnerOfSelected && <button onClick={() => { setWorkspaceName(selectedWorkspace.name); setEditingWorkspaceName(true) }} title="Rename workspace" className="rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><Pencil size={14} /></button>}</div>}</div>{isOwnerOfSelected && <button onClick={() => handleDeleteWorkspace(selectedWorkspace.id)} title="Delete workspace" className="flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.18)', color: 'white', background: 'none', cursor: 'pointer' }}><Trash2 size={16} /></button>}</div>
                 <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-b pb-4" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
                   <div className="flex flex-wrap gap-6">
                     {([{ key: 'personas', label: 'Personas' }, { key: 'interviews', label: 'Interviews' }, { key: 'reports', label: 'Reports' }] as { key: ContentTab; label: string }[]).map(tab => <button key={tab.key} onClick={() => setContentTab(tab.key)} className="border-b-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ borderColor: contentTab === tab.key ? HOME_COLORS.primaryFixed : 'transparent', color: contentTab === tab.key ? 'white' : 'rgba(255,255,255,0.45)', background: 'none', cursor: 'pointer' }}>{tab.label}</button>)}
@@ -378,7 +451,8 @@ export function WorkspacesClient() {
                     </Link>
                   )}
                 </div>
-                <div className="mt-6">{loadingContent ? <div className="h-32 animate-pulse rounded-2xl bg-white/5" /> : <WorkspaceContent tab={contentTab} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} />}</div>
+                <div className="mt-5 flex max-w-md items-center gap-2 rounded-xl px-3 py-2" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)' }}><Search size={14} className="text-white/50" /><input value={contentQuery} onChange={event => setContentQuery(event.target.value)} placeholder={`Filter ${contentTab}…`} className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-white/40" /></div>
+                <div className="mt-6">{loadingContent ? <div className="h-32 animate-pulse rounded-2xl bg-white/5" /> : <WorkspaceContent tab={contentTab} query={contentQuery} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} />}</div>
               </div>
             </div>
             <aside className="lg:col-span-4">
@@ -394,34 +468,178 @@ export function WorkspacesClient() {
     )
   }
 
-function MetricLine({ label, value, percent }: { label: string; value: string; percent: number }) {
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between gap-4"><span>{label}</span><span style={{ color: HOME_COLORS.primaryFixed }}>{value}</span></div>
-      <div className="h-px overflow-hidden rounded-full bg-white/10"><div className="h-full" style={{ width: `${percent}%`, background: HOME_COLORS.primaryFixed }} /></div>
-    </div>
-  )
+function ActivityRow({ item, actor }: { item: WorkspaceActivity; actor: string }) {
+  const labels: Record<WorkspaceActivity['action'], string> = {
+    workspace_created: 'created this workspace',
+    workspace_renamed: `renamed it to ${item.entity_label ?? 'a new name'}`,
+    member_invited: `invited ${item.entity_label ?? 'a teammate'}`,
+    persona_created: `created persona ${item.entity_label ?? ''}`,
+    interview_started: `started interview ${item.entity_label ?? ''}`,
+    report_generated: `generated a report for ${item.entity_label ?? 'an interview'}`,
+  }
+  const elapsedMinutes = Math.max(0, Math.floor((Date.now() - new Date(item.created_at).getTime()) / 60000))
+  const time = elapsedMinutes < 1 ? 'just now' : elapsedMinutes < 60 ? `${elapsedMinutes}m ago` : elapsedMinutes < 1440 ? `${Math.floor(elapsedMinutes / 60)}h ago` : `${Math.floor(elapsedMinutes / 1440)}d ago`
+  return <div className="flex gap-2 text-[11px] leading-4 text-white/80"><span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: HOME_COLORS.primaryFixed }} /><p><strong className="font-semibold text-white">{actor}</strong> {labels[item.action]} <span className="whitespace-nowrap text-white/40">{time}</span></p></div>
 }
 
 function WorkspaceStat({ value, label }: { value: number | string; label: string }) {
   return <div><span className="block text-2xl font-light sm:text-3xl">{value}</span><span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.16em] opacity-45">{label}</span></div>
 }
 
-function WorkspaceContent({ tab, personas, interviews, reports }: { tab: ContentTab; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
+function WorkspaceIntelligence({ personas, interviews, reports }: { personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
+  const [activeNode, setActiveNode] = useState('overview')
+  const now = Date.now()
+  const lastThirtyDays = now - 30 * 24 * 60 * 60 * 1000
+  const recentResearch = [...personas, ...interviews, ...reports].filter(item => new Date(item.created_at).getTime() >= lastThirtyDays).length
+  const averageConfidence = reports.length ? Math.round(reports.reduce((sum, report) => sum + report.confidence_score, 0) / reports.length) : 0
+  const completedInterviews = interviews.filter(interview => interview.status === 'completed').length
+  const completionRate = interviews.length ? Math.round((completedInterviews / interviews.length) * 100) : 0
+  const themeCounts = new Map<string, number>()
+  reports.forEach(report => report.key_themes?.forEach(theme => themeCounts.set(theme.title, (themeCounts.get(theme.title) ?? 0) + 1)))
+  const themes = [...themeCounts.entries()].map(([title, count]) => ({ title, count })).sort((a, b) => b.count - a.count).slice(0, 4)
+  const graphPersonas = personas.slice(0, 2)
+  const graphReports = reports.slice(0, 2)
+  const selectedDetail = activeNode === 'overview'
+    ? 'Select a persona, report, or theme to inspect how research is connected in this workspace.'
+    : activeNode.startsWith('theme:')
+      ? `${activeNode.slice(6)} appears across ${themeCounts.get(activeNode.slice(6)) ?? 0} report${(themeCounts.get(activeNode.slice(6)) ?? 0) === 1 ? '' : 's'}.`
+      : activeNode.startsWith('persona:')
+        ? `${personas.find(persona => persona.id === activeNode.slice(8))?.name ?? 'This persona'} connects to the interviews and reports shown here.`
+        : 'This report contributes themes and evidence to the workspace intelligence map.'
+
+  return <section className="mb-14 grid grid-cols-1 gap-6 border-t pt-12 lg:grid-cols-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
+    <div className="rounded-[1.5rem] border p-6 lg:col-span-5 sm:p-7" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}>
+      <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace analytics</p><h2 className="mt-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Research momentum</h2></div><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}><BarChart3 size={18} /></span></div>
+      <div className="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-xl" style={{ background: `${HOME_COLORS.outlineVariant}55` }}>
+        <AnalyticsMetric value={recentResearch} label="New items / 30 days" />
+        <AnalyticsMetric value={reports.length ? `${averageConfidence}%` : '—'} label="Average confidence" />
+        <AnalyticsMetric value={`${completionRate}%`} label="Interview completion" />
+        <AnalyticsMetric value={themes.length} label="Recurring themes" />
+      </div>
+      <div className="mt-7"><div className="mb-3 flex items-center justify-between"><span className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Leading themes</span><TrendingUp size={14} style={{ color: HOME_COLORS.primary }} /></div>{themes.length ? <div className="space-y-3">{themes.map(theme => <div key={theme.title}><div className="mb-1.5 flex justify-between gap-4 text-xs" style={{ color: HOME_COLORS.onSurface }}><span className="truncate">{theme.title}</span><span className="shrink-0" style={{ color: HOME_COLORS.onSurfaceVariant }}>{theme.count} report{theme.count === 1 ? '' : 's'}</span></div><div className="h-1 overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-full rounded-full" style={{ width: `${Math.max(12, (theme.count / themes[0].count) * 100)}%`, background: HOME_COLORS.primary }} /></div></div>)}</div> : <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Generate reports to start tracking research confidence and recurring themes.</p>}</div>
+    </div>
+    <div className="overflow-hidden rounded-[1.5rem] border p-6 lg:col-span-7 sm:p-7" style={{ background: HOME_COLORS.primary, borderColor: HOME_COLORS.primary }}>
+      <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Insight graph</p><h2 className="mt-2 text-2xl text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>How your research connects</h2></div><Network size={19} style={{ color: HOME_COLORS.primaryFixed }} /></div>
+      <div className="relative mt-7 grid min-h-[220px] grid-cols-3 gap-3 overflow-hidden rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true"><path d="M95 70 C190 70, 210 110, 300 110 S410 65, 505 65 M95 155 C190 155, 210 110, 300 110 S410 155, 505 155" fill="none" stroke="rgba(212,232,213,0.35)" strokeWidth="1" strokeDasharray="4 5" /></svg>
+        <GraphColumn label="Personas" nodes={graphPersonas.map(persona => ({ id: `persona:${persona.id}`, label: persona.name }))} activeNode={activeNode} onSelect={setActiveNode} />
+        <GraphColumn label="Reports" nodes={graphReports.map(report => ({ id: `report:${report.id}`, label: report.interview?.title ?? 'Insight report' }))} activeNode={activeNode} onSelect={setActiveNode} />
+        <GraphColumn label="Themes" nodes={themes.slice(0, 2).map(theme => ({ id: `theme:${theme.title}`, label: theme.title }))} activeNode={activeNode} onSelect={setActiveNode} />
+      </div>
+      <p className="mt-4 text-xs leading-relaxed text-white/65">{selectedDetail}</p>
+    </div>
+  </section>
+}
+
+function AnalyticsMetric({ value, label }: { value: string | number; label: string }) {
+  return <div className="bg-[#fcf9f8] p-4"><strong className="block text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{value}</strong><span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</span></div>
+}
+
+function GraphColumn({ label, nodes, activeNode, onSelect }: { label: string; nodes: { id: string; label: string }[]; activeNode: string; onSelect: (id: string) => void }) {
+  return <div className="relative z-10 flex flex-col gap-3"><span className="text-[8px] font-semibold uppercase tracking-[0.16em] text-white/45">{label}</span>{nodes.length ? nodes.map(node => <button key={node.id} onClick={() => onSelect(node.id)} className="rounded-lg px-2 py-2 text-left text-[10px] font-semibold transition-colors" style={{ background: activeNode === node.id ? HOME_COLORS.primaryFixed : 'rgba(255,255,255,0.1)', color: activeNode === node.id ? HOME_COLORS.onPrimaryFixed : 'white', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}><span className="block truncate">{node.label}</span></button>) : <span className="text-[10px] text-white/35">No data yet</span>}</div>
+}
+
+function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
+  const [sources, setSources] = useState<WorkspaceSource[]>([])
+  const [context, setContext] = useState<WorkspaceContext | null>(null)
+  const [brief, setBrief] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const loadKnowledge = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/workspaces/${workspaceId}/knowledge`)
+      const json = await response.json()
+      if (!response.ok) throw new Error(json.error)
+      setSources(json.data?.sources ?? [])
+      setContext(json.data?.context ?? null)
+      setBrief(json.data?.context?.content ?? '')
+    } catch (err: any) {
+      setError(err.message ?? 'Could not load workspace knowledge')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void loadKnowledge() }, [workspaceId])
+
+  const uploadSource = async (files: FileList | null) => {
+    const file = files?.[0]
+    if (!file) return
+    setUploading(true)
+    setError('')
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const response = await fetch(`/api/workspaces/${workspaceId}/knowledge`, { method: 'POST', body: form })
+      const json = await response.json()
+      if (!response.ok) throw new Error(json.error)
+      setSources(previous => [json.data, ...previous])
+    } catch (err: any) {
+      setError(err.message ?? 'Could not upload source')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const saveBrief = async () => {
+    setSaving(true)
+    setError('')
+    try {
+      const response = await fetch(`/api/workspaces/${workspaceId}/knowledge`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: brief }) })
+      const json = await response.json()
+      if (!response.ok) throw new Error(json.error)
+      setContext(json.data)
+      setBrief(json.data.content)
+    } catch (err: any) {
+      setError(err.message ?? 'Could not save workspace brief')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const deleteSource = async (sourceId: string) => {
+    if (!confirm('Remove this shared source?')) return
+    const response = await fetch(`/api/workspaces/${workspaceId}/knowledge`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sourceId }) })
+    if (response.ok) setSources(previous => previous.filter(source => source.id !== sourceId))
+  }
+
+  return <section className="mb-14 border-t pt-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace knowledge</p><h2 className="mt-2 text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared context hub</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Give every workspace research action the same informed starting point.</p></div><label className="inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition-opacity hover:opacity-90" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}><Upload size={14} />{uploading ? 'Uploading…' : 'Add source'}<input type="file" className="hidden" disabled={uploading} accept=".pdf,.doc,.docx,.csv,.txt,.md,.json" onChange={event => uploadSource(event.target.files)} /></label></div>
+    {error && <p className="mb-4 rounded-lg px-3 py-2 text-xs" style={{ background: '#ffdad6', color: HOME_COLORS.error }}>{error}</p>}
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12"><div className="rounded-[1.5rem] border p-6 lg:col-span-7" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="flex items-center justify-between gap-4"><div className="flex items-center gap-2"><BookOpen size={17} style={{ color: HOME_COLORS.primary }} /><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Workspace brief</h3></div><button onClick={saveBrief} disabled={saving || brief === (context?.content ?? '')} className="rounded-full px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] disabled:opacity-40" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary, border: 'none', cursor: 'pointer' }}>{saving ? 'Saving…' : 'Save brief'}</button></div><p className="mt-3 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Add the positioning, audience, claims, guardrails, or research priorities that should inform every shared persona, interview, and report.</p><textarea value={brief} onChange={event => setBrief(event.target.value)} maxLength={12000} placeholder="e.g. Brand positioning, target audience, campaign objectives, approved claims, and research constraints…" className="mt-5 min-h-[160px] w-full resize-y rounded-xl p-4 text-sm leading-relaxed outline-none" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }} /></div>
+      <div className="rounded-[1.5rem] border p-6 lg:col-span-5" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}66` }}><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared sources</h3><p className="mt-2 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Text, CSV, and JSON sources feed into workspace context automatically. PDFs and decks remain available to the team and can be distilled into the brief.</p><div className="mt-5 space-y-2">{loading ? <div className="h-16 animate-pulse rounded-xl" style={{ background: HOME_COLORS.surfaceContainer }} /> : sources.length ? sources.map(source => <div key={source.id} className="flex items-center justify-between gap-3 rounded-xl border p-3" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}55` }}><div className="min-w-0"><p className="truncate text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{source.name}</p><p className="mt-1 text-[10px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatSourceSize(source.size_bytes)} · {source.extracted_text ? 'Context-ready' : 'Stored source'}</p></div><button onClick={() => deleteSource(source.id)} className="rounded-full px-2 py-1 text-[10px] font-semibold" style={{ background: 'none', border: 'none', color: HOME_COLORS.error, cursor: 'pointer' }}>Remove</button></div>) : <p className="rounded-xl border border-dashed p-5 text-center text-xs" style={{ borderColor: `${HOME_COLORS.outlineVariant}88`, color: HOME_COLORS.onSurfaceVariant }}>No shared source materials yet.</p>}</div></div></div>
+  </section>
+}
+
+function formatSourceSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function WorkspaceContent({ tab, query, personas, interviews, reports }: { tab: ContentTab; query: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
+  const term = query.trim().toLowerCase()
   if (tab === 'personas') {
-    return personas.length === 0 ? <EmptyContentState icon={Users} text="No personas assigned to this workspace yet." /> : (
+    const filtered = personas.filter(persona => !term || `${persona.name} ${persona.traits?.job_title ?? ''} ${persona.traits?.industry ?? ''}`.toLowerCase().includes(term))
+    return filtered.length === 0 ? <EmptyContentState icon={Users} text={term ? 'No personas match this filter.' : 'No personas assigned to this workspace yet.'} /> : (
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {personas.slice(0, 6).map(persona => <Link key={persona.id} href={`/personas/${persona.id}`} className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" /><div className="min-w-0"><p className="truncate text-xs font-semibold text-white">{persona.name}</p><p className="truncate text-[9px] uppercase tracking-wider text-white/40">{persona.traits?.job_title || 'No role set'}</p></div></Link>)}
+        {filtered.slice(0, 6).map(persona => <Link key={persona.id} href={`/personas/${persona.id}`} className="flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="sm" /><div className="min-w-0"><p className="truncate text-xs font-semibold text-white">{persona.name}</p><p className="truncate text-[9px] uppercase tracking-wider text-white/40">{persona.traits?.job_title || 'No role set'}</p></div></Link>)}
       </div>
     )
   }
   if (tab === 'interviews') {
-    return interviews.length === 0 ? <EmptyContentState icon={MessagesSquare} text="No interviews run in this workspace yet." /> : (
-      <div className="space-y-2">{interviews.slice(0, 6).map(interview => <Link key={interview.id} href={`/interviews/${interview.id}`} className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="min-w-0"><p className="truncate text-xs font-semibold text-white">{interview.title}</p><p className="text-[9px] uppercase tracking-wider text-white/40">{interview.persona?.name ?? 'Unknown persona'}</p></div><span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.primaryFixed }}>{interview.status}</span></Link>)}</div>
+    const filtered = interviews.filter(interview => !term || `${interview.title} ${interview.persona?.name ?? ''} ${interview.status}`.toLowerCase().includes(term))
+    return filtered.length === 0 ? <EmptyContentState icon={MessagesSquare} text={term ? 'No interviews match this filter.' : 'No interviews run in this workspace yet.'} /> : (
+      <div className="space-y-2">{filtered.slice(0, 6).map(interview => <Link key={interview.id} href={`/interviews/${interview.id}`} className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="min-w-0"><p className="truncate text-xs font-semibold text-white">{interview.title}</p><p className="text-[9px] uppercase tracking-wider text-white/40">{interview.persona?.name ?? 'Unknown persona'}</p></div><span className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.primaryFixed }}>{interview.status}</span></Link>)}</div>
     )
   }
-  return reports.length === 0 ? <EmptyContentState icon={FileText} text="No reports generated in this workspace yet." /> : (
-    <div className="space-y-2">{reports.slice(0, 6).map(report => <Link key={report.id} href={`/reports/${report.id}`} className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="min-w-0"><p className="truncate text-xs font-semibold text-white">{report.interview?.title ?? 'Untitled interview'}</p><p className="truncate text-[10px] text-white/40">{report.executive_summary}</p></div><span className="text-xs font-semibold" style={{ color: HOME_COLORS.primaryFixed }}>{report.confidence_score}%</span></Link>)}</div>
+  const filtered = reports.filter(report => !term || `${report.interview?.title ?? ''} ${report.executive_summary}`.toLowerCase().includes(term))
+  return filtered.length === 0 ? <EmptyContentState icon={FileText} text={term ? 'No reports match this filter.' : 'No reports generated in this workspace yet.'} /> : (
+    <div className="space-y-2">{filtered.slice(0, 6).map(report => <Link key={report.id} href={`/reports/${report.id}`} className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="min-w-0"><p className="truncate text-xs font-semibold text-white">{report.interview?.title ?? 'Untitled interview'}</p><p className="truncate text-[10px] text-white/40">{report.executive_summary}</p></div><span className="text-xs font-semibold" style={{ color: HOME_COLORS.primaryFixed }}>{report.confidence_score}%</span></Link>)}</div>
   )
 }
 

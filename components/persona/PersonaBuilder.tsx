@@ -99,6 +99,22 @@ type PersonaDraft = {
   }
 }
 
+const LOCAL_DRAFTS_KEY = 'signalroom.persona-drafts.v1'
+
+function readLocalDrafts(): PersonaDraft[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(LOCAL_DRAFTS_KEY) ?? '[]')
+    return Array.isArray(stored) ? stored : []
+  } catch {
+    return []
+  }
+}
+
+function writeLocalDrafts(drafts: PersonaDraft[]) {
+  window.localStorage.setItem(LOCAL_DRAFTS_KEY, JSON.stringify(drafts))
+}
+
 // ─── Options ──────────────────────────────────────────────────────────────────
 
 const GENDER_OPTIONS = [
@@ -364,9 +380,9 @@ export default function PersonaBuilder() {
       .then(async response => {
         const json = await response.json()
         if (!response.ok) throw new Error(json.error)
-        setDrafts(json.data ?? [])
+        setDrafts([...(json.data ?? []), ...readLocalDrafts()])
       })
-      .catch(() => setDrafts([]))
+      .catch(() => setDrafts(readLocalDrafts()))
   }, [])
 
   // ─── AI generation ──────────────────────────────────────────────────────────
@@ -380,7 +396,7 @@ export default function PersonaBuilder() {
       const res = await fetch('/api/personas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ generate: true, description }),
+        body: JSON.stringify({ generate: true, description, workspace_id: workspaceId === 'personal' ? null : workspaceId }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
@@ -482,20 +498,36 @@ export default function PersonaBuilder() {
     setDraftMessage('')
     setError('')
 
+    const draftPayload = {
+      name,
+      tags,
+      traits,
+      funnel_stage: funnelStage,
+      avatar_url: avatarUrl,
+      project_id: projectId,
+      workspace_id: workspaceId === 'personal' ? null : workspaceId,
+    }
+
+    if (activeDraftId?.startsWith('local-')) {
+      const savedDraft: PersonaDraft = {
+        id: activeDraftId,
+        name,
+        updated_at: new Date().toISOString(),
+        payload: draftPayload,
+      }
+      const nextDrafts = [savedDraft, ...drafts.filter(draft => draft.id !== activeDraftId)]
+      writeLocalDrafts(nextDrafts.filter(draft => draft.id.startsWith('local-')))
+      setDrafts(nextDrafts)
+      setDraftMessage('Progress saved')
+      setSavingDraft(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/persona-drafts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: activeDraftId,
-          name,
-          tags,
-          traits,
-          funnel_stage: funnelStage,
-          avatar_url: avatarUrl,
-          project_id: projectId,
-          workspace_id: workspaceId === 'personal' ? null : workspaceId,
-        }),
+        body: JSON.stringify({ id: activeDraftId, ...draftPayload }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
@@ -505,7 +537,17 @@ export default function PersonaBuilder() {
       setDrafts(previous => [savedDraft, ...previous.filter(draft => draft.id !== savedDraft.id)])
       setDraftMessage('Progress saved')
     } catch (e: any) {
-      setError(e.message ?? 'Failed to save draft')
+      const savedDraft: PersonaDraft = {
+        id: `local-${Date.now()}`,
+        name,
+        updated_at: new Date().toISOString(),
+        payload: draftPayload,
+      }
+      const nextDrafts = [savedDraft, ...drafts.filter(draft => draft.id !== savedDraft.id)]
+      writeLocalDrafts(nextDrafts.filter(draft => draft.id.startsWith('local-')))
+      setActiveDraftId(savedDraft.id)
+      setDrafts(nextDrafts)
+      setDraftMessage('Progress saved on this device')
     } finally {
       setSavingDraft(false)
     }
@@ -527,6 +569,14 @@ export default function PersonaBuilder() {
   }
 
   const deleteDraft = async (draftId: string) => {
+    if (draftId.startsWith('local-')) {
+      const nextDrafts = drafts.filter(draft => draft.id !== draftId)
+      writeLocalDrafts(nextDrafts.filter(draft => draft.id.startsWith('local-')))
+      setDrafts(nextDrafts)
+      if (activeDraftId === draftId) setActiveDraftId(null)
+      return
+    }
+
     try {
       const res = await fetch('/api/persona-drafts', {
         method: 'DELETE',
@@ -568,7 +618,10 @@ export default function PersonaBuilder() {
         return
       }
 
-      if (activeDraftId) {
+      if (activeDraftId?.startsWith('local-')) {
+        const nextDrafts = drafts.filter(draft => draft.id !== activeDraftId)
+        writeLocalDrafts(nextDrafts.filter(draft => draft.id.startsWith('local-')))
+      } else if (activeDraftId) {
         await fetch('/api/persona-drafts', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },

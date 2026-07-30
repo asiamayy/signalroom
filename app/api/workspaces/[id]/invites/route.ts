@@ -3,6 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getPlanForUser, countWorkspaceSeats } from '@/lib/utils/entitlements'
 import { sendEmail } from '@/lib/email'
 import { PLAN_LIMITS } from '@/types'
+import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 
 export async function GET(
   request: NextRequest,
@@ -125,6 +126,14 @@ export async function POST(
   // Temporary diagnostic — paired with the lookup-side log in
   // /invite/[token]/page.tsx, so the next "invite is no longer valid"
   // report can be traced from creation through to the failing lookup.
+  await logWorkspaceActivity(supabase, {
+    workspaceId: id,
+    actorId: user.id,
+    action: 'member_invited',
+    entityType: 'member',
+    entityLabel: normalizedEmail,
+  })
+
   console.log(JSON.stringify({
     level: 'info',
     scope: 'invite.created',

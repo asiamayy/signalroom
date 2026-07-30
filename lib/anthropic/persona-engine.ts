@@ -622,9 +622,10 @@ export async function streamPersonaResponse(
   onChunk: (text: string) => void,
   imageBase64: string | null = null,
   devilsAdvocate: boolean = false,
-  imageMediaType: string = 'image/jpeg'
+  imageMediaType: string = 'image/jpeg',
+  workspaceContext: string = ''
 ): Promise<string> {
-  const systemPrompt = buildPersonaSystemPrompt(persona, interviewType, context, devilsAdvocate)
+  const systemPrompt = buildPersonaSystemPrompt(persona, interviewType, `${context}${workspaceContext ? `\n\nShared workspace context (use only when relevant):\n${workspaceContext}` : ''}`, devilsAdvocate)
 
   const formattedMessages = messages.map((m, index) => {
     const isLast = index === messages.length - 1
@@ -689,7 +690,8 @@ export async function generateReport(
   persona: Persona,
   interviewType: InterviewType,
   context: string,
-  messages: Message[]
+  messages: Message[],
+  workspaceContext: string = ''
 ) {
   const trimmedMessages = messages.length > 16
     ? messages.slice(-16)
@@ -710,6 +712,7 @@ export async function generateReport(
 Interview type: ${interviewType.replace('_', ' ')}
 Concept being tested: ${context}
 Participant: ${persona.name}, ${persona.traits.age}, ${persona.traits.job_title}
+${workspaceContext ? `\nShared workspace context (use only to frame recommendations when it is relevant):\n${workspaceContext}\n` : ''}
 
 Transcript:
 ${transcript}
@@ -917,7 +920,7 @@ export function sanitizeSuggestedTraits(parsed: unknown): unknown {
   return obj
 }
 
-export async function suggestPersonaTraits(description: string) {
+export async function suggestPersonaTraits(description: string, workspaceContext: string = '') {
   const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
 
   // Pick the background, a specific heritage within it, and a couple of seed
@@ -948,6 +951,7 @@ export async function suggestPersonaTraits(description: string) {
       {
         role: 'user',
         content: `A user wants to create a market research persona with this description: "${description}"
+${workspaceContext ? `\n## Shared workspace context\nUse this as grounded background only when relevant. Do not invent details beyond it.\n${workspaceContext}\n` : ''}
 
 ## GUIDELINES (these are instructions for you — never copy this wording into the output)
 

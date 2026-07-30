@@ -44,6 +44,7 @@ export const personaCreateSchema = z.object({
 export const personaGenerateSchema = z.object({
   generate: z.literal(true),
   description: z.string().trim().min(1, 'Description is required').max(2000),
+  workspace_id: optionalUuid,
 })
 
 // ─── Interview ───────────────────────────────────────────────────────────────

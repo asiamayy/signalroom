@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 
 export async function PATCH(
   request: NextRequest,
@@ -32,6 +33,15 @@ export async function PATCH(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  await logWorkspaceActivity(supabase, {
+    workspaceId: id,
+    actorId: user.id,
+    action: 'workspace_renamed',
+    entityType: 'workspace',
+    entityId: id,
+    entityLabel: data.name,
+  })
 
   return NextResponse.json({ data })
 }

@@ -5,6 +5,8 @@ import { getInitials, getAvatarColor } from '@/lib/utils'
 import { getPlanForUser, trackUsage } from '@/lib/utils/entitlements'
 import { personaCreateSchema, personaGenerateSchema, parseBody } from '@/lib/validation'
 import { logError } from '@/lib/logger'
+import { logWorkspaceActivity } from '@/lib/workspaces/activity'
+import { getWorkspaceContext } from '@/lib/workspaces/context'
 import { PLAN_LIMITS } from '@/types'
 
 export async function GET(request: NextRequest) {
@@ -61,7 +63,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: parsed.error }, { status: 400 })
     }
     try {
-      const suggested = await suggestPersonaTraits(parsed.data.description)
+      const workspaceContext = await getWorkspaceContext(supabase, parsed.data.workspace_id)
+      const suggested = await suggestPersonaTraits(parsed.data.description, workspaceContext)
       return NextResponse.json({ data: suggested })
     } catch (e: any) {
       logError('personas.generate', e, { userId: user.id })
@@ -138,6 +141,14 @@ export async function POST(request: NextRequest) {
   }
 
   await trackUsage(supabase, 'persona')
+  await logWorkspaceActivity(supabase, {
+    workspaceId: formData.workspace_id,
+    actorId: user.id,
+    action: 'persona_created',
+    entityType: 'persona',
+    entityId: data.id,
+    entityLabel: data.name,
+  })
 
   return NextResponse.json({ data }, { status: 201 })
 }
