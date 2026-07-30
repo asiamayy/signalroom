@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { suggestPersonaTraits } from '@/lib/anthropic/persona-engine'
 import { getInitials, getAvatarColor } from '@/lib/utils'
@@ -7,6 +8,7 @@ import { personaCreateSchema, personaGenerateSchema, parseBody } from '@/lib/val
 import { logError } from '@/lib/logger'
 import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 import { getWorkspaceContext } from '@/lib/workspaces/context'
+import { pushWorkspaceAutomation } from '@/lib/workspaces/automations'
 import { PLAN_LIMITS } from '@/types'
 
 export async function GET(request: NextRequest) {
@@ -149,6 +151,11 @@ export async function POST(request: NextRequest) {
     entityId: data.id,
     entityLabel: data.name,
   })
+  after(() => pushWorkspaceAutomation({
+    workspaceId: formData.workspace_id,
+    event: 'persona_created',
+    itemName: data.name,
+  }))
 
   return NextResponse.json({ data }, { status: 201 })
 }

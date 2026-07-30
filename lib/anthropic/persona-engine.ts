@@ -817,6 +817,45 @@ Return ONLY the JSON. No preamble, no markdown fences.`,
   throw new Error('Failed to parse report JSON from AI response')
 }
 
+// Answers are deliberately ephemeral: the source report remains unchanged.
+export async function answerReportQuestion(input: {
+  question: string
+  executiveSummary: string
+  themes: unknown
+  recommendations: unknown
+  transcript: string
+  workspaceContext?: string
+}) {
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 700,
+    messages: [{
+      role: 'user',
+      content: `You are SignalRoom's research collaborator. Answer the team's question using only the supplied report, transcript, and optional shared workspace context. Be concise, specific, and transparent when the evidence is insufficient. Do not invent quotes, customer facts, or results.
+
+Team question: ${input.question}
+
+Executive summary:
+${input.executiveSummary}
+
+Key themes:
+${JSON.stringify(input.themes)}
+
+Recommendations:
+${JSON.stringify(input.recommendations)}
+
+Interview transcript:
+${input.transcript.slice(0, 16000)}
+${input.workspaceContext ? `\nShared workspace context:\n${input.workspaceContext.slice(0, 6000)}` : ''}
+
+Respond in 2-5 short paragraphs or bullets. If helpful, identify the exact theme or reaction that supports the answer.`,
+    }],
+  })
+
+  const answer = response.content.find((block) => block.type === 'text')
+  return answer?.type === 'text' ? answer.text.trim() : ''
+}
+
 // ─── Generate persona suggestions ────────────────────────────────────────────
 
 const NAME_POOLS: Record<string, { first: string[]; last: string[] }> = {

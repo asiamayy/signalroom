@@ -9,6 +9,7 @@ import { syncSignals } from '@/lib/signals/sync'
 import { pushReportCreated } from '@/lib/integrations/push'
 import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 import { getWorkspaceContext } from '@/lib/workspaces/context'
+import { pushWorkspaceAutomation } from '@/lib/workspaces/automations'
 import type { Persona, Interview } from '@/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
@@ -180,6 +181,11 @@ export async function POST(
         logError('integrations.push_report', e, { userId: user.id, interviewId: id })
       }
     })
+    after(() => pushWorkspaceAutomation({
+      workspaceId: interview.workspace_id,
+      event: 'report_generated',
+      itemName: interview.title,
+    }))
 
     // Signals require a project (see supabase-migration-projects-signals.sql
     // — project_id is not-null on the signals table), so interviews that

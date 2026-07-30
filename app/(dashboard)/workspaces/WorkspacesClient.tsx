@@ -8,6 +8,7 @@ import {
   FileText, MessagesSquare, ArrowRight, UserPlus, Search, Pencil, Activity, BarChart3, Network, TrendingUp, Upload, BookOpen,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
+import { WorkspaceAutomations } from '@/components/workspaces/WorkspaceAutomations'
 import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from '@/lib/home-theme'
 import { getInitials, getAvatarColor } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -429,6 +430,7 @@ export function WorkspacesClient() {
 
           {selectedWorkspace && <WorkspaceIntelligence personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} />}
           {selectedWorkspace && <WorkspaceKnowledgeHub workspaceId={selectedWorkspace.id} />}
+          {selectedWorkspace && isOwnerOfSelected && <WorkspaceAutomations workspaceId={selectedWorkspace.id} />}
 
           {selectedWorkspace && <section className="grid grid-cols-1 gap-8 border-t pt-14 lg:grid-cols-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
             <div className="lg:col-span-8">

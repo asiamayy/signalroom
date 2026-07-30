@@ -169,6 +169,40 @@ export interface WorkspaceContext {
   updated_at: string
 }
 
+export interface WorkspaceCommentAuthor {
+  id: string
+  full_name: string | null
+  email: string
+  avatar_url: string | null
+}
+
+export interface WorkspaceComment {
+  id: string
+  workspace_id: string
+  report_id: string
+  parent_id: string | null
+  section_key: string
+  content: string
+  author_id: string | null
+  mentioned_user_ids: string[]
+  created_at: string
+  updated_at: string
+  author?: WorkspaceCommentAuthor | null
+}
+
+export type WorkspaceAutomationEvent = 'persona_created' | 'interview_started' | 'report_generated'
+export type WorkspaceWebhookProvider = 'slack' | 'teams'
+
+export interface WorkspaceAutomation {
+  id: string
+  workspace_id: string
+  provider: WorkspaceWebhookProvider
+  display_name: string
+  events: WorkspaceAutomationEvent[]
+  enabled: boolean
+  created_at: string
+}
+
 // ─── Journey ──────────────────────────────────────────────────────────────────
 
 export interface JourneyStep {

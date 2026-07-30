@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getPlanForUser, countInterviewsThisMonth, trackUsage } from '@/lib/utils/entitlements'
 import { interviewCreateSchema, parseBody } from '@/lib/validation'
 import { logWorkspaceActivity } from '@/lib/workspaces/activity'
+import { pushWorkspaceAutomation } from '@/lib/workspaces/automations'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -149,6 +151,11 @@ export async function POST(request: NextRequest) {
     entityId: data.id,
     entityLabel: data.title,
   })
+  after(() => pushWorkspaceAutomation({
+    workspaceId: body.workspace_id,
+    event: 'interview_started',
+    itemName: data.title,
+  }))
 
   return NextResponse.json({ data }, { status: 201 })
 }
