@@ -25,6 +25,14 @@ const QUESTIONS = [
   { question: 'Where should I begin?', answer: 'We recommend starting by creating your first Persona to define your target audience characteristics.' },
   { question: 'Are AI personas a replacement for talking to real customers?', answer: 'AI personas are a powerful tool for initial hypothesis testing and sharpening your research questions, but should complement, not entirely replace, direct customer validation for high-stakes decisions.' },
   { question: 'How do I share research with my team?', answer: 'You can invite team members in Workspace settings or export individual signal reports as shareable summaries.' },
+  {
+    question: 'What does a confidence score mean?',
+    answer: 'Move Forward With Confidence. Every AI interview gets a Confidence Score — how strongly that persona’s response indicates they’d buy, adopt, or recommend what you’re testing. It is a read on one simulated person’s conviction, not a verdict on the market; validate real findings with real customers.',
+  },
+  {
+    question: 'How do plan limits work?',
+    answer: 'Your Settings page shows the personas, interviews, and workspace capabilities included with your plan. You can update or cancel a plan there at any time.',
+  },
 ]
 
 export default function HelpPage() {
@@ -110,7 +118,7 @@ export default function HelpPage() {
               <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.15em] text-[#f3f0ef]/60">Need a hand?</p>
               <h2 className="mb-4 text-[24px] font-semibold leading-8" style={{ fontFamily: HOME_FONT_DISPLAY }}>Talk to support</h2>
               <p className="mb-8 text-base leading-relaxed text-[#f3f0ef]/80">Send context on what you were trying to do, what happened, and any relevant report or project link. We&apos;ll take it from there.</p>
-              <a href="mailto:hello@getsignalroom.com?subject=SignalRoom%20support%20request" className="flex w-fit items-center justify-center gap-2 rounded-full bg-[#b8cbb9] px-6 py-3 text-[12px] font-semibold tracking-[0.05em] text-[#041208] transition-colors hover:bg-white">
+              <a href="mailto:hello@getsignalroom.com" className="flex w-fit items-center justify-center gap-2 rounded-full bg-[#b8cbb9] px-6 py-3 text-[12px] font-semibold tracking-[0.05em] text-[#041208] transition-colors hover:bg-white">
                 Email support<ArrowRight size={18} strokeWidth={1.75} />
               </a>
             </section>
