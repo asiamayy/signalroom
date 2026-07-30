@@ -22,7 +22,15 @@ const ANSWERS = [
   { question: 'Where should I begin?', answer: 'Start by creating one focused persona, then run a short interview around a single decision: a customer problem, message, audience, or concept. You can expand to an Audience Panel once you want to compare viewpoints.' },
   { question: 'Are AI personas a replacement for talking to real customers?', answer: 'No. SignalRoom helps you pressure-test assumptions quickly and discover what deserves deeper validation. For high-stakes decisions, use its findings to shape and prioritize real customer research.' },
   { question: 'How do I share research with my team?', answer: 'Open an insight report to download a PDF or use Share to create a link. Workspace members can also collaborate on shared content when workspace access is enabled for your plan.' },
-  { question: 'Why do I see a confidence score?', answer: 'Confidence reflects the depth and specificity of the persona responses used in that report. It is a signal of research quality, not a prediction of market certainty.' },
+  {
+    question: 'What does a confidence score mean?',
+    answer: 'Move Forward With Confidence. Every AI interview gets a Confidence Score — how strongly that persona\'s response indicates they\'d buy, adopt, or recommend what you\'re testing. It\'s a read on one simulated person\'s conviction, not a verdict on the market; validate real findings with real customers.',
+    details: [
+      { title: 'Stated conviction', body: 'Extracted directly from the persona\'s own response, not calculated as a separate judgment layered on top.' },
+      { title: 'Behavioral anchors', body: 'Calibrated against concrete reactions, from “I\'d sign up today” to “this doesn\'t work for me,” so scores are differentiated instead of generic.' },
+      { title: 'Visible justification', body: 'Every score includes a one-sentence reason pulled straight from what the persona said, so you can audit it instead of trusting a black box.' },
+    ],
+  },
   { question: 'How do plan limits work?', answer: 'Your Settings page shows the personas, interviews, and workspace capabilities included with your plan. You can update or cancel a plan there at any time.' },
 ]
 
@@ -90,12 +98,20 @@ export default function HelpPage() {
                 <h2 className="mt-1 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>Quick answers</h2>
               </div>
               <div className="overflow-hidden rounded-xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}>
-                {ANSWERS.map(({ question, answer }) => (
+                {ANSWERS.map(({ question, answer, details }) => (
                   <details key={question} className="group border-b last:border-0" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-5 py-4 text-sm font-semibold marker:content-none" style={{ color: HOME_COLORS.onSurface }}>
                       {question}<span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform group-open:rotate-45" style={{ background: HOME_COLORS.surfaceContainer, color: HOME_COLORS.primary }}>+</span>
                     </summary>
-                    <p className="max-w-3xl px-5 pb-5 text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{answer}</p>
+                    <div className="max-w-3xl px-5 pb-5 text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+                      <p>{answer}</p>
+                      {details && <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                        {details.map(detail => <div key={detail.title} className="rounded-lg p-3" style={{ background: HOME_COLORS.surfaceContainerLow }}>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primary }}>{detail.title}</p>
+                          <p className="mt-1 text-xs leading-relaxed">{detail.body}</p>
+                        </div>)}
+                      </div>}
+                    </div>
                   </details>
                 ))}
               </div>
