@@ -84,6 +84,21 @@ const DEFAULT_TRAITS: PersonaTraits = {
   ethnicity: '',
 }
 
+type PersonaDraft = {
+  id: string
+  name: string
+  updated_at: string
+  payload: {
+    name?: string
+    tags?: string[]
+    traits?: PersonaTraits
+    funnel_stage?: FunnelStage
+    avatar_url?: string | null
+    project_id?: string | null
+    workspace_id?: string | null
+  }
+}
+
 // ─── Options ──────────────────────────────────────────────────────────────────
 
 const GENDER_OPTIONS = [
@@ -328,6 +343,11 @@ export default function PersonaBuilder() {
   const [generatingAvatar, setGeneratingAvatar] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [savingDraft, setSavingDraft] = useState(false)
+  const [drafts, setDrafts] = useState<PersonaDraft[]>([])
+  const [draftsOpen, setDraftsOpen] = useState(false)
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null)
+  const [draftMessage, setDraftMessage] = useState('')
   const [error, setError] = useState('')
 
   // Harmless to call regardless of plan — returns an empty list for accounts
@@ -337,6 +357,16 @@ export default function PersonaBuilder() {
       .then(r => r.json())
       .then(json => setWorkspaces(json.data ?? []))
       .catch(() => setWorkspaces([]))
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/persona-drafts')
+      .then(async response => {
+        const json = await response.json()
+        if (!response.ok) throw new Error(json.error)
+        setDrafts(json.data ?? [])
+      })
+      .catch(() => setDrafts([]))
   }, [])
 
   // ─── AI generation ──────────────────────────────────────────────────────────
@@ -447,6 +477,72 @@ export default function PersonaBuilder() {
     setStep(s => s + 1)
   }
 
+  const handleSaveDraft = async () => {
+    setSavingDraft(true)
+    setDraftMessage('')
+    setError('')
+
+    try {
+      const res = await fetch('/api/persona-drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: activeDraftId,
+          name,
+          tags,
+          traits,
+          funnel_stage: funnelStage,
+          avatar_url: avatarUrl,
+          project_id: projectId,
+          workspace_id: workspaceId === 'personal' ? null : workspaceId,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error)
+
+      const savedDraft = json.data as PersonaDraft
+      setActiveDraftId(savedDraft.id)
+      setDrafts(previous => [savedDraft, ...previous.filter(draft => draft.id !== savedDraft.id)])
+      setDraftMessage('Progress saved')
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to save draft')
+    } finally {
+      setSavingDraft(false)
+    }
+  }
+
+  const restoreDraft = (draft: PersonaDraft) => {
+    const { payload } = draft
+    setName(payload.name ?? draft.name ?? '')
+    setTags(Array.isArray(payload.tags) ? payload.tags : [])
+    setTraits(payload.traits ?? DEFAULT_TRAITS)
+    setFunnelStage(FUNNEL_STAGES.includes(payload.funnel_stage ?? 'awareness') ? payload.funnel_stage ?? 'awareness' : 'awareness')
+    setAvatarUrl(payload.avatar_url ?? null)
+    setWorkspaceId(payload.workspace_id ?? 'personal')
+    setStep(0)
+    setActiveDraftId(draft.id)
+    setDraftMessage('Draft restored')
+    setDraftsOpen(false)
+    setError('')
+  }
+
+  const deleteDraft = async (draftId: string) => {
+    try {
+      const res = await fetch('/api/persona-drafts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: draftId }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error)
+
+      setDrafts(previous => previous.filter(draft => draft.id !== draftId))
+      if (activeDraftId === draftId) setActiveDraftId(null)
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to delete draft')
+    }
+  }
+
   const handleSave = async () => {
     if (!name.trim()) {
       setError('Please enter a name for this persona')
@@ -472,6 +568,14 @@ export default function PersonaBuilder() {
         return
       }
 
+      if (activeDraftId) {
+        await fetch('/api/persona-drafts', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: activeDraftId }),
+        })
+      }
+
       router.push(projectId ? `/projects/${projectId}` : '/personas')
       router.refresh()
     } catch (e: any) {
@@ -494,14 +598,41 @@ export default function PersonaBuilder() {
         <div className="relative z-10 max-w-2xl">
           <h1 className="mb-3 leading-tight" style={{ fontFamily: HOME_FONT_DISPLAY, fontSize: '26px', lineHeight: '32px', letterSpacing: '-.01em', fontWeight: 600, color: '#1c1b1b' }}>New Persona</h1>
           <p className="max-w-xl text-sm leading-relaxed" style={{ color: '#434843' }}>Build a realistic, research-backed persona with AI assistance.</p>
-          <div className="mt-4 flex gap-2.5">
-            <button type="button" onClick={() => router.push('/personas')} className="rounded-full border border-[#c3c8c1] bg-transparent px-4 py-1.5 text-xs font-semibold text-[#1c1b1b] transition-colors hover:bg-[#eae7e7]" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
+          <div className="mt-4 flex items-center gap-2.5">
+            <button type="button" onClick={() => setDraftsOpen(open => !open)} aria-expanded={draftsOpen} className="rounded-full border border-[#c3c8c1] bg-transparent px-4 py-1.5 text-xs font-semibold text-[#1c1b1b] transition-colors hover:bg-[#eae7e7]" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
               Drafts
             </button>
-            <button type="button" className="rounded-full bg-[#18281c] px-4 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:-translate-y-px" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-              Save Progress
+            <button type="button" onClick={handleSaveDraft} disabled={savingDraft} className="rounded-full bg-[#18281c] px-4 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60" style={{ border: 'none', cursor: savingDraft ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+              {savingDraft ? 'Saving…' : 'Save Progress'}
             </button>
+            {draftMessage && <span className="text-xs font-semibold" style={{ color: '#3a4b3d' }}>{draftMessage}</span>}
           </div>
+
+          {draftsOpen && (
+            <div className="mt-4 max-w-xl overflow-hidden rounded-xl border" style={{ background: '#ffffff', borderColor: '#c3c8c199', boxShadow: '0 12px 28px rgba(28, 27, 27, 0.08)' }}>
+              <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: '#c3c8c155' }}>
+                <p className="text-[10px] font-bold uppercase tracking-[.14em]" style={{ color: '#434843' }}>Saved drafts</p>
+                <span className="text-[10px]" style={{ color: '#737873' }}>{drafts.length}</span>
+              </div>
+              {drafts.length === 0 ? (
+                <p className="px-4 py-4 text-xs leading-relaxed" style={{ color: '#434843' }}>No saved drafts yet. Save your progress at any time and return to it here.</p>
+              ) : (
+                <div className="divide-y" style={{ borderColor: '#c3c8c155' }}>
+                  {drafts.map(draft => (
+                    <div key={draft.id} className="flex items-center gap-3 px-4 py-3">
+                      <button type="button" onClick={() => restoreDraft(draft)} className="min-w-0 flex-1 text-left" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <span className="block truncate text-sm font-semibold" style={{ color: '#1c1b1b' }}>{draft.name.trim() || 'Untitled persona'}</span>
+                        <span className="mt-0.5 block text-[10px]" style={{ color: '#737873' }}>Saved {new Date(draft.updated_at).toLocaleDateString()}</span>
+                      </button>
+                      <button type="button" onClick={() => deleteDraft(draft.id)} className="rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors hover:bg-[#f6f3f2]" style={{ color: '#737873', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

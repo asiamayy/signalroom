@@ -258,7 +258,6 @@ function EmergentThemes({ themes }: { themes: { title: string; count: number; pe
           <div className="h-1 overflow-hidden rounded-full" style={{ background: `${HOME_COLORS.outlineVariant}33` }}><div className="h-full rounded-full" style={{ width: `${theme.percentage}%`, background: HOME_COLORS.primary }} /></div>
         </div>
       ))}</div> : <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Themes will appear as research reports are generated.</p>}
-      <Link href="/signals" className="mt-8 block w-full rounded-full border py-3 text-center text-xs font-semibold transition-colors hover:bg-[#eae7e7]" style={{ borderColor: HOME_COLORS.outline, color: HOME_COLORS.onSurface }}>Explore Theme Map</Link>
     </section>
   )
 }
