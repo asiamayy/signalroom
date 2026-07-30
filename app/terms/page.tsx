@@ -77,7 +77,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-[11px] font-medium uppercase tracking-[0.3em] text-[#1A3024] mb-2">Contact</h2>
-            <p>Questions about these terms? Email us at <a href="mailto:legal@signalroom.io" className="text-[#1A3024] font-medium hover:text-[#5A7973] transition-colors">legal@signalroom.io</a></p>
+            <p>Questions about these terms? Email us at <a href="mailto:hello@getsignalroom.com" className="text-[#1A3024] font-medium hover:text-[#5A7973] transition-colors">hello@getsignalroom.com</a></p>
           </section>
         </div>
       </div>

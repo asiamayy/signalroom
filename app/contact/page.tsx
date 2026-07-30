@@ -94,11 +94,11 @@ export default function ContactPage() {
             <div className="mt-6 pt-6 border-t border-[#E3E5E3] space-y-2">
               <p className="text-xs text-neutral-500">
                 <span className="font-medium text-[#121314]">General:</span>{' '}
-                <a href="mailto:hello@signalroom.io" className="text-[#1A3024] font-medium hover:text-[#5A7973] transition-colors">hello@signalroom.io</a>
+                <a href="mailto:hello@getsignalroom.com" className="text-[#1A3024] font-medium hover:text-[#5A7973] transition-colors">hello@getsignalroom.com</a>
               </p>
               <p className="text-xs text-neutral-500">
                 <span className="font-medium text-[#121314]">Support:</span>{' '}
-                <a href="mailto:support@signalroom.io" className="text-[#1A3024] font-medium hover:text-[#5A7973] transition-colors">support@signalroom.io</a>
+                <a href="mailto:hello@getsignalroom.com" className="text-[#1A3024] font-medium hover:text-[#5A7973] transition-colors">hello@getsignalroom.com</a>
               </p>
             </div>
           </div>

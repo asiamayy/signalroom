@@ -124,7 +124,7 @@ export default function HelpPage() {
               <p className="text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.primaryFixed, opacity: 0.7 }}>Need a hand?</p>
               <h2 className="mt-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>Talk to support</h2>
               <p className="mt-3 text-sm leading-relaxed" style={{ color: HOME_COLORS.onPrimaryContainer }}>Send context on what you were trying to do, what happened, and any relevant report or project link. We&apos;ll take it from there.</p>
-              <a href="mailto:support@getsignalroom.com?subject=SignalRoom%20support%20request" className="mt-7 inline-flex items-center gap-2 rounded-full px-5 py-3 text-xs font-semibold transition-all hover:-translate-y-0.5" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>Email support<ArrowRight size={14} /></a>
+              <a href="mailto:hello@getsignalroom.com?subject=SignalRoom%20support%20request" className="mt-7 inline-flex items-center gap-2 rounded-full px-5 py-3 text-xs font-semibold transition-all hover:-translate-y-0.5" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>Email support<ArrowRight size={14} /></a>
               <span className="absolute -bottom-12 -right-12 h-40 w-40 rounded-full blur-3xl" style={{ background: `${HOME_COLORS.primaryFixed}16` }} />
             </section>
 

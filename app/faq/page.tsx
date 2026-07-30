@@ -67,7 +67,7 @@ const FAQS = [
       },
       {
         q: 'Do you offer refunds?',
-        a: 'We don\'t offer refunds for partial months, but you can cancel before your next billing date to avoid being charged again. If you have a specific issue, reach out to us at support@getsignalroom.com and we\'ll work something out.',
+        a: 'We don\'t offer refunds for partial months, but you can cancel before your next billing date to avoid being charged again. If you have a specific issue, reach out to us at hello@getsignalroom.com and we\'ll work something out.',
       },
     ],
   },
@@ -81,10 +81,6 @@ const FAQS = [
       {
         q: 'Is my data used to train AI models?',
         a: 'No. The content you submit through SignalRoom is processed through Anthropic\'s Claude API to generate responses, but we do not use your interview content to train AI models.',
-      },
-      {
-        q: 'What AI model powers SignalRoom?',
-        a: 'SignalRoom uses Anthropic\'s Claude for persona interviews and report generation, and fal.ai\'s FLUX model for generating persona portrait photos.',
       },
     ],
   },
