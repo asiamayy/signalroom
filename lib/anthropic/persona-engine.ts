@@ -831,7 +831,7 @@ export async function answerReportQuestion(input: {
     max_tokens: 700,
     messages: [{
       role: 'user',
-      content: `You are SignalRoom's research collaborator. Answer the team's question using only the supplied report, transcript, and optional shared workspace context. Be concise, specific, and transparent when the evidence is insufficient. Do not invent quotes, customer facts, or results.
+      content: `You are SignalRoom's research collaborator. Answer the team's question using only the supplied research evidence and optional shared workspace context. Be concise, specific, and transparent when the evidence is insufficient. Do not invent quotes, customer facts, or results.
 
 Team question: ${input.question}
 

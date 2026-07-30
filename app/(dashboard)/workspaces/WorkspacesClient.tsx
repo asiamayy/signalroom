@@ -424,17 +424,17 @@ export function WorkspacesClient() {
                     </div>
                   </button>
                 })}
-                <Link href="/reports" className="group rounded-[1.25rem] p-5 transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.35)] md:col-span-4" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
-                  <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] opacity-80" style={{ fontFamily: HOME_FONT_BODY }}>Shared research</span>
-                  <div className="mt-5 flex items-end justify-between"><div><h3 className="text-base" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace Content</h3><p className="mt-1 text-xs opacity-70" style={{ fontFamily: HOME_FONT_BODY }}>{realPersonaCount + realInterviewCount + realReportCount} shared research items.</p></div><FileText size={20} className="opacity-30" /></div>
-                </Link>
-                <button type="button" onClick={() => setInvitingOpen(true)} className="group rounded-[1.25rem] p-5 text-left transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-[0_18px_30px_-24px_rgba(24,40,28,0.35)] md:col-span-4" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22`, cursor: 'pointer' }}>
-                  <span className="block text-[11px] font-semibold uppercase tracking-[0.22em] opacity-80" style={{ fontFamily: HOME_FONT_BODY }}>Workspace members</span>
-                  <div className="mt-4 flex items-center gap-3">{members[0] ? <div className="h-10 w-10 overflow-hidden rounded-xl"><PersonaAvatar avatarUrl={members[0].avatar_url} avatarInitials={getInitials(members[0].full_name || members[0].email)} avatarColor={getAvatarColor(members[0].full_name || members[0].email)} name={members[0].full_name ?? members[0].email} size="sm" shape="square" /></div> : <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${HOME_COLORS.primary}12` }}><Users size={16} /></div>}<div className="min-w-0"><h3 className="truncate text-sm" style={{ fontFamily: HOME_FONT_DISPLAY }}>{members[0]?.full_name || members[0]?.email || 'Invite your team'}</h3><p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] opacity-70" style={{ fontFamily: HOME_FONT_BODY }}>{members.length ? `${members.length} members with access` : 'Add a member'}</p></div></div>
-                </button>
               </div>
             )}
           </motion.section>
+
+          {selectedWorkspace && <section className="mb-8 rounded-[2rem] border p-5 sm:p-6" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}55` }}>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace overview</p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <Link href="/reports" className="group rounded-[1.25rem] border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_24px_-22px_rgba(24,40,28,0.36)]" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, borderColor: `${HOME_COLORS.outlineVariant}22` }}><span className="block text-[10px] font-semibold uppercase tracking-[0.18em] opacity-75">Shared research</span><div className="mt-4 flex items-end justify-between"><div><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace content</h3><p className="mt-1 text-xs opacity-70">{realPersonaCount + realInterviewCount + realReportCount} shared research items.</p></div><FileText size={19} className="opacity-35 transition-transform duration-200 group-hover:-translate-y-0.5" /></div></Link>
+              <button type="button" onClick={() => setInvitingOpen(true)} className="group rounded-[1.25rem] border p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_24px_-22px_rgba(24,40,28,0.36)]" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, borderColor: `${HOME_COLORS.outlineVariant}22`, cursor: 'pointer' }}><span className="block text-[10px] font-semibold uppercase tracking-[0.18em] opacity-75">Workspace members</span><div className="mt-4 flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-3">{members[0] ? <div className="h-10 w-10 overflow-hidden rounded-xl"><PersonaAvatar avatarUrl={members[0].avatar_url} avatarInitials={getInitials(members[0].full_name || members[0].email)} avatarColor={getAvatarColor(members[0].full_name || members[0].email)} name={members[0].full_name ?? members[0].email} size="sm" shape="square" /></div> : <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${HOME_COLORS.primary}12` }}><Users size={16} /></div>}<div className="min-w-0"><h3 className="truncate text-lg" style={{ fontFamily: HOME_FONT_DISPLAY }}>{members[0]?.full_name || members[0]?.email || 'Invite your team'}</h3><p className="mt-1 text-xs opacity-70">{members.length ? `${members.length} members with access` : 'Add a member'}</p></div></div><UserPlus size={17} className="opacity-35 transition-all duration-200 group-hover:opacity-90" /></div></button>
+            </div>
+          </section>}
 
           {selectedWorkspace && <section className="grid grid-cols-1 gap-8 border-t pt-14 lg:grid-cols-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
             <div className="lg:col-span-8">
@@ -463,11 +463,11 @@ export function WorkspacesClient() {
             </div>
             <aside className="lg:col-span-4">
               <div className="rounded-[2rem] border p-7 sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}55` }}>
-                <div className="flex items-center justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research team</p><p className="mt-2 text-sm" style={{ color: HOME_COLORS.onSurface }}>{members.length} member{members.length === 1 ? '' : 's'} with access</p></div>{isOwnerOfSelected && <button onClick={() => setInvitingOpen(open => !open)} className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_16px_rgba(24,40,28,0.18)] active:scale-95" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' }}><UserPlus size={16} /></button>}</div>
+                <div className="flex items-center justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research team</p><p className="mt-2 text-sm" style={{ color: HOME_COLORS.onSurface }}>{members.length} member{members.length === 1 ? '' : 's'} with access</p></div>{isOwnerOfSelected && <button onClick={() => setInvitingOpen(open => !open)} className="flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-200 hover:bg-[#314536] active:scale-95" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' }}><UserPlus size={16} /></button>}</div>
                 {isOwnerOfSelected && <AnimatePresence>{invitingOpen && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden"><div className="mt-5 flex gap-2 rounded-xl p-2" style={{ background: HOME_COLORS.surfaceContainer }}><input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleInvite()} placeholder="teammate@company.com" className="min-w-0 flex-1 bg-transparent px-2 text-xs outline-none" style={{ color: HOME_COLORS.onSurface }} /><button onClick={handleInvite} disabled={inviting || !inviteEmail.trim()} className="rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-40" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' }}>{inviting ? 'Sending...' : 'Invite'}</button></div></motion.div>}</AnimatePresence>}
-                <div className="mt-6 space-y-3">{loadingDetail ? [1, 2].map(i => <div key={i} className="h-12 animate-pulse rounded-xl" style={{ background: HOME_COLORS.surfaceContainer }} />) : members.map(member => <div key={member.id} className="flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-3"><div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-full"><PersonaAvatar avatarUrl={member.avatar_url} avatarInitials={getInitials(member.full_name || member.email)} avatarColor={getAvatarColor(member.full_name || member.email)} name={member.full_name ?? member.email} size="sm" /></div><div className="min-w-0"><p className="truncate text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{member.full_name || member.email}</p><p className="text-[9px] uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>{member.role}</p></div></div>{(isOwnerOfSelected || member.id === currentUserId) && member.role !== 'owner' && <button onClick={() => handleRemoveMember(member.id)} aria-label={member.id === currentUserId ? 'Leave workspace' : `Remove ${member.full_name || member.email}`} className="p-1" style={{ color: HOME_COLORS.error, background: 'none', border: 'none', cursor: 'pointer' }}><X size={14} /></button>}</div>)}{invites.map(invite => <div key={invite.id} className="flex items-center justify-between gap-3 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}><span className="truncate">{invite.invited_email}</span><button onClick={() => handleRevokeInvite(invite.id)} className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.error, background: 'none', border: 'none', cursor: 'pointer' }}>Revoke</button></div>)}</div>
+                <div className="mt-6 space-y-3">{loadingDetail ? [1, 2].map(i => <div key={i} className="h-12 animate-pulse rounded-xl" style={{ background: HOME_COLORS.surfaceContainer }} />) : <>{members.map(member => <ResearchTeamMember key={member.id} member={member} status={memberPresenceStatus(member, presence, activity)} canRemove={(isOwnerOfSelected || member.id === currentUserId) && member.role !== 'owner'} onRemove={() => handleRemoveMember(member.id)} />)}{invites.map(invite => <PendingWorkspaceInvite key={invite.id} invite={invite} onRevoke={() => handleRevokeInvite(invite.id)} />)}</>}</div>
               </div>
-              <WorkspaceAskAI reports={workspaceReports} />
+              <WorkspaceAskAI workspaceId={selectedWorkspace.id} />
             </aside>
           </section>}
           {selectedWorkspace && <WorkspaceKnowledgeHub workspaceId={selectedWorkspace.id} />}
@@ -495,6 +495,32 @@ function WorkspaceStat({ value, label }: { value: number | string; label: string
   return <div><span className="block text-2xl font-light sm:text-3xl">{value}</span><span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.16em] opacity-45">{label}</span></div>
 }
 
+function memberPresenceStatus(member: WorkspaceMember, presence: { id: string }[], activity: WorkspaceActivity[]) {
+  if (presence.some(person => person.id === member.id)) return 'Active now'
+  const latestAction = activity.find(item => item.actor_id === member.id)
+  if (!latestAction) return 'No recent activity'
+  const minutes = Math.max(0, Math.floor((Date.now() - new Date(latestAction.created_at).getTime()) / 60000))
+  return minutes < 1 ? 'Just now' : minutes < 60 ? `${minutes}m ago` : minutes < 1440 ? `${Math.floor(minutes / 60)}h ago` : `${Math.floor(minutes / 1440)}d ago`
+}
+
+function ResearchTeamMember({ member, status, canRemove, onRemove }: { member: WorkspaceMember; status: string; canRemove: boolean; onRemove: () => void }) {
+  const active = status === 'Active now'
+  return <div className="group flex items-center justify-between gap-3 rounded-xl px-1 py-1.5">
+    <div className="flex min-w-0 items-center gap-3">
+      <div className="relative h-9 w-9 flex-shrink-0 overflow-visible rounded-full"><div className="h-9 w-9 overflow-hidden rounded-full"><PersonaAvatar avatarUrl={member.avatar_url} avatarInitials={getInitials(member.full_name || member.email)} avatarColor={getAvatarColor(member.full_name || member.email)} name={member.full_name ?? member.email} size="sm" /></div>{active && <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2" style={{ background: '#54c76d', borderColor: HOME_COLORS.surfaceContainerLow }} />}</div>
+      <div className="min-w-0"><p className="truncate text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{member.full_name || member.email}</p><p className="text-[9px] uppercase tracking-wider" style={{ color: active ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant }}>{member.role} · {status}</p></div>
+    </div>
+    {canRemove && <button type="button" onClick={onRemove} aria-label={`Remove ${member.full_name || member.email}`} className="rounded-full p-1.5 opacity-0 transition-all duration-150 group-hover:opacity-100 hover:bg-[#e4e8e2]" style={{ color: HOME_COLORS.onSurfaceVariant, background: 'transparent', border: 'none', cursor: 'pointer' }}><X size={14} /></button>}
+  </div>
+}
+
+function PendingWorkspaceInvite({ invite, onRevoke }: { invite: WorkspaceInvite; onRevoke: () => void }) {
+  return <div className="group flex items-center justify-between gap-3 rounded-xl border border-dashed p-3" style={{ borderColor: HOME_COLORS.outlineVariant + '88' }}>
+    <div className="flex min-w-0 items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><UserPlus size={15} style={{ color: HOME_COLORS.onSurfaceVariant }} /></div><div className="min-w-0"><p className="truncate text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{invite.invited_email}</p><p className="text-[9px] uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Pending invitation</p></div></div>
+    <button type="button" onClick={onRevoke} aria-label={`Revoke invitation for ${invite.invited_email}`} className="rounded-full p-1.5 opacity-0 transition-all duration-150 group-hover:opacity-100 hover:bg-[#e4e8e2]" style={{ color: HOME_COLORS.onSurfaceVariant, background: 'transparent', border: 'none', cursor: 'pointer' }}><X size={14} /></button>
+  </div>
+}
+
 function WorkspaceIntelligence({ personas, interviews, reports }: { personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
   const [activeNode, setActiveNode] = useState('overview')
   const [intelligenceTab, setIntelligenceTab] = useState<'analytics' | 'insights'>('analytics')
@@ -518,8 +544,9 @@ function WorkspaceIntelligence({ personas, interviews, reports }: { personas: Pe
         : 'This report contributes themes and evidence to the workspace intelligence map.'
 
   return <section className="mb-9 border-t pt-8" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace intelligence</p><h2 className="mt-1 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Research overview</h2></div><div className="flex rounded-full p-1" style={{ background: HOME_COLORS.surfaceContainerLow }}>{([{ key: 'analytics', label: 'Analytics', icon: BarChart3 }, { key: 'insights', label: 'Insight graph', icon: Network }] as const).map(tab => <button key={tab.key} type="button" onClick={() => setIntelligenceTab(tab.key)} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold transition-all duration-200" style={{ background: intelligenceTab === tab.key ? HOME_COLORS.primary : 'transparent', color: intelligenceTab === tab.key ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}><tab.icon size={12} />{tab.label}</button>)}</div></div>
-    <div className={`rounded-[1.5rem] border p-6 sm:p-7 ${intelligenceTab === 'analytics' ? 'block' : 'hidden'}`} style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}>
+    <div className="rounded-[1.5rem] border p-4 sm:p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}>
+    <div className="inline-flex rounded-full p-1" style={{ background: HOME_COLORS.surfaceContainerLow }}>{([{ key: 'analytics', label: 'Analytics' }, { key: 'insights', label: 'Insight graph' }] as const).map(tab => <button key={tab.key} type="button" onClick={() => setIntelligenceTab(tab.key)} className="rounded-full px-7 py-3 text-[10px] font-semibold uppercase tracking-[0.13em] transition-all duration-200" style={{ background: intelligenceTab === tab.key ? HOME_COLORS.surfaceContainerLowest : 'transparent', color: intelligenceTab === tab.key ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant, boxShadow: intelligenceTab === tab.key ? '0 2px 6px rgba(24,40,28,.12)' : 'none' }}>{tab.label}</button>)}</div>
+    <div className={`mt-5 p-2 sm:p-3 ${intelligenceTab === 'analytics' ? 'block' : 'hidden'}`}>
       <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace analytics</p><h2 className="mt-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Research momentum</h2></div><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}><BarChart3 size={18} /></span></div>
       <div className="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-xl" style={{ background: `${HOME_COLORS.outlineVariant}55` }}>
         <AnalyticsMetric value={recentResearch} label="New items / 30 days" />
@@ -529,7 +556,7 @@ function WorkspaceIntelligence({ personas, interviews, reports }: { personas: Pe
       </div>
       <div className="mt-7"><div className="mb-3 flex items-center justify-between"><span className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Leading themes</span><TrendingUp size={14} style={{ color: HOME_COLORS.primary }} /></div>{themes.length ? <div className="space-y-3">{themes.map(theme => <div key={theme.title}><div className="mb-1.5 flex justify-between gap-4 text-xs" style={{ color: HOME_COLORS.onSurface }}><span className="truncate">{theme.title}</span><span className="shrink-0" style={{ color: HOME_COLORS.onSurfaceVariant }}>{theme.count} report{theme.count === 1 ? '' : 's'}</span></div><div className="h-1 overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-full rounded-full" style={{ width: `${Math.max(12, (theme.count / themes[0].count) * 100)}%`, background: HOME_COLORS.primary }} /></div></div>)}</div> : <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Generate reports to start tracking research confidence and recurring themes.</p>}</div>
     </div>
-    <div className={`overflow-hidden rounded-[1.5rem] border p-6 sm:p-7 ${intelligenceTab === 'insights' ? 'block' : 'hidden'}`} style={{ background: HOME_COLORS.primary, borderColor: HOME_COLORS.primary }}>
+    <div className={`mt-5 overflow-hidden rounded-[1.25rem] p-6 sm:p-7 ${intelligenceTab === 'insights' ? 'block' : 'hidden'}`} style={{ background: HOME_COLORS.primary }}>
       <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Insight graph</p><h2 className="mt-2 text-2xl text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>How your research connects</h2></div><Network size={19} style={{ color: HOME_COLORS.primaryFixed }} /></div>
       <div className="relative mt-7 grid min-h-[220px] grid-cols-3 gap-3 overflow-hidden rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
         <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true"><path d="M95 70 C190 70, 210 110, 300 110 S410 65, 505 65 M95 155 C190 155, 210 110, 300 110 S410 155, 505 155" fill="none" stroke="rgba(212,232,213,0.35)" strokeWidth="1" strokeDasharray="4 5" /></svg>
@@ -539,6 +566,7 @@ function WorkspaceIntelligence({ personas, interviews, reports }: { personas: Pe
       </div>
       <p className="mt-4 text-xs leading-relaxed text-white/65">{selectedDetail}</p>
     </div>
+    </div>
   </section>
 }
 
@@ -546,19 +574,17 @@ function AnalyticsMetric({ value, label }: { value: string | number; label: stri
   return <div className="bg-[#fcf9f8] p-4"><strong className="block text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{value}</strong><span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</span></div>
 }
 
-function WorkspaceAskAI({ reports }: { reports: (Report & { interview: Interview })[] }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+function WorkspaceAskAI({ workspaceId }: { workspaceId: string }) {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState('')
   const [asking, setAsking] = useState(false)
   const [error, setError] = useState('')
-  const reportId = selectedId || reports[0]?.id
 
   const ask = async () => {
-    if (!reportId || !question.trim() || asking) return
+    if (!question.trim() || asking) return
     setAsking(true); setError(''); setAnswer('')
     try {
-      const response = await fetch('/api/reports/' + reportId + '/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question }) })
+      const response = await fetch('/api/workspaces/' + workspaceId + '/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question }) })
       const json = await response.json()
       if (!response.ok) throw new Error(json.error || 'Unable to answer that question.')
       setAnswer(json.data.answer)
@@ -571,12 +597,14 @@ function WorkspaceAskAI({ reports }: { reports: (Report & { interview: Interview
 
   return <section className="mt-6 rounded-[2rem] border p-6" style={{ background: '#dfe4da', borderColor: HOME_COLORS.outlineVariant + '55' }}>
     <div className="flex items-center gap-2"><Sparkles size={17} style={{ color: HOME_COLORS.primary }} /><h2 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Ask AI</h2></div>
-    <p className="mt-2 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{reports.length ? 'Ask a focused question about a report in this workspace.' : 'Generate an insight report to ask AI about your workspace research.'}</p>
-    {reports.length > 0 && <><div className="mt-4 flex flex-wrap gap-1.5">{reports.slice(0, 4).map(report => <button key={report.id} type="button" onClick={() => { setSelectedId(report.id); setAnswer('') }} className="max-w-full truncate rounded-full px-2.5 py-1 text-[10px] font-semibold transition-colors" style={{ background: report.id === reportId ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerLowest, color: report.id === reportId ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}>{report.interview?.title ?? 'Insight report'}</button>)}</div>
-      <div className="mt-4 flex gap-2"><input value={question} onChange={event => setQuestion(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); void ask() } }} placeholder="What were the key objections?" className="min-w-0 flex-1 rounded-xl px-3 py-2.5 text-xs outline-none" style={{ background: HOME_COLORS.surfaceContainerLowest, color: HOME_COLORS.onSurface, border: '1px solid ' + HOME_COLORS.outlineVariant + '66' }} /><button type="button" onClick={ask} disabled={!question.trim() || asking} className="rounded-xl px-3 transition-transform active:scale-95 disabled:opacity-40" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>{asking ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}</button></div>
-      {error && <p className="mt-3 text-xs" style={{ color: HOME_COLORS.error }}>{error}</p>}
-      {answer && <p className="mt-4 whitespace-pre-wrap rounded-xl p-3 text-xs leading-relaxed" style={{ background: HOME_COLORS.surfaceContainerLowest, color: HOME_COLORS.onSurface }}>{answer}</p>}
-    </>}
+    <p className="mt-2 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Ask a question across the research shared in this workspace.</p>
+    <div className="mt-5 flex items-center gap-2 rounded-full border p-1.5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: HOME_COLORS.outlineVariant + '44' }}>
+      <Sparkles size={15} className="ml-2 shrink-0" style={{ color: HOME_COLORS.onSurfaceVariant }} />
+      <input value={question} onChange={event => setQuestion(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); void ask() } }} placeholder="Ask AI about this context..." className="min-w-0 flex-1 bg-transparent px-2 py-2 text-xs outline-none" style={{ color: HOME_COLORS.onSurface }} />
+      <button type="button" onClick={ask} disabled={!question.trim() || asking} className="rounded-full px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] transition-colors hover:bg-[#314536] disabled:opacity-40" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>{asking ? <Loader2 size={13} className="animate-spin" /> : 'Inquire'}</button>
+    </div>
+    {error && <p className="mt-3 text-xs" style={{ color: HOME_COLORS.error }}>{error}</p>}
+    {answer && <p className="mt-4 whitespace-pre-wrap rounded-xl p-3 text-xs leading-relaxed" style={{ background: HOME_COLORS.surfaceContainerLowest, color: HOME_COLORS.onSurface }}>{answer}</p>}
   </section>
 }
 
@@ -592,6 +620,7 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [knowledgeAvailable, setKnowledgeAvailable] = useState(true)
 
   const loadKnowledge = async () => {
     setLoading(true)
@@ -602,8 +631,14 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
       setSources(json.data?.sources ?? [])
       setContext(json.data?.context ?? null)
       setBrief(json.data?.context?.content ?? '')
+      setKnowledgeAvailable(true)
     } catch (err: any) {
-      setError(err.message ?? 'Could not load workspace knowledge')
+      if ((err?.message ?? '').includes('workspace_sources') || (err?.message ?? '').includes('schema cache')) {
+        setKnowledgeAvailable(false)
+        setError('')
+      } else {
+        setError(err.message ?? 'Could not load workspace knowledge')
+      }
     } finally {
       setLoading(false)
     }
@@ -651,6 +686,8 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
     const response = await fetch(`/api/workspaces/${workspaceId}/knowledge`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sourceId }) })
     if (response.ok) setSources(previous => previous.filter(source => source.id !== sourceId))
   }
+
+  if (!knowledgeAvailable) return <section className="mb-14 border-t pt-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}><div className="rounded-[1.5rem] border p-6" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: HOME_COLORS.outlineVariant + '55' }}><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace knowledge</p><h2 className="mt-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared context hub</h2><p className="mt-3 max-w-2xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Shared sources and workspace context will be ready here once workspace knowledge is activated.</p></div></section>
 
   return <section className="mb-14 border-t pt-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace knowledge</p><h2 className="mt-2 text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared context hub</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Give every workspace research action the same informed starting point.</p></div><label className="inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition-opacity hover:opacity-90" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}><Upload size={14} />{uploading ? 'Uploading…' : 'Add source'}<input type="file" className="hidden" disabled={uploading} accept=".pdf,.doc,.docx,.csv,.txt,.md,.json" onChange={event => uploadSource(event.target.files)} /></label></div>
