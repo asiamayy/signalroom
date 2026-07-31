@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generatePersonaJourney } from '@/lib/anthropic/persona-engine'
 import type { JourneyStep } from '@/types'
+import { logPersonaActivity } from '@/lib/personas/activity'
 
 // ─── List journeys (with steps) for a persona ────────────────────────────────
 export async function GET(
@@ -105,6 +106,13 @@ export async function POST(
     if (stepsError) {
       return NextResponse.json({ error: stepsError.message }, { status: 500 })
     }
+
+    await logPersonaActivity(supabase, {
+      personaId: id,
+      actorId: user.id,
+      action: 'journey_created',
+      detail: journey.title,
+    })
 
     return NextResponse.json({
       data: {

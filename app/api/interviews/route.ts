@@ -5,6 +5,7 @@ import { getPlanForUser, countInterviewsThisMonth, trackUsage } from '@/lib/util
 import { interviewCreateSchema, parseBody } from '@/lib/validation'
 import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 import { pushWorkspaceAutomation } from '@/lib/workspaces/automations'
+import { logPersonaActivity } from '@/lib/personas/activity'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -143,6 +144,12 @@ export async function POST(request: NextRequest) {
   }
 
   await trackUsage(supabase, 'interview')
+  await logPersonaActivity(supabase, {
+    personaId: data.persona_id,
+    actorId: user.id,
+    action: 'interview_started',
+    detail: data.title,
+  })
   await logWorkspaceActivity(supabase, {
     workspaceId: body.workspace_id,
     actorId: user.id,

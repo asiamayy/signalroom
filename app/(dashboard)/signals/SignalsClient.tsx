@@ -212,8 +212,8 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
           <section className="p-6 sm:p-8 rounded-xl" style={{ background: HOME_COLORS.primaryContainer, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
             <div className="flex justify-between items-start mb-8">
               <div>
-                <h4 className="text-sm font-semibold mb-1">Signal Velocity</h4>
-                <p className="text-xs opacity-70">Discovered over the last 7 days</p>
+                <h4 className="text-sm font-semibold mb-1">New signals this week</h4>
+                <p className="text-xs opacity-70">Signals discovered in the last 7 days</p>
               </div>
               <Gauge size={20} style={{ color: HOME_COLORS.onPrimaryContainer }} />
             </div>
@@ -232,7 +232,7 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
                   {velocity.wowPercent >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
                   {velocity.wowPercent > 0 ? '+' : ''}{velocity.wowPercent}%
                 </span>
-                <span className="block text-[10px] opacity-60 uppercase">vs prior week</span>
+                <span className="block text-[10px] uppercase opacity-60">Compared with the previous 7 days</span>
               </div>
             </div>
           </section>

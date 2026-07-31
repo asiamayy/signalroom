@@ -4,14 +4,15 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
-  ChevronRight, Sparkles, Loader2, Quote, Database, Activity, Share2, MoreHorizontal,
+  ChevronRight, Sparkles, Loader2, Quote, Database, Share2, MoreHorizontal, Info,
   BadgeCheck, Briefcase, MapPin, User, Target, AlertTriangle, ShoppingCart, Tag as TagIcon,
   Bookmark, Archive, Trash2, Check, Heart, LayoutGrid, Users, Plus,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { INTERVIEW_TYPE_LABELS } from '@/lib/utils'
-import type { Persona, Interview, Journey, FunnelStage } from '@/types'
+import type { Persona, Interview, Journey, FunnelStage, PersonaActivity } from '@/types'
+import { PersonaActivityTab } from '@/components/persona/PersonaActivityTab'
 
 const FUNNEL_STAGE_OPTIONS = [
   { value: 'awareness', label: 'Awareness — just discovering it' },
@@ -53,6 +54,8 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
   const [deleting, setDeleting] = useState(false)
   const [stage, setStage] = useState<FunnelStage>((persona.funnel_stage as FunnelStage) ?? 'awareness')
   const [savingStage, setSavingStage] = useState(false)
+  const [activityEvents, setActivityEvents] = useState<PersonaActivity[] | null>(null)
+  const [activityLoading, setActivityLoading] = useState(false)
   const moreMenuRef = useRef<HTMLDivElement>(null)
   const t = persona.traits
 
@@ -82,6 +85,20 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
       .catch(() => setJourneys([]))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persona.id])
+
+  useEffect(() => {
+    setActivityEvents(null)
+  }, [persona.id])
+
+  useEffect(() => {
+    if (tab !== 'Activity' || activityEvents !== null) return
+    setActivityLoading(true)
+    fetch(`/api/personas/${persona.id}/activity`)
+      .then(response => response.json())
+      .then(json => setActivityEvents(json.data ?? []))
+      .catch(() => setActivityEvents([]))
+      .finally(() => setActivityLoading(false))
+  }, [tab, persona.id, activityEvents])
 
   useEffect(() => {
     if (!showMoreMenu) return
@@ -146,7 +163,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
     { label: 'Interviews', value: interviews?.length ?? 0 },
     { label: 'Journeys', value: journeys?.length ?? 0 },
     { label: 'Tags', value: persona.tags?.length ?? 0 },
-    { label: 'Data points', value: dataPointsCount },
+    { label: 'Profile details', value: dataPointsCount, hint: 'Completed persona attributes, such as role, goals, frustrations, motivations, and tools. This is not a count of research findings.' },
   ]
 
   return (
@@ -301,7 +318,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
                     }}
                   >
                     <p className="text-xl" style={{ color: '#1E3A2B', fontWeight: 500 }}>{stat.value}</p>
-                    <p className="mt-0.5 text-xs" style={{ color: '#9CA3AF' }}>{stat.label}</p>
+                    <p className="mt-0.5 flex items-center gap-1 text-xs" style={{ color: '#9CA3AF' }}><span>{stat.label}</span>{stat.hint && <span title={stat.hint} aria-label={stat.hint} className="inline-flex cursor-help"><Info size={12} /></span>}</p>
                   </div>
                 ))}
               </div>
@@ -349,7 +366,7 @@ export function PersonaDetailClient({ persona, interviews }: PersonaDetailClient
       {tab === 'Insights' && <PlaceholderTab icon={Sparkles} title="Insights" description="Cross-interview insights for this persona will appear here once available." />}
       {tab === 'Quotes' && <PlaceholderTab icon={Quote} title="Quotes" description="Notable quotes pulled from this persona's interviews will appear here." />}
       {tab === 'Data' && <PlaceholderTab icon={Database} title="Data" description="Structured data exports for this persona will appear here." />}
-      {tab === 'Activity' && <PlaceholderTab icon={Activity} title="Activity" description="A timeline of activity for this persona will appear here." />}
+      {tab === 'Activity' && <PersonaActivityTab events={activityEvents} loading={activityLoading} />}
     </div>
   )
 }
@@ -583,7 +600,7 @@ function JourneysTab({ persona, journeys, setJourneys }: { persona: Persona; jou
   return (
     <div className="p-4 sm:p-6">
       <div className="mb-5">
-        <h2 className="font-serif text-xl" style={{ color: '#202124' }}>User journeys</h2>
+        <h2 className="text-xl font-semibold" style={{ color: '#202124' }}>User journeys</h2>
         <p className="text-sm mt-0.5" style={{ color: '#5F6368' }}>AI-generated step-by-step timelines of this persona's experience, grounded in a specific scenario you describe.</p>
       </div>
 

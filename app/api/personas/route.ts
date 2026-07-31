@@ -9,6 +9,7 @@ import { logError } from '@/lib/logger'
 import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 import { getWorkspaceContext } from '@/lib/workspaces/context'
 import { pushWorkspaceAutomation } from '@/lib/workspaces/automations'
+import { logPersonaActivity } from '@/lib/personas/activity'
 import { PLAN_LIMITS } from '@/types'
 
 export async function GET(request: NextRequest) {
@@ -143,6 +144,12 @@ export async function POST(request: NextRequest) {
   }
 
   await trackUsage(supabase, 'persona')
+  await logPersonaActivity(supabase, {
+    personaId: data.id,
+    actorId: user.id,
+    action: 'persona_created',
+    detail: data.name,
+  })
   await logWorkspaceActivity(supabase, {
     workspaceId: formData.workspace_id,
     actorId: user.id,
@@ -176,6 +183,14 @@ export async function PATCH(request: NextRequest) {
   // would incorrectly block a workspace member from managing a persona a
   // co-member created, which is the entire point of shared edit access.
 
+  const { data: targetPersona } = await supabase
+    .from('personas')
+    .select('id, name')
+    .eq('id', id)
+    .single()
+
+  if (!targetPersona) return NextResponse.json({ error: 'Persona not found' }, { status: 404 })
+
   if (action === 'set_stage') {
     const VALID_STAGES = ['awareness', 'consideration', 'purchase', 'loyalty']
     if (!VALID_STAGES.includes(funnel_stage)) {
@@ -186,6 +201,7 @@ export async function PATCH(request: NextRequest) {
       .update({ funnel_stage })
       .eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    await logPersonaActivity(supabase, { personaId: id, actorId: user.id, action: 'stage_changed', detail: `Moved to ${funnel_stage}` })
     return NextResponse.json({ success: true })
   }
 
@@ -195,6 +211,7 @@ export async function PATCH(request: NextRequest) {
       .update({ archived: true, archived_at: new Date().toISOString() })
       .eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    await logPersonaActivity(supabase, { personaId: id, actorId: user.id, action: 'persona_archived', detail: targetPersona.name })
     return NextResponse.json({ success: true })
   }
 
@@ -204,6 +221,7 @@ export async function PATCH(request: NextRequest) {
       .update({ archived: false, archived_at: null })
       .eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    await logPersonaActivity(supabase, { personaId: id, actorId: user.id, action: 'persona_restored', detail: targetPersona.name })
     return NextResponse.json({ success: true })
   }
 
@@ -213,6 +231,7 @@ export async function PATCH(request: NextRequest) {
       .update({ project_id: project_id ?? null })
       .eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    await logPersonaActivity(supabase, { personaId: id, actorId: user.id, action: 'project_changed', detail: project_id ? 'Added to a project' : 'Removed from its project' })
     return NextResponse.json({ success: true })
   }
 

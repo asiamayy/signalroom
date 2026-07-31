@@ -10,6 +10,7 @@ import { pushReportCreated } from '@/lib/integrations/push'
 import { logWorkspaceActivity } from '@/lib/workspaces/activity'
 import { getWorkspaceContext } from '@/lib/workspaces/context'
 import { pushWorkspaceAutomation } from '@/lib/workspaces/automations'
+import { logPersonaActivity } from '@/lib/personas/activity'
 import type { Persona, Interview } from '@/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
@@ -167,6 +168,12 @@ export async function POST(
       entityType: 'report',
       entityId: report.id,
       entityLabel: interview.title,
+    })
+    await logPersonaActivity(supabase, {
+      personaId: interview.persona_id,
+      actorId: user.id,
+      action: 'report_generated',
+      detail: interview.title,
     })
 
     // Push to Slack/Notion if planCheckUserId has either connected

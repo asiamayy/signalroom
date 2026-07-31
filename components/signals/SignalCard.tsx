@@ -14,6 +14,12 @@ const TREND_META = {
   new: { icon: Sparkles, color: '#9CA3AF', label: 'Newly discovered' },
 }
 
+const STATUS_EXPLANATIONS: Record<Signal['status'], string> = {
+  emerging: 'Emerging: supported by one research source.',
+  growing: 'Growing: supported by two or three research sources.',
+  validated: 'Validated: supported by four or more research sources.',
+}
+
 export function SignalCard({ signal }: { signal: Signal }) {
   const trend = getTrendDirection(signal)
   const trendPercent = getMentionTrendPercent(signal)
@@ -39,7 +45,7 @@ export function SignalCard({ signal }: { signal: Signal }) {
         <span className={`inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full ${getSignalTypeColor(signal.type)}`}>
           {SIGNAL_TYPE_LABELS[signal.type]}
         </span>
-        <span className={`inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full ${getSignalStatusColor(signal.status)}`}>
+        <span title={STATUS_EXPLANATIONS[signal.status]} className={`inline-flex cursor-help items-center text-[11px] font-medium px-2 py-0.5 rounded-full ${getSignalStatusColor(signal.status)}`}>
           {SIGNAL_STATUS_LABELS[signal.status]}
         </span>
         {signal.impact && (

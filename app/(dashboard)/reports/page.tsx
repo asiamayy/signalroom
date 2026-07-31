@@ -234,10 +234,10 @@ function ConfidenceSummary({ confidence, reportCount }: { confidence: number; re
   return (
     <section className="relative overflow-hidden rounded-xl p-8" style={{ background: HOME_COLORS.tertiary, color: HOME_COLORS.onTertiary }}>
       <div className="relative z-10">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed, opacity: 0.6 }}>Global Confidence</p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed, opacity: 0.6 }}>Overall confidence</p>
         <div className="mt-4 flex items-baseline gap-2"><span className="text-[64px] leading-none" style={{ color: HOME_COLORS.primaryFixed, fontFamily: HOME_FONT_DISPLAY, fontWeight: 600 }}>{confidence}</span><span className="text-2xl" style={{ color: HOME_COLORS.primaryFixed, opacity: 0.4 }}>%</span></div>
         <p className="mt-4 text-sm leading-relaxed" style={{ color: HOME_COLORS.onPrimaryContainer }}>
-          Average synthesis confidence across all active research. Your evidence quality is currently <strong style={{ color: HOME_COLORS.primaryFixed }}>optimal</strong>.
+          The average confidence score across your insight reports. It reflects how strongly the simulated personas responded to what you tested—not a verdict on the whole market.
         </p>
         <div className="mt-8 space-y-4 border-t pt-6 text-xs" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
           <div className="flex justify-between"><span style={{ opacity: 0.6 }}>Research reports</span><span className="font-semibold">{reportCount}</span></div>

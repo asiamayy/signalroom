@@ -6,7 +6,7 @@ import Link from 'next/link'
 import {
   ArrowLeft, Briefcase, Users, MessageSquare, Activity, FileText, Folder, Clock,
   Plus, Trash2, Pencil, Copy, Search, Upload, Download, Archive, ArchiveRestore,
-  GitCompare, BarChart3, Layers,
+  GitCompare, BarChart3, Layers, Info,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { SignalCard } from '@/components/signals/SignalCard'
@@ -200,11 +200,11 @@ export function ProjectDetailClient({ project: initialProject, allPersonas, allI
 
 // ─── Overview ─────────────────────────────────────────────────────────────────
 
-function StatTile({ label, value }: { label: string; value: string | number }) {
+function StatTile({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
     <div className="rounded-2xl p-4" style={cardStyle}>
       <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>{value}</p>
-      <p className="text-xs mt-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</p>
+      <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}><span>{label}</span>{hint && <span title={hint} aria-label={hint} className="inline-flex cursor-help"><Info size={12} /></span>}</p>
     </div>
   )
 }
@@ -215,7 +215,7 @@ function OverviewTab({ healthScore, interviewCount, signalCount, avgConfidence, 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatTile label="Research Health" value={`${healthScore}%`} />
+        <StatTile label="Research Health" value={`${healthScore}%`} hint="A progress indicator based on average signal confidence (70%) and interview volume (30%). It helps show how much research has been completed; it is not a market verdict." />
         <StatTile label="Interviews" value={interviewCount} />
         <StatTile label="Signals Found" value={signalCount} />
         <StatTile label="Avg Confidence" value={`${avgConfidence}%`} />
@@ -402,8 +402,11 @@ function SignalsTab({ signals }: { signals: Signal[] }) {
     return <EmptyState icon={Activity} title="No signals yet" description="Generate a report from an interview in this project to start synthesizing signals." />
   }
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-      {signals.map(signal => <SignalCard key={signal.id} signal={signal} />)}
+    <div>
+      <p className="mb-4 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Signal status shows how many separate research sources support a finding: Emerging (1), Growing (2–3), and Validated (4+).</p>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {signals.map(signal => <SignalCard key={signal.id} signal={signal} />)}
+      </div>
     </div>
   )
 }

@@ -434,7 +434,7 @@ export default function SettingsClient({ profile, user, personaCount, interviewC
             <h1 style={{ ...DISPLAY_LG_STYLE, fontSize: '40px', lineHeight: '48px', color: HOME_COLORS.onSurface }}>
               Account <span className="italic">Settings</span>
             </h1>
-            <p className="mt-2 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Manage your intelligence infrastructure and account access.</p>
+            <p className="mt-2 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Manage your account, plan, and workspace preferences.</p>
           </div>
           {profile?.stripe_subscription_id && (
             <button onClick={handleManageBilling} disabled={openingPortal} className="inline-flex items-center justify-center gap-2 self-start rounded-full px-7 py-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] transition-all hover:-translate-y-0.5 hover:shadow-lg sm:self-auto" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>

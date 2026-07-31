@@ -114,6 +114,25 @@ export interface Workspace {
   updated_at: string
 }
 
+export type PersonaActivityAction =
+  | 'persona_created'
+  | 'stage_changed'
+  | 'journey_created'
+  | 'interview_started'
+  | 'report_generated'
+  | 'persona_archived'
+  | 'persona_restored'
+  | 'project_changed'
+
+export interface PersonaActivity {
+  id: string
+  persona_id: string
+  actor_id: string | null
+  action: PersonaActivityAction
+  detail: string | null
+  created_at: string
+}
+
 export interface WorkspaceMember {
   id: string
   full_name: string | null
