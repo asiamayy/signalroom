@@ -29,9 +29,11 @@ export default function ContactPage() {
 
       <div className="max-w-lg mx-auto px-6 pt-32 sm:pt-40 pb-16">
         <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#5A7973] mb-4 block">Support</span>
-        <h1 className="text-[34px] sm:text-[44px] tracking-tighter font-normal text-[#121314] mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-          Get in touch
-        </h1>
+        <div className="public-page-heading-enter">
+          <h1 className="text-[34px] sm:text-[44px] tracking-tighter font-normal text-[#121314] mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Get in touch
+          </h1>
+        </div>
         <p className="text-sm text-neutral-500 mb-10">Have a question, a feature request, or just want to say hello? We'd love to hear from you.</p>
 
         {sent ? (

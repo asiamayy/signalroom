@@ -8,9 +8,11 @@ export default function PrivacyPage() {
 
       <div className="max-w-2xl mx-auto px-6 pt-32 sm:pt-40 pb-16">
         <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#5A7973] mb-4 block">Legal</span>
-        <h1 className="text-[34px] sm:text-[44px] tracking-tighter font-normal text-[#121314] mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-          Privacy Policy
-        </h1>
+        <div className="public-page-heading-enter">
+          <h1 className="text-[34px] sm:text-[44px] tracking-tighter font-normal text-[#121314] mb-2" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            Privacy Policy
+          </h1>
+        </div>
         <p className="text-sm text-neutral-500 mb-10">Last updated June 24, 2026</p>
 
         <div className="space-y-8 text-sm text-[#454947] leading-relaxed">
