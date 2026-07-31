@@ -120,6 +120,7 @@ export interface WorkspaceMember {
   avatar_url: string | null
   email: string
   role: 'owner' | 'member'
+  last_seen_at?: string | null
 }
 
 export interface WorkspaceInvite {

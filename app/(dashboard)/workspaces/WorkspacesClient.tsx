@@ -61,6 +61,8 @@ export function WorkspacesClient() {
   const [activity, setActivity] = useState<WorkspaceActivity[]>([])
   const [activityLoading, setActivityLoading] = useState(false)
   const [presence, setPresence] = useState<{ id: string; name: string; avatarUrl: string | null }[]>([])
+  const [lastSeenById, setLastSeenById] = useState<Record<string, string>>({})
+  const presenceRef = useRef<{ id: string; name: string; avatarUrl: string | null }[]>([])
 
   const [showCreatePanel, setShowCreatePanel] = useState(false)
   const [newWorkspaceName, setNewWorkspaceName] = useState('')
@@ -146,6 +148,18 @@ export function WorkspacesClient() {
     setLoadingContent(false)
   }
 
+  useEffect(() => {
+    setLastSeenById(previous => {
+      const next = { ...previous }
+      for (const member of members) {
+        if (member.last_seen_at && (!next[member.id] || new Date(member.last_seen_at).getTime() > new Date(next[member.id]).getTime())) {
+          next[member.id] = member.last_seen_at
+        }
+      }
+      return next
+    })
+  }, [members])
+
   const loadActivity = async (workspaceId: string) => {
     setActivityLoading(true)
     try {
@@ -175,10 +189,31 @@ export function WorkspacesClient() {
     if (!selectedId || !currentUserId || !currentUser) return
     const supabase = createClient()
     const channel = supabase.channel(`workspace-presence:${selectedId}`, { config: { presence: { key: currentUserId } } })
+    const presencePayload = { id: currentUserId, name: currentUser.name, avatarUrl: currentUser.avatarUrl }
+    const updateLastSeen = () => {
+      void fetch(`/api/workspaces/${selectedId}/presence`, { method: 'POST', keepalive: true }).catch(() => undefined)
+    }
     const syncPresence = () => {
       const state = channel.presenceState() as Record<string, { id: string; name: string; avatarUrl: string | null }[]>
       const seen = new Set<string>()
-      setPresence(Object.values(state).flat().filter(person => !seen.has(person.id) && Boolean(seen.add(person.id))))
+      const nextPresence = Object.values(state).flat().filter(person => !seen.has(person.id) && Boolean(seen.add(person.id)))
+      const activeIds = new Set(nextPresence.map(person => person.id))
+      const departed = presenceRef.current.filter(person => !activeIds.has(person.id))
+      if (departed.length) {
+        const timestamp = new Date().toISOString()
+        setLastSeenById(previous => ({ ...previous, ...Object.fromEntries(departed.map(person => [person.id, timestamp])) }))
+      }
+      presenceRef.current = nextPresence
+      setPresence(nextPresence)
+    }
+    const updateVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        updateLastSeen()
+        void channel.untrack()
+      } else {
+        updateLastSeen()
+        void channel.track(presencePayload)
+      }
     }
 
     channel
@@ -186,11 +221,25 @@ export function WorkspacesClient() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'workspace_activity', filter: `workspace_id=eq.${selectedId}` }, () => loadActivity(selectedId))
       .subscribe(status => {
         if (status === 'SUBSCRIBED') {
-          void channel.track({ id: currentUserId, name: currentUser.name, avatarUrl: currentUser.avatarUrl })
+          updateLastSeen()
+          void channel.track(presencePayload)
         }
       })
 
-    return () => { void supabase.removeChannel(channel) }
+    const heartbeat = window.setInterval(updateLastSeen, 60_000)
+    document.addEventListener('visibilitychange', updateVisibility)
+    window.addEventListener('pagehide', updateLastSeen)
+
+    return () => {
+      updateLastSeen()
+      window.clearInterval(heartbeat)
+      document.removeEventListener('visibilitychange', updateVisibility)
+      window.removeEventListener('pagehide', updateLastSeen)
+      presenceRef.current = []
+      setPresence([])
+      void channel.untrack()
+      void supabase.removeChannel(channel)
+    }
   }, [selectedId, currentUserId, currentUser])
 
   const handleCreate = async () => {
@@ -480,7 +529,7 @@ export function WorkspacesClient() {
             </aside>
           </section> : null}
           */}
-          {selectedWorkspace && <WorkspaceExpandedPanel workspace={selectedWorkspace} isOwner={isOwnerOfSelected} members={members} invites={invites} loading={loadingDetail || loadingContent} contentTab={contentTab} contentQuery={contentQuery} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} editing={editingWorkspaceName} workspaceName={workspaceName} workspaceDescription={workspaceDescription} inviteOpen={invitingOpen} inviteEmail={inviteEmail} inviting={inviting} saving={savingWorkspaceName} currentUserId={currentUserId} presence={presence} activity={activity} onSelectTab={setContentTab} onQueryChange={setContentQuery} onEdit={() => { setWorkspaceName(selectedWorkspace.name); setWorkspaceDescription(selectedWorkspace.description ?? ''); setEditingWorkspaceName(true) }} onNameChange={setWorkspaceName} onDescriptionChange={setWorkspaceDescription} onSave={handleRenameWorkspace} onCancelEdit={() => { setEditingWorkspaceName(false); setWorkspaceName(selectedWorkspace.name); setWorkspaceDescription(selectedWorkspace.description ?? '') }} onDelete={() => handleDeleteWorkspace(selectedWorkspace.id)} onInviteOpen={() => setInvitingOpen(open => !open)} onInviteEmailChange={setInviteEmail} onInvite={handleInvite} onRemoveMember={handleRemoveMember} onRevokeInvite={handleRevokeInvite} />}
+          {selectedWorkspace && <WorkspaceExpandedPanel workspace={selectedWorkspace} isOwner={isOwnerOfSelected} members={members} invites={invites} loading={loadingDetail || loadingContent} contentTab={contentTab} contentQuery={contentQuery} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} editing={editingWorkspaceName} workspaceName={workspaceName} workspaceDescription={workspaceDescription} inviteOpen={invitingOpen} inviteEmail={inviteEmail} inviting={inviting} saving={savingWorkspaceName} currentUserId={currentUserId} presence={presence} lastSeenById={lastSeenById} activity={activity} onSelectTab={setContentTab} onQueryChange={setContentQuery} onEdit={() => { setWorkspaceName(selectedWorkspace.name); setWorkspaceDescription(selectedWorkspace.description ?? ''); setEditingWorkspaceName(true) }} onNameChange={setWorkspaceName} onDescriptionChange={setWorkspaceDescription} onSave={handleRenameWorkspace} onCancelEdit={() => { setEditingWorkspaceName(false); setWorkspaceName(selectedWorkspace.name); setWorkspaceDescription(selectedWorkspace.description ?? '') }} onDelete={() => handleDeleteWorkspace(selectedWorkspace.id)} onInviteOpen={() => setInvitingOpen(open => !open)} onInviteEmailChange={setInviteEmail} onInvite={handleInvite} onRemoveMember={handleRemoveMember} onRevokeInvite={handleRevokeInvite} />}
           {selectedWorkspace && <WorkspaceIntelligence workspaceId={selectedWorkspace.id} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} />}
           {selectedWorkspace && <WorkspaceActivitySnapshot activity={activity} loading={activityLoading} members={members} />}
           {selectedWorkspace && <WorkspaceKnowledgeHub workspaceId={selectedWorkspace.id} />}
@@ -522,7 +571,7 @@ function WorkspaceActivitySnapshot({ activity, loading, members }: { activity: W
   return <section className="mb-10 rounded-[1.5rem] border p-6 sm:p-7" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: HOME_COLORS.outlineVariant + '66' }}><div className="flex items-center justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace activity</p><h2 className="mt-2 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Recent research movement</h2></div><Activity size={18} style={{ color: HOME_COLORS.primary }} /></div><div className="mt-5 space-y-3">{loading ? <div className="h-16 animate-pulse rounded-xl" style={{ background: HOME_COLORS.surfaceContainer }} /> : activity.length ? activity.slice(0, 4).map(item => <div key={item.id} className="rounded-xl border px-4 py-3" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: HOME_COLORS.outlineVariant + '55' }}><p className="text-xs" style={{ color: HOME_COLORS.onSurface }}><strong>{actor(item.actor_id)}</strong> <span style={{ color: HOME_COLORS.onSurfaceVariant }}>{item.action.replaceAll('_', ' ')}</span></p></div>) : <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Activity will appear as this team creates research.</p>}</div></section>
 }
 
-function WorkspaceExpandedPanel({ workspace, isOwner, members, invites, loading, contentTab, contentQuery, personas, interviews, reports, editing, workspaceName, workspaceDescription, inviteOpen, inviteEmail, inviting, saving, currentUserId, presence, activity, onSelectTab, onQueryChange, onEdit, onNameChange, onDescriptionChange, onSave, onCancelEdit, onDelete, onInviteOpen, onInviteEmailChange, onInvite, onRemoveMember, onRevokeInvite }: {
+function WorkspaceExpandedPanel({ workspace, isOwner, members, invites, loading, contentTab, contentQuery, personas, interviews, reports, editing, workspaceName, workspaceDescription, inviteOpen, inviteEmail, inviting, saving, currentUserId, presence, lastSeenById, activity, onSelectTab, onQueryChange, onEdit, onNameChange, onDescriptionChange, onSave, onCancelEdit, onDelete, onInviteOpen, onInviteEmailChange, onInvite, onRemoveMember, onRevokeInvite }: {
   workspace: Workspace
   isOwner: boolean
   members: WorkspaceMember[]
@@ -542,6 +591,7 @@ function WorkspaceExpandedPanel({ workspace, isOwner, members, invites, loading,
   saving: boolean
   currentUserId: string | null
   presence: { id: string; name: string; avatarUrl: string | null }[]
+  lastSeenById: Record<string, string>
   activity: WorkspaceActivity[]
   onSelectTab: (tab: ContentTab) => void
   onQueryChange: (value: string) => void
@@ -571,7 +621,7 @@ function WorkspaceExpandedPanel({ workspace, isOwner, members, invites, loading,
       <aside className="border-t p-6 sm:p-8 lg:col-span-4 lg:border-l lg:border-t-0 lg:p-10" style={{ background: '#fcfaf9', borderColor: HOME_COLORS.outlineVariant + '88' }}>
         <div className="flex items-center justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research team</p><p className="mt-2 text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{members.length} member{members.length === 1 ? '' : 's'}</p></div>{isOwner && <button type="button" onClick={onInviteOpen} className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-[#314536]" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' }}><UserPlus size={17} /></button>}</div>
         {isOwner && <AnimatePresence>{inviteOpen && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden"><div className="mt-6 flex gap-2 rounded-2xl border p-1.5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: HOME_COLORS.outlineVariant + '88' }}><input type="email" value={inviteEmail} onChange={event => onInviteEmailChange(event.target.value)} onKeyDown={event => event.key === 'Enter' && onInvite()} placeholder="Add teammate..." className="min-w-0 flex-1 bg-transparent px-2 text-xs outline-none" style={{ color: HOME_COLORS.onSurface }} /><button type="button" onClick={onInvite} disabled={inviting || !inviteEmail.trim()} className="rounded-xl px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] disabled:opacity-40" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>{inviting ? 'Sending' : 'Invite'}</button></div></motion.div>}</AnimatePresence>}
-        <div className="mt-7 space-y-3">{members.map(member => <ResearchTeamMember key={member.id} member={member} status={memberPresenceStatus(member, presence, activity)} canRemove={(isOwner || member.id === currentUserId) && member.role !== 'owner'} onRemove={() => onRemoveMember(member.id)} />)}{invites.map(invite => <PendingWorkspaceInvite key={invite.id} invite={invite} onRevoke={() => onRevokeInvite(invite.id)} />)}</div>
+        <div className="mt-7 space-y-3">{members.map(member => <ResearchTeamMember key={member.id} member={member} status={memberPresenceStatus(member, presence, lastSeenById, activity)} canRemove={(isOwner || member.id === currentUserId) && member.role !== 'owner'} onRemove={() => onRemoveMember(member.id)} />)}{invites.map(invite => <PendingWorkspaceInvite key={invite.id} invite={invite} onRevoke={() => onRevokeInvite(invite.id)} />)}</div>
         <div className="my-8 h-px" style={{ background: HOME_COLORS.outlineVariant + '88' }} />
         <WorkspaceAskAI workspaceId={workspace.id} />
       </aside>
@@ -579,11 +629,17 @@ function WorkspaceExpandedPanel({ workspace, isOwner, members, invites, loading,
   </motion.article>
 }
 
-function memberPresenceStatus(member: WorkspaceMember, presence: { id: string }[], activity: WorkspaceActivity[]) {
+function memberPresenceStatus(member: WorkspaceMember, presence: { id: string }[], lastSeenById: Record<string, string>, activity: WorkspaceActivity[]) {
   if (presence.some(person => person.id === member.id)) return 'Active now'
+  const lastSeen = lastSeenById[member.id] ?? member.last_seen_at
+  if (lastSeen) return formatLastSeen(lastSeen)
   const latestAction = activity.find(item => item.actor_id === member.id)
   if (!latestAction) return 'No recent activity'
-  const minutes = Math.max(0, Math.floor((Date.now() - new Date(latestAction.created_at).getTime()) / 60000))
+  return formatLastSeen(latestAction.created_at)
+}
+
+function formatLastSeen(timestamp: string) {
+  const minutes = Math.max(0, Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000))
   return minutes < 1 ? 'Just now' : minutes < 60 ? `${minutes}m ago` : minutes < 1440 ? `${Math.floor(minutes / 60)}h ago` : `${Math.floor(minutes / 1440)}d ago`
 }
 
