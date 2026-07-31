@@ -742,89 +742,56 @@ function WorkspaceAskAI({ workspaceId }: { workspaceId: string }) {
   </section>
 }
 
-type SavedEvidenceView = {
-  name: string
-  zoom: number
-  pan: { x: number; y: number }
-  layout: 'path' | 'compact'
-  contentFilter: 'all' | 'reports' | 'themes'
-  minimumConfidence: number
-  sentimentFilter: 'all' | 'positive' | 'mixed' | 'neutral' | 'negative'
-}
-
 function EvidenceGraph({ workspaceId, personas, interviews, reports, activeNode, onSelect }: { workspaceId: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[]; activeNode: string; onSelect: (id: string) => void }) {
   const reportByInterviewId = new Map(reports.map(report => [report.interview_id, report]))
-  const evidencePaths = interviews.map(interview => ({ persona: interview.persona ?? personas.find(persona => persona.id === interview.persona_id), interview, report: reportByInterviewId.get(interview.id) }))
   const untestedPersonas = personas.filter(persona => !interviews.some(interview => interview.persona_id === persona.id))
   const [contentFilter, setContentFilter] = useState<'all' | 'reports' | 'themes'>('all')
   const [minimumConfidence, setMinimumConfidence] = useState(0)
   const [sentimentFilter, setSentimentFilter] = useState<'all' | 'positive' | 'mixed' | 'neutral' | 'negative'>('all')
-  const [zoom, setZoom] = useState(1)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
-  const [layout, setLayout] = useState<'path' | 'compact'>('path')
-  const [viewName, setViewName] = useState('')
-  const [savedViews, setSavedViews] = useState<SavedEvidenceView[]>([])
-  const [loadedViewKey, setLoadedViewKey] = useState<string | null>(null)
-  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null)
-  const storageKey = `signalroom:evidence-views:${workspaceId}`
-  useEffect(() => {
-    try { setSavedViews(JSON.parse(window.localStorage.getItem(storageKey) ?? '[]')) } catch { setSavedViews([]) }
-    setLoadedViewKey(storageKey)
-  }, [storageKey])
-  useEffect(() => {
-    if (loadedViewKey !== storageKey) return
-    try { window.localStorage.setItem(storageKey, JSON.stringify(savedViews)) } catch {}
-  }, [savedViews, storageKey, loadedViewKey])
-  const filteredPaths = evidencePaths.filter(path => {
-    if (contentFilter === 'reports' && !path.report) return false
-    if (contentFilter === 'themes' && !path.report?.key_themes?.length) return false
-    if ((path.report?.confidence_score ?? 0) < minimumConfidence) return false
-    if (sentimentFilter !== 'all' && !path.report?.key_themes?.some(theme => theme.sentiment === sentimentFilter)) return false
+  const passesFilter = (report?: Report) => {
+    if (contentFilter === 'reports' && !report) return false
+    if (contentFilter === 'themes' && !report?.key_themes?.length) return false
+    if ((report?.confidence_score ?? 0) < minimumConfidence) return false
+    if (sentimentFilter !== 'all' && !report?.key_themes?.some(theme => theme.sentiment === sentimentFilter)) return false
     return true
-  })
-  const resetCanvas = () => { setZoom(1); setPan({ x: 0, y: 0 }) }
-  const saveView = () => {
-    const name = viewName.trim() || `View ${savedViews.length + 1}`
-    const next = [...savedViews.filter(view => view.name !== name), { name, zoom, pan, layout, contentFilter, minimumConfidence, sentimentFilter }].slice(-8)
-    setSavedViews(next)
-    setViewName('')
   }
-  const applyView = (view: SavedEvidenceView) => {
-    setZoom(view.zoom); setPan(view.pan); setLayout(view.layout); setContentFilter(view.contentFilter); setMinimumConfidence(view.minimumConfidence); setSentimentFilter(view.sentimentFilter)
-  }
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if ((event.target as HTMLElement).closest('button,a,input,select,label')) return
-    event.currentTarget.setPointerCapture(event.pointerId)
-    dragRef.current = { startX: event.clientX, startY: event.clientY, panX: pan.x, panY: pan.y }
-  }
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragRef.current) return
-    setPan({ x: dragRef.current.panX + event.clientX - dragRef.current.startX, y: dragRef.current.panY + event.clientY - dragRef.current.startY })
-  }
-  const stopDragging = () => { dragRef.current = null }
+  const personaGroups = personas
+    .map(persona => ({
+      persona,
+      items: interviews
+        .filter(interview => interview.persona_id === persona.id)
+        .map(interview => ({ interview, report: reportByInterviewId.get(interview.id) }))
+        .filter(item => passesFilter(item.report)),
+    }))
+    .filter(group => group.items.length > 0)
+  const totalPaths = personaGroups.reduce((sum, group) => sum + group.items.length, 0)
 
   return <div className="mt-7 overflow-hidden rounded-xl border" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.12)' }}>
     <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div><p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-white/45">Traceable evidence paths</p><p className="mt-1 text-xs text-white/65">Follow a source from persona through the research it generated.</p></div>{activeNode !== 'overview' && <button type="button" onClick={() => onSelect('overview')} className="rounded-full border px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-white/10" style={{ color: HOME_COLORS.primaryFixed, borderColor: 'rgba(255,255,255,0.18)', background: 'transparent' }}>Clear focus</button>}</div>
-    <div className="flex flex-wrap gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><GraphFilter label="Evidence" value={contentFilter} onChange={value => setContentFilter(value as 'all' | 'reports' | 'themes')} options={[['all', 'All'], ['reports', 'Reports'], ['themes', 'Themes']]} /><GraphFilter label="Confidence" value={String(minimumConfidence)} onChange={value => setMinimumConfidence(Number(value))} options={[[String(0), 'Any score'], [String(50), '50%+'], [String(75), '75%+']]} /><GraphFilter label="Sentiment" value={sentimentFilter} onChange={value => setSentimentFilter(value as 'all' | 'positive' | 'mixed' | 'neutral' | 'negative')} options={[['all', 'All'], ['positive', 'Positive'], ['mixed', 'Mixed'], ['neutral', 'Neutral'], ['negative', 'Negative']]} /><span className="ml-auto self-end text-[9px] font-semibold uppercase tracking-[0.12em] text-white/40">{filteredPaths.length} path{filteredPaths.length === 1 ? '' : 's'}</span></div>
-    <div className="flex flex-wrap items-end gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><span className="mr-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/45">Canvas</span><button type="button" onClick={() => setZoom(value => Math.max(0.65, Number((value - 0.15).toFixed(2))))} className="rounded-lg border px-2.5 py-1.5 text-xs text-white transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>−</button><span className="min-w-10 self-center text-center text-[10px] font-semibold text-white/65">{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(value => Math.min(1.55, Number((value + 0.15).toFixed(2))))} className="rounded-lg border px-2.5 py-1.5 text-xs text-white transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>+</button><button type="button" onClick={resetCanvas} className="rounded-lg border px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-white/65 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>Reset</button><div className="ml-2 flex rounded-lg border p-0.5" style={{ borderColor: 'rgba(255,255,255,0.16)' }}><button type="button" onClick={() => setLayout('path')} className="rounded-md px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ background: layout === 'path' ? 'rgba(255,255,255,0.16)' : 'transparent', color: 'white' }}>Path</button><button type="button" onClick={() => setLayout('compact')} className="rounded-md px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ background: layout === 'compact' ? 'rgba(255,255,255,0.16)' : 'transparent', color: 'white' }}>Compact</button></div><div className="ml-auto flex min-w-[220px] items-center gap-1.5"><input value={viewName} onChange={event => setViewName(event.target.value)} placeholder="Name this view" maxLength={40} className="min-w-0 flex-1 rounded-lg border bg-transparent px-2.5 py-1.5 text-[10px] text-white outline-none placeholder:text-white/35" style={{ borderColor: 'rgba(255,255,255,0.16)' }} /><button type="button" onClick={saveView} className="rounded-lg px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>Save view</button></div></div>
-    {savedViews.length > 0 && <div className="flex flex-wrap gap-2 border-b px-4 py-2.5" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><span className="self-center text-[8px] font-semibold uppercase tracking-[0.12em] text-white/45">Saved</span>{savedViews.map(view => <button key={view.name} type="button" onClick={() => applyView(view)} className="rounded-full border px-3 py-1.5 text-[9px] font-semibold text-white/70 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>{view.name}</button>)}</div>}
-    <div className="h-[420px] touch-none overflow-hidden cursor-grab active:cursor-grabbing" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={stopDragging} onPointerCancel={stopDragging}>
-      <div className="min-w-[720px] p-4 transition-transform duration-75" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: 'top left' }}>
-      {filteredPaths.length ? <div className="space-y-3">{filteredPaths.map(path => {
-        const report = path.report
-        const nodeIds = [path.persona && `persona:${path.persona.id}`, `interview:${path.interview.id}`, report && `report:${report.id}`, ...(report?.key_themes ?? []).map(theme => `theme:${theme.title}`)].filter(Boolean) as string[]
-        const dimmed = activeNode !== 'overview' && !nodeIds.includes(activeNode)
-        return <div key={path.interview.id} className={`${layout === 'path' ? 'grid grid-cols-[minmax(130px,1fr)_20px_minmax(130px,1fr)_20px_minmax(130px,1fr)_20px_minmax(150px,1.2fr)] items-center' : 'flex flex-wrap items-center'} gap-1 transition-opacity duration-200 ${dimmed ? 'opacity-25' : 'opacity-100'}`}>
-          <EvidenceNode kind="Persona" label={path.persona?.name ?? 'Unknown persona'} active={activeNode === `persona:${path.persona?.id}`} onClick={() => path.persona && onSelect(`persona:${path.persona.id}`)} />
-          <GraphArrow />
-          <EvidenceNode kind="Interview" label={path.interview.title} active={activeNode === `interview:${path.interview.id}`} onClick={() => onSelect(`interview:${path.interview.id}`)} />
-          <GraphArrow />
-          {report ? <EvidenceNode kind="Report" label={report.interview?.title ?? path.interview.title} active={activeNode === `report:${report.id}`} onClick={() => onSelect(`report:${report.id}`)} /> : <div className="rounded-lg border border-dashed px-3 py-2 text-center text-[9px] uppercase tracking-[0.1em] text-white/35">No report yet</div>}
-          <GraphArrow />
-          <div className="flex flex-wrap gap-1.5">{report?.key_themes?.length ? report.key_themes.slice(0, 3).map(theme => <EvidenceNode key={theme.title} kind="Theme" label={theme.title} active={activeNode === `theme:${theme.title}`} onClick={() => onSelect(`theme:${theme.title}`)} />) : <span className="text-[10px] text-white/35">Themes appear after report generation</span>}</div>
+    <div className="flex flex-wrap items-center gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><GraphFilter label="Evidence" value={contentFilter} onChange={value => setContentFilter(value as 'all' | 'reports' | 'themes')} options={[['all', 'All'], ['reports', 'Reports'], ['themes', 'Themes']]} /><GraphFilter label="Confidence" value={String(minimumConfidence)} onChange={value => setMinimumConfidence(Number(value))} options={[[String(0), 'Any score'], [String(50), '50%+'], [String(75), '75%+']]} /><GraphFilter label="Sentiment" value={sentimentFilter} onChange={value => setSentimentFilter(value as 'all' | 'positive' | 'mixed' | 'neutral' | 'negative')} options={[['all', 'All'], ['positive', 'Positive'], ['mixed', 'Mixed'], ['neutral', 'Neutral'], ['negative', 'Negative']]} /><span className="ml-auto text-[9px] font-semibold uppercase tracking-[0.12em] text-white/40">{totalPaths} path{totalPaths === 1 ? '' : 's'}</span></div>
+    <div className="max-h-[460px] overflow-y-auto overflow-x-auto p-4">
+      {personaGroups.length ? <div className="space-y-5">{personaGroups.map(group => {
+        const personaNodeId = `persona:${group.persona.id}`
+        const groupNodeIds = group.items.flatMap(item => [`interview:${item.interview.id}`, item.report && `report:${item.report.id}`, ...(item.report?.key_themes ?? []).map(theme => `theme:${theme.title}`)]).filter(Boolean) as string[]
+        const groupDimmed = activeNode !== 'overview' && activeNode !== personaNodeId && !groupNodeIds.includes(activeNode)
+        return <div key={group.persona.id} className={`transition-opacity duration-200 ${groupDimmed ? 'opacity-30' : 'opacity-100'}`}>
+          <EvidenceNode kind="Persona" label={group.persona.name} active={activeNode === personaNodeId} onClick={() => onSelect(personaNodeId)} />
+          <div className="mt-2.5 ml-4 min-w-[520px] space-y-2.5 border-l-2 pl-4" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>
+            {group.items.map(item => {
+              const report = item.report
+              const nodeIds = [`interview:${item.interview.id}`, report && `report:${report.id}`, ...(report?.key_themes ?? []).map(theme => `theme:${theme.title}`)].filter(Boolean) as string[]
+              const dimmed = activeNode !== 'overview' && activeNode !== personaNodeId && !nodeIds.includes(activeNode)
+              return <div key={item.interview.id} className={`grid grid-cols-[minmax(140px,1fr)_18px_minmax(140px,1fr)_18px_minmax(170px,1.3fr)] items-center gap-1.5 transition-opacity duration-200 ${dimmed ? 'opacity-40' : 'opacity-100'}`}>
+                <EvidenceNode kind="Interview" label={item.interview.title} active={activeNode === `interview:${item.interview.id}`} onClick={() => onSelect(`interview:${item.interview.id}`)} />
+                <GraphArrow />
+                {report ? <EvidenceNode kind="Report" label={report.interview?.title ?? item.interview.title} active={activeNode === `report:${report.id}`} onClick={() => onSelect(`report:${report.id}`)} /> : <div className="rounded-lg border border-dashed px-3 py-2 text-center text-[9px] uppercase tracking-[0.1em] text-white/35" style={{ borderColor: 'rgba(255,255,255,0.18)' }}>No report yet</div>}
+                <GraphArrow />
+                <div className="flex flex-wrap gap-1.5">{report?.key_themes?.length ? report.key_themes.slice(0, 3).map(theme => <EvidenceNode key={theme.title} kind="Theme" label={theme.title} active={activeNode === `theme:${theme.title}`} onClick={() => onSelect(`theme:${theme.title}`)} />) : <span className="text-[10px] text-white/35">Themes appear after report generation</span>}</div>
+              </div>
+            })}
+          </div>
         </div>
-      })}</div> : <div className="py-10 text-center"><p className="text-sm text-white/65">{evidencePaths.length ? 'No evidence paths match these filters.' : 'Create an interview in this workspace to begin an evidence path.'}</p>{!evidencePaths.length && untestedPersonas.length > 0 && <div className="mt-4 flex flex-wrap justify-center gap-2">{untestedPersonas.map(persona => <EvidenceNode key={persona.id} kind="Persona" label={persona.name} active={activeNode === `persona:${persona.id}`} onClick={() => onSelect(`persona:${persona.id}`)} />)}</div>}</div>}
-      </div>
+      })}</div> : <div className="py-10 text-center"><p className="text-sm text-white/65">{interviews.length ? 'No evidence paths match these filters.' : 'Create an interview in this workspace to begin an evidence path.'}</p>{!interviews.length && untestedPersonas.length > 0 && <div className="mt-4 flex flex-wrap justify-center gap-2">{untestedPersonas.map(persona => <EvidenceNode key={persona.id} kind="Persona" label={persona.name} active={activeNode === `persona:${persona.id}`} onClick={() => onSelect(`persona:${persona.id}`)} />)}</div>}</div>}
     </div>
     <EvidenceDetail activeNode={activeNode} personas={personas} interviews={interviews} reports={reports} />
   </div>
@@ -862,17 +829,20 @@ function EvidenceDetail({ activeNode, personas, interviews, reports }: { activeN
   return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Theme evidence · {supportingReports.length} report{supportingReports.length === 1 ? '' : 's'}</p><h3 className="mt-1 text-base font-semibold text-white">{title}</h3>{evidence.length ? <div className="mt-3 space-y-2">{evidence.map(({ report, quote }, index) => <Link key={index} href={`/reports/${report.id}`} className="block rounded-lg border p-3 transition-colors hover:bg-white/10" style={detailStyle}><p className="text-xs leading-relaxed text-white/75">“{quote}”</p><p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ color: HOME_COLORS.primaryFixed }}>{report.interview?.title ?? 'Open source report'}</p></Link>)}</div> : <p className="mt-3 text-xs text-white/55">This theme is connected to the listed report evidence.</p>}</div>
 }
 
+const EVIDENCE_NODE_STYLES: Record<'Persona' | 'Interview' | 'Report' | 'Theme', { bg: string; border: string; accent: string }> = {
+  Persona: { bg: 'rgba(212,232,213,0.16)', border: 'rgba(212,232,213,0.45)', accent: '#d4e8d5' },
+  Interview: { bg: 'rgba(255,255,255,0.11)', border: 'rgba(255,255,255,0.3)', accent: '#dfe4da' },
+  Report: { bg: 'rgba(245,234,220,0.16)', border: 'rgba(245,234,220,0.45)', accent: '#f5eadc' },
+  Theme: { bg: 'rgba(233,229,238,0.16)', border: 'rgba(233,229,238,0.45)', accent: '#e9e5ee' },
+}
+
 function EvidenceNode({ kind, label, active, onClick }: { kind: 'Persona' | 'Interview' | 'Report' | 'Theme'; label: string; active: boolean; onClick: () => void }) {
-  const colors = { Persona: '#d4e8d5', Interview: '#dfe4da', Report: '#f5eadc', Theme: '#e9e5ee' }
-  return <button type="button" onClick={onClick} title={label} className="min-w-0 rounded-lg border px-3 py-2 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-white/45" style={{ background: active ? HOME_COLORS.primaryFixed : 'rgba(255,255,255,0.08)', borderColor: active ? HOME_COLORS.primaryFixed : 'rgba(255,255,255,0.13)', color: active ? HOME_COLORS.onPrimaryFixed : 'white' }}><span className="block text-[8px] font-semibold uppercase tracking-[0.14em]" style={{ color: active ? HOME_COLORS.onPrimaryFixed : colors[kind] }}>{kind}</span><span className="mt-1 block truncate text-[11px] font-semibold">{label}</span></button>
+  const style = EVIDENCE_NODE_STYLES[kind]
+  return <button type="button" onClick={onClick} title={label} className="min-w-0 rounded-lg border px-3.5 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110" style={{ background: active ? HOME_COLORS.primaryFixed : style.bg, borderColor: active ? HOME_COLORS.primaryFixed : style.border, color: active ? HOME_COLORS.onPrimaryFixed : 'white' }}><span className="block text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: active ? HOME_COLORS.onPrimaryFixed : style.accent }}>{kind}</span><span className="mt-1 block truncate text-xs font-semibold">{label}</span></button>
 }
 
 function GraphArrow() {
-  return <span className="text-center text-sm text-white/35">→</span>
-}
-
-function GraphColumn({ label, nodes, activeNode, onSelect }: { label: string; nodes: { id: string; label: string }[]; activeNode: string; onSelect: (id: string) => void }) {
-  return <div className="relative z-10 flex flex-col gap-3"><span className="text-[8px] font-semibold uppercase tracking-[0.16em] text-white/45">{label}</span>{nodes.length ? nodes.map(node => <button key={node.id} onClick={() => onSelect(node.id)} className="rounded-lg px-2 py-2 text-left text-[10px] font-semibold transition-colors" style={{ background: activeNode === node.id ? HOME_COLORS.primaryFixed : 'rgba(255,255,255,0.1)', color: activeNode === node.id ? HOME_COLORS.onPrimaryFixed : 'white', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer' }}><span className="block truncate">{node.label}</span></button>) : <span className="text-[10px] text-white/35">No data yet</span>}</div>
+  return <svg width="18" height="10" viewBox="0 0 18 10" className="mx-auto shrink-0" aria-hidden="true"><line x1="0" y1="5" x2="11" y2="5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" /><path d="M9 1.5 L15 5 L9 8.5" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
 }
 
 function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
