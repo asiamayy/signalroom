@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Building2, Plus, X, Trash2, Loader2, Lock, Crown, ShieldCheck, Users, Verified,
-  FileText, MessagesSquare, ArrowRight, ChevronDown, UserPlus, Search, Pencil, Activity, BarChart3, Network, TrendingUp, Upload, BookOpen, Sparkles,
+  FileText, MessagesSquare, ArrowRight, ChevronDown, UserPlus, Search, Pencil, Activity, BarChart3, Network, TrendingUp, Upload, BookOpen, Sparkles, Eye, Download,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { WorkspaceAutomations } from '@/components/workspaces/WorkspaceAutomations'
@@ -854,6 +854,11 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [knowledgeAvailable, setKnowledgeAvailable] = useState(true)
+  const [replacingSourceId, setReplacingSourceId] = useState<string | null>(null)
+  const [renamingSourceId, setRenamingSourceId] = useState<string | null>(null)
+  const [sourceName, setSourceName] = useState('')
+  const [savingSourceName, setSavingSourceName] = useState(false)
+  const [previewSource, setPreviewSource] = useState<WorkspaceSource | null>(null)
 
   const loadKnowledge = async () => {
     setLoading(true)
@@ -879,22 +884,90 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
 
   useEffect(() => { void loadKnowledge() }, [workspaceId])
 
-  const uploadSource = async (files: FileList | null) => {
-    const file = files?.[0]
+  const uploadSource = async (file: File | null, sourceId?: string) => {
     if (!file) return
     setUploading(true)
+    setReplacingSourceId(sourceId ?? null)
     setError('')
     try {
       const form = new FormData()
       form.append('file', file)
-      const response = await fetch(`/api/workspaces/${workspaceId}/knowledge`, { method: 'POST', body: form })
+      if (sourceId) form.append('sourceId', sourceId)
+      const response = await fetch(`/api/workspaces/${workspaceId}/knowledge`, { method: sourceId ? 'PUT' : 'POST', body: form })
       const json = await response.json()
       if (!response.ok) throw new Error(json.error)
-      setSources(previous => [json.data, ...previous])
+      setSources(previous => sourceId ? previous.map(source => source.id === sourceId ? json.data : source) : [json.data, ...previous])
     } catch (err: any) {
-      setError(err.message ?? 'Could not upload source')
+      setError(err.message ?? (sourceId ? 'Could not replace source' : 'Could not upload source'))
     } finally {
       setUploading(false)
+      setReplacingSourceId(null)
+    }
+  }
+
+  const getSourceUrl = async (source: WorkspaceSource, download = false) => {
+    const response = await fetch(`/api/workspaces/${workspaceId}/knowledge?sourceId=${encodeURIComponent(source.id)}${download ? '&download=1' : ''}`)
+    const json = await response.json()
+    if (!response.ok || !json.data?.url) throw new Error(json.error ?? 'Could not open source')
+    return json.data.url as string
+  }
+
+  const viewSource = async (source: WorkspaceSource) => {
+    if (source.extracted_text.trim()) {
+      setPreviewSource(source)
+      return
+    }
+    // Open the tab synchronously so browser popup protection does not block
+    // document previews while the secure URL is being requested.
+    const sourceWindow = window.open('about:blank', '_blank')
+    try {
+      const url = await getSourceUrl(source)
+      if (sourceWindow) {
+        sourceWindow.opener = null
+        sourceWindow.location.replace(url)
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      }
+    } catch (err: any) {
+      sourceWindow?.close()
+      setError(err.message ?? 'Could not open source')
+    }
+  }
+
+  const downloadSource = async (source: WorkspaceSource) => {
+    try {
+      const link = document.createElement('a')
+      link.href = await getSourceUrl(source, true)
+      link.download = source.name
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    } catch (err: any) {
+      setError(err.message ?? 'Could not download source')
+    }
+  }
+
+  const startRename = (source: WorkspaceSource) => {
+    setRenamingSourceId(source.id)
+    setSourceName(source.name)
+  }
+
+  const renameSource = async (sourceId: string) => {
+    const name = sourceName.trim()
+    if (!name) return
+    setSavingSourceName(true)
+    setError('')
+    try {
+      const response = await fetch(`/api/workspaces/${workspaceId}/knowledge`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sourceId, name }) })
+      const json = await response.json()
+      if (!response.ok) throw new Error(json.error)
+      setSources(previous => previous.map(source => source.id === sourceId ? json.data : source))
+      setRenamingSourceId(null)
+      setSourceName('')
+    } catch (err: any) {
+      setError(err.message ?? 'Could not rename source')
+    } finally {
+      setSavingSourceName(false)
     }
   }
 
@@ -923,11 +996,16 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
   if (!knowledgeAvailable) return <section className="mb-14 border-t pt-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}><div className="rounded-[1.5rem] border p-6" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: HOME_COLORS.outlineVariant + '55' }}><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace knowledge</p><h2 className="mt-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared context hub</h2><p className="mt-3 max-w-2xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Shared sources and workspace context will be ready here once workspace knowledge is activated.</p></div></section>
 
   return <section className="mb-14 border-t pt-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace knowledge</p><h2 className="mt-2 text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared context hub</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Give every workspace research action the same informed starting point.</p></div><label className="inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition-opacity hover:opacity-90" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}><Upload size={14} />{uploading ? 'Uploading…' : 'Add source'}<input type="file" className="hidden" disabled={uploading} accept=".pdf,.doc,.docx,.csv,.txt,.md,.json" onChange={event => uploadSource(event.target.files)} /></label></div>
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace knowledge</p><h2 className="mt-2 text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared context hub</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Give every workspace research action the same informed starting point.</p></div><label className="inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition-opacity hover:opacity-90" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}><Upload size={14} />{uploading && !replacingSourceId ? 'Uploading…' : 'Add source'}<input type="file" className="hidden" disabled={uploading} accept=".pdf,.doc,.docx,.csv,.txt,.md,.json" onChange={event => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ''; void uploadSource(file) }} /></label></div>
     {error && <p className="mb-4 rounded-lg px-3 py-2 text-xs" style={{ background: '#ffdad6', color: HOME_COLORS.error }}>{error}</p>}
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12"><div className="rounded-[1.5rem] border p-6 lg:col-span-7" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="flex items-center justify-between gap-4"><div className="flex items-center gap-2"><BookOpen size={17} style={{ color: HOME_COLORS.primary }} /><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Workspace brief</h3></div><button onClick={saveBrief} disabled={saving || brief === (context?.content ?? '')} className="rounded-full px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] disabled:opacity-40" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary, border: 'none', cursor: 'pointer' }}>{saving ? 'Saving…' : 'Save brief'}</button></div><p className="mt-3 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Add the positioning, audience, claims, guardrails, or research priorities that should inform every shared persona, interview, and report.</p><textarea value={brief} onChange={event => setBrief(event.target.value)} maxLength={12000} placeholder="e.g. Brand positioning, target audience, campaign objectives, approved claims, and research constraints…" className="mt-5 min-h-[160px] w-full resize-y rounded-xl p-4 text-sm leading-relaxed outline-none" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }} /></div>
-      <div className="rounded-[1.5rem] border p-6 lg:col-span-5" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}66` }}><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared sources</h3><p className="mt-2 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Text, CSV, and JSON sources feed into workspace context automatically. PDFs and decks remain available to the team and can be distilled into the brief.</p><div className="mt-5 space-y-2">{loading ? <div className="h-16 animate-pulse rounded-xl" style={{ background: HOME_COLORS.surfaceContainer }} /> : sources.length ? sources.map(source => <div key={source.id} className="flex items-center justify-between gap-3 rounded-xl border p-3" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}55` }}><div className="min-w-0"><p className="truncate text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{source.name}</p><p className="mt-1 text-[10px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatSourceSize(source.size_bytes)} · {source.extracted_text ? 'Context-ready' : 'Stored source'}</p></div><button onClick={() => deleteSource(source.id)} className="rounded-full px-2 py-1 text-[10px] font-semibold" style={{ background: 'none', border: 'none', color: HOME_COLORS.error, cursor: 'pointer' }}>Remove</button></div>) : <p className="rounded-xl border border-dashed p-5 text-center text-xs" style={{ borderColor: `${HOME_COLORS.outlineVariant}88`, color: HOME_COLORS.onSurfaceVariant }}>No shared source materials yet.</p>}</div></div></div>
+      <div className="rounded-[1.5rem] border p-6 lg:col-span-5" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}66` }}><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared sources</h3><p className="mt-2 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Text, CSV, and JSON sources feed into workspace context automatically. PDFs and decks remain available to the team and can be distilled into the brief.</p><div className="mt-5 space-y-3">{loading ? <div className="h-16 animate-pulse rounded-xl" style={{ background: HOME_COLORS.surfaceContainer }} /> : sources.length ? sources.map(source => <SharedSourceItem key={source.id} source={source} uploading={uploading && replacingSourceId === source.id} renaming={renamingSourceId === source.id} renameValue={sourceName} savingName={savingSourceName} onView={() => void viewSource(source)} onDownload={() => void downloadSource(source)} onStartRename={() => startRename(source)} onRenameValueChange={setSourceName} onRename={() => void renameSource(source.id)} onCancelRename={() => { setRenamingSourceId(null); setSourceName('') }} onReplace={file => void uploadSource(file, source.id)} onRemove={() => void deleteSource(source.id)} />) : <p className="rounded-xl border border-dashed p-5 text-center text-xs" style={{ borderColor: `${HOME_COLORS.outlineVariant}88`, color: HOME_COLORS.onSurfaceVariant }}>No shared source materials yet.</p>}</div></div></div>
+    <AnimatePresence>{previewSource && <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={() => setPreviewSource(null)}><motion.div role="dialog" aria-modal="true" aria-label={`Preview ${previewSource.name}`} className="w-full max-w-3xl overflow-hidden rounded-2xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: HOME_COLORS.outlineVariant, boxShadow: '0 24px 70px rgba(15,23,42,.24)' }} initial={{ opacity: 0, y: 16, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: .98 }} onMouseDown={event => event.stopPropagation()}><div className="flex items-center justify-between gap-4 border-b px-5 py-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="min-w-0"><p className="truncate text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{previewSource.name}</p><p className="mt-1 text-[10px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Text preview</p></div><button type="button" onClick={() => setPreviewSource(null)} className="rounded-full p-2 transition-colors hover:bg-[#e4e8e2]" aria-label="Close preview" style={{ color: HOME_COLORS.onSurfaceVariant }}><X size={16} /></button></div><pre className="max-h-[65vh] overflow-auto whitespace-pre-wrap px-5 py-5 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_BODY }}>{previewSource.extracted_text}</pre></motion.div></motion.div>}</AnimatePresence>
   </section>
+}
+
+function SharedSourceItem({ source, uploading, renaming, renameValue, savingName, onView, onDownload, onStartRename, onRenameValueChange, onRename, onCancelRename, onReplace, onRemove }: { source: WorkspaceSource; uploading: boolean; renaming: boolean; renameValue: string; savingName: boolean; onView: () => void; onDownload: () => void; onStartRename: () => void; onRenameValueChange: (value: string) => void; onRename: () => void; onCancelRename: () => void; onReplace: (file: File | null) => void; onRemove: () => void }) {
+  return <div className="rounded-xl border p-3.5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}55` }}>{renaming ? <div className="flex gap-2"><input autoFocus value={renameValue} onChange={event => onRenameValueChange(event.target.value)} onKeyDown={event => event.key === 'Enter' && onRename()} maxLength={180} className="min-w-0 flex-1 rounded-lg border px-2.5 py-2 text-xs outline-none" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.onSurface, borderColor: HOME_COLORS.outlineVariant }} /><button type="button" onClick={onRename} disabled={savingName || !renameValue.trim()} className="rounded-lg px-2.5 text-[10px] font-semibold disabled:opacity-40" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>{savingName ? 'Saving' : 'Save'}</button><button type="button" onClick={onCancelRename} className="rounded-lg px-2 text-[10px] font-semibold" style={{ color: HOME_COLORS.onSurfaceVariant }}>Cancel</button></div> : <><div className="flex min-w-0 items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{source.name}</p><p className="mt-1 text-[10px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatSourceSize(source.size_bytes)} · {source.extracted_text ? 'Context-ready' : 'Stored source'}</p></div><button type="button" onClick={onRemove} title="Remove source" className="rounded-full px-1.5 py-1 text-[10px] font-semibold" style={{ background: 'none', border: 'none', color: HOME_COLORS.error, cursor: 'pointer' }}>Remove</button></div><div className="mt-3 flex flex-wrap gap-1.5"><button type="button" onClick={onView} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-semibold transition-colors hover:bg-[#e4e8e2]" style={{ color: HOME_COLORS.primary }}><Eye size={12} />View</button><button type="button" onClick={onDownload} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-semibold transition-colors hover:bg-[#e4e8e2]" style={{ color: HOME_COLORS.primary }}><Download size={12} />Download</button><button type="button" onClick={onStartRename} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-semibold transition-colors hover:bg-[#e4e8e2]" style={{ color: HOME_COLORS.primary }}><Pencil size={11} />Rename</button><label className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-[10px] font-semibold transition-colors hover:bg-[#e4e8e2]" style={{ color: HOME_COLORS.primary }}><Upload size={11} />{uploading ? 'Replacing…' : 'Replace'}<input type="file" className="hidden" disabled={uploading} accept=".pdf,.doc,.docx,.csv,.txt,.md,.json" onChange={event => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ''; onReplace(file) }} /></label></div></>}</div>
 }
 
 function formatSourceSize(bytes: number) {
