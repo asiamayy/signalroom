@@ -859,6 +859,7 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
   const [sourceName, setSourceName] = useState('')
   const [savingSourceName, setSavingSourceName] = useState(false)
   const [previewSource, setPreviewSource] = useState<WorkspaceSource | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   const loadKnowledge = async () => {
     setLoading(true)
@@ -914,22 +915,14 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
 
   const viewSource = async (source: WorkspaceSource) => {
     if (source.extracted_text.trim()) {
+      setPreviewUrl(null)
       setPreviewSource(source)
       return
     }
-    // Open the tab synchronously so browser popup protection does not block
-    // document previews while the secure URL is being requested.
-    const sourceWindow = window.open('about:blank', '_blank')
     try {
-      const url = await getSourceUrl(source)
-      if (sourceWindow) {
-        sourceWindow.opener = null
-        sourceWindow.location.replace(url)
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer')
-      }
+      setPreviewUrl(await getSourceUrl(source))
+      setPreviewSource(source)
     } catch (err: any) {
-      sourceWindow?.close()
       setError(err.message ?? 'Could not open source')
     }
   }
@@ -1000,7 +993,7 @@ function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {
     {error && <p className="mb-4 rounded-lg px-3 py-2 text-xs" style={{ background: '#ffdad6', color: HOME_COLORS.error }}>{error}</p>}
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12"><div className="rounded-[1.5rem] border p-6 lg:col-span-7" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="flex items-center justify-between gap-4"><div className="flex items-center gap-2"><BookOpen size={17} style={{ color: HOME_COLORS.primary }} /><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Workspace brief</h3></div><button onClick={saveBrief} disabled={saving || brief === (context?.content ?? '')} className="rounded-full px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] disabled:opacity-40" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary, border: 'none', cursor: 'pointer' }}>{saving ? 'Saving…' : 'Save brief'}</button></div><p className="mt-3 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Add the positioning, audience, claims, guardrails, or research priorities that should inform every shared persona, interview, and report.</p><textarea value={brief} onChange={event => setBrief(event.target.value)} maxLength={12000} placeholder="e.g. Brand positioning, target audience, campaign objectives, approved claims, and research constraints…" className="mt-5 min-h-[160px] w-full resize-y rounded-xl p-4 text-sm leading-relaxed outline-none" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}66`, color: HOME_COLORS.onSurface }} /></div>
       <div className="rounded-[1.5rem] border p-6 lg:col-span-5" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}66` }}><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Shared sources</h3><p className="mt-2 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Text, CSV, and JSON sources feed into workspace context automatically. PDFs and decks remain available to the team and can be distilled into the brief.</p><div className="mt-5 space-y-3">{loading ? <div className="h-16 animate-pulse rounded-xl" style={{ background: HOME_COLORS.surfaceContainer }} /> : sources.length ? sources.map(source => <SharedSourceItem key={source.id} source={source} uploading={uploading && replacingSourceId === source.id} renaming={renamingSourceId === source.id} renameValue={sourceName} savingName={savingSourceName} onView={() => void viewSource(source)} onDownload={() => void downloadSource(source)} onStartRename={() => startRename(source)} onRenameValueChange={setSourceName} onRename={() => void renameSource(source.id)} onCancelRename={() => { setRenamingSourceId(null); setSourceName('') }} onReplace={file => void uploadSource(file, source.id)} onRemove={() => void deleteSource(source.id)} />) : <p className="rounded-xl border border-dashed p-5 text-center text-xs" style={{ borderColor: `${HOME_COLORS.outlineVariant}88`, color: HOME_COLORS.onSurfaceVariant }}>No shared source materials yet.</p>}</div></div></div>
-    <AnimatePresence>{previewSource && <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={() => setPreviewSource(null)}><motion.div role="dialog" aria-modal="true" aria-label={`Preview ${previewSource.name}`} className="w-full max-w-3xl overflow-hidden rounded-2xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: HOME_COLORS.outlineVariant, boxShadow: '0 24px 70px rgba(15,23,42,.24)' }} initial={{ opacity: 0, y: 16, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: .98 }} onMouseDown={event => event.stopPropagation()}><div className="flex items-center justify-between gap-4 border-b px-5 py-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="min-w-0"><p className="truncate text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{previewSource.name}</p><p className="mt-1 text-[10px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Text preview</p></div><button type="button" onClick={() => setPreviewSource(null)} className="rounded-full p-2 transition-colors hover:bg-[#e4e8e2]" aria-label="Close preview" style={{ color: HOME_COLORS.onSurfaceVariant }}><X size={16} /></button></div><pre className="max-h-[65vh] overflow-auto whitespace-pre-wrap px-5 py-5 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_BODY }}>{previewSource.extracted_text}</pre></motion.div></motion.div>}</AnimatePresence>
+    <AnimatePresence>{previewSource && <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={() => { setPreviewSource(null); setPreviewUrl(null) }}><motion.div role="dialog" aria-modal="true" aria-label={`Preview ${previewSource.name}`} className="w-full max-w-3xl overflow-hidden rounded-2xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: HOME_COLORS.outlineVariant, boxShadow: '0 24px 70px rgba(15,23,42,.24)' }} initial={{ opacity: 0, y: 16, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: .98 }} onMouseDown={event => event.stopPropagation()}><div className="flex items-center justify-between gap-4 border-b px-5 py-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="min-w-0"><p className="truncate text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{previewSource.name}</p><p className="mt-1 text-[10px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{previewSource.extracted_text.trim() ? 'Text preview' : 'Document preview'}</p></div><button type="button" onClick={() => { setPreviewSource(null); setPreviewUrl(null) }} className="rounded-full p-2 transition-colors hover:bg-[#e4e8e2]" aria-label="Close preview" style={{ color: HOME_COLORS.onSurfaceVariant }}><X size={16} /></button></div>{previewSource.extracted_text.trim() ? <pre className="max-h-[65vh] overflow-auto whitespace-pre-wrap px-5 py-5 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_BODY }}>{previewSource.extracted_text}</pre> : previewUrl ? <iframe title={`Preview ${previewSource.name}`} src={previewUrl} className="h-[65vh] w-full bg-white" /> : <div className="p-8 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Preparing preview…</div>}</motion.div></motion.div>}</AnimatePresence>
   </section>
 }
 
