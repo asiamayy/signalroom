@@ -42,8 +42,9 @@ export async function POST(request: NextRequest) {
     }, { status: 403 })
   }
 
-  const { name } = await request.json()
+  const { name, description } = await request.json()
   const trimmedName = typeof name === 'string' ? name.trim().slice(0, 120) : ''
+  const trimmedDescription = typeof description === 'string' ? description.trim().slice(0, 360) : null
 
   if (!trimmedName) {
     return NextResponse.json({ error: 'Workspace name is required' }, { status: 400 })
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
 
   const { data: workspace, error } = await supabase
     .from('workspaces')
-    .insert({ owner_id: user.id, name: trimmedName })
+    .insert({ owner_id: user.id, name: trimmedName, description: trimmedDescription || null })
     .select()
     .single()
 
