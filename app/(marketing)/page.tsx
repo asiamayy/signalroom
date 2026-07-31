@@ -101,7 +101,7 @@ const PLANS = [
   },
   {
     name: 'Signal', price: 99, tagline: 'For teams validating fast', icon: Users, highlight: true,
-    features: ['Unlimited personas', 'Unlimited interviews', 'All templates', 'Full reports', 'Multi-persona testing'],
+    features: ['Up to 50 personas', '100 interviews/month', 'All templates', 'Full reports', 'Multi-persona testing'],
   },
   {
     name: 'Broadcast', price: 249, tagline: 'For agencies and growing teams', icon: Building2,
