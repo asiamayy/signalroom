@@ -46,18 +46,11 @@ const playfair = Playfair_Display({ subsets: ['latin'], weight: ['500', '600'], 
 const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['600'], style: ['normal', 'italic'], variable: '--nf-source-serif', display: 'swap' })
 const hanken = Hanken_Grotesk({ subsets: ['latin'], weight: ['400', '600', '700'], variable: '--nf-hanken', display: 'swap' })
 
-const NAV_ITEMS = [
-  { href: '/home', label: 'Home', icon: Home },
-  { href: '/projects', label: 'Projects', icon: Briefcase },
-  { href: '/personas', label: 'Personas', icon: Users },
-  { href: '/interviews', label: 'Interviews', icon: MessageSquare },
-  { href: '/compare', label: 'Compare', icon: ArrowLeftRight },
-  { href: '/audience-panel', label: 'Audience Panel', icon: UsersRound },
-  { href: '/concept-test', label: 'Concept Test', icon: Layers },
-  { href: '/signals', label: 'Signals', icon: BarChart2 },
-  { href: '/reports', label: 'Insights', icon: Activity },
-  // Broadcast-only — team workspaces
-  { href: '/workspaces', label: 'Workspaces', icon: Building2, requiresAgency: true },
+const NAV_SECTIONS = [
+  { id: 'research', label: 'Research', icon: Briefcase, items: [{ href: '/projects', label: 'Projects', icon: Briefcase }, { href: '/personas', label: 'Personas', icon: Users }, { href: '/interviews', label: 'Interviews', icon: MessageSquare }] },
+  { id: 'test', label: 'Test ideas', icon: Layers, items: [{ href: '/compare', label: 'Compare reactions', icon: ArrowLeftRight }, { href: '/audience-panel', label: 'Audience test', icon: UsersRound }, { href: '/concept-test', label: 'Concept test', icon: Layers }] },
+  { id: 'results', label: 'Results', icon: BarChart2, items: [{ href: '/reports', label: 'Insights', icon: Activity }, { href: '/signals', label: 'Research signals', icon: BarChart2 }] },
+  { id: 'team', label: 'Team', icon: Building2, requiresWorkspaceAccess: true, items: [{ href: '/workspaces', label: 'Workspaces', icon: Building2 }] },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -80,6 +73,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
   const [showCreateProject, setShowCreateProject] = useState(false)
+  const [expandedNavSections, setExpandedNavSections] = useState<Record<string, boolean>>({ research: true })
   const { query: search, setQuery: setSearch } = useSearch()
   const [searchOpen, setSearchOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
@@ -138,17 +132,21 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
-  // Recent projects for the sidebar
   useEffect(() => {
-    fetch('/api/projects?limit=5')
-      .then(r => r.json())
-      .then(json => setRecentProjects(json.data ?? []))
+    fetch('/api/projects?limit=3')
+      .then(response => response.json())
+      .then(json => setRecentProjects((json.data ?? []).slice(0, 3)))
       .catch(() => {})
   }, [])
 
   // Close mobile nav on route change
   useEffect(() => {
     setMobileNavOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    const activeSection = NAV_SECTIONS.find(section => section.items.some(item => pathname === item.href || pathname.startsWith(`${item.href}/`)))
+    if (activeSection) setExpandedNavSections(previous => ({ ...previous, [activeSection.id]: true }))
   }, [pathname])
 
   // Close account dropdown on outside click
@@ -195,41 +193,24 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto" style={{ fontFamily: HOME_FONT_BODY }}>
-        {NAV_ITEMS.filter(item => !item.requiresAgency || plan === 'agency' || hasWorkspaceAccess).map(({ href, label, icon: Icon }) => {
-          const active = pathname.startsWith(href)
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm transition-all',
-                active ? 'font-semibold shadow-sm' : 'font-medium hover:bg-[#eae7e7]'
-              )}
-              style={active ? { background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.onSecondaryContainer } : { color: HOME_COLORS.onSurfaceVariant }}
-            >
-              <Icon size={18} strokeWidth={1.75} style={{ color: active ? HOME_COLORS.onSecondaryContainer : HOME_COLORS.onSurfaceVariant }} />
-              {label}
-            </Link>
-          )
+        <Link href="/home" className={cn('mb-1 flex items-center gap-2.5 rounded-lg px-4 py-2.5 text-sm transition-all', pathname === '/home' ? 'font-semibold shadow-sm' : 'font-medium hover:bg-[#eae7e7]')} style={pathname === '/home' ? { background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.onSecondaryContainer } : { color: HOME_COLORS.onSurfaceVariant }}><Home size={18} strokeWidth={1.75} style={{ color: pathname === '/home' ? HOME_COLORS.onSecondaryContainer : HOME_COLORS.onSurfaceVariant }} />Dashboard</Link>
+
+        {NAV_SECTIONS.filter(section => !section.requiresWorkspaceAccess || plan === 'agency' || hasWorkspaceAccess).map(section => {
+          const sectionActive = section.items.some(item => pathname === item.href || pathname.startsWith(`${item.href}/`))
+          const expanded = expandedNavSections[section.id] ?? false
+          const SectionIcon = section.icon
+          return <div key={section.id} className="mb-1"><button type="button" onClick={() => setExpandedNavSections(previous => ({ ...previous, [section.id]: !expanded }))} aria-expanded={expanded} className={cn('flex w-full items-center gap-2.5 rounded-lg px-4 py-2.5 text-left text-sm transition-all', sectionActive ? 'font-semibold' : 'font-medium hover:bg-[#eae7e7]')} style={sectionActive ? { color: HOME_COLORS.onSecondaryContainer } : { color: HOME_COLORS.onSurfaceVariant }}><SectionIcon size={18} strokeWidth={1.75} style={{ color: sectionActive ? HOME_COLORS.onSecondaryContainer : HOME_COLORS.onSurfaceVariant }} /><span className="flex-1">{section.label}</span><ChevronDown size={15} className={cn('transition-transform duration-200', expanded ? 'rotate-180' : '')} /></button><AnimatePresence initial={false}>{expanded && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }} className="overflow-hidden"><div className="ml-6 border-l py-1 pl-3" style={{ borderColor: `${HOME_COLORS.outlineVariant}99` }}>{section.items.map(({ href, label, icon: ItemIcon }) => { const active = pathname === href || pathname.startsWith(`${href}/`); return <Link key={href} href={href} className={cn('mb-0.5 flex items-center gap-2 rounded-md px-3 py-2 text-[13px] transition-colors', active ? 'font-semibold' : 'hover:bg-[#eae7e7]')} style={active ? { background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.onSecondaryContainer } : { color: HOME_COLORS.onSurfaceVariant }}><ItemIcon size={14} strokeWidth={1.75} />{label}</Link> })}</div></motion.div>}</AnimatePresence></div>
         })}
 
-        {/* Recent projects */}
-        <div className="pt-4 mt-2" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}66` }}>
-          <p className="px-4 pb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-            Recent Projects
-          </p>
+        <div className="mt-3 border-t pt-3" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}>
+          <p className="px-4 pb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Recent Projects</p>
           {recentProjects.length === 0 ? (
             <p className="px-4 text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>No projects yet</p>
           ) : (
             <div className="space-y-0.5">
-              {recentProjects.map((project, i) => (
-                <Link
-                  key={project.id}
-                  href={`/projects/${project.id}`}
-                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm transition-colors hover:bg-[#eae7e7]"
-                  style={{ color: i === 0 ? HOME_COLORS.onSurface : HOME_COLORS.onSurfaceVariant }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: i === 0 ? HOME_COLORS.primary : HOME_COLORS.outlineVariant }} />
+              {recentProjects.map((project, index) => (
+                <Link key={project.id} href={`/projects/${project.id}`} className="flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm transition-colors hover:bg-[#eae7e7]" style={{ color: index === 0 ? HOME_COLORS.onSurface : HOME_COLORS.onSurfaceVariant }}>
+                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full" style={{ background: index === 0 ? HOME_COLORS.primary : HOME_COLORS.outlineVariant }} />
                   <span className="truncate">{project.name}</span>
                 </Link>
               ))}
