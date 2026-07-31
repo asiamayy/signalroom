@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -481,7 +481,7 @@ export function WorkspacesClient() {
           </section> : null}
           */}
           {selectedWorkspace && <WorkspaceExpandedPanel workspace={selectedWorkspace} isOwner={isOwnerOfSelected} members={members} invites={invites} loading={loadingDetail || loadingContent} contentTab={contentTab} contentQuery={contentQuery} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} editing={editingWorkspaceName} workspaceName={workspaceName} workspaceDescription={workspaceDescription} inviteOpen={invitingOpen} inviteEmail={inviteEmail} inviting={inviting} saving={savingWorkspaceName} currentUserId={currentUserId} presence={presence} activity={activity} onSelectTab={setContentTab} onQueryChange={setContentQuery} onEdit={() => { setWorkspaceName(selectedWorkspace.name); setWorkspaceDescription(selectedWorkspace.description ?? ''); setEditingWorkspaceName(true) }} onNameChange={setWorkspaceName} onDescriptionChange={setWorkspaceDescription} onSave={handleRenameWorkspace} onCancelEdit={() => { setEditingWorkspaceName(false); setWorkspaceName(selectedWorkspace.name); setWorkspaceDescription(selectedWorkspace.description ?? '') }} onDelete={() => handleDeleteWorkspace(selectedWorkspace.id)} onInviteOpen={() => setInvitingOpen(open => !open)} onInviteEmailChange={setInviteEmail} onInvite={handleInvite} onRemoveMember={handleRemoveMember} onRevokeInvite={handleRevokeInvite} />}
-          {selectedWorkspace && <WorkspaceIntelligence personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} />}
+          {selectedWorkspace && <WorkspaceIntelligence workspaceId={selectedWorkspace.id} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} />}
           {selectedWorkspace && <WorkspaceActivitySnapshot activity={activity} loading={activityLoading} members={members} />}
           {selectedWorkspace && <WorkspaceKnowledgeHub workspaceId={selectedWorkspace.id} />}
           {selectedWorkspace && isOwnerOfSelected && <WorkspaceAutomations workspaceId={selectedWorkspace.id} />}
@@ -605,7 +605,7 @@ function PendingWorkspaceInvite({ invite, onRevoke }: { invite: WorkspaceInvite;
   </div>
 }
 
-function WorkspaceIntelligence({ personas, interviews, reports }: { personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
+function WorkspaceIntelligence({ workspaceId = 'workspace', personas, interviews, reports }: { workspaceId?: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
   const [activeNode, setActiveNode] = useState('overview')
   const [intelligenceTab, setIntelligenceTab] = useState<'analytics' | 'insights'>('analytics')
   const now = Date.now()
@@ -617,15 +617,15 @@ function WorkspaceIntelligence({ personas, interviews, reports }: { personas: Pe
   const themeCounts = new Map<string, number>()
   reports.forEach(report => report.key_themes?.forEach(theme => themeCounts.set(theme.title, (themeCounts.get(theme.title) ?? 0) + 1)))
   const themes = [...themeCounts.entries()].map(([title, count]) => ({ title, count })).sort((a, b) => b.count - a.count).slice(0, 4)
-  const graphPersonas = personas.slice(0, 2)
-  const graphReports = reports.slice(0, 2)
   const selectedDetail = activeNode === 'overview'
     ? 'Select a persona, report, or theme to inspect how research is connected in this workspace.'
     : activeNode.startsWith('theme:')
-      ? `${activeNode.slice(6)} appears across ${themeCounts.get(activeNode.slice(6)) ?? 0} report${(themeCounts.get(activeNode.slice(6)) ?? 0) === 1 ? '' : 's'}.`
+      ? (() => { const title = activeNode.slice(6); const supportingReports = reports.filter(report => report.key_themes?.some(theme => theme.title === title)); const quote = supportingReports.flatMap(report => report.key_themes?.find(theme => theme.title === title)?.quotes ?? [])[0]; return `${title} appears across ${supportingReports.length} report${supportingReports.length === 1 ? '' : 's'}${quote ? `. Evidence: “${quote}”` : '.'}` })()
       : activeNode.startsWith('persona:')
-        ? `${personas.find(persona => persona.id === activeNode.slice(8))?.name ?? 'This persona'} connects to the interviews and reports shown here.`
-        : 'This report contributes themes and evidence to the workspace intelligence map.'
+        ? (() => { const persona = personas.find(item => item.id === activeNode.slice(8)); const linkedInterviews = interviews.filter(interview => interview.persona_id === persona?.id); const linkedReports = reports.filter(report => linkedInterviews.some(interview => interview.id === report.interview_id)); return `${persona?.name ?? 'This persona'} connects to ${linkedInterviews.length} interview${linkedInterviews.length === 1 ? '' : 's'} and ${linkedReports.length} report${linkedReports.length === 1 ? '' : 's'}.` })()
+        : activeNode.startsWith('interview:')
+          ? (() => { const interview = interviews.find(item => item.id === activeNode.slice(10)); const report = reports.find(item => item.interview_id === interview?.id); return `${interview?.title ?? 'This interview'} connects ${interview?.persona?.name ?? 'its persona'} to ${report ? 'a generated report' : 'no report yet'}.` })()
+          : (() => { const report = reports.find(item => item.id === activeNode.slice(7)); return `${report?.interview?.title ?? 'This report'} is supported by ${report?.key_themes?.length ?? 0} extracted theme${(report?.key_themes?.length ?? 0) === 1 ? '' : 's'}.` })()
 
   return <section className="mb-9 border-t pt-8" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
     <div className="rounded-[1.5rem] border p-4 sm:p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}>
@@ -642,12 +642,7 @@ function WorkspaceIntelligence({ personas, interviews, reports }: { personas: Pe
     </div>
     <div className={`mt-5 overflow-hidden rounded-[1.25rem] p-6 sm:p-7 ${intelligenceTab === 'insights' ? 'block' : 'hidden'}`} style={{ background: HOME_COLORS.primary }}>
       <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Insight graph</p><h2 className="mt-2 text-2xl text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>How your research connects</h2></div><Network size={19} style={{ color: HOME_COLORS.primaryFixed }} /></div>
-      <div className="relative mt-7 grid min-h-[220px] grid-cols-3 gap-3 overflow-hidden rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true"><path d="M95 70 C190 70, 210 110, 300 110 S410 65, 505 65 M95 155 C190 155, 210 110, 300 110 S410 155, 505 155" fill="none" stroke="rgba(212,232,213,0.35)" strokeWidth="1" strokeDasharray="4 5" /></svg>
-        <GraphColumn label="Personas" nodes={graphPersonas.map(persona => ({ id: `persona:${persona.id}`, label: persona.name }))} activeNode={activeNode} onSelect={setActiveNode} />
-        <GraphColumn label="Reports" nodes={graphReports.map(report => ({ id: `report:${report.id}`, label: report.interview?.title ?? 'Insight report' }))} activeNode={activeNode} onSelect={setActiveNode} />
-        <GraphColumn label="Themes" nodes={themes.slice(0, 2).map(theme => ({ id: `theme:${theme.title}`, label: theme.title }))} activeNode={activeNode} onSelect={setActiveNode} />
-      </div>
+      <EvidenceGraph workspaceId={workspaceId} personas={personas} interviews={interviews} reports={reports} activeNode={activeNode} onSelect={setActiveNode} />
       <p className="mt-4 text-xs leading-relaxed text-white/65">{selectedDetail}</p>
     </div>
     </div>
@@ -689,6 +684,135 @@ function WorkspaceAskAI({ workspaceId }: { workspaceId: string }) {
     {error && <p className="mt-3 text-xs" style={{ color: HOME_COLORS.error }}>{error}</p>}
     {answer && <p className="mt-4 whitespace-pre-wrap rounded-xl p-3 text-xs leading-relaxed" style={{ background: HOME_COLORS.surfaceContainerLowest, color: HOME_COLORS.onSurface }}>{answer}</p>}
   </section>
+}
+
+type SavedEvidenceView = {
+  name: string
+  zoom: number
+  pan: { x: number; y: number }
+  layout: 'path' | 'compact'
+  contentFilter: 'all' | 'reports' | 'themes'
+  minimumConfidence: number
+  sentimentFilter: 'all' | 'positive' | 'mixed' | 'neutral' | 'negative'
+}
+
+function EvidenceGraph({ workspaceId, personas, interviews, reports, activeNode, onSelect }: { workspaceId: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[]; activeNode: string; onSelect: (id: string) => void }) {
+  const reportByInterviewId = new Map(reports.map(report => [report.interview_id, report]))
+  const evidencePaths = interviews.map(interview => ({ persona: interview.persona ?? personas.find(persona => persona.id === interview.persona_id), interview, report: reportByInterviewId.get(interview.id) }))
+  const untestedPersonas = personas.filter(persona => !interviews.some(interview => interview.persona_id === persona.id))
+  const [contentFilter, setContentFilter] = useState<'all' | 'reports' | 'themes'>('all')
+  const [minimumConfidence, setMinimumConfidence] = useState(0)
+  const [sentimentFilter, setSentimentFilter] = useState<'all' | 'positive' | 'mixed' | 'neutral' | 'negative'>('all')
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [layout, setLayout] = useState<'path' | 'compact'>('path')
+  const [viewName, setViewName] = useState('')
+  const [savedViews, setSavedViews] = useState<SavedEvidenceView[]>([])
+  const [loadedViewKey, setLoadedViewKey] = useState<string | null>(null)
+  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null)
+  const storageKey = `signalroom:evidence-views:${workspaceId}`
+  useEffect(() => {
+    try { setSavedViews(JSON.parse(window.localStorage.getItem(storageKey) ?? '[]')) } catch { setSavedViews([]) }
+    setLoadedViewKey(storageKey)
+  }, [storageKey])
+  useEffect(() => {
+    if (loadedViewKey !== storageKey) return
+    try { window.localStorage.setItem(storageKey, JSON.stringify(savedViews)) } catch {}
+  }, [savedViews, storageKey, loadedViewKey])
+  const filteredPaths = evidencePaths.filter(path => {
+    if (contentFilter === 'reports' && !path.report) return false
+    if (contentFilter === 'themes' && !path.report?.key_themes?.length) return false
+    if ((path.report?.confidence_score ?? 0) < minimumConfidence) return false
+    if (sentimentFilter !== 'all' && !path.report?.key_themes?.some(theme => theme.sentiment === sentimentFilter)) return false
+    return true
+  })
+  const resetCanvas = () => { setZoom(1); setPan({ x: 0, y: 0 }) }
+  const saveView = () => {
+    const name = viewName.trim() || `View ${savedViews.length + 1}`
+    const next = [...savedViews.filter(view => view.name !== name), { name, zoom, pan, layout, contentFilter, minimumConfidence, sentimentFilter }].slice(-8)
+    setSavedViews(next)
+    setViewName('')
+  }
+  const applyView = (view: SavedEvidenceView) => {
+    setZoom(view.zoom); setPan(view.pan); setLayout(view.layout); setContentFilter(view.contentFilter); setMinimumConfidence(view.minimumConfidence); setSentimentFilter(view.sentimentFilter)
+  }
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest('button,a,input,select,label')) return
+    event.currentTarget.setPointerCapture(event.pointerId)
+    dragRef.current = { startX: event.clientX, startY: event.clientY, panX: pan.x, panY: pan.y }
+  }
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return
+    setPan({ x: dragRef.current.panX + event.clientX - dragRef.current.startX, y: dragRef.current.panY + event.clientY - dragRef.current.startY })
+  }
+  const stopDragging = () => { dragRef.current = null }
+
+  return <div className="mt-7 overflow-hidden rounded-xl border" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.12)' }}>
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div><p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-white/45">Traceable evidence paths</p><p className="mt-1 text-xs text-white/65">Follow a source from persona through the research it generated.</p></div>{activeNode !== 'overview' && <button type="button" onClick={() => onSelect('overview')} className="rounded-full border px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-white/10" style={{ color: HOME_COLORS.primaryFixed, borderColor: 'rgba(255,255,255,0.18)', background: 'transparent' }}>Clear focus</button>}</div>
+    <div className="flex flex-wrap gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><GraphFilter label="Evidence" value={contentFilter} onChange={value => setContentFilter(value as 'all' | 'reports' | 'themes')} options={[['all', 'All'], ['reports', 'Reports'], ['themes', 'Themes']]} /><GraphFilter label="Confidence" value={String(minimumConfidence)} onChange={value => setMinimumConfidence(Number(value))} options={[[String(0), 'Any score'], [String(50), '50%+'], [String(75), '75%+']]} /><GraphFilter label="Sentiment" value={sentimentFilter} onChange={value => setSentimentFilter(value as 'all' | 'positive' | 'mixed' | 'neutral' | 'negative')} options={[['all', 'All'], ['positive', 'Positive'], ['mixed', 'Mixed'], ['neutral', 'Neutral'], ['negative', 'Negative']]} /><span className="ml-auto self-end text-[9px] font-semibold uppercase tracking-[0.12em] text-white/40">{filteredPaths.length} path{filteredPaths.length === 1 ? '' : 's'}</span></div>
+    <div className="flex flex-wrap items-end gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><span className="mr-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/45">Canvas</span><button type="button" onClick={() => setZoom(value => Math.max(0.65, Number((value - 0.15).toFixed(2))))} className="rounded-lg border px-2.5 py-1.5 text-xs text-white transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>−</button><span className="min-w-10 self-center text-center text-[10px] font-semibold text-white/65">{Math.round(zoom * 100)}%</span><button type="button" onClick={() => setZoom(value => Math.min(1.55, Number((value + 0.15).toFixed(2))))} className="rounded-lg border px-2.5 py-1.5 text-xs text-white transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>+</button><button type="button" onClick={resetCanvas} className="rounded-lg border px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-white/65 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>Reset</button><div className="ml-2 flex rounded-lg border p-0.5" style={{ borderColor: 'rgba(255,255,255,0.16)' }}><button type="button" onClick={() => setLayout('path')} className="rounded-md px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ background: layout === 'path' ? 'rgba(255,255,255,0.16)' : 'transparent', color: 'white' }}>Path</button><button type="button" onClick={() => setLayout('compact')} className="rounded-md px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ background: layout === 'compact' ? 'rgba(255,255,255,0.16)' : 'transparent', color: 'white' }}>Compact</button></div><div className="ml-auto flex min-w-[220px] items-center gap-1.5"><input value={viewName} onChange={event => setViewName(event.target.value)} placeholder="Name this view" maxLength={40} className="min-w-0 flex-1 rounded-lg border bg-transparent px-2.5 py-1.5 text-[10px] text-white outline-none placeholder:text-white/35" style={{ borderColor: 'rgba(255,255,255,0.16)' }} /><button type="button" onClick={saveView} className="rounded-lg px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}>Save view</button></div></div>
+    {savedViews.length > 0 && <div className="flex flex-wrap gap-2 border-b px-4 py-2.5" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><span className="self-center text-[8px] font-semibold uppercase tracking-[0.12em] text-white/45">Saved</span>{savedViews.map(view => <button key={view.name} type="button" onClick={() => applyView(view)} className="rounded-full border px-3 py-1.5 text-[9px] font-semibold text-white/70 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.16)' }}>{view.name}</button>)}</div>}
+    <div className="h-[420px] touch-none overflow-hidden cursor-grab active:cursor-grabbing" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={stopDragging} onPointerCancel={stopDragging}>
+      <div className="min-w-[720px] p-4 transition-transform duration-75" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: 'top left' }}>
+      {filteredPaths.length ? <div className="space-y-3">{filteredPaths.map(path => {
+        const report = path.report
+        const nodeIds = [path.persona && `persona:${path.persona.id}`, `interview:${path.interview.id}`, report && `report:${report.id}`, ...(report?.key_themes ?? []).map(theme => `theme:${theme.title}`)].filter(Boolean) as string[]
+        const dimmed = activeNode !== 'overview' && !nodeIds.includes(activeNode)
+        return <div key={path.interview.id} className={`${layout === 'path' ? 'grid grid-cols-[minmax(130px,1fr)_20px_minmax(130px,1fr)_20px_minmax(130px,1fr)_20px_minmax(150px,1.2fr)] items-center' : 'flex flex-wrap items-center'} gap-1 transition-opacity duration-200 ${dimmed ? 'opacity-25' : 'opacity-100'}`}>
+          <EvidenceNode kind="Persona" label={path.persona?.name ?? 'Unknown persona'} active={activeNode === `persona:${path.persona?.id}`} onClick={() => path.persona && onSelect(`persona:${path.persona.id}`)} />
+          <GraphArrow />
+          <EvidenceNode kind="Interview" label={path.interview.title} active={activeNode === `interview:${path.interview.id}`} onClick={() => onSelect(`interview:${path.interview.id}`)} />
+          <GraphArrow />
+          {report ? <EvidenceNode kind="Report" label={report.interview?.title ?? path.interview.title} active={activeNode === `report:${report.id}`} onClick={() => onSelect(`report:${report.id}`)} /> : <div className="rounded-lg border border-dashed px-3 py-2 text-center text-[9px] uppercase tracking-[0.1em] text-white/35">No report yet</div>}
+          <GraphArrow />
+          <div className="flex flex-wrap gap-1.5">{report?.key_themes?.length ? report.key_themes.slice(0, 3).map(theme => <EvidenceNode key={theme.title} kind="Theme" label={theme.title} active={activeNode === `theme:${theme.title}`} onClick={() => onSelect(`theme:${theme.title}`)} />) : <span className="text-[10px] text-white/35">Themes appear after report generation</span>}</div>
+        </div>
+      })}</div> : <div className="py-10 text-center"><p className="text-sm text-white/65">{evidencePaths.length ? 'No evidence paths match these filters.' : 'Create an interview in this workspace to begin an evidence path.'}</p>{!evidencePaths.length && untestedPersonas.length > 0 && <div className="mt-4 flex flex-wrap justify-center gap-2">{untestedPersonas.map(persona => <EvidenceNode key={persona.id} kind="Persona" label={persona.name} active={activeNode === `persona:${persona.id}`} onClick={() => onSelect(`persona:${persona.id}`)} />)}</div>}</div>}
+      </div>
+    </div>
+    <EvidenceDetail activeNode={activeNode} personas={personas} interviews={interviews} reports={reports} />
+  </div>
+}
+
+function GraphFilter({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: [string, string][] }) {
+  return <label className="flex flex-col gap-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/45">{label}<select value={value} onChange={event => onChange(event.target.value)} className="rounded-lg border px-2 py-1.5 text-[10px] font-semibold normal-case tracking-normal outline-none" style={{ background: 'rgba(255,255,255,0.08)', color: 'white', borderColor: 'rgba(255,255,255,0.16)' }}>{options.map(([optionValue, optionLabel]) => <option key={optionValue} value={optionValue} style={{ color: HOME_COLORS.onSurface }}>{optionLabel}</option>)}</select></label>
+}
+
+function EvidenceDetail({ activeNode, personas, interviews, reports }: { activeNode: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
+  if (activeNode === 'overview') return <div className="border-t px-4 py-4 text-xs leading-relaxed text-white/55" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>Select any node to inspect its supporting research and navigate directly to the source.</div>
+
+  const detailStyle = { borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }
+  if (activeNode.startsWith('persona:')) {
+    const persona = personas.find(item => item.id === activeNode.slice(8))
+    if (!persona) return null
+    const linkedInterviews = interviews.filter(interview => interview.persona_id === persona.id)
+    return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="flex items-center justify-between gap-4"><div><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Persona evidence</p><h3 className="mt-1 text-base font-semibold text-white">{persona.name}</h3><p className="mt-1 text-xs text-white/55">{linkedInterviews.length} linked interview{linkedInterviews.length === 1 ? '' : 's'}.</p></div><Link href={`/personas/${persona.id}`} className="rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10" style={detailStyle}>Open persona</Link></div></div>
+  }
+  if (activeNode.startsWith('interview:')) {
+    const interview = interviews.find(item => item.id === activeNode.slice(10))
+    if (!interview) return null
+    const report = reports.find(item => item.interview_id === interview.id)
+    return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="flex items-center justify-between gap-4"><div><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Interview evidence</p><h3 className="mt-1 text-base font-semibold text-white">{interview.title}</h3><p className="mt-1 text-xs text-white/55">{interview.persona?.name ?? 'Participant'} · {report ? 'Report available' : 'No report generated yet'}</p></div><Link href={`/interviews/${interview.id}`} className="rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10" style={detailStyle}>Open interview</Link></div></div>
+  }
+  if (activeNode.startsWith('report:')) {
+    const report = reports.find(item => item.id === activeNode.slice(7))
+    if (!report) return null
+    return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="flex items-center justify-between gap-4"><div className="min-w-0"><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Report evidence</p><h3 className="mt-1 truncate text-base font-semibold text-white">{report.interview?.title ?? 'Insight report'}</h3><p className="mt-1 line-clamp-2 text-xs leading-relaxed text-white/55">{report.executive_summary}</p></div><Link href={`/reports/${report.id}`} className="shrink-0 rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10" style={detailStyle}>Open report</Link></div></div>
+  }
+
+  const title = activeNode.slice(6)
+  const supportingReports = reports.filter(report => report.key_themes?.some(theme => theme.title === title))
+  const evidence = supportingReports.flatMap(report => (report.key_themes?.find(theme => theme.title === title)?.quotes ?? []).slice(0, 2).map(quote => ({ report, quote }))).slice(0, 4)
+  return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Theme evidence · {supportingReports.length} report{supportingReports.length === 1 ? '' : 's'}</p><h3 className="mt-1 text-base font-semibold text-white">{title}</h3>{evidence.length ? <div className="mt-3 space-y-2">{evidence.map(({ report, quote }, index) => <Link key={index} href={`/reports/${report.id}`} className="block rounded-lg border p-3 transition-colors hover:bg-white/10" style={detailStyle}><p className="text-xs leading-relaxed text-white/75">“{quote}”</p><p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ color: HOME_COLORS.primaryFixed }}>{report.interview?.title ?? 'Open source report'}</p></Link>)}</div> : <p className="mt-3 text-xs text-white/55">This theme is connected to the listed report evidence.</p>}</div>
+}
+
+function EvidenceNode({ kind, label, active, onClick }: { kind: 'Persona' | 'Interview' | 'Report' | 'Theme'; label: string; active: boolean; onClick: () => void }) {
+  const colors = { Persona: '#d4e8d5', Interview: '#dfe4da', Report: '#f5eadc', Theme: '#e9e5ee' }
+  return <button type="button" onClick={onClick} title={label} className="min-w-0 rounded-lg border px-3 py-2 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-white/45" style={{ background: active ? HOME_COLORS.primaryFixed : 'rgba(255,255,255,0.08)', borderColor: active ? HOME_COLORS.primaryFixed : 'rgba(255,255,255,0.13)', color: active ? HOME_COLORS.onPrimaryFixed : 'white' }}><span className="block text-[8px] font-semibold uppercase tracking-[0.14em]" style={{ color: active ? HOME_COLORS.onPrimaryFixed : colors[kind] }}>{kind}</span><span className="mt-1 block truncate text-[11px] font-semibold">{label}</span></button>
+}
+
+function GraphArrow() {
+  return <span className="text-center text-sm text-white/35">→</span>
 }
 
 function GraphColumn({ label, nodes, activeNode, onSelect }: { label: string; nodes: { id: string; label: string }[]; activeNode: string; onSelect: (id: string) => void }) {
