@@ -43,6 +43,7 @@ export function WorkspacesClient() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUser, setCurrentUser] = useState<{ name: string; avatarUrl: string | null } | null>(null)
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
+  const [workspaceCounts, setWorkspaceCounts] = useState<Record<string, { personas: number; interviews: number; reports: number }>>({})
   const [loadingWorkspaces, setLoadingWorkspaces] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [members, setMembers] = useState<WorkspaceMember[]>([])
@@ -93,13 +94,22 @@ export function WorkspacesClient() {
     setLoadingWorkspaces(false)
     setSelectedId(prev => prev ?? ws[0]?.id ?? null)
 
+    const supabase = createClient()
     const seatSet = new Set<string>()
+    const counts: Record<string, { personas: number; interviews: number; reports: number }> = {}
     await Promise.all(ws.map(async (w) => {
       const r = await fetch(`/api/workspaces/${w.id}/members`)
       const j = await r.json()
       ;(j.data ?? []).forEach((m: WorkspaceMember) => seatSet.add(m.id))
+      const [personas, interviews, reports] = await Promise.all([
+        supabase.from('personas').select('*', { count: 'exact', head: true }).eq('workspace_id', w.id),
+        supabase.from('interviews').select('*', { count: 'exact', head: true }).eq('workspace_id', w.id),
+        supabase.from('reports').select('*', { count: 'exact', head: true }).eq('workspace_id', w.id),
+      ])
+      counts[w.id] = { personas: personas.count ?? 0, interviews: interviews.count ?? 0, reports: reports.count ?? 0 }
     }))
     setAllSeats(seatSet)
+    setWorkspaceCounts(counts)
   }
 
   useEffect(() => {
@@ -317,10 +327,9 @@ export function WorkspacesClient() {
 
   const realPersonaCount = workspacePersonas.length
   const realInterviewCount = workspaceInterviews.length
-  const realReportCount = workspaceReports.length
 
   return (
-      <div className="min-h-full" style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY, backgroundImage: 'linear-gradient(rgba(24,40,28,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(24,40,28,0.045) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
+      <div className="min-h-full" style={{ background: HOME_COLORS.surfaceContainerLowest, fontFamily: HOME_FONT_BODY, backgroundImage: 'linear-gradient(rgba(24,40,28,0.028) 1px, transparent 1px), linear-gradient(90deg, rgba(24,40,28,0.028) 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
         <main className="mx-auto max-w-[1440px] px-4 pb-14 sm:px-10">
           <motion.section initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }} className="flex flex-col justify-between gap-6 pb-8 pt-8 xl:flex-row xl:items-end xl:gap-10 sm:pt-10">
             <div className="max-w-xl">
@@ -412,6 +421,7 @@ export function WorkspacesClient() {
                 {workspaces.map((workspace, index) => {
                   const selected = workspace.id === selectedId
                   const darkTile = selected
+                  const counts = workspaceCounts[workspace.id] ?? { personas: 0, interviews: 0, reports: 0 }
                   return <button key={workspace.id} onClick={() => setSelectedId(workspace.id)} className={`group text-left transition-all duration-200 ${index === 0 ? 'md:col-span-7' : 'md:col-span-5'}`} style={{ cursor: 'pointer', border: 'none', background: 'none' }}>
                     <div className={`relative flex min-h-[158px] h-full flex-col justify-between overflow-hidden rounded-[1.5rem] p-5 transition-all duration-300 sm:min-h-[178px] sm:p-6 ${darkTile ? 'hover:-translate-y-1 hover:shadow-[0_18px_30px_-20px_rgba(24,40,28,0.45)]' : 'hover:-translate-y-1 hover:bg-white hover:shadow-[0_16px_26px_-22px_rgba(24,40,28,0.32)]'}`} style={darkTile ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: '0 10px 22px -18px rgba(24,40,28,0.28)' } : { background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, border: `1px solid ${HOME_COLORS.outlineVariant}22` }}>
                       {darkTile && <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full blur-3xl transition-opacity duration-700 group-hover:opacity-100" style={{ background: `${HOME_COLORS.primaryFixed}1f`, opacity: 0.45 }} />}
@@ -420,7 +430,7 @@ export function WorkspacesClient() {
                         <h3 className="text-xl sm:text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>{workspace.name}</h3>
                         <p className="mt-4 max-w-md text-sm leading-6" style={{ color: darkTile ? 'rgba(255,255,255,0.55)' : HOME_COLORS.onSurfaceVariant }}>A focused space for your team’s shared personas, interviews, and reports.</p>
                       </div>
-                      <div className="flex items-end justify-between border-t pt-6" style={{ borderColor: darkTile ? 'rgba(255,255,255,0.1)' : `${HOME_COLORS.primary}12` }}><div className="flex gap-8"><WorkspaceStat value={selected ? realPersonaCount : '—'} label="Personas" /><WorkspaceStat value={selected ? realInterviewCount : '—'} label="Interviews" /></div><span className="flex h-9 w-9 items-center justify-center rounded-full transition-colors" style={{ background: darkTile ? HOME_COLORS.primaryFixed : HOME_COLORS.primary, color: darkTile ? HOME_COLORS.onPrimaryFixed : HOME_COLORS.onPrimary }}><ArrowRight size={15} /></span></div>
+                      <div className="flex items-end justify-between border-t pt-6" style={{ borderColor: darkTile ? 'rgba(255,255,255,0.1)' : `${HOME_COLORS.primary}12` }}><div className="flex gap-6"><WorkspaceStat value={counts.personas} label="Personas" /><WorkspaceStat value={counts.interviews} label="Interviews" /><WorkspaceStat value={counts.reports} label="Reports" /></div><span className="flex h-9 w-9 items-center justify-center rounded-full transition-colors" style={{ background: darkTile ? HOME_COLORS.primaryFixed : HOME_COLORS.primary, color: darkTile ? HOME_COLORS.onPrimaryFixed : HOME_COLORS.onPrimary }}><ArrowRight size={15} /></span></div>
                     </div>
                   </button>
                 })}
@@ -428,19 +438,11 @@ export function WorkspacesClient() {
             )}
           </motion.section>
 
-          {selectedWorkspace && <section className="mb-8 rounded-[2rem] border p-5 sm:p-6" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}55` }}>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace overview</p>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <Link href="/reports" className="group rounded-[1.25rem] border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_24px_-22px_rgba(24,40,28,0.36)]" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, borderColor: `${HOME_COLORS.outlineVariant}22` }}><span className="block text-[10px] font-semibold uppercase tracking-[0.18em] opacity-75">Shared research</span><div className="mt-4 flex items-end justify-between"><div><h3 className="text-lg" style={{ fontFamily: HOME_FONT_DISPLAY }}>Workspace content</h3><p className="mt-1 text-xs opacity-70">{realPersonaCount + realInterviewCount + realReportCount} shared research items.</p></div><FileText size={19} className="opacity-35 transition-transform duration-200 group-hover:-translate-y-0.5" /></div></Link>
-              <button type="button" onClick={() => setInvitingOpen(true)} className="group rounded-[1.25rem] border p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_24px_-22px_rgba(24,40,28,0.36)]" style={{ background: HOME_COLORS.surfaceContainerLow, color: HOME_COLORS.primary, borderColor: `${HOME_COLORS.outlineVariant}22`, cursor: 'pointer' }}><span className="block text-[10px] font-semibold uppercase tracking-[0.18em] opacity-75">Workspace members</span><div className="mt-4 flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-3">{members[0] ? <div className="h-10 w-10 overflow-hidden rounded-xl"><PersonaAvatar avatarUrl={members[0].avatar_url} avatarInitials={getInitials(members[0].full_name || members[0].email)} avatarColor={getAvatarColor(members[0].full_name || members[0].email)} name={members[0].full_name ?? members[0].email} size="sm" shape="square" /></div> : <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${HOME_COLORS.primary}12` }}><Users size={16} /></div>}<div className="min-w-0"><h3 className="truncate text-lg" style={{ fontFamily: HOME_FONT_DISPLAY }}>{members[0]?.full_name || members[0]?.email || 'Invite your team'}</h3><p className="mt-1 text-xs opacity-70">{members.length ? `${members.length} members with access` : 'Add a member'}</p></div></div><UserPlus size={17} className="opacity-35 transition-all duration-200 group-hover:opacity-90" /></div></button>
-            </div>
-          </section>}
-
           {selectedWorkspace && <section className="grid grid-cols-1 gap-8 border-t pt-14 lg:grid-cols-12" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
             <div className="lg:col-span-8">
               <div className="rounded-[2rem] p-7 sm:p-10" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
-                <div className="flex flex-wrap items-start justify-between gap-5"><div><span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Selected workspace</span>{editingWorkspaceName ? <div className="mt-3 flex flex-wrap items-center gap-2"><input autoFocus value={workspaceName} onChange={event => setWorkspaceName(event.target.value)} onKeyDown={event => event.key === 'Enter' && handleRenameWorkspace()} className="min-w-[220px] rounded-lg bg-white/10 px-3 py-2 text-xl text-white outline-none" style={{ fontFamily: HOME_FONT_DISPLAY, border: '1px solid rgba(255,255,255,0.22)' }} /><button onClick={handleRenameWorkspace} disabled={savingWorkspaceName || !workspaceName.trim()} className="rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed, border: 'none', cursor: 'pointer' }}>{savingWorkspaceName ? 'Saving…' : 'Save'}</button><button onClick={() => { setEditingWorkspaceName(false); setWorkspaceName(selectedWorkspace.name) }} className="px-2 text-xs text-white/60 hover:text-white" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button></div> : <div className="mt-3 flex items-center gap-3"><h2 className="text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>{selectedWorkspace.name}</h2>{isOwnerOfSelected && <button onClick={() => { setWorkspaceName(selectedWorkspace.name); setEditingWorkspaceName(true) }} title="Rename workspace" className="rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><Pencil size={14} /></button>}</div>}</div>{isOwnerOfSelected && <button onClick={() => handleDeleteWorkspace(selectedWorkspace.id)} title="Delete workspace" className="flex h-10 w-10 items-center justify-center rounded-full border transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.18)', color: 'white', background: 'none', cursor: 'pointer' }}><Trash2 size={16} /></button>}</div>
-                <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-b pb-4" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
+                {isOwnerOfSelected && <div className="flex flex-wrap items-center justify-end gap-2">{editingWorkspaceName ? <><input autoFocus value={workspaceName} onChange={event => setWorkspaceName(event.target.value)} onKeyDown={event => event.key === 'Enter' && handleRenameWorkspace()} className="min-w-[180px] rounded-lg bg-white/10 px-3 py-2 text-sm text-white outline-none" style={{ border: '1px solid rgba(255,255,255,0.22)' }} /><button onClick={handleRenameWorkspace} disabled={savingWorkspaceName || !workspaceName.trim()} className="rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed, border: 'none', cursor: 'pointer' }}>{savingWorkspaceName ? 'Saving…' : 'Save'}</button><button onClick={() => { setEditingWorkspaceName(false); setWorkspaceName(selectedWorkspace.name) }} className="px-2 text-xs text-white/60 hover:text-white" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button></> : <button onClick={() => { setWorkspaceName(selectedWorkspace.name); setEditingWorkspaceName(true) }} className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/60 transition-colors hover:bg-white/10 hover:text-white" style={{ background: 'none', border: 'none', cursor: 'pointer' }}><Pencil size={12} />Edit workspace</button>}<button onClick={() => handleDeleteWorkspace(selectedWorkspace.id)} title="Delete workspace" className="flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.18)', color: 'white', background: 'none', cursor: 'pointer' }}><Trash2 size={14} /></button></div>}
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-b pb-4" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
                   <div className="flex flex-wrap gap-6">
                     {([{ key: 'personas', label: 'Personas' }, { key: 'interviews', label: 'Interviews' }, { key: 'reports', label: 'Reports' }] as { key: ContentTab; label: string }[]).map(tab => <button key={tab.key} onClick={() => setContentTab(tab.key)} className="border-b-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition-all duration-200 hover:border-white/45 hover:text-white" style={{ borderColor: contentTab === tab.key ? HOME_COLORS.primaryFixed : 'transparent', color: contentTab === tab.key ? 'white' : 'rgba(255,255,255,0.45)', background: 'none', cursor: 'pointer' }}>{tab.label}</button>)}
                   </div>
