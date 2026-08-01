@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import {
   AlertTriangle, ShieldAlert, Target, Lightbulb, Zap, TrendingUp, Sparkles, AlertOctagon,
-  BarChart3,
+  BarChart3, Flag,
 } from 'lucide-react'
 import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
 import { CARD_SHADOW, formatRelativeTime } from '@/lib/utils'
@@ -64,8 +64,9 @@ export function SignalFeedCard({ signal, variant = 'standard', priority = false,
         className="rounded-xl overflow-hidden cursor-pointer"
         whileHover={{ y: -4, boxShadow: '0 10px 24px -8px rgba(0,0,0,0.14)' }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
+        style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: priority ? `2px solid ${HOME_COLORS.primaryFixedDim}` : '1px solid transparent' }}
       >
+        {priority && <div className="flex items-center justify-between gap-3 px-5 py-3 sm:px-6" style={{ background: HOME_COLORS.primaryFixed, color: HOME_COLORS.onPrimaryFixed }}><span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em]"><Flag size={13} fill="currentColor" />Priority signal</span><span className="text-[10px] font-semibold">High impact · strong evidence</span></div>}
         <div className="grid grid-cols-12">
           <div className="col-span-12 min-h-[168px] p-6 sm:col-span-4 sm:min-h-full" style={{ background: priority ? HOME_COLORS.primary : `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
             <div className="relative z-10 flex h-full flex-col justify-between">
@@ -78,7 +79,6 @@ export function SignalFeedCard({ signal, variant = 'standard', priority = false,
               <span className="px-3 py-1 font-bold text-[10px] uppercase tracking-wider rounded-full" style={{ background: badge.bg, color: badge.text }}>
                 {SIGNAL_TYPE_LABELS[signal.type]}
               </span>
-              {priority && <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: HOME_COLORS.primary }}>Top priority</span>}
               <span className="text-xs uppercase" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(signal.created_at)}</span>
             </div>
             <h3 className="text-xl sm:text-2xl mb-3 leading-snug" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{signal.title}</h3>
