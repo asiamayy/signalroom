@@ -848,7 +848,7 @@ Interview transcript:
 ${input.transcript.slice(0, 16000)}
 ${input.workspaceContext ? `\nShared workspace context:\n${input.workspaceContext.slice(0, 6000)}` : ''}
 
-Respond in 2-5 short paragraphs or bullets. If helpful, identify the exact theme or reaction that supports the answer.`,
+Respond in 2-5 short paragraphs or bullets. If helpful, identify the exact theme or reaction that supports the answer. When evidence comes from a named report or interview, name that source so the team can trace the answer back to it.`,
     }],
   })
 

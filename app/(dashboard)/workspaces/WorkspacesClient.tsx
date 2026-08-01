@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Building2, Plus, X, Trash2, Loader2, Lock, Crown, ShieldCheck, Users, Verified,
-  FileText, MessagesSquare, ArrowRight, ChevronDown, UserPlus, Search, Pencil, Activity, BarChart3, Network, TrendingUp, Upload, BookOpen, Sparkles, Eye, Download,
+  FileText, MessagesSquare, ArrowRight, ChevronDown, UserPlus, Search, Pencil, Activity, BarChart3, Network, TrendingUp, Upload, BookOpen, Sparkles, Eye, Download, Target, AlertTriangle, CircleCheck, CircleDashed,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { WorkspaceAutomations } from '@/components/workspaces/WorkspaceAutomations'
@@ -13,7 +13,7 @@ import { HOME_COLORS, HOME_FONT_DISPLAY, HOME_FONT_BODY, DISPLAY_LG_STYLE } from
 import { getInitials, getAvatarColor } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { PLAN_LIMITS } from '@/types'
-import type { Plan, Workspace, WorkspaceMember, WorkspaceInvite, WorkspaceActivity, WorkspaceSource, WorkspaceContext, Persona, Interview, Report } from '@/types'
+import type { Plan, Workspace, WorkspaceMember, WorkspaceInvite, WorkspaceActivity, WorkspaceSource, WorkspaceContext, Persona, Interview, Report, Signal } from '@/types'
 
 // Dark glass-morphism system, ported from the approved design mock —
 // distinct from the light HOME_COLORS surfaces the rest of the dashboard
@@ -529,7 +529,7 @@ export function WorkspacesClient() {
           </section> : null}
           */}
           {selectedWorkspace && <WorkspaceExpandedPanel workspace={selectedWorkspace} isOwner={isOwnerOfSelected} members={members} invites={invites} loading={loadingDetail || loadingContent} contentTab={contentTab} contentQuery={contentQuery} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} editing={editingWorkspaceName} workspaceName={workspaceName} workspaceDescription={workspaceDescription} inviteOpen={invitingOpen} inviteEmail={inviteEmail} inviting={inviting} saving={savingWorkspaceName} currentUserId={currentUserId} presence={presence} lastSeenById={lastSeenById} activity={activity} onSelectTab={setContentTab} onQueryChange={setContentQuery} onEdit={() => { setWorkspaceName(selectedWorkspace.name); setWorkspaceDescription(selectedWorkspace.description ?? ''); setEditingWorkspaceName(true) }} onNameChange={setWorkspaceName} onDescriptionChange={setWorkspaceDescription} onSave={handleRenameWorkspace} onCancelEdit={() => { setEditingWorkspaceName(false); setWorkspaceName(selectedWorkspace.name); setWorkspaceDescription(selectedWorkspace.description ?? '') }} onDelete={() => handleDeleteWorkspace(selectedWorkspace.id)} onInviteOpen={() => setInvitingOpen(open => !open)} onInviteEmailChange={setInviteEmail} onInvite={handleInvite} onRemoveMember={handleRemoveMember} onRevokeInvite={handleRevokeInvite} />}
-          {selectedWorkspace && <WorkspaceIntelligence workspaceId={selectedWorkspace.id} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} />}
+          {selectedWorkspace && <WorkspaceIntelligence workspaceId={selectedWorkspace.id} personas={workspacePersonas} interviews={workspaceInterviews} reports={workspaceReports} activity={activity} members={members} />}
           {selectedWorkspace && <WorkspaceActivitySnapshot activity={activity} loading={activityLoading} members={members} />}
           {selectedWorkspace && <WorkspaceKnowledgeHub workspaceId={selectedWorkspace.id} />}
           {selectedWorkspace && isOwnerOfSelected && <WorkspaceAutomations workspaceId={selectedWorkspace.id} />}
@@ -651,9 +651,30 @@ function PendingWorkspaceInvite({ invite, onRevoke }: { invite: WorkspaceInvite;
   </div>
 }
 
-function WorkspaceIntelligence({ workspaceId = 'workspace', personas, interviews, reports }: { workspaceId?: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
+function WorkspaceIntelligence({ workspaceId = 'workspace', personas, interviews, reports, activity = [], members = [] }: { workspaceId?: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[]; activity?: WorkspaceActivity[]; members?: WorkspaceMember[] }) {
   const [activeNode, setActiveNode] = useState('overview')
   const [intelligenceTab, setIntelligenceTab] = useState<'analytics' | 'insights'>('analytics')
+  const [signals, setSignals] = useState<Signal[]>([])
+  const [workspaceProjects, setWorkspaceProjects] = useState<{ id: string; name: string }[]>([])
+  const [sources, setSources] = useState<WorkspaceSource[]>([])
+  const [intelligenceLoading, setIntelligenceLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    setIntelligenceLoading(true)
+    const supabase = createClient()
+    Promise.all([
+      supabase.from('signals').select('*, project:projects!inner(workspace_id)').eq('projects.workspace_id', workspaceId),
+      supabase.from('projects').select('id, name').eq('workspace_id', workspaceId).order('name'),
+      fetch(`/api/workspaces/${workspaceId}/knowledge`).then(response => response.ok ? response.json() : { data: { sources: [] } }).catch(() => ({ data: { sources: [] } })),
+    ]).then(([signalsResult, projectsResult, knowledge]) => {
+      if (!active) return
+      setSignals((signalsResult.data ?? []) as unknown as Signal[])
+      setWorkspaceProjects(projectsResult.data ?? [])
+      setSources(knowledge.data?.sources ?? [])
+    }).finally(() => { if (active) setIntelligenceLoading(false) })
+    return () => { active = false }
+  }, [workspaceId])
   const now = Date.now()
   const lastThirtyDays = now - 30 * 24 * 60 * 60 * 1000
   const recentResearch = [...personas, ...interviews, ...reports].filter(item => new Date(item.created_at).getTime() >= lastThirtyDays).length
@@ -671,12 +692,19 @@ function WorkspaceIntelligence({ workspaceId = 'workspace', personas, interviews
         ? (() => { const persona = personas.find(item => item.id === activeNode.slice(8)); const linkedInterviews = interviews.filter(interview => interview.persona_id === persona?.id); const linkedReports = reports.filter(report => linkedInterviews.some(interview => interview.id === report.interview_id)); return `${persona?.name ?? 'This persona'} connects to ${linkedInterviews.length} interview${linkedInterviews.length === 1 ? '' : 's'} and ${linkedReports.length} report${linkedReports.length === 1 ? '' : 's'}.` })()
         : activeNode.startsWith('interview:')
           ? (() => { const interview = interviews.find(item => item.id === activeNode.slice(10)); const report = reports.find(item => item.interview_id === interview?.id); return `${interview?.title ?? 'This interview'} connects ${interview?.persona?.name ?? 'its persona'} to ${report ? 'a generated report' : 'no report yet'}.` })()
+          : activeNode.startsWith('signal:')
+            ? (() => { const signal = signals.find(item => item.id === activeNode.slice(7)); return `${signal?.title ?? 'This signal'} is ${signal?.status ?? 'emerging'} and supported by ${signal?.related_interview_ids?.length ?? 0} linked interview${(signal?.related_interview_ids?.length ?? 0) === 1 ? '' : 's'}.` })()
+            : activeNode.startsWith('source:')
+              ? (() => { const source = sources.find(item => item.id === activeNode.slice(7)); return `${source?.name ?? 'This source'} is shared workspace context. It informs new research, but is not presented as direct evidence unless cited in a report.` })()
+              : activeNode.startsWith('recommendation:')
+                ? 'This recommended next move was generated from the connected report evidence.'
           : (() => { const report = reports.find(item => item.id === activeNode.slice(7)); return `${report?.interview?.title ?? 'This report'} is supported by ${report?.key_themes?.length ?? 0} extracted theme${(report?.key_themes?.length ?? 0) === 1 ? '' : 's'}.` })()
 
   return <section className="mb-9 border-t pt-8" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
     <div className="rounded-[1.5rem] border p-4 sm:p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}>
     <div className="inline-flex rounded-full p-1" style={{ background: HOME_COLORS.surfaceContainerLow }}>{([{ key: 'analytics', label: 'Analytics' }, { key: 'insights', label: 'Insight graph' }] as const).map(tab => <button key={tab.key} type="button" onClick={() => setIntelligenceTab(tab.key)} className="rounded-full px-7 py-3 text-[10px] font-semibold uppercase tracking-[0.13em] transition-all duration-200" style={{ background: intelligenceTab === tab.key ? HOME_COLORS.surfaceContainerLowest : 'transparent', color: intelligenceTab === tab.key ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant, boxShadow: intelligenceTab === tab.key ? '0 2px 6px rgba(24,40,28,.12)' : 'none' }}>{tab.label}</button>)}</div>
-    <div className={`mt-5 p-2 sm:p-3 ${intelligenceTab === 'analytics' ? 'block' : 'hidden'}`}>
+    <div className={`mt-5 ${intelligenceTab === 'analytics' ? 'block' : 'hidden'}`}><WorkspaceAnalytics personas={personas} interviews={interviews} reports={reports} signals={signals} sources={sources} activity={activity} members={members} loading={intelligenceLoading} /></div>
+    <div className="hidden">
       <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace analytics</p><h2 className="mt-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Research momentum</h2></div><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}><BarChart3 size={18} /></span></div>
       <div className="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-xl" style={{ background: `${HOME_COLORS.outlineVariant}55` }}>
         <AnalyticsMetric value={recentResearch} label="New items / 30 days" />
@@ -688,7 +716,7 @@ function WorkspaceIntelligence({ workspaceId = 'workspace', personas, interviews
     </div>
     <div className={`mt-5 overflow-hidden rounded-[1.25rem] p-6 sm:p-7 ${intelligenceTab === 'insights' ? 'block' : 'hidden'}`} style={{ background: HOME_COLORS.primary }}>
       <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Insight graph</p><h2 className="mt-2 text-2xl text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>How your research connects</h2></div><Network size={19} style={{ color: HOME_COLORS.primaryFixed }} /></div>
-      <EvidenceGraph workspaceId={workspaceId} personas={personas} interviews={interviews} reports={reports} activeNode={activeNode} onSelect={setActiveNode} />
+      <EvidenceGraph workspaceId={workspaceId} personas={personas} interviews={interviews} reports={reports} signals={signals} sources={sources} projects={workspaceProjects} activeNode={activeNode} onSelect={setActiveNode} />
       <p className="mt-4 text-xs leading-relaxed text-white/65">{selectedDetail}</p>
     </div>
     </div>
@@ -697,6 +725,71 @@ function WorkspaceIntelligence({ workspaceId = 'workspace', personas, interviews
 
 function AnalyticsMetric({ value, label }: { value: string | number; label: string }) {
   return <div className="bg-[#fcf9f8] p-4"><strong className="block text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{value}</strong><span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</span></div>
+}
+
+function WorkspaceAnalytics({ personas, interviews, reports, signals, sources, activity, members, loading }: { personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[]; signals: Signal[]; sources: WorkspaceSource[]; activity: WorkspaceActivity[]; members: WorkspaceMember[]; loading: boolean }) {
+  const now = Date.now()
+  const weekStart = now - 7 * 24 * 60 * 60 * 1000
+  const testedPersonas = personas.filter(persona => interviews.some(interview => interview.persona_id === persona.id))
+  const testedStages = new Set(testedPersonas.map(persona => persona.funnel_stage ?? 'awareness'))
+  const allStages = ['awareness', 'consideration', 'purchase', 'loyalty'] as const
+  const missingStages = allStages.filter(stage => !testedStages.has(stage))
+  const statusCounts = { emerging: 0, growing: 0, validated: 0 }
+  signals.forEach(signal => { statusCounts[signal.status]++ })
+  const newThisWeek = [...personas, ...interviews, ...reports, ...signals].filter(item => new Date(item.created_at).getTime() >= weekStart).length
+  const dailyResearch = Array.from({ length: 7 }, (_, index) => {
+    const start = new Date(now - (6 - index) * 24 * 60 * 60 * 1000); start.setHours(0, 0, 0, 0)
+    const end = new Date(start); end.setDate(end.getDate() + 1)
+    const count = [...interviews, ...reports, ...signals].filter(item => { const time = new Date(item.created_at).getTime(); return time >= start.getTime() && time < end.getTime() }).length
+    return { label: start.toLocaleDateString('en-US', { weekday: 'narrow' }), count }
+  })
+  const maxDay = Math.max(...dailyResearch.map(day => day.count), 1)
+  const themeEvidence = new Map<string, { label: string; reports: Set<string>; sentiments: Set<string> }>()
+  reports.forEach(report => report.key_themes?.forEach(theme => {
+    const key = theme.title.trim().toLowerCase()
+    const current = themeEvidence.get(key) ?? { label: theme.title, reports: new Set<string>(), sentiments: new Set<string>() }
+    current.reports.add(report.id); current.sentiments.add(theme.sentiment); themeEvidence.set(key, current)
+  }))
+  const recurringThemes = [...themeEvidence.values()].filter(theme => theme.reports.size >= 2).sort((a, b) => b.reports.size - a.reports.size)
+  const conflictedThemes = recurringThemes.filter(theme => theme.sentiments.size > 1)
+  const impactRank: Record<string, number> = { high: 3, medium: 2, low: 1 }
+  const opportunities = signals.filter(signal => signal.type === 'opportunity').sort((a, b) => (impactRank[b.impact ?? 'low'] - impactRank[a.impact ?? 'low']) || b.confidence_score - a.confidence_score).slice(0, 3)
+  const risks = signals.filter(signal => signal.type === 'risk' || signal.type === 'objection' || signal.type === 'pain_point').sort((a, b) => (impactRank[b.impact ?? 'low'] - impactRank[a.impact ?? 'low']) || b.confidence_score - a.confidence_score).slice(0, 3)
+  const needsMoreEvidence = signals.filter(signal => signal.status === 'emerging').slice(0, 2)
+  const decision = !reports.length
+    ? { title: 'Needs a first report', detail: 'Generate a report from an interview to begin building workspace evidence.', tone: HOME_COLORS.secondaryContainer }
+    : conflictedThemes.length > 0
+      ? { title: 'Mixed evidence', detail: `${conflictedThemes.length} recurring theme${conflictedThemes.length === 1 ? ' has' : 's have'} conflicting sentiment across reports.`, tone: '#fff1d6' }
+      : statusCounts.validated >= 2 && testedPersonas.length >= Math.max(2, Math.ceil(personas.length * 0.6))
+        ? { title: 'Ready to inform a decision', detail: 'Multiple findings are supported by repeated research across the workspace.', tone: '#e4f2e7' }
+        : { title: 'Needs more evidence', detail: statusCounts.emerging ? `${statusCounts.emerging} signal${statusCounts.emerging === 1 ? ' has' : 's have'} only one supporting source.` : 'Run more interviews to build a stronger evidence base.', tone: '#fff1d6' }
+  const nextAction = !reports.length
+    ? 'Generate a report from your most useful completed interview.'
+    : needsMoreEvidence.length ? `Test “${needsMoreEvidence[0].title}” with another research source.`
+      : personas.length && testedPersonas.length < personas.length ? `Run an interview with ${personas.find(persona => !testedPersonas.some(tested => tested.id === persona.id))?.name ?? 'an untested persona'}.`
+        : missingStages.length ? `Add research for the ${missingStages[0]} stage.`
+          : sources.length === 0 ? 'Add background materials so the team has shared context.'
+            : 'Review the strongest opportunity and choose a next experiment.'
+  const contributions = [...activity.reduce((map, event) => map.set(event.actor_id ?? 'unknown', (map.get(event.actor_id ?? 'unknown') ?? 0) + 1), new Map<string, number>()).entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
+  const memberName = (id: string) => members.find(member => member.id === id)?.full_name || members.find(member => member.id === id)?.email || 'A teammate'
+
+  if (loading) return <div className="mt-5 h-72 animate-pulse rounded-[1.25rem]" style={{ background: HOME_COLORS.surfaceContainerLow }} />
+
+  return <div className="p-2 sm:p-3"><div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Workspace analytics</p><h2 className="mt-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>Research at a glance</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>See what has been tested, where the evidence is strongest, and what to do next.</p></div><span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}><BarChart3 size={18} /></span></div>
+    <div className="mt-7 grid overflow-hidden rounded-xl border sm:grid-cols-4" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}><AnalyticsMetric value={personas.length + interviews.length + reports.length} label="Research completed" /><AnalyticsMetric value={statusCounts.validated} label="Validated signals" /><AnalyticsMetric value={`${testedPersonas.length}/${personas.length}`} label="Personas tested" /><AnalyticsMetric value={newThisWeek} label="New this week" /></div>
+    <div className="mt-6 grid gap-4 lg:grid-cols-12"><section className="rounded-xl border p-5 lg:col-span-7" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Decision readiness</p><h3 className="mt-2 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{decision.title}</h3><p className="mt-2 text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{decision.detail}</p></div><CircleCheck size={20} style={{ color: HOME_COLORS.primary }} /></div><div className="mt-5 rounded-lg p-4" style={{ background: decision.tone }}><p className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: HOME_COLORS.primary }}>Next best action</p><p className="mt-2 text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{nextAction}</p></div></section><section className="rounded-xl border p-5 lg:col-span-5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}><p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Evidence strength</p><div className="mt-4 grid grid-cols-3 gap-2"><EvidenceStatus value={statusCounts.emerging} label="Emerging" detail="1 source" /><EvidenceStatus value={statusCounts.growing} label="Growing" detail="2–3 sources" /><EvidenceStatus value={statusCounts.validated} label="Validated" detail="4+ sources" /></div><p className="mt-4 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>A source can be an interview, comparison, audience test, or concept test that supports the same signal.</p></section></div>
+    <div className="mt-4 grid gap-4 lg:grid-cols-3"><InsightList title="Top opportunities" icon={<Target size={16} />} items={opportunities.map(signal => signal.title)} empty="Opportunities will appear as signals are generated." /><InsightList title="Risks to address" icon={<AlertTriangle size={16} />} items={risks.map(signal => signal.title)} empty="No major risks have been identified yet." /><InsightList title="Research gaps" icon={<CircleDashed size={16} />} items={[...(testedPersonas.length < personas.length ? [`${personas.length - testedPersonas.length} persona${personas.length - testedPersonas.length === 1 ? ' has' : 's have'} not been interviewed`] : []), ...(missingStages.length ? [`No tested research in: ${missingStages.join(', ')}`] : []), ...needsMoreEvidence.map(signal => `Needs another source: ${signal.title}`)].slice(0, 3)} empty="No clear gaps right now." /></div>
+    <div className="mt-4 grid gap-4 lg:grid-cols-12"><section className="rounded-xl border p-5 lg:col-span-7" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="flex items-center justify-between gap-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Research momentum</p><p className="mt-1 text-sm" style={{ color: HOME_COLORS.onSurface }}>Interviews, reports, and signals added in the last 7 days.</p></div><TrendingUp size={16} style={{ color: HOME_COLORS.primary }} /></div><div className="mt-6 flex h-24 items-end gap-2">{dailyResearch.map(day => <div key={day.label} className="flex flex-1 flex-col items-center gap-2"><div className="w-full rounded-t-md" style={{ height: `${Math.max(6, (day.count / maxDay) * 100)}%`, background: day.count ? HOME_COLORS.primary : HOME_COLORS.surfaceContainer }} /><span className="text-[9px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{day.label}</span></div>)}</div></section><section className="rounded-xl border p-5 lg:col-span-5" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}66` }}><p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Agreement and disagreement</p><p className="mt-2 text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{recurringThemes.length ? `${recurringThemes.length} recurring theme${recurringThemes.length === 1 ? '' : 's'} found across reports.` : 'Generate more reports to compare recurring themes.'}</p><p className="mt-2 text-xs leading-relaxed" style={{ color: conflictedThemes.length ? '#9b5a00' : HOME_COLORS.onSurfaceVariant }}>{conflictedThemes.length ? `${conflictedThemes.length} theme${conflictedThemes.length === 1 ? '' : 's'} show mixed reactions: ${conflictedThemes.slice(0, 2).map(theme => theme.label).join(', ')}.` : recurringThemes.length ? 'No conflicting sentiment was found in the recurring themes.' : ''}</p></section></div>
+    <div className="mt-4 grid gap-4 lg:grid-cols-12"><section className="rounded-xl border p-5 lg:col-span-7" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}><p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Team contribution</p><div className="mt-4 space-y-3">{contributions.length ? contributions.map(([id, count]) => <div key={id} className="flex items-center justify-between gap-3 text-sm"><span style={{ color: HOME_COLORS.onSurface }}>{memberName(id)}</span><span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{count} activity item{count === 1 ? '' : 's'}</span></div>) : <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Team activity will appear as research is created.</p>}</div></section><section className="rounded-xl border p-5 lg:col-span-5" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}66` }}><p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Shared research context</p><p className="mt-2 text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{sources.length}</p><p className="mt-1 text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>shared source material{sources.length === 1 ? '' : 's'} available to the workspace.</p></section></div>
+  </div>
+}
+
+function EvidenceStatus({ value, label, detail }: { value: number; label: string; detail: string }) {
+  return <div className="rounded-lg p-3" style={{ background: HOME_COLORS.surfaceContainerLow }}><strong className="block text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{value}</strong><span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.12em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</span><span className="mt-1 block text-[9px]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{detail}</span></div>
+}
+
+function InsightList({ title, icon, items, empty }: { title: string; icon: React.ReactNode; items: string[]; empty: string }) {
+  return <section className="rounded-xl border p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}66` }}><div className="flex items-center gap-2" style={{ color: HOME_COLORS.primary }}>{icon}<p className="text-[10px] font-semibold uppercase tracking-[0.16em]">{title}</p></div><div className="mt-4 space-y-3">{items.length ? items.map(item => <p key={item} className="border-l-2 pl-3 text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurface, borderColor: HOME_COLORS.primaryFixedDim }}>{item}</p>) : <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>{empty}</p>}</div></section>
 }
 
 function WorkspaceAskAI({ workspaceId }: { workspaceId: string }) {
@@ -732,12 +825,27 @@ function WorkspaceAskAI({ workspaceId }: { workspaceId: string }) {
   </section>
 }
 
-function EvidenceGraph({ workspaceId, personas, interviews, reports, activeNode, onSelect }: { workspaceId: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[]; activeNode: string; onSelect: (id: string) => void }) {
+function EvidenceGraph({ workspaceId, personas, interviews, reports, signals, sources, projects, activeNode, onSelect }: { workspaceId: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[]; signals: Signal[]; sources: WorkspaceSource[]; projects: { id: string; name: string }[]; activeNode: string; onSelect: (id: string) => void }) {
   const reportByInterviewId = new Map(reports.map(report => [report.interview_id, report]))
   const untestedPersonas = personas.filter(persona => !interviews.some(interview => interview.persona_id === persona.id))
   const [contentFilter, setContentFilter] = useState<'all' | 'reports' | 'themes'>('all')
   const [minimumConfidence, setMinimumConfidence] = useState(0)
   const [sentimentFilter, setSentimentFilter] = useState<'all' | 'positive' | 'mixed' | 'neutral' | 'negative'>('all')
+  const [personaFilter, setPersonaFilter] = useState('all')
+  const [projectFilter, setProjectFilter] = useState('all')
+  const [signalStatusFilter, setSignalStatusFilter] = useState<'all' | Signal['status']>('all')
+  const [researchTypeFilter, setResearchTypeFilter] = useState<'all' | Signal['source_type']>('all')
+  const [dateRange, setDateRange] = useState<'all' | '30' | '90'>('all')
+  const [graphView, setGraphView] = useState<'evidence' | 'timeline'>('evidence')
+  const [pinned, setPinned] = useState<{ id: string; label: string }[]>([])
+  useEffect(() => {
+    try { setPinned(JSON.parse(window.localStorage.getItem(`signalroom-decision-board-${workspaceId}`) ?? '[]')) } catch { setPinned([]) }
+  }, [workspaceId])
+  useEffect(() => {
+    window.localStorage.setItem(`signalroom-decision-board-${workspaceId}`, JSON.stringify(pinned))
+  }, [pinned, workspaceId])
+  const cutoff = dateRange === 'all' ? 0 : Date.now() - Number(dateRange) * 24 * 60 * 60 * 1000
+  const visibleSignals = signals.filter(signal => (projectFilter === 'all' || signal.project_id === projectFilter) && (signalStatusFilter === 'all' || signal.status === signalStatusFilter) && (researchTypeFilter === 'all' || signal.source_type === researchTypeFilter) && new Date(signal.created_at).getTime() >= cutoff)
   const passesFilter = (report?: Report) => {
     if (contentFilter === 'reports' && !report) return false
     if (contentFilter === 'themes' && !report?.key_themes?.length) return false
@@ -746,12 +854,13 @@ function EvidenceGraph({ workspaceId, personas, interviews, reports, activeNode,
     return true
   }
   const personaGroups = personas
+    .filter(persona => personaFilter === 'all' || persona.id === personaFilter)
     .map(persona => ({
       persona,
       items: interviews
-        .filter(interview => interview.persona_id === persona.id)
+        .filter(interview => interview.persona_id === persona.id && (projectFilter === 'all' || interview.project_id === projectFilter))
         .map(interview => ({ interview, report: reportByInterviewId.get(interview.id) }))
-        .filter(item => passesFilter(item.report)),
+        .filter(item => passesFilter(item.report) && (cutoff === 0 || new Date(item.interview.created_at).getTime() >= cutoff)),
     }))
     .filter(group => group.items.length > 0)
   const totalPaths = personaGroups.reduce((sum, group) => sum + group.items.length, 0)
@@ -759,8 +868,12 @@ function EvidenceGraph({ workspaceId, personas, interviews, reports, activeNode,
   return <div className="mt-7 overflow-hidden rounded-xl border" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.12)' }}>
     <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div><p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-white/45">Traceable evidence paths</p><p className="mt-1 text-xs text-white/65">Follow a source from persona through the research it generated.</p></div>{activeNode !== 'overview' && <button type="button" onClick={() => onSelect('overview')} className="rounded-full border px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-white/10" style={{ color: HOME_COLORS.primaryFixed, borderColor: 'rgba(255,255,255,0.18)', background: 'transparent' }}>Clear focus</button>}</div>
     <div className="flex flex-wrap items-center gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><GraphFilter label="Evidence" value={contentFilter} onChange={value => setContentFilter(value as 'all' | 'reports' | 'themes')} options={[['all', 'All'], ['reports', 'Reports'], ['themes', 'Themes']]} /><GraphFilter label="Confidence" value={String(minimumConfidence)} onChange={value => setMinimumConfidence(Number(value))} options={[[String(0), 'Any score'], [String(50), '50%+'], [String(75), '75%+']]} /><GraphFilter label="Sentiment" value={sentimentFilter} onChange={value => setSentimentFilter(value as 'all' | 'positive' | 'mixed' | 'neutral' | 'negative')} options={[['all', 'All'], ['positive', 'Positive'], ['mixed', 'Mixed'], ['neutral', 'Neutral'], ['negative', 'Negative']]} /><span className="ml-auto text-[9px] font-semibold uppercase tracking-[0.12em] text-white/40">{totalPaths} path{totalPaths === 1 ? '' : 's'}</span></div>
+    <div className="flex flex-wrap items-center gap-2 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><GraphFilter label="Persona" value={personaFilter} onChange={setPersonaFilter} options={[['all', 'All personas'], ...personas.map(persona => [persona.id, persona.name] as [string, string])]} /><GraphFilter label="Research type" value={researchTypeFilter} onChange={value => setResearchTypeFilter(value as 'all' | Signal['source_type'])} options={[['all', 'All types'], ['interview', 'Interview'], ['compare', 'Compare'], ['audience_panel', 'Audience test'], ['concept_test', 'Concept test']]} /><GraphFilter label="Signal status" value={signalStatusFilter} onChange={value => setSignalStatusFilter(value as 'all' | Signal['status'])} options={[['all', 'All statuses'], ['emerging', 'Emerging'], ['growing', 'Growing'], ['validated', 'Validated']]} /><GraphFilter label="Date" value={dateRange} onChange={value => setDateRange(value as 'all' | '30' | '90')} options={[['all', 'All time'], ['30', 'Last 30 days'], ['90', 'Last 90 days']]} /><div className="ml-auto inline-flex rounded-full border p-0.5" style={{ borderColor: 'rgba(255,255,255,0.16)' }}><button type="button" onClick={() => setGraphView('evidence')} className="rounded-full px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em]" style={{ background: graphView === 'evidence' ? 'rgba(255,255,255,0.16)' : 'transparent', color: 'white' }}>Evidence</button><button type="button" onClick={() => setGraphView('timeline')} className="rounded-full px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em]" style={{ background: graphView === 'timeline' ? 'rgba(255,255,255,0.16)' : 'transparent', color: 'white' }}>Timeline</button></div></div>
+    <div className="border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><GraphFilter label="Project" value={projectFilter} onChange={setProjectFilter} options={[['all', 'All projects'], ...projects.map(project => [project.id, project.name] as [string, string])]} /></div>
+    {activeNode !== 'overview' && <div className="flex items-center justify-between gap-3 border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><p className="min-w-0 truncate text-xs text-white/65">Selected evidence can be saved to your decision board.</p><button type="button" onClick={() => { const label = activeNode.startsWith('signal:') ? visibleSignals.find(signal => signal.id === activeNode.slice(7))?.title : activeNode.startsWith('source:') ? sources.find(source => source.id === activeNode.slice(7))?.name : activeNode.startsWith('persona:') ? personas.find(persona => persona.id === activeNode.slice(8))?.name : activeNode.startsWith('interview:') ? interviews.find(interview => interview.id === activeNode.slice(10))?.title : activeNode.startsWith('report:') ? reports.find(report => report.id === activeNode.slice(7))?.interview?.title : activeNode.slice(6); if (label && !pinned.some(item => item.id === activeNode)) setPinned(items => [...items, { id: activeNode, label }]) }} className="shrink-0 rounded-full border px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-white/10" style={{ color: HOME_COLORS.primaryFixed, borderColor: 'rgba(255,255,255,0.18)', background: 'transparent' }}>Pin selection</button></div>}
+    {pinned.length > 0 && <div className="border-b px-4 py-3" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/45">Decision board</p><div className="mt-2 flex flex-wrap gap-2">{pinned.map(item => <button type="button" key={item.id} onClick={() => onSelect(item.id)} className="rounded-full border px-3 py-1.5 text-[10px] text-white/75 transition-colors hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.18)', background: 'transparent' }}>{item.label}</button>)}</div></div>}
     <div className="max-h-[460px] overflow-y-auto overflow-x-auto p-4">
-      {personaGroups.length ? <div className="space-y-5">{personaGroups.map(group => {
+      {graphView === 'timeline' ? <EvidenceTimeline reports={reports} signals={visibleSignals} /> : <><div className="mb-5 rounded-lg border p-3" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/45">Shared source material</p><p className="mt-1 text-xs text-white/65">These materials provide background context. They are kept separate from direct report evidence unless explicitly cited.</p><div className="mt-3 flex flex-wrap gap-2">{sources.length ? sources.slice(0, 5).map(source => <EvidenceNode key={source.id} kind="Source" label={source.name} active={activeNode === `source:${source.id}`} onClick={() => onSelect(`source:${source.id}`)} />) : <span className="text-xs text-white/40">No shared materials yet.</span>}</div></div><div className="mb-5 rounded-lg border p-3" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-white/45">Signal clusters</p><p className="mt-1 text-xs text-white/65">Signals group together recurring evidence from interviews, comparisons, audience tests, and concept tests.</p><div className="mt-3 flex flex-wrap gap-2">{visibleSignals.length ? visibleSignals.map(signal => <EvidenceNode key={signal.id} kind="Signal" label={`${signal.title} · ${signal.status}`} active={activeNode === `signal:${signal.id}`} onClick={() => onSelect(`signal:${signal.id}`)} />) : <span className="text-xs text-white/40">No signals match these filters.</span>}</div></div>{personaGroups.length ? <div className="space-y-5">{personaGroups.map(group => {
         const personaNodeId = `persona:${group.persona.id}`
         const groupNodeIds = group.items.flatMap(item => [`interview:${item.interview.id}`, item.report && `report:${item.report.id}`, ...(item.report?.key_themes ?? []).map(theme => `theme:${theme.title}`)]).filter(Boolean) as string[]
         const groupDimmed = activeNode !== 'overview' && activeNode !== personaNodeId && !groupNodeIds.includes(activeNode)
@@ -773,17 +886,18 @@ function EvidenceGraph({ workspaceId, personas, interviews, reports, activeNode,
               const dimmed = activeNode !== 'overview' && activeNode !== personaNodeId && !nodeIds.includes(activeNode)
               return <div key={item.interview.id} className={`grid grid-cols-[minmax(140px,1fr)_18px_minmax(140px,1fr)_18px_minmax(170px,1.3fr)] items-center gap-1.5 transition-opacity duration-200 ${dimmed ? 'opacity-40' : 'opacity-100'}`}>
                 <EvidenceNode kind="Interview" label={item.interview.title} active={activeNode === `interview:${item.interview.id}`} onClick={() => onSelect(`interview:${item.interview.id}`)} />
-                <GraphArrow />
+                <GraphArrow strength={report?.confidence_score} />
                 {report ? <EvidenceNode kind="Report" label={report.interview?.title ?? item.interview.title} active={activeNode === `report:${report.id}`} onClick={() => onSelect(`report:${report.id}`)} /> : <div className="rounded-lg border border-dashed px-3 py-2 text-center text-[9px] uppercase tracking-[0.1em] text-white/35" style={{ borderColor: 'rgba(255,255,255,0.18)' }}>No report yet</div>}
-                <GraphArrow />
-                <div className="flex flex-wrap gap-1.5">{report?.key_themes?.length ? report.key_themes.slice(0, 3).map(theme => <EvidenceNode key={theme.title} kind="Theme" label={theme.title} active={activeNode === `theme:${theme.title}`} onClick={() => onSelect(`theme:${theme.title}`)} />) : <span className="text-[10px] text-white/35">Themes appear after report generation</span>}</div>
+                <GraphArrow strength={report?.confidence_score} />
+                <div className="flex flex-wrap gap-1.5">{report?.key_themes?.length ? report.key_themes.slice(0, 3).map(theme => <EvidenceNode key={theme.title} kind="Theme" label={theme.title} active={activeNode === `theme:${theme.title}`} onClick={() => onSelect(`theme:${theme.title}`)} />) : <span className="text-[10px] text-white/35">Themes appear after report generation</span>}{report?.recommendations?.slice(0, 2).map((recommendation, index) => <EvidenceNode key={recommendation.title} kind="Recommendation" label={recommendation.title} active={activeNode === `recommendation:${report.id}:${index}`} onClick={() => onSelect(`recommendation:${report.id}:${index}`)} />)}</div>
               </div>
             })}
           </div>
         </div>
-      })}</div> : <div className="py-10 text-center"><p className="text-sm text-white/65">{interviews.length ? 'No evidence paths match these filters.' : 'Create an interview in this workspace to begin an evidence path.'}</p>{!interviews.length && untestedPersonas.length > 0 && <div className="mt-4 flex flex-wrap justify-center gap-2">{untestedPersonas.map(persona => <EvidenceNode key={persona.id} kind="Persona" label={persona.name} active={activeNode === `persona:${persona.id}`} onClick={() => onSelect(`persona:${persona.id}`)} />)}</div>}</div>}
+      })}</div> : <div className="py-10 text-center"><p className="text-sm text-white/65">{interviews.length ? 'No evidence paths match these filters.' : 'Create an interview in this workspace to begin an evidence path.'}</p>{!interviews.length && untestedPersonas.length > 0 && <div className="mt-4 flex flex-wrap justify-center gap-2">{untestedPersonas.map(persona => <EvidenceNode key={persona.id} kind="Persona" label={persona.name} active={activeNode === `persona:${persona.id}`} onClick={() => onSelect(`persona:${persona.id}`)} />)}</div>}</div>}</>}
     </div>
-    <EvidenceDetail activeNode={activeNode} personas={personas} interviews={interviews} reports={reports} />
+    <EvidenceDetail activeNode={activeNode} personas={personas} interviews={interviews} reports={reports} signals={signals} sources={sources} />
+    <GraphAskAI workspaceId={workspaceId} activeNode={activeNode} />
   </div>
 }
 
@@ -791,7 +905,7 @@ function GraphFilter({ label, value, onChange, options }: { label: string; value
   return <label className="flex flex-col gap-1 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/45">{label}<select value={value} onChange={event => onChange(event.target.value)} className="rounded-lg border px-2 py-1.5 text-[10px] font-semibold normal-case tracking-normal outline-none" style={{ background: 'rgba(255,255,255,0.08)', color: 'white', borderColor: 'rgba(255,255,255,0.16)' }}>{options.map(([optionValue, optionLabel]) => <option key={optionValue} value={optionValue} style={{ color: HOME_COLORS.onSurface }}>{optionLabel}</option>)}</select></label>
 }
 
-function EvidenceDetail({ activeNode, personas, interviews, reports }: { activeNode: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[] }) {
+function EvidenceDetail({ activeNode, personas, interviews, reports, signals, sources }: { activeNode: string; personas: Persona[]; interviews: (Interview & { persona: Persona })[]; reports: (Report & { interview: Interview })[]; signals: Signal[]; sources: WorkspaceSource[] }) {
   if (activeNode === 'overview') return <div className="border-t px-4 py-4 text-xs leading-relaxed text-white/55" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>Select any node to inspect its supporting research and navigate directly to the source.</div>
 
   const detailStyle = { borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }
@@ -813,26 +927,71 @@ function EvidenceDetail({ activeNode, personas, interviews, reports }: { activeN
     return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="flex items-center justify-between gap-4"><div className="min-w-0"><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Report evidence</p><h3 className="mt-1 truncate text-base font-semibold text-white">{report.interview?.title ?? 'Insight report'}</h3><p className="mt-1 line-clamp-2 text-xs leading-relaxed text-white/55">{report.executive_summary}</p></div><Link href={`/reports/${report.id}`} className="shrink-0 rounded-full border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10" style={detailStyle}>Open report</Link></div></div>
   }
 
+  if (activeNode.startsWith('signal:')) {
+    const signal = signals.find(item => item.id === activeNode.slice(7))
+    if (!signal) return null
+    const supportingInterviews = interviews.filter(interview => signal.related_interview_ids?.includes(interview.id))
+    return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Signal evidence · {signal.status}</p><h3 className="mt-1 text-base font-semibold text-white">{signal.title}</h3><p className="mt-2 text-xs leading-relaxed text-white/65">{signal.summary}</p><div className="mt-3 flex flex-wrap gap-2">{supportingInterviews.map(interview => <Link key={interview.id} href={`/interviews/${interview.id}`} className="rounded-full border px-3 py-1.5 text-[10px] text-white/75 transition-colors hover:bg-white/10" style={detailStyle}>{interview.title}</Link>)}</div><p className="mt-3 text-[10px] text-white/45">{signal.related_interview_ids?.length ?? 0} linked interview source{(signal.related_interview_ids?.length ?? 0) === 1 ? '' : 's'} · {signal.confidence_score}% confidence</p></div>
+  }
+
+  if (activeNode.startsWith('source:')) {
+    const source = sources.find(item => item.id === activeNode.slice(7))
+    if (!source) return null
+    return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Shared source material</p><h3 className="mt-1 text-base font-semibold text-white">{source.name}</h3><p className="mt-2 text-xs leading-relaxed text-white/65">This file gives the workspace background context for future research. It is not treated as direct evidence unless a report explicitly cites it.</p></div>
+  }
+
+  if (activeNode.startsWith('recommendation:')) {
+    const [, reportId, index] = activeNode.split(':')
+    const recommendation = reports.find(report => report.id === reportId)?.recommendations?.[Number(index)]
+    if (!recommendation) return null
+    return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Recommended next move · {recommendation.priority} priority</p><h3 className="mt-1 text-base font-semibold text-white">{recommendation.title}</h3><p className="mt-2 text-xs leading-relaxed text-white/65">{recommendation.detail}</p></div>
+  }
+
   const title = activeNode.slice(6)
   const supportingReports = reports.filter(report => report.key_themes?.some(theme => theme.title === title))
   const evidence = supportingReports.flatMap(report => (report.key_themes?.find(theme => theme.title === title)?.quotes ?? []).slice(0, 2).map(quote => ({ report, quote }))).slice(0, 4)
   return <div className="border-t p-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.primaryFixed }}>Theme evidence · {supportingReports.length} report{supportingReports.length === 1 ? '' : 's'}</p><h3 className="mt-1 text-base font-semibold text-white">{title}</h3>{evidence.length ? <div className="mt-3 space-y-2">{evidence.map(({ report, quote }, index) => <Link key={index} href={`/reports/${report.id}`} className="block rounded-lg border p-3 transition-colors hover:bg-white/10" style={detailStyle}><p className="text-xs leading-relaxed text-white/75">“{quote}”</p><p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.1em]" style={{ color: HOME_COLORS.primaryFixed }}>{report.interview?.title ?? 'Open source report'}</p></Link>)}</div> : <p className="mt-3 text-xs text-white/55">This theme is connected to the listed report evidence.</p>}</div>
 }
 
-const EVIDENCE_NODE_STYLES: Record<'Persona' | 'Interview' | 'Report' | 'Theme', { bg: string; border: string; accent: string }> = {
+const EVIDENCE_NODE_STYLES: Record<'Persona' | 'Interview' | 'Report' | 'Theme' | 'Signal' | 'Source' | 'Recommendation', { bg: string; border: string; accent: string }> = {
   Persona: { bg: 'rgba(212,232,213,0.16)', border: 'rgba(212,232,213,0.45)', accent: '#d4e8d5' },
   Interview: { bg: 'rgba(255,255,255,0.11)', border: 'rgba(255,255,255,0.3)', accent: '#dfe4da' },
   Report: { bg: 'rgba(245,234,220,0.16)', border: 'rgba(245,234,220,0.45)', accent: '#f5eadc' },
   Theme: { bg: 'rgba(233,229,238,0.16)', border: 'rgba(233,229,238,0.45)', accent: '#e9e5ee' },
+  Signal: { bg: 'rgba(255,229,193,0.16)', border: 'rgba(255,229,193,0.45)', accent: '#ffe5c1' },
+  Source: { bg: 'rgba(210,224,236,0.16)', border: 'rgba(210,224,236,0.45)', accent: '#d2e0ec' },
+  Recommendation: { bg: 'rgba(218,236,210,0.16)', border: 'rgba(218,236,210,0.45)', accent: '#daecd2' },
 }
 
-function EvidenceNode({ kind, label, active, onClick }: { kind: 'Persona' | 'Interview' | 'Report' | 'Theme'; label: string; active: boolean; onClick: () => void }) {
+function EvidenceNode({ kind, label, active, onClick }: { kind: 'Persona' | 'Interview' | 'Report' | 'Theme' | 'Signal' | 'Source' | 'Recommendation'; label: string; active: boolean; onClick: () => void }) {
   const style = EVIDENCE_NODE_STYLES[kind]
   return <button type="button" onClick={onClick} title={label} className="min-w-0 rounded-lg border px-3.5 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110" style={{ background: active ? HOME_COLORS.primaryFixed : style.bg, borderColor: active ? HOME_COLORS.primaryFixed : style.border, color: active ? HOME_COLORS.onPrimaryFixed : 'white' }}><span className="block text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: active ? HOME_COLORS.onPrimaryFixed : style.accent }}>{kind}</span><span className="mt-1 block truncate text-xs font-semibold">{label}</span></button>
 }
 
-function GraphArrow() {
-  return <svg width="18" height="10" viewBox="0 0 18 10" className="mx-auto shrink-0" aria-hidden="true"><line x1="0" y1="5" x2="11" y2="5" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" /><path d="M9 1.5 L15 5 L9 8.5" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+function GraphArrow({ strength = 0 }: { strength?: number }) {
+  const opacity = Math.max(.28, Math.min(.85, strength / 100))
+  const width = strength >= 75 ? 2.5 : strength >= 50 ? 2 : 1.5
+  return <svg width="18" height="10" viewBox="0 0 18 10" className="mx-auto shrink-0" aria-label={strength ? `Evidence strength ${strength}%` : 'Evidence path'}><line x1="0" y1="5" x2="11" y2="5" stroke={`rgba(255,255,255,${opacity})`} strokeWidth={width} /><path d="M9 1.5 L15 5 L9 8.5" fill="none" stroke={`rgba(255,255,255,${opacity})`} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" /></svg>
+}
+
+function EvidenceTimeline({ reports, signals }: { reports: Report[]; signals: Signal[] }) {
+  const events = [...reports.map(report => ({ id: `report-${report.id}`, date: report.created_at, type: 'Report', label: report.interview?.title ?? 'Insight report' })), ...signals.map(signal => ({ id: `signal-${signal.id}`, date: signal.updated_at || signal.created_at, type: 'Signal', label: `${signal.title} · ${signal.status}` }))].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  return <div className="space-y-3">{events.length ? events.map(event => <div key={event.id} className="flex gap-3 rounded-lg border p-3" style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)' }}><span className="mt-1 h-2 w-2 rounded-full" style={{ background: HOME_COLORS.primaryFixed }} /><div><p className="text-[9px] font-semibold uppercase tracking-[0.13em] text-white/45">{event.type} · {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p><p className="mt-1 text-sm text-white">{event.label}</p></div></div>) : <p className="py-10 text-center text-sm text-white/55">Research activity will appear here as reports and signals are created.</p>}</div>
+}
+
+function GraphAskAI({ workspaceId, activeNode }: { workspaceId: string; activeNode: string }) {
+  const [answer, setAnswer] = useState('')
+  const [loading, setLoading] = useState(false)
+  const ask = async () => {
+    setLoading(true); setAnswer('')
+    try {
+      const response = await fetch(`/api/workspaces/${workspaceId}/ask`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: `Explain the evidence connected to ${activeNode === 'overview' ? 'this workspace' : activeNode}. Give the strongest supporting and conflicting evidence, and name the report or interview each point comes from.` }) })
+      const json = await response.json()
+      if (!response.ok) throw new Error(json.error ?? 'Unable to answer this question.')
+      setAnswer(json.data.answer)
+    } catch (error: any) { setAnswer(error?.message ?? 'Unable to answer this question.') } finally { setLoading(false) }
+  }
+  return <div className="border-t px-4 py-4" style={{ borderColor: 'rgba(255,255,255,0.1)' }}><div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-white/65">Ask AI to explain this evidence using the workspace research.</p><button type="button" onClick={() => void ask()} disabled={loading} className="rounded-full border px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-white/10 disabled:opacity-50" style={{ color: HOME_COLORS.primaryFixed, borderColor: 'rgba(255,255,255,0.18)', background: 'transparent' }}>{loading ? 'Reviewing…' : 'Ask AI about this evidence'}</button></div>{answer && <p className="mt-3 whitespace-pre-wrap rounded-lg p-3 text-xs leading-relaxed text-white/75" style={{ background: 'rgba(255,255,255,0.06)' }}>{answer}</p>}</div>
 }
 
 function WorkspaceKnowledgeHub({ workspaceId }: { workspaceId: string }) {

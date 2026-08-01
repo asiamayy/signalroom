@@ -39,7 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const answer = await answerReportQuestion({
       question: cleanQuestion,
-      executiveSummary: reports.map((report, index) => `Report ${index + 1}: ${report.executive_summary ?? ''}`).join('\n\n'),
+      executiveSummary: reports.map((report, index) => `Report ${index + 1} — ${(report.interview as any)?.title ?? 'Untitled interview'}: ${report.executive_summary ?? ''}`).join('\n\n'),
       themes: reports.flatMap(report => report.key_themes ?? []),
       recommendations: reports.flatMap(report => report.recommendations ?? []),
       transcript: transcripts,
