@@ -200,9 +200,11 @@ export function SignalsClient({ initialSignals, projects, personas, interviews }
               </div>
             </div>
           ) : (
-            filtered.map((signal, i) => (
-              <SignalFeedCard key={signal.id} signal={signal} variant={(i + 1) % 3 === 0 ? 'wide' : 'standard'} onPreview={openPreview} />
-            ))
+            filtered.map((signal, i) => {
+              const evidenceCount = signal.related_interview_ids.length + signal.related_run_ids.length + signal.supporting_quotes.length
+              const priority = (signal.impact === 'high' && signal.confidence_score >= 65) || (signal.status === 'validated' && evidenceCount >= 4)
+              return <SignalFeedCard key={signal.id} signal={signal} priority={priority} variant={priority || (i + 1) % 3 === 0 ? 'wide' : 'standard'} onPreview={openPreview} />
+            })
           )}
         </div>
 
