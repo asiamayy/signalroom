@@ -184,24 +184,14 @@ export default async function HomePage() {
               <EmptyCard text="Signals will appear here once you generate reports from interviews inside a project." />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {trendingSignals.map(({ signal, mentionTrendPercent }) => {
+                {trendingSignals.map(({ signal }) => {
                   const TypeIcon = TYPE_ICON[signal.type]
                   const sourceCount = signal.related_interview_ids.length + signal.related_run_ids.length
-                  const quotePreview = signal.supporting_quotes[0]?.text
                   return (
                     <Link key={signal.id} href={`/projects/${signal.project_id}?tab=Signals`} className="rounded-2xl overflow-hidden block group transition-transform hover:-translate-y-0.5" style={{ background: HOME_COLORS.surfaceContainerLow, border: `1px solid ${HOME_COLORS.outlineVariant}33`, boxShadow: CARD_SHADOW }}>
-                      <div className="relative h-40 overflow-hidden p-5" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
-                        <div className="absolute -right-6 -bottom-10 h-36 w-36 rounded-full border border-white/10" />
-                        <div className="absolute right-8 top-10 h-20 w-20 rounded-full border border-white/10" />
-                        <div className="relative z-10 flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10"><TypeIcon size={22} style={{ color: HOME_COLORS.primaryFixedDim }} strokeWidth={1.4} /></span><div><p className="text-[9px] font-bold uppercase tracking-[0.16em] text-white/55">Signal preview</p><p className="mt-1 text-xs font-semibold text-white/90">{sourceCount || signal.supporting_quotes.length} evidence source{(sourceCount || signal.supporting_quotes.length) === 1 ? '' : 's'}</p></div></div>
-                          <div className="text-right"><p className="text-2xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY }}>{signal.confidence_score}%</p><p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-white/55">Confidence</p></div>
-                        </div>
-                        <div className="relative z-10 mt-5">
-                          <div className="mb-2 flex items-center justify-between text-[9px] font-semibold uppercase tracking-wider text-white/55"><span>Evidence strength</span><span>{mentionTrendPercent !== null ? `${mentionTrendPercent > 0 ? '+' : ''}${mentionTrendPercent}% mentions` : 'New signal'}</span></div>
-                          <div className="h-1.5 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full" style={{ width: `${signal.confidence_score}%`, background: HOME_COLORS.primaryFixedDim }} /></div>
-                          {quotePreview && <p className="mt-3 line-clamp-1 text-[11px] italic text-white/65">&ldquo;{quotePreview}&rdquo;</p>}
-                        </div>
+                      <div className="flex h-36 flex-col justify-between p-5" style={{ background: `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
+                        <div className="flex items-start justify-between"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/10"><TypeIcon size={20} style={{ color: HOME_COLORS.primaryFixedDim }} strokeWidth={1.4} /></span><span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">{signal.status}</span></div><div className="text-right"><p className="text-2xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY }}>{signal.confidence_score}%</p><p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-white/55">Confidence</p></div></div>
+                        <div><div className="mb-2 flex items-center justify-between text-[10px] text-white/60"><span>Evidence strength</span><span>{sourceCount || signal.supporting_quotes.length} source{(sourceCount || signal.supporting_quotes.length) === 1 ? '' : 's'}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full" style={{ width: `${signal.confidence_score}%`, background: HOME_COLORS.primaryFixedDim }} /></div></div>
                       </div>
                       <div className="p-6">
                         <h4 className="text-base font-semibold mb-2 transition-colors" style={{ color: HOME_COLORS.onSurface }}>{signal.title}</h4>
@@ -211,7 +201,7 @@ export default async function HomePage() {
                             <TypeIcon size={14} style={{ color: HOME_COLORS.onSecondaryContainer }} />
                           </div>
                           <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                            {sourceCount} linked source{sourceCount === 1 ? '' : 's'} · Open signal detail
+                            Open signal detail
                           </span>
                         </div>
                       </div>

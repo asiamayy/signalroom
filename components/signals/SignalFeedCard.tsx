@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import {
   AlertTriangle, ShieldAlert, Target, Lightbulb, Zap, TrendingUp, Sparkles, AlertOctagon,
-  BarChart3, ShieldCheck,
+  BarChart3,
 } from 'lucide-react'
 import { HOME_COLORS, HOME_FONT_DISPLAY } from '@/lib/home-theme'
 import { CARD_SHADOW, formatRelativeTime } from '@/lib/utils'
@@ -67,12 +67,10 @@ export function SignalFeedCard({ signal, variant = 'standard', priority = false,
         style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}
       >
         <div className="grid grid-cols-12">
-          <div className="relative col-span-12 min-h-[188px] overflow-hidden p-6 sm:col-span-4 sm:min-h-full" style={{ background: priority ? HOME_COLORS.primary : `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
-            <div className="absolute -right-12 -bottom-10 h-44 w-44 rounded-full border border-white/10" />
-            <div className="absolute right-7 top-8 h-24 w-24 rounded-full border border-white/10" />
+          <div className="col-span-12 min-h-[168px] p-6 sm:col-span-4 sm:min-h-full" style={{ background: priority ? HOME_COLORS.primary : `linear-gradient(135deg, ${HOME_COLORS.primaryContainer}, ${HOME_COLORS.primary})` }}>
             <div className="relative z-10 flex h-full flex-col justify-between">
-              <div className="flex items-center justify-between"><span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/10"><Icon size={24} strokeWidth={1.25} style={{ color: HOME_COLORS.primaryFixedDim }} /></span>{priority && <span className="rounded-full bg-white/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-white">Priority</span>}</div>
-              <div><p className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-white/55">Evidence strength</p><div className="mb-3 h-2 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full" style={{ width: `${signal.confidence_score}%`, background: HOME_COLORS.primaryFixedDim }} /></div><div className="flex items-end justify-between"><div><p className="text-3xl leading-none text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>{signal.confidence_score}%</p><p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-white/55">Confidence</p></div><p className="text-right text-xs font-semibold text-white/80">{evidenceCount}<span className="ml-1 text-[9px] font-bold uppercase tracking-wider text-white/55">evidence</span></p></div></div>
+              <div className="flex items-center justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/10"><Icon size={22} strokeWidth={1.25} style={{ color: HOME_COLORS.primaryFixedDim }} /></span>{priority && <span className="rounded-full bg-white/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-white">Priority</span>}</div>
+              <div><div className="mb-2 flex items-end justify-between"><div><p className="text-3xl leading-none text-white" style={{ fontFamily: HOME_FONT_DISPLAY }}>{signal.confidence_score}%</p><p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-white/55">Confidence</p></div><p className="text-right text-xs text-white/75">{evidenceCount} evidence source{evidenceCount === 1 ? '' : 's'}</p></div><div className="h-1.5 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full" style={{ width: `${signal.confidence_score}%`, background: HOME_COLORS.primaryFixedDim }} /></div></div>
             </div>
           </div>
           <div className="col-span-12 sm:col-span-8 p-6 sm:p-8 flex flex-col justify-center">
@@ -85,16 +83,12 @@ export function SignalFeedCard({ signal, variant = 'standard', priority = false,
             </div>
             <h3 className="text-xl sm:text-2xl mb-3 leading-snug" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 600, color: HOME_COLORS.onSurface }}>{signal.title}</h3>
             <p className="text-sm leading-relaxed mb-5 line-clamp-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>{signal.summary}</p>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-5">
               <div className="flex items-center gap-2">
                 <BarChart3 size={16} style={{ color: HOME_COLORS.primary }} />
                 <span className="text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{signal.impact ? SIGNAL_IMPACT_LABELS[signal.impact] : 'Impact not assessed'}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={16} style={{ color: HOME_COLORS.primary }} />
-                <span className="text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{signal.confidence_score}% confidence</span>
-              </div>
-              <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{evidenceCount} evidence item{evidenceCount === 1 ? '' : 's'}</span>
+              <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Open full evidence</span>
             </div>
           </div>
         </div>
@@ -125,31 +119,10 @@ export function SignalFeedCard({ signal, variant = 'standard', priority = false,
       </h3>
       <p className="text-sm leading-relaxed mb-8 line-clamp-3" style={{ color: HOME_COLORS.onSurfaceVariant }}>{signal.summary}</p>
 
-      <div className="grid grid-cols-1 gap-3 pt-6 sm:grid-cols-3" style={{ borderTop: `1px solid ${HOME_COLORS.outlineVariant}4d` }}>
-        <div className="rounded-xl p-3" style={{ background: HOME_COLORS.surfaceContainerLow }}>
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>Impact</span>
-          {signal.impact ? (
-            <div className="mt-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: IMPACT_DOT[signal.impact] }} />
-              <span className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>{SIGNAL_IMPACT_LABELS[signal.impact]}</span>
-            </div>
-          ) : (
-            <span className="mt-2 block text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Not assessed</span>
-          )}
-        </div>
-        <div className="rounded-xl p-3" style={{ background: HOME_COLORS.secondaryContainer }}>
-          <div className="flex items-center justify-between"><span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: HOME_COLORS.primary }}>Confidence</span><span className="text-lg leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{signal.confidence_score}%</span></div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full" style={{ background: `${HOME_COLORS.primary}1a` }}>
-            <div className="h-full rounded-full" style={{ width: `${signal.confidence_score}%`, background: HOME_COLORS.primary }} />
-          </div>
-        </div>
-        <div className="rounded-xl p-3" style={{ background: HOME_COLORS.surfaceContainerLow }}>
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>Evidence</span>
-          <div className="mt-2 flex items-center gap-1.5">
-            {Array.from({ length: 4 }, (_, index) => <span key={index} className="h-5 flex-1 rounded-sm" style={{ background: index < Math.min(4, Math.max(1, evidenceCount)) ? HOME_COLORS.primaryFixedDim : HOME_COLORS.surfaceContainer }} />)}
-          </div>
-          <span className="mt-2 block text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{evidenceCount} source{evidenceCount === 1 ? '' : 's'}</span>
-        </div>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-t pt-5" style={{ borderColor: `${HOME_COLORS.outlineVariant}4d` }}>
+        <div className="flex items-center gap-2"><span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>Impact</span>{signal.impact ? <><span className="h-2 w-2 rounded-full" style={{ background: IMPACT_DOT[signal.impact] }} /><span className="text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{SIGNAL_IMPACT_LABELS[signal.impact]}</span></> : <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Not assessed</span>}</div>
+        <div className="flex min-w-[180px] flex-1 items-center gap-3"><span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: HOME_COLORS.onSurfaceVariant }}>Confidence</span><div className="h-1.5 flex-1 overflow-hidden rounded-full" style={{ background: HOME_COLORS.surfaceContainer }}><div className="h-full rounded-full" style={{ width: `${signal.confidence_score}%`, background: HOME_COLORS.primary }} /></div><span className="text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{signal.confidence_score}%</span></div>
+        <span className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{evidenceCount} evidence source{evidenceCount === 1 ? '' : 's'}</span>
       </div>
     </motion.article>
   )
