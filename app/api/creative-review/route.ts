@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   }
 
   const {
-    persona_ids, image, imageMediaType, heatmap_image, saliency_grid,
+    persona_ids, image, imageMediaType, heatmap_image, saliency_grid, grid_width, grid_height,
     intended_focus, project_id, workspace_id,
   } = await request.json()
 
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   if (!image) {
     return NextResponse.json({ error: 'Upload an image to review' }, { status: 400 })
   }
-  if (!Array.isArray(saliency_grid) || saliency_grid.length === 0) {
+  if (!Array.isArray(saliency_grid) || saliency_grid.length === 0 || !grid_width || !grid_height) {
     return NextResponse.json({ error: 'Missing attention data — try re-uploading the image' }, { status: 400 })
   }
 
@@ -96,9 +96,8 @@ export async function POST(request: NextRequest) {
 
     // Step 2 — combine Claude's zone boxes with the REAL, independently-computed
     // saliency grid (never seen or influenced by any LLM) into attention percentages.
-    const gridSize = Math.round(Math.sqrt(saliency_grid.length))
     const percentages = zoneAttentionPercentages(
-      { grid: new Float32Array(saliency_grid), size: gridSize, heatmapDataUrl: '' },
+      { grid: new Float32Array(saliency_grid), gridWidth: grid_width, gridHeight: grid_height, heatmapDataUrl: '' },
       detectedZones
     )
     const zones: CreativeZone[] = detectedZones.map((z, i) => ({ ...z, attention_pct: percentages[i]?.pct ?? 0 }))

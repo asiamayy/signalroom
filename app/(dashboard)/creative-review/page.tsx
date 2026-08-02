@@ -174,7 +174,12 @@ function ReactionCard({ reaction, image, imageMediaType, intendedFocus }: { reac
   return (
     <article className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
       <div className="flex items-start gap-3 mb-3">
-        {reaction.engagement_percentage !== null && <EngagementRing value={reaction.engagement_percentage} />}
+        {reaction.engagement_percentage !== null && (
+          <div className="flex flex-col items-center gap-1 flex-shrink-0">
+            <EngagementRing value={reaction.engagement_percentage} />
+            <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Engagement</span>
+          </div>
+        )}
         <PersonaAvatar avatarUrl={reaction.avatar_url} avatarInitials={reaction.avatar_initials} avatarColor={reaction.avatar_color} name={reaction.persona_name} size="md" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate" style={{ color: HOME_COLORS.onSurface }}>{reaction.persona_name}</p>
@@ -253,7 +258,8 @@ function CreativeReviewResultsView({ result, image, imageMediaType, heatmapDataU
       )}
 
       <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-        <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
+        <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
+        <p className="text-[11px] mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share of the heatmap's visual weight that falls on each element below, computed directly from the image's pixels.</p>
         <ZoneBreakdown zones={result.zones} />
       </div>
 
@@ -378,6 +384,8 @@ export default function CreativeReviewPage() {
           imageMediaType,
           heatmap_image: saliency.heatmapDataUrl,
           saliency_grid: Array.from(saliency.grid),
+          grid_width: saliency.gridWidth,
+          grid_height: saliency.gridHeight,
           intended_focus: intendedFocus,
           project_id: projectId || null,
           workspace_id: workspaceId === 'personal' ? null : workspaceId,
@@ -432,10 +440,10 @@ export default function CreativeReviewPage() {
               <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Creative Intelligence</span>
             </div>
             <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
-              See what each persona actually <span className="italic" style={{ fontWeight: 400 }}>notices</span>.
+              See what each persona <span className="italic" style={{ fontWeight: 400 }}>notices</span>.
             </h1>
             <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-              Upload one visual asset — packaging, an ad, a landing page — and see where attention objectively lands, then how each persona reads what's there: what they trust, what confuses them, what would make them act.
+              Upload a packaging shot, ad, or landing page and see how each persona reads it.
             </p>
           </div>
           <div className="flex items-center gap-1 p-1 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
@@ -465,7 +473,8 @@ export default function CreativeReviewPage() {
                   </div>
                 )}
                 <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
+        <p className="text-[11px] mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share of the heatmap's visual weight that falls on each element below, computed directly from the image's pixels.</p>
                   <ZoneBreakdown zones={selectedRun.result.zones} />
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

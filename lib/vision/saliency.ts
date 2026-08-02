@@ -143,23 +143,40 @@ function saliencyToColor(v: number): [number, number, number] {
 }
 
 export interface SaliencyResult {
-  grid: Float32Array // GRID_SIZE * GRID_SIZE, row-major, normalized 0-1
-  size: number
-  heatmapDataUrl: string // small colorized RGBA PNG — stretch via CSS for display
+  grid: Float32Array // gridWidth * gridHeight, row-major, normalized 0-1 — covers ONLY the real image content, no letterbox padding
+  gridWidth: number
+  gridHeight: number
+  heatmapDataUrl: string // colorized RGBA PNG at gridWidth x gridHeight, same aspect ratio as the source image
 }
 
 // Computes the saliency map for an already-loaded <img> element (e.g. the
 // same preview image used elsewhere after compressImageFile). Synchronous —
 // no network, no worker needed at this resolution.
+//
+// The DFT needs a square working canvas, but most creative assets (ads,
+// landing pages, packaging) aren't square — squishing them to fit would
+// distort spatial frequency content and shift where things register as
+// salient. Instead this letterboxes the image into the square (centered, on
+// a neutral gray fill) for the transform, then crops the padding back out of
+// the result, so the returned grid and heatmap only ever describe the real
+// image at its true aspect ratio.
 export function computeSaliency(imgEl: HTMLImageElement): SaliencyResult {
   const n = GRID_SIZE
+
+  const scale = Math.min(n / imgEl.width, n / imgEl.height)
+  const contentW = Math.max(1, Math.round(imgEl.width * scale))
+  const contentH = Math.max(1, Math.round(imgEl.height * scale))
+  const offsetX = Math.floor((n - contentW) / 2)
+  const offsetY = Math.floor((n - contentH) / 2)
 
   const srcCanvas = document.createElement('canvas')
   srcCanvas.width = n
   srcCanvas.height = n
   const srcCtx = srcCanvas.getContext('2d')
   if (!srcCtx) throw new Error('Could not process image')
-  srcCtx.drawImage(imgEl, 0, 0, n, n)
+  srcCtx.fillStyle = 'rgb(128,128,128)' // neutral fill contributes ~no spectral residual of its own
+  srcCtx.fillRect(0, 0, n, n)
+  srcCtx.drawImage(imgEl, offsetX, offsetY, contentW, contentH)
   const { data } = srcCtx.getImageData(0, 0, n, n)
 
   const gray = new Float64Array(n * n)
@@ -200,15 +217,28 @@ export function computeSaliency(imgEl: HTMLImageElement): SaliencyResult {
   }
 
   const smoothedSaliency = boxBlur(rawSaliency, n, 2)
-  const grid = normalize01(smoothedSaliency)
+  const fullGrid = normalize01(smoothedSaliency)
+
+  // Crop the letterbox padding back out — everything downstream (zone
+  // percentages, the displayed heatmap) should only ever see real image
+  // content, at the image's true aspect ratio.
+  const cropped = new Float64Array(contentW * contentH)
+  for (let row = 0; row < contentH; row++) {
+    for (let col = 0; col < contentW; col++) {
+      cropped[row * contentW + col] = fullGrid[(offsetY + row) * n + (offsetX + col)]
+    }
+  }
+  // Re-normalize post-crop — the full grid's min/max may have been set by
+  // the uniform padding, not the actual content.
+  const grid = normalize01(cropped)
 
   const heatCanvas = document.createElement('canvas')
-  heatCanvas.width = n
-  heatCanvas.height = n
+  heatCanvas.width = contentW
+  heatCanvas.height = contentH
   const heatCtx = heatCanvas.getContext('2d')
   if (!heatCtx) throw new Error('Could not render heatmap')
-  const heatImageData = heatCtx.createImageData(n, n)
-  for (let i = 0; i < n * n; i++) {
+  const heatImageData = heatCtx.createImageData(contentW, contentH)
+  for (let i = 0; i < grid.length; i++) {
     const [r, g, b] = saliencyToColor(grid[i])
     heatImageData.data[i * 4] = r
     heatImageData.data[i * 4 + 1] = g
@@ -217,7 +247,7 @@ export function computeSaliency(imgEl: HTMLImageElement): SaliencyResult {
   }
   heatCtx.putImageData(heatImageData, 0, 0)
 
-  return { grid, size: n, heatmapDataUrl: heatCanvas.toDataURL('image/png') }
+  return { grid, gridWidth: contentW, gridHeight: contentH, heatmapDataUrl: heatCanvas.toDataURL('image/png') }
 }
 
 export interface ZoneBox {
@@ -232,20 +262,20 @@ export interface ZoneBox {
 // and expresses it as a share of the total — this is the only place the CV
 // data and Claude's zone identification actually combine.
 export function zoneAttentionPercentages(saliency: SaliencyResult, zones: ZoneBox[]): { label: string; pct: number }[] {
-  const { grid, size } = saliency
+  const { grid, gridWidth, gridHeight } = saliency
   let total = 0
   for (let i = 0; i < grid.length; i++) total += grid[i]
   if (total <= 0) return zones.map(z => ({ label: z.label, pct: 0 }))
 
   return zones.map(zone => {
     let sum = 0
-    for (let row = 0; row < size; row++) {
-      const cy = (row + 0.5) / size
+    for (let row = 0; row < gridHeight; row++) {
+      const cy = (row + 0.5) / gridHeight
       if (cy < zone.y0 || cy > zone.y1) continue
-      for (let col = 0; col < size; col++) {
-        const cx = (col + 0.5) / size
+      for (let col = 0; col < gridWidth; col++) {
+        const cx = (col + 0.5) / gridWidth
         if (cx < zone.x0 || cx > zone.x1) continue
-        sum += grid[row * size + col]
+        sum += grid[row * gridWidth + col]
       }
     }
     return { label: zone.label, pct: Math.round((sum / total) * 100) }
