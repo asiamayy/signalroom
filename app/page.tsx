@@ -699,7 +699,7 @@ export default function LandingPage() {
         <section id="integrations" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center gap-4 mb-10 sm:mb-16">
-              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">04 // Built For Teams</span>
+              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">02 // Built For Teams</span>
               <div className="hidden sm:block h-px flex-grow bg-[#1A3024]/10" />
             </div>
 
