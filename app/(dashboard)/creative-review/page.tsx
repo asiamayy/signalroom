@@ -241,27 +241,131 @@ function ReactionCard({ reaction, image, imageMediaType, intendedFocus }: { reac
   )
 }
 
-// Small pinned labels directly on the image at each zone's location — reads
-// far more immediately than a separate list below the image.
-function ZoneCallouts({ zones }: { zones: CreativeReviewResult['zones'] }) {
+// Where the real image content sits within a square frame under
+// object-fit: contain (as a percentage of the square) — needed so on-image
+// zone labels, which are positioned in the TRUE image's own 0-1 coordinates,
+// land in the right spot instead of assuming the square has no letterboxing.
+interface ContentBox { xPct: number; yPct: number; wPct: number; hPct: number }
+
+function computeContentBox(naturalWidth: number, naturalHeight: number): ContentBox {
+  if (!naturalWidth || !naturalHeight) return { xPct: 0, yPct: 0, wPct: 100, hPct: 100 }
+  const aspect = naturalWidth / naturalHeight
+  if (aspect >= 1) {
+    const hPct = 100 / aspect
+    return { xPct: 0, yPct: (100 - hPct) / 2, wPct: 100, hPct }
+  }
+  const wPct = 100 * aspect
+  return { xPct: (100 - wPct) / 2, yPct: 0, wPct, hPct: 100 }
+}
+
+// Small pinned markers directly on the image at each zone's location —
+// collapsed to just a dot by default so they don't clutter the image; click
+// one to expand it into the label and measured percentage.
+function ZoneCallouts({ zones, contentBox }: { zones: CreativeReviewResult['zones']; contentBox: ContentBox }) {
+  const [openLabel, setOpenLabel] = useState<string | null>(null)
+
   return (
     <>
       {zones.map((z, i) => {
-        const cx = ((z.x0 + z.x1) / 2) * 100
-        const cy = ((z.y0 + z.y1) / 2) * 100
+        const cx = contentBox.xPct + ((z.x0 + z.x1) / 2) * contentBox.wPct
+        const cy = contentBox.yPct + ((z.y0 + z.y1) / 2) * contentBox.hPct
         const color = ZONE_COLORS[i % ZONE_COLORS.length]
+        const open = openLabel === z.label
         return (
-          <div
+          <button
             key={z.label}
-            className="absolute flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold whitespace-nowrap pointer-events-none"
-            style={{ left: `${cx}%`, top: `${cy}%`, transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.72)', color: 'white', border: `1.5px solid ${color}` }}
+            type="button"
+            onClick={() => setOpenLabel(open ? null : z.label)}
+            className="absolute flex items-center gap-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all duration-150"
+            style={{
+              left: `${cx}%`, top: `${cy}%`, transform: 'translate(-50%, -50%)',
+              background: 'rgba(0,0,0,0.72)', border: `1.5px solid ${color}`, color: 'white',
+              padding: open ? '4px 10px 4px 6px' : '6px', cursor: 'pointer', zIndex: open ? 20 : 10,
+            }}
+            title={`${z.label}: ${z.attention_pct}%`}
           >
-            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-            {z.label} · {z.attention_pct}%
-          </div>
+            <span className="rounded-full flex-shrink-0" style={{ width: 8, height: 8, background: color }} />
+            {open && <span>{z.label} · {z.attention_pct}%</span>}
+          </button>
         )
       })}
     </>
+  )
+}
+
+// A subtle animated scan sweeping down the image while the panel is being
+// generated, in place of a generic spinner — the visual mirrors what's
+// actually happening (the asset is being read), not just a "please wait".
+function ScanningOverlay() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 creative-scan-tint" />
+      <div className="absolute left-0 right-0 h-1/3 creative-scan-line" />
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.65)', color: 'white' }}>
+        <Loader2 size={10} className="animate-spin" /> Analyzing
+      </div>
+      <style jsx>{`
+        .creative-scan-tint {
+          background: linear-gradient(180deg, rgba(24, 40, 28, 0.1), rgba(24, 40, 28, 0.02));
+        }
+        .creative-scan-line {
+          top: -34%;
+          background: linear-gradient(
+            180deg,
+            rgba(150, 169, 152, 0) 0%,
+            rgba(150, 169, 152, 0.55) 45%,
+            rgba(212, 232, 213, 0.9) 50%,
+            rgba(150, 169, 152, 0.55) 55%,
+            rgba(150, 169, 152, 0) 100%
+          );
+          animation: creativeScanSweep 2.2s ease-in-out infinite;
+        }
+        @keyframes creativeScanSweep {
+          0% { top: -34%; }
+          100% { top: 100%; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+// Shared frame for every place the asset + heatmap + zone labels are shown —
+// a white square card, image fully contained (never cropped or stretched),
+// used for the analyzing state, the fresh result, and history.
+function SquareImageFrame({ src, heatmapSrc, zones, analyzing = false, showHeatmapToggle = true }: {
+  src: string
+  heatmapSrc?: string | null
+  zones: CreativeReviewResult['zones']
+  analyzing?: boolean
+  showHeatmapToggle?: boolean
+}) {
+  const [showHeatmap, setShowHeatmap] = useState(true)
+  const [contentBox, setContentBox] = useState<ContentBox>({ xPct: 0, yPct: 0, wPct: 100, hPct: 100 })
+
+  return (
+    <div className="rounded-2xl p-4 sm:p-6" style={{ background: 'white', boxShadow: CARD_SHADOW }}>
+      <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-lg">
+        <img
+          src={src}
+          alt="Creative asset"
+          className="absolute inset-0 w-full h-full object-contain"
+          onLoad={e => {
+            const img = e.currentTarget
+            setContentBox(computeContentBox(img.naturalWidth, img.naturalHeight))
+          }}
+        />
+        {showHeatmap && heatmapSrc && (
+          <img src={heatmapSrc} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" />
+        )}
+        {!analyzing && zones.length > 0 && <ZoneCallouts zones={zones} contentBox={contentBox} />}
+        {analyzing && <ScanningOverlay />}
+        {!analyzing && showHeatmapToggle && heatmapSrc && (
+          <button onClick={() => setShowHeatmap(s => !s)} className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.65)', color: 'white', border: 'none', cursor: 'pointer' }}>
+            <Eye size={11} /> {showHeatmap ? 'Hide heatmap' : 'Show heatmap'}
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -323,23 +427,10 @@ function PanelHeadline({ result }: { result: CreativeReviewResult }) {
 }
 
 function CreativeReviewResultsView({ result, image, imageMediaType, heatmapDataUrl }: { result: CreativeReviewResult; image: string | null; imageMediaType: string; heatmapDataUrl: string | null }) {
-  const [showHeatmap, setShowHeatmap] = useState(true)
-
   return (
     <div className="flex flex-col gap-6">
       {image && (
-        <div className="rounded-xl overflow-hidden relative" style={{ boxShadow: CARD_SHADOW }}>
-          <img src={`data:${imageMediaType};base64,${image}`} alt="Uploaded creative asset" className="w-full h-auto block" />
-          {showHeatmap && heatmapDataUrl && (
-            <img src={heatmapDataUrl} alt="" className="absolute inset-0 w-full h-full object-fill pointer-events-none" style={{ imageRendering: 'auto' }} />
-          )}
-          <ZoneCallouts zones={result.zones} />
-          {heatmapDataUrl && (
-            <button onClick={() => setShowHeatmap(s => !s)} className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.65)', color: 'white', border: 'none', cursor: 'pointer' }}>
-              <Eye size={11} /> {showHeatmap ? 'Hide heatmap' : 'Show heatmap'}
-            </button>
-          )}
-        </div>
+        <SquareImageFrame src={`data:${imageMediaType};base64,${image}`} heatmapSrc={heatmapDataUrl} zones={result.zones} />
       )}
 
       <PanelHeadline result={result} />
@@ -555,10 +646,7 @@ export default function CreativeReviewPage() {
               <button onClick={() => setSelectedRun(null)} className="text-xs font-semibold self-start" style={{ color: HOME_COLORS.primary, background: 'none', border: 'none', cursor: 'pointer' }}>← Back to history</button>
               <div className="flex flex-col gap-6">
                 {historyImageUrl && (
-                  <div className="rounded-xl overflow-hidden relative" style={{ boxShadow: CARD_SHADOW }}>
-                    <img src={historyImageUrl} alt="Reviewed asset" className="w-full h-auto block" />
-                    <ZoneCallouts zones={selectedRun.result.zones} />
-                  </div>
+                  <SquareImageFrame src={historyImageUrl} zones={selectedRun.result.zones} showHeatmapToggle={false} />
                 )}
                 <PanelHeadline result={selectedRun.result} />
                 <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
@@ -696,10 +784,12 @@ export default function CreativeReviewPage() {
               </div>
             )}
             {loading && (
-              <div className="rounded-xl py-20 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                <Loader2 size={28} className="mx-auto mb-3 animate-spin" style={{ color: HOME_COLORS.primary }} />
-                <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Reviewing asset</h3>
-                <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Identifying elements, then interviewing {selectedIds.length} personas...</p>
+              <div className="flex flex-col gap-4">
+                {imagePreview && <SquareImageFrame src={imagePreview} zones={[]} analyzing />}
+                <div className="rounded-xl py-6 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+                  <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Reviewing asset</h3>
+                  <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Identifying elements, then interviewing {selectedIds.length} personas...</p>
+                </div>
               </div>
             )}
 
