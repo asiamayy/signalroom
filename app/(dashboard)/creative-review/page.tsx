@@ -382,11 +382,11 @@ function StatCardsRow({ result }: { result: CreativeReviewResult }) {
 }
 
 const DIAGNOSTIC_DETAILS = {
-  attention: { label: 'Attention', question: 'Does the hierarchy bring the right element forward?', color: '#2D5A3B', tint: '#E5F0E6', icon: Eye },
-  emotion: { label: 'Emotion', question: 'What feeling does the creative leave behind?', color: '#A65068', tint: '#F7E8EC', icon: Heart },
-  comprehension: { label: 'Message clarity', question: 'Can someone understand the message at a glance?', color: '#9A6A1C', tint: '#F9EFD8', icon: MessageCircle },
-  memory: { label: 'Memory', question: 'Are the brand and message distinct enough to recall?', color: '#387B78', tint: '#E4F2F0', icon: Brain },
-  persuasion: { label: 'Action pull', question: 'Does the creative give someone a reason to act next?', color: '#66639B', tint: '#EEEDF8', icon: Sparkles },
+  attention: { label: 'Attention', question: 'Does the hierarchy bring the right element forward?', color: '#041208', tint: '#D4E8D5', icon: Eye },
+  comprehension: { label: 'Message clarity', question: 'Can someone understand the message at a glance?', color: '#516354', tint: '#DEE5DA', icon: MessageCircle },
+  emotion: { label: 'Emotion', question: 'What feeling does the creative leave behind?', color: '#765D5A', tint: '#F0E8E6', icon: Heart },
+  memory: { label: 'Memory', question: 'Are the brand and message distinct enough to recall?', color: '#3F6860', tint: '#DCEBE5', icon: Brain },
+  persuasion: { label: 'Action pull', question: 'Does the creative give someone a reason to act next?', color: '#2D3E31', tint: '#E7EFE5', icon: Sparkles },
 } as const
 
 function CreativePerformanceDiagnostics({ diagnostics }: { diagnostics?: CreativeDiagnostic[] }) {
@@ -694,7 +694,6 @@ export default function CreativeReviewPage() {
         .creative-analysis-grid { background-image: linear-gradient(rgba(4,18,8,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(4,18,8,.08) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent); }
         .creative-heat-bloom { position: absolute; border-radius: 999px; pointer-events: none; mix-blend-mode: multiply; animation: creativeBloomPulse 1.9s ease-in-out infinite; }
         .creative-heat-bloom--one { left: 36%; top: 27%; height: 9rem; width: 9rem; background: radial-gradient(circle, rgba(184,204,185,.9) 0%, rgba(184,204,185,.34) 38%, rgba(184,204,185,0) 72%); }
-        .creative-heat-bloom--two { right: 25%; bottom: 20%; height: 7rem; width: 7rem; background: radial-gradient(circle, rgba(212,163,115,.78) 0%, rgba(212,163,115,.25) 42%, rgba(212,163,115,0) 72%); animation-delay: .42s; }
         .creative-loading-sweep { height: 38%; background: linear-gradient(180deg, rgba(212,232,213,0) 0%, rgba(184,204,185,.26) 40%, rgba(212,232,213,.72) 50%, rgba(184,204,185,.26) 60%, rgba(212,232,213,0) 100%); animation: creativeLoadingSweep 2.35s ease-in-out infinite; }
         .creative-analysis-progress { animation: creativeAnalysisProgress 1.7s ease-in-out infinite; }
       `}</style>
@@ -832,7 +831,6 @@ export default function CreativeReviewPage() {
                   {loading && <div className="pointer-events-none absolute inset-0 overflow-hidden">
                     <div className="creative-analysis-grid absolute inset-0" />
                     <div className="creative-heat-bloom creative-heat-bloom--one" />
-                    <div className="creative-heat-bloom creative-heat-bloom--two" />
                     <div className="creative-loading-sweep absolute inset-x-0 top-0" />
                     <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white" style={{ background: 'rgba(4,18,8,.76)', backdropFilter: 'blur(8px)' }}><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full" style={{ background: '#b8ccb9' }} /><span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: '#d4e8d5' }} /></span>Analyzing visual attention</div>
                   </div>}
