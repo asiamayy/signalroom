@@ -645,12 +645,24 @@ export interface CreativePersonaReaction {
   error: string | null
 }
 
+// Synthesized across the whole panel's reactions — genuinely computed by a
+// second Claude call reading every persona's actual response, never a
+// template. Optional on the type (not just at runtime) because older
+// persisted runs from before this field existed won't have it.
+export interface CreativeReviewSummary {
+  overall_take: string
+  where_personas_agree: string | null
+  where_personas_diverge: string | null
+  top_recommended_change: string
+}
+
 export interface CreativeReviewResult {
   zones: CreativeZone[]
   intended_focus: string
   reactions: CreativePersonaReaction[]
   total_personas: number
   completed_in_seconds: number
+  summary?: CreativeReviewSummary
 }
 
 export interface CreativeReviewRun {

@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { buildUserMessageContent, panelRosterEntry, extractJsonObjects } from '@/lib/anthropic/persona-engine'
-import type { Persona, CreativeZone } from '@/types'
+import type { Persona, CreativeZone, CreativePersonaReaction, CreativeReviewSummary } from '@/types'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -187,4 +187,74 @@ export function parseCreativePanelResponses(raw: string, personas: Persona[]): M
   }
 
   return result
+}
+
+// ─── Step 3: synthesize across the whole panel ───────────────────────────────
+// A grid of individual reactions makes you read every card to find the
+// takeaway — this reads all of them at once and gives a genuine synthesis,
+// same reasoning as Audience Panel's executive summary. Only ever built from
+// the reactions actually generated above; never a template filled with
+// placeholder-sounding text.
+
+const DEFAULT_CREATIVE_SUMMARY: CreativeReviewSummary = {
+  overall_take: '',
+  where_personas_agree: null,
+  where_personas_diverge: null,
+  top_recommended_change: '',
+}
+
+export async function generateCreativeReviewSummary(
+  zones: CreativeZone[],
+  reactions: CreativePersonaReaction[]
+): Promise<CreativeReviewSummary> {
+  const usable = reactions.filter(r => r.reaction)
+  if (usable.length === 0) return DEFAULT_CREATIVE_SUMMARY
+
+  const zoneLines = zones.length
+    ? zones.map(z => `- ${z.label}: ${z.attention_pct}% of measured visual attention`).join('\n')
+    : '(no distinct elements were detected)'
+
+  const reactionLines = usable
+    .map(r => `- ${r.persona_name} (${r.job_title}), engagement ${r.engagement_percentage ?? 'n/a'}%: "${r.reaction}"${r.most_confusing_element ? ` [confused by: ${r.most_confusing_element}]` : ''}${r.suggested_adjustment ? ` [suggests: ${r.suggested_adjustment}]` : ''}`)
+    .join('\n')
+
+  const prompt = `You are a senior researcher synthesizing a persona panel's reactions to ONE visual asset (packaging, ad, or landing page).
+
+## Measured visual attention
+${zoneLines}
+
+## Panel reactions
+${reactionLines}
+
+Write a short, honest synthesis grounded ONLY in what these specific people actually said above — never invent a reaction no one gave. Return ONLY a JSON object, no markdown, no preamble:
+{
+  "overall_take": "<2-3 sentence synthesis of how the panel responded overall>",
+  "where_personas_agree": "<1 sentence on a point of real agreement across multiple people, or null if there isn't one>",
+  "where_personas_diverge": "<1 sentence on where people genuinely disagreed or reacted differently, or null if they didn't>",
+  "top_recommended_change": "<the single most impactful change to make, based on what multiple people actually raised>"
+}`
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 500,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const raw = response.content[0].type === 'text' ? response.content[0].text : ''
+
+  try {
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const start = cleaned.indexOf('{')
+    const end = cleaned.lastIndexOf('}')
+    if (start === -1 || end === -1) return DEFAULT_CREATIVE_SUMMARY
+    const parsed = JSON.parse(cleaned.slice(start, end + 1))
+    return {
+      overall_take: typeof parsed?.overall_take === 'string' ? parsed.overall_take.trim() : '',
+      where_personas_agree: typeof parsed?.where_personas_agree === 'string' && parsed.where_personas_agree.trim() ? parsed.where_personas_agree.trim() : null,
+      where_personas_diverge: typeof parsed?.where_personas_diverge === 'string' && parsed.where_personas_diverge.trim() ? parsed.where_personas_diverge.trim() : null,
+      top_recommended_change: typeof parsed?.top_recommended_change === 'string' ? parsed.top_recommended_change.trim() : '',
+    }
+  } catch {
+    return DEFAULT_CREATIVE_SUMMARY
+  }
 }

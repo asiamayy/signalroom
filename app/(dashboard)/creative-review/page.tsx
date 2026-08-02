@@ -46,11 +46,14 @@ function EngagementRing({ value, size = 44 }: { value: number; size?: number }) 
   )
 }
 
+// Shared between the bar breakdown and the on-image floating labels so a
+// given element reads as the same color in both places.
+const ZONE_COLORS = ['#516354', '#96A998', '#D4A373', '#8D938E', '#B8CCBA', '#C1C8BF']
+
 function ZoneBreakdown({ zones }: { zones: CreativeReviewResult['zones'] }) {
   if (!zones.length) {
     return <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>No distinct elements were detected in this asset.</p>
   }
-  const ZONE_COLORS = ['#516354', '#96A998', '#D4A373', '#8D938E', '#B8CCBA', '#C1C8BF']
   return (
     <div>
       <div className="flex h-6 rounded-lg overflow-hidden gap-0.5 mb-3">
@@ -238,6 +241,87 @@ function ReactionCard({ reaction, image, imageMediaType, intendedFocus }: { reac
   )
 }
 
+// Small pinned labels directly on the image at each zone's location — reads
+// far more immediately than a separate list below the image.
+function ZoneCallouts({ zones }: { zones: CreativeReviewResult['zones'] }) {
+  return (
+    <>
+      {zones.map((z, i) => {
+        const cx = ((z.x0 + z.x1) / 2) * 100
+        const cy = ((z.y0 + z.y1) / 2) * 100
+        const color = ZONE_COLORS[i % ZONE_COLORS.length]
+        return (
+          <div
+            key={z.label}
+            className="absolute flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold whitespace-nowrap pointer-events-none"
+            style={{ left: `${cx}%`, top: `${cy}%`, transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.72)', color: 'white', border: `1.5px solid ${color}` }}
+          >
+            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+            {z.label} · {z.attention_pct}%
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
+// Headline read on the whole panel — real counts computed from the actual
+// reactions (never fabricated), plus the genuine cross-panel synthesis from
+// generateCreativeReviewSummary when the run has one.
+function PanelHeadline({ result }: { result: CreativeReviewResult }) {
+  const withEngagement = result.reactions.filter(r => r.engagement_percentage !== null)
+  const avgEngagement = withEngagement.length
+    ? Math.round(withEngagement.reduce((sum, r) => sum + (r.engagement_percentage ?? 0), 0) / withEngagement.length)
+    : null
+  const highEngagementCount = withEngagement.filter(r => (r.engagement_percentage ?? 0) >= 70).length
+  const confusedCount = result.reactions.filter(r => r.most_confusing_element).length
+
+  return (
+    <div className="rounded-xl p-5 sm:p-6" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+      <div className="grid grid-cols-3 gap-4 mb-5">
+        <div>
+          <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY }}>{avgEngagement !== null ? `${avgEngagement}%` : '—'}</p>
+          <p className="text-[10px] uppercase tracking-wider opacity-70 mt-1">Avg. engagement</p>
+        </div>
+        <div>
+          <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY }}>{highEngagementCount}/{result.total_personas}</p>
+          <p className="text-[10px] uppercase tracking-wider opacity-70 mt-1">Engaged (70%+)</p>
+        </div>
+        <div>
+          <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY }}>{confusedCount}/{result.total_personas}</p>
+          <p className="text-[10px] uppercase tracking-wider opacity-70 mt-1">Flagged confusion</p>
+        </div>
+      </div>
+
+      {result.summary?.overall_take && (
+        <div className="pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+          <p className="text-sm leading-relaxed mb-3">{result.summary.overall_take}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {result.summary.where_personas_agree && (
+              <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mb-1">Where the panel agrees</p>
+                <p className="text-xs">{result.summary.where_personas_agree}</p>
+              </div>
+            )}
+            {result.summary.where_personas_diverge && (
+              <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mb-1">Where they diverge</p>
+                <p className="text-xs">{result.summary.where_personas_diverge}</p>
+              </div>
+            )}
+          </div>
+          {result.summary.top_recommended_change && (
+            <div className="mt-3 rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.12)' }}>
+              <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mb-1">Top recommended change</p>
+              <p className="text-xs">{result.summary.top_recommended_change}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function CreativeReviewResultsView({ result, image, imageMediaType, heatmapDataUrl }: { result: CreativeReviewResult; image: string | null; imageMediaType: string; heatmapDataUrl: string | null }) {
   const [showHeatmap, setShowHeatmap] = useState(true)
 
@@ -249,6 +333,7 @@ function CreativeReviewResultsView({ result, image, imageMediaType, heatmapDataU
           {showHeatmap && heatmapDataUrl && (
             <img src={heatmapDataUrl} alt="" className="absolute inset-0 w-full h-full object-fill pointer-events-none" style={{ imageRendering: 'auto' }} />
           )}
+          <ZoneCallouts zones={result.zones} />
           {heatmapDataUrl && (
             <button onClick={() => setShowHeatmap(s => !s)} className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.65)', color: 'white', border: 'none', cursor: 'pointer' }}>
               <Eye size={11} /> {showHeatmap ? 'Hide heatmap' : 'Show heatmap'}
@@ -256,6 +341,8 @@ function CreativeReviewResultsView({ result, image, imageMediaType, heatmapDataU
           )}
         </div>
       )}
+
+      <PanelHeadline result={result} />
 
       <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
         <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
@@ -468,13 +555,15 @@ export default function CreativeReviewPage() {
               <button onClick={() => setSelectedRun(null)} className="text-xs font-semibold self-start" style={{ color: HOME_COLORS.primary, background: 'none', border: 'none', cursor: 'pointer' }}>← Back to history</button>
               <div className="flex flex-col gap-6">
                 {historyImageUrl && (
-                  <div className="rounded-xl overflow-hidden" style={{ boxShadow: CARD_SHADOW }}>
+                  <div className="rounded-xl overflow-hidden relative" style={{ boxShadow: CARD_SHADOW }}>
                     <img src={historyImageUrl} alt="Reviewed asset" className="w-full h-auto block" />
+                    <ZoneCallouts zones={selectedRun.result.zones} />
                   </div>
                 )}
+                <PanelHeadline result={selectedRun.result} />
                 <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
                   <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
-        <p className="text-[11px] mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share of the heatmap's visual weight that falls on each element below, computed directly from the image's pixels.</p>
+                  <p className="text-[11px] mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share of the heatmap's visual weight that falls on each element below, computed directly from the image's pixels.</p>
                   <ZoneBreakdown zones={selectedRun.result.zones} />
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

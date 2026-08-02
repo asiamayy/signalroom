@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { detectCreativeZones, buildCreativePanelSystemPrompt, parseCreativePanelResponses } from '@/lib/anthropic/creative-review-engine'
+import { detectCreativeZones, buildCreativePanelSystemPrompt, parseCreativePanelResponses, generateCreativeReviewSummary } from '@/lib/anthropic/creative-review-engine'
 import { zoneAttentionPercentages } from '@/lib/vision/saliency'
 import { logError } from '@/lib/logger'
 import Anthropic from '@anthropic-ai/sdk'
@@ -132,12 +132,17 @@ export async function POST(request: NextRequest) {
       return { ...base, ...cell, error: null }
     })
 
+    // Step 4 — read every actual reaction and synthesize a real takeaway,
+    // same reasoning as Audience Panel's executive summary.
+    const summary = await generateCreativeReviewSummary(zones, reactions)
+
     const result: CreativeReviewResult = {
       zones,
       intended_focus: intended_focus ?? '',
       reactions,
       total_personas: reactions.length,
       completed_in_seconds: Math.max(1, Math.round((Date.now() - startedAt) / 1000)),
+      summary,
     }
 
     let runId: string | null = null
