@@ -128,7 +128,7 @@ export default function LandingPage() {
   const [streamingText, setStreamingText] = useState<string>('');
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
-  const wordsDataset = ["opinions", "objections", "blindspots", "expectations"];
+  const wordsDataset = ["opinions", "objections", "blindspots", "expectations", "signals"];
 
   const TRADITIONAL_COST_PER_INTERVIEW = 1250; 
   const TRADITIONAL_HOURS_PER_INTERVIEW = 6; 
@@ -345,7 +345,7 @@ export default function LandingPage() {
           {/* RIGHT SIDE */}
           <div ref={rightColRef} className="md:col-span-12 lg:col-span-5 lg:pt-64 flex flex-col justify-start lg:self-start">
             <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
-              <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for teams building what customers actually want.</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for brands and teams building what customers actually want.</p>
               
               <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">
                 SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
@@ -545,7 +545,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
-                Transform assumptions into intelligence. Bring your customer, market, and product context together to build a foundation for smarter decisions.
+                Transform assumptions into intelligence. Bring your customer, market, brand, and product context together to build a foundation for smarter decisions.
               </p>
             </div>
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
@@ -555,7 +555,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
-                Understand your customers at scale. Model customer perspectives and uncover motivations, objections, and opportunities before investing resources.
+                Understand your customers at scale. Model perspectives, uncover motivations, objections, and opportunities before investing time, media, inventory, or engineering resources.
               </p>
             </div>
             <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
@@ -565,7 +565,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
-                Move forward with confidence. Convert customer signals into strategic recommendations that help teams reduce risk and act faster.
+                Move forward with confidence. Convert customer signals into strategic recommendations that help teams reduce risk and act faster across product, brand, and go-to-market decisions.
               </p>
             </div>
           </div>
@@ -702,7 +702,7 @@ export default function LandingPage() {
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
               <h2 className="text-[30px] sm:text-[36px] mb-6 sm:mb-8 leading-[1.1] tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Quantify the Signal. Eliminate Waste.</h2>
               <p className="text-[14px] sm:text-[15px] text-[#454947] mb-6 max-w-sm leading-relaxed opacity-90">
-                Traditional research engagements can cost $15,000+ for a single study. SignalRoom gives teams continuous customer intelligence at a predictable monthly cost.
+                Traditional research engagements can cost thousands for a single study and move too slowly for real product cycles. SignalRoom gives teams a faster, more predictable way to pressure-test decisions before budget, inventory, packaging, media spend, or engineering time are committed.
               </p>
             </div>
             <div className="lg:col-start-7 lg:col-span-6">
@@ -873,7 +873,7 @@ export default function LandingPage() {
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">01 // Starter</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Pulse</h3>
-              <p className="text-xs text-neutral-600 mb-4">Validate ideas before investing months of engineering time. Simulate customer conversations and uncover demand signals early.</p>
+              <p className="text-xs text-neutral-600 mb-4">Validate ideas before investing in launch, inventory, media, or engineering time. Simulate customer conversations and uncover demand signals early.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
                 <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$199</span>
                 <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
@@ -892,7 +892,7 @@ export default function LandingPage() {
               <div className="absolute top-0 right-0 bg-[#1A3024] text-white text-[9px] px-4 py-1.5 uppercase tracking-[0.3em]">Most popular</div>
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-[#1A3024] mb-8 sm:mb-10">02 // Professional</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter text-[#1A3024] font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Signal</h3>
-              <p className="text-xs text-[#1A3024] font-medium mb-4">Replace slow research cycles with continuous customer intelligence for faster product decisions.</p>
+              <p className="text-xs text-[#1A3024] font-medium mb-4">Replace slow research cycles with continuous customer intelligence for faster product, brand, and go-to-market decisions.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
                 <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$499</span>
                 <span className="text-[11px] text-[#1A3024] font-medium uppercase tracking-widest">/ month</span>
@@ -913,7 +913,7 @@ export default function LandingPage() {
             <div className="p-6 sm:p-10 flex flex-col hover:bg-[#fafbfa] transition-all duration-1000 group thin-border">
               <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-700 mb-8 sm:mb-10">03 // Agency</span>
               <h3 className="text-[28px] sm:text-[32px] mb-2 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Broadcast</h3>
-              <p className="text-xs text-neutral-500 mb-4">For agencies and growing teams requiring comprehensive organization-wide research scaling.</p>
+              <p className="text-xs text-neutral-500 mb-4">For agencies and growing teams running research across multiple brands, clients, or initiatives at once.</p>
               <div className="flex items-baseline gap-2 mb-8 sm:mb-10">
                 <span className="text-[40px] sm:text-[48px] tracking-tighter text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$999</span>
                 <span className="text-[11px] text-neutral-600 font-medium uppercase tracking-widest">/ month</span>
