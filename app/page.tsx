@@ -694,82 +694,6 @@ export default function LandingPage() {
         })()}
       </div>
 
-      {/* ROI Calculator */}
-      <RevealSection>
-        <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#fafbfa] border-b border-[#1A3024]/10 relative overflow-hidden scroll-mt-16 z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-start">
-            <div className="lg:col-span-5">
-              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
-              <h2 className="text-[30px] sm:text-[36px] mb-6 sm:mb-8 leading-[1.1] tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Quantify the Signal. Eliminate Waste.</h2>
-              <p className="text-[14px] sm:text-[15px] text-[#454947] mb-6 max-w-sm leading-relaxed opacity-90">
-                Traditional research engagements can cost thousands for a single study and move too slowly for real product cycles. SignalRoom gives teams a faster, more predictable way to pressure-test decisions before budget, inventory, packaging, media spend, or engineering time are committed.
-              </p>
-            </div>
-            <div className="lg:col-start-7 lg:col-span-6">
-              <div className="border border-[#d1d5d3] p-5 sm:p-10 bg-[#F5F2F0] relative rounded-[4px]">
-                <div className="px-1 pb-4 mb-6 border-b border-[#d1d5d3]">
-                  <h3 className="text-lg text-neutral-900 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See your savings</h3>
-                  <p className="text-xs text-neutral-500 mt-1">Traditional research costs thousands. See how SignalRoom compares.</p>
-                </div>
-                <div className="space-y-10">
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <label className="text-[11px] font-medium uppercase tracking-[0.3em] text-neutral-700 block">Interviews per month</label>
-                      <span className="text-neutral-900 font-normal text-xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{roiValue}</span>
-                    </div>
-                    <input 
-                      className="w-full h-[2px] bg-[#e2e2e2] appearance-none accent-[#1A3024] cursor-pointer rounded" 
-                      id="roi-range" max="30" min="1" step="1" type="range" value={roiValue}
-                      onChange={(e) => setRoiValue(parseInt(e.target.value))}
-                    />
-                    <div className="flex justify-between mt-3 text-[10px] tracking-[0.2em] font-medium text-neutral-600">
-                      <span>1 UNIT</span>
-                      <span>30 UNITS</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
-                    <div className="p-5 sm:p-6 bg-white">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-700 block mb-2">Traditional</span>
-                      <span className="text-[28px] font-normal tracking-tighter text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>${traditionalCost.toLocaleString()}</span>
-                      <p className="text-[11px] text-neutral-600 font-medium mb-3">/month</p>
-                      <div className="border-t border-[#d1d5d3] pt-3 space-y-1.5 text-[11px] text-neutral-600">
-                        <div className="flex justify-between"><span>Time</span><span className="font-medium text-neutral-800">4 weeks</span></div>
-                        <div className="flex justify-between"><span>Per interview</span><span className="font-medium text-neutral-800">$1,250</span></div>
-                        <div className="flex justify-between"><span>Hours</span><span className="font-medium text-neutral-800">{traditionalHours}h</span></div>
-                      </div>
-                    </div>
-                    <div className="p-5 sm:p-6 bg-[#e9edea]">
-                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1A3024] block mb-2">SignalRoom</span>
-                      <span className="text-[28px] font-normal tracking-tighter text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$499</span>
-                      <p className="text-[11px] text-[#1A3024] font-medium mb-3">100 interviews/month</p>
-                      <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1A3024]">
-                        <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
-                        <div className="flex justify-between"><span>Per interview</span><span className="font-medium">~$0</span></div>
-                        <div className="flex justify-between"><span>Hours</span><span className="font-medium">&lt; 1h</span></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-[#1A3024] p-5 sm:p-6 grid grid-cols-2 gap-4 text-white rounded-[4px]">
-                    <div>
-                      <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-300 block mb-1">You save</span>
-                      <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                        ${savings.toLocaleString()}<span className="text-xs font-sans font-normal text-neutral-400">/mo</span>
-                      </div>
-                      <div className="text-[10px] text-neutral-300 mt-0.5">${annualSavings.toLocaleString()}/year</div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[9px] font-medium uppercase tracking-[0.4em] text-neutral-400 block mb-1">Time saved</span>
-                      <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{calculatedReduction}%</div>
-                      <div className="text-[10px] text-neutral-400 mt-0.5">faster</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </RevealSection>
-
       {/* Team Workspaces + Integrations Section */}
       <RevealSection>
         <section id="integrations" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
@@ -854,6 +778,82 @@ export default function LandingPage() {
                 <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] border-b border-[#1A3024]/30 w-fit pb-0.5">
                   Included on Signal & Broadcast
                 </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </RevealSection>
+
+      {/* ROI Calculator */}
+      <RevealSection>
+        <section id="roi" className="px-6 sm:px-12 py-16 sm:py-20 bg-[#fafbfa] border-b border-[#1A3024]/10 relative overflow-hidden scroll-mt-16 z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-start">
+            <div className="lg:col-span-5">
+              <span className="text-[11px] font-medium uppercase tracking-[0.4em] text-neutral-600 mb-4 sm:mb-6 block">The Value Logic</span>
+              <h2 className="text-[30px] sm:text-[36px] mb-6 sm:mb-8 leading-[1.1] tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Quantify the Signal. Eliminate Waste.</h2>
+              <p className="text-[14px] sm:text-[15px] text-[#454947] mb-6 max-w-sm leading-relaxed opacity-90">
+                Traditional research engagements can cost thousands for a single study and move too slowly for real product cycles. SignalRoom gives teams a faster, more predictable way to pressure-test decisions before budget, inventory, packaging, media spend, or engineering time are committed.
+              </p>
+            </div>
+            <div className="lg:col-start-7 lg:col-span-6">
+              <div className="border border-[#d1d5d3] p-5 sm:p-10 bg-[#F5F2F0] relative rounded-[4px]">
+                <div className="px-1 pb-4 mb-6 border-b border-[#d1d5d3]">
+                  <h3 className="text-lg text-neutral-900 font-normal" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See your savings</h3>
+                  <p className="text-xs text-neutral-500 mt-1">Traditional research costs thousands. See how SignalRoom compares.</p>
+                </div>
+                <div className="space-y-10">
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="text-[11px] font-medium uppercase tracking-[0.3em] text-neutral-700 block">Interviews per month</label>
+                      <span className="text-neutral-900 font-normal text-xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{roiValue}</span>
+                    </div>
+                    <input
+                      className="w-full h-[2px] bg-[#e2e2e2] appearance-none accent-[#1A3024] cursor-pointer rounded"
+                      id="roi-range" max="30" min="1" step="1" type="range" value={roiValue}
+                      onChange={(e) => setRoiValue(parseInt(e.target.value))}
+                    />
+                    <div className="flex justify-between mt-3 text-[10px] tracking-[0.2em] font-medium text-neutral-600">
+                      <span>1 UNIT</span>
+                      <span>30 UNITS</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
+                    <div className="p-5 sm:p-6 bg-white">
+                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-700 block mb-2">Traditional</span>
+                      <span className="text-[28px] font-normal tracking-tighter text-neutral-900" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>${traditionalCost.toLocaleString()}</span>
+                      <p className="text-[11px] text-neutral-600 font-medium mb-3">/month</p>
+                      <div className="border-t border-[#d1d5d3] pt-3 space-y-1.5 text-[11px] text-neutral-600">
+                        <div className="flex justify-between"><span>Time</span><span className="font-medium text-neutral-800">4 weeks</span></div>
+                        <div className="flex justify-between"><span>Per interview</span><span className="font-medium text-neutral-800">$1,250</span></div>
+                        <div className="flex justify-between"><span>Hours</span><span className="font-medium text-neutral-800">{traditionalHours}h</span></div>
+                      </div>
+                    </div>
+                    <div className="p-5 sm:p-6 bg-[#e9edea]">
+                      <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#1A3024] block mb-2">SignalRoom</span>
+                      <span className="text-[28px] font-normal tracking-tighter text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>$499</span>
+                      <p className="text-[11px] text-[#1A3024] font-medium mb-3">100 interviews/month</p>
+                      <div className="border-t border-[#b8c2bc] pt-3 space-y-1.5 text-[11px] text-[#1A3024]">
+                        <div className="flex justify-between"><span>Time</span><span className="font-medium">Minutes</span></div>
+                        <div className="flex justify-between"><span>Per interview</span><span className="font-medium">~$0</span></div>
+                        <div className="flex justify-between"><span>Hours</span><span className="font-medium">&lt; 1h</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-[#1A3024] p-5 sm:p-6 grid grid-cols-2 gap-4 text-white rounded-[4px]">
+                    <div>
+                      <span className="text-[9px] font-medium uppercase tracking-[0.3em] text-neutral-300 block mb-1">You save</span>
+                      <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                        ${savings.toLocaleString()}<span className="text-xs font-sans font-normal text-neutral-400">/mo</span>
+                      </div>
+                      <div className="text-[10px] text-neutral-300 mt-0.5">${annualSavings.toLocaleString()}/year</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] font-medium uppercase tracking-[0.4em] text-neutral-400 block mb-1">Time saved</span>
+                      <div className="text-xl sm:text-2xl tracking-tighter" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{calculatedReduction}%</div>
+                      <div className="text-[10px] text-neutral-400 mt-0.5">faster</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
