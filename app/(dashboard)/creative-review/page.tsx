@@ -293,34 +293,16 @@ function ZoneCallouts({ zones, contentBox }: { zones: CreativeReviewResult['zone
   )
 }
 
-// A subtle animated scan sweeping down the image while the panel is being
-// generated, in place of a generic spinner — the visual mirrors what's
-// actually happening (the asset is being read), not just a "please wait".
-function ScanningOverlay() {
+// A subtle "Analyzing" badge shown during generation — the actual visual
+// interest is the heatmap reveal + scan line rendered in SquareImageFrame
+// (see the creative-heatmap-reveal / creative-scan-line global styles
+// below), which mirrors the reference video: the heatmap develops
+// progressively as the scan line sweeps down the image, instead of just
+// sitting fully-formed under a translucent bar.
+function AnalyzingBadge() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute left-0 right-0 h-1/3 creative-scan-line" />
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.65)', color: 'white' }}>
-        <Loader2 size={10} className="animate-spin" /> Analyzing
-      </div>
-      <style jsx>{`
-        .creative-scan-line {
-          top: -34%;
-          background: linear-gradient(
-            180deg,
-            rgba(150, 169, 152, 0) 0%,
-            rgba(150, 169, 152, 0.55) 45%,
-            rgba(212, 232, 213, 0.9) 50%,
-            rgba(150, 169, 152, 0.55) 55%,
-            rgba(150, 169, 152, 0) 100%
-          );
-          animation: creativeScanSweep 2.2s ease-in-out infinite;
-        }
-        @keyframes creativeScanSweep {
-          0% { top: -34%; }
-          100% { top: 100%; }
-        }
-      `}</style>
+    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider pointer-events-none" style={{ background: 'rgba(0,0,0,0.65)', color: 'white' }}>
+      <Loader2 size={10} className="animate-spin" /> Analyzing
     </div>
   )
 }
@@ -350,17 +332,49 @@ function SquareImageFrame({ src, heatmapSrc, zones, analyzing = false, showHeatm
             setContentBox(computeContentBox(img.naturalWidth, img.naturalHeight))
           }}
         />
-        {showHeatmap && heatmapSrc && (
-          <img src={heatmapSrc} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" />
+        {heatmapSrc && (showHeatmap || analyzing) && (
+          <img
+            src={heatmapSrc}
+            alt=""
+            className={`absolute inset-0 w-full h-full object-contain pointer-events-none ${analyzing ? 'creative-heatmap-reveal' : ''}`}
+          />
         )}
+        {analyzing && heatmapSrc && <div className="absolute left-0 right-0 h-[6%] creative-scan-line pointer-events-none" />}
         {!analyzing && zones.length > 0 && <ZoneCallouts zones={zones} contentBox={contentBox} />}
-        {analyzing && <ScanningOverlay />}
+        {analyzing && <AnalyzingBadge />}
         {!analyzing && showHeatmapToggle && heatmapSrc && (
           <button onClick={() => setShowHeatmap(s => !s)} className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.65)', color: 'white', border: 'none', cursor: 'pointer' }}>
             <Eye size={11} /> {showHeatmap ? 'Hide heatmap' : 'Show heatmap'}
           </button>
         )}
       </div>
+      <style jsx global>{`
+        .creative-heatmap-reveal {
+          clip-path: inset(0 0 100% 0);
+          animation: creativeHeatReveal 2s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+        }
+        @keyframes creativeHeatReveal {
+          0% { clip-path: inset(0 0 100% 0); }
+          100% { clip-path: inset(0 0 0% 0); }
+        }
+        .creative-scan-line {
+          top: 0%;
+          background: linear-gradient(
+            180deg,
+            rgba(150, 169, 152, 0) 0%,
+            rgba(150, 169, 152, 0.6) 35%,
+            rgba(212, 232, 213, 0.95) 50%,
+            rgba(150, 169, 152, 0.6) 65%,
+            rgba(150, 169, 152, 0) 100%
+          );
+          box-shadow: 0 0 16px 2px rgba(212, 232, 213, 0.65);
+          animation: creativeScanSweep 2s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+        }
+        @keyframes creativeScanSweep {
+          0% { top: -3%; }
+          100% { top: 97%; }
+        }
+      `}</style>
     </div>
   )
 }
