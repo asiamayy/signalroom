@@ -608,6 +608,64 @@ export interface ConceptTestRun {
   created_at: string
 }
 
+// ─── Creative Signal Check (visual asset reviewed by a persona panel) ───────
+// Unlike Compare/Audience Panel/Concept Test, this reasons about a SINGLE
+// visual asset (packaging, ad, landing page) rather than comparing several —
+// there's no winner or cross-concept score. Two independently-sourced layers
+// combine into one result: real pixel-based saliency (computed client-side in
+// lib/vision/saliency.ts, never touched by the LLM) tells you WHERE attention
+// objectively lands; Claude identifies WHAT each of those regions actually is
+// (headline, CTA, product shot, etc.); then the persona panel reacts to that
+// real attention data from each person's own perspective. engagement_percentage
+// is a per-persona read on THIS asset, not a comparative ranking score.
+
+export interface CreativeZone {
+  label: string // e.g. "Headline", "Call to action", "Product image", "Price", "Logo", "Background"
+  x0: number // normalized 0-1 bounding box
+  y0: number
+  x1: number
+  y1: number
+  attention_pct: number // share of total saliency mass falling in this zone, 0-100
+}
+
+export interface CreativePersonaReaction {
+  persona_id: string
+  persona_name: string
+  avatar_initials: string
+  avatar_color: any
+  avatar_url: string | null
+  job_title: string
+  notices: string[] // ordered, what they notice first/second/third, in their own words
+  reaction: string | null // first-person, 3-5 sentences
+  most_believable_claim: string | null
+  most_confusing_element: string | null
+  likely_trigger: string | null // what would make them act, or walk away
+  engagement_percentage: number | null // 0-100, this persona's own read on this asset
+  suggested_adjustment: string | null
+  error: string | null
+}
+
+export interface CreativeReviewResult {
+  zones: CreativeZone[]
+  intended_focus: string
+  reactions: CreativePersonaReaction[]
+  total_personas: number
+  completed_in_seconds: number
+}
+
+export interface CreativeReviewRun {
+  id: string
+  user_id: string
+  project_id: string
+  workspace_id?: string | null
+  intended_focus: string
+  persona_ids: string[]
+  image_storage_path: string
+  heatmap_storage_path: string | null
+  result: CreativeReviewResult
+  created_at: string
+}
+
 // ─── API Response shapes ──────────────────────────────────────────────────────
 
 export interface ApiResponse<T> {

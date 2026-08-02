@@ -66,7 +66,7 @@ function isValidSentiment(s: unknown): s is StructuredPersonaResponse['sentiment
 // of strings/escapes so braces inside reply text don't confuse it). Used to
 // salvage individual panel entries when the surrounding array is malformed or
 // truncated (e.g. a large panel that hit max_tokens with no closing "]").
-function extractJsonObjects(text: string): string[] {
+export function extractJsonObjects(text: string): string[] {
   const objects: string[] = []
   let depth = 0, startIdx = -1, inString = false, escaped = false
   for (let i = 0; i < text.length; i++) {
@@ -386,7 +386,9 @@ You are in Devil's Advocate mode. This means:
 // call instead of one-per-persona.
 
 // Compact roster line for one persona — the essence of the individual prompt.
-function panelRosterEntry(persona: Persona): string {
+// Exported so other joint-call features (e.g. creative-review-engine.ts) can
+// build their own panel prompts against the same roster format.
+export function panelRosterEntry(persona: Persona): string {
   const t = persona.traits
   const notices = deriveAttentionProfile(t).replace(/•\s*/g, '').split('\n').filter(Boolean).join(', ')
   const stageBehavior = deriveStageBehavior(persona.funnel_stage)

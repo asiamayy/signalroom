@@ -7,7 +7,7 @@ import { Inter, Playfair_Display, Source_Serif_4, Hanken_Grotesk } from 'next/fo
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Home, Briefcase, Users, MessageSquare, Settings, ArrowLeftRight, Menu, X,
-  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus, Layers, Building2,
+  BarChart2, UsersRound, Activity, LogOut, Search, HelpCircle, ChevronDown, Plus, Layers, Building2, Eye,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HOME_COLORS, HOME_FONT_BODY } from '@/lib/home-theme'
@@ -48,7 +48,7 @@ const hanken = Hanken_Grotesk({ subsets: ['latin'], weight: ['400', '600', '700'
 
 const NAV_SECTIONS = [
   { id: 'research', label: 'Research', icon: Briefcase, items: [{ href: '/projects', label: 'Projects', icon: Briefcase }, { href: '/personas', label: 'Personas', icon: Users }, { href: '/interviews', label: 'Interviews', icon: MessageSquare }] },
-  { id: 'test', label: 'Test ideas', icon: Layers, items: [{ href: '/compare', label: 'Compare reactions', icon: ArrowLeftRight }, { href: '/audience-panel', label: 'Audience test', icon: UsersRound }, { href: '/concept-test', label: 'Concept test', icon: Layers }] },
+  { id: 'test', label: 'Test ideas', icon: Layers, items: [{ href: '/compare', label: 'Compare reactions', icon: ArrowLeftRight }, { href: '/audience-panel', label: 'Audience test', icon: UsersRound }, { href: '/concept-test', label: 'Concept test', icon: Layers }, { href: '/creative-review', label: 'Creative Signal Check', icon: Eye }] },
   { id: 'results', label: 'Results', icon: BarChart2, items: [{ href: '/reports', label: 'Insights', icon: Activity }, { href: '/signals', label: 'Research signals', icon: BarChart2 }] },
   { id: 'team', label: 'Team', icon: Building2, requiresWorkspaceAccess: true, items: [{ href: '/workspaces', label: 'Workspaces', icon: Building2 }] },
 ]
