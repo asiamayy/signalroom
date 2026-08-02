@@ -1,6 +1,6 @@
 -- Run this in Supabase SQL Editor
 --
--- Creative Signal Check: upload a single visual asset (packaging, ad,
+-- Creative Testing: upload a single visual asset (packaging, ad,
 -- landing page) and see how a persona panel reads it, grounded in a real,
 -- independently-computed attention map (see lib/vision/saliency.ts) rather
 -- than an LLM's guess about a screenshot.

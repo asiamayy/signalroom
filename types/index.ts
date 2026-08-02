@@ -608,7 +608,7 @@ export interface ConceptTestRun {
   created_at: string
 }
 
-// ─── Creative Signal Check (visual asset reviewed by a persona panel) ───────
+// ─── Creative Testing (visual asset reviewed by a persona panel) ───────────
 // Unlike Compare/Audience Panel/Concept Test, this reasons about a SINGLE
 // visual asset (packaging, ad, landing page) rather than comparing several —
 // there's no winner or cross-concept score. Two independently-sourced layers

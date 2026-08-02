@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
   // Reuses the same gate as Audience Panel — this is a similarly premium,
   // multi-persona joint-call feature, not worth a new plan-limits field yet.
   if (!PLAN_LIMITS[plan].audience_panel) {
-    return NextResponse.json({ error: 'Upgrade to Signal or Broadcast to use Creative Signal Check' }, { status: 403 })
+    return NextResponse.json({ error: 'Upgrade to Signal or Broadcast to use Creative Testing' }, { status: 403 })
   }
 
   if (!persona_ids || persona_ids.length < MIN_PERSONAS) {

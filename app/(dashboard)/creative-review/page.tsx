@@ -402,7 +402,7 @@ export default function CreativeReviewPage() {
         <div className="mb-8">
           <h1 className="flex items-center gap-2" style={{ ...DISPLAY_LG_STYLE, fontSize: '28px', lineHeight: '36px', color: HOME_COLORS.onSurface }}>
             <Eye size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-            Creative Signal Check
+            Creative Testing
           </h1>
           <p className="text-sm mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>See how your persona panel reads a packaging concept, ad, or landing page — grounded in real measured attention, not a guess.</p>
         </div>
@@ -584,7 +584,7 @@ export default function CreativeReviewPage() {
               )}
 
               <button onClick={handleRun} disabled={!canRun} className="mt-5 flex items-center gap-2 px-8 py-3 rounded-full text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-40" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: canRun ? 'pointer' : 'not-allowed' }}>
-                {loading ? <><Loader2 size={15} className="animate-spin" /> Reviewing...</> : <><Eye size={15} /> Run Creative Signal Check</>}
+                {loading ? <><Loader2 size={15} className="animate-spin" /> Reviewing...</> : <><Eye size={15} /> Run Creative Testing</>}
               </button>
             </section>
 
