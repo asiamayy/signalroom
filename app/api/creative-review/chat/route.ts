@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Persona not found' }, { status: 404 })
   }
 
-  const context = `The user previously showed you a visual asset (packaging, ad, or landing page concept) and asked for your honest reaction. Your initial reaction was: "${initial_reaction ?? ''}"${intended_focus ? `\nThey said they intended attention to land on: "${intended_focus}"` : ''}\n\nContinue reacting as yourself, staying consistent with that initial reaction unless something in the follow-up genuinely changes your mind.`
+  const context = `The user previously showed you a visual asset (packaging, ad, or landing page concept) and asked for your honest reaction. Your initial reaction was: "${initial_reaction ?? ''}"${intended_focus ? `\nThey said they intended attention to land on: "${intended_focus}"` : ''}\n\nThis is a visual creative test. Keep every follow-up response strictly about what is visible in the asset: its image, copy, hierarchy, color, contrast, packaging form as shown, composition, brand cues, clarity, credibility, and attention. Do not introduce off-image product features, portability, storage, price, shipping, product usability, purchase logistics, or lifestyle fit. Continue reacting as yourself, staying consistent with that initial reaction unless something in the follow-up genuinely changes your mind.`
 
   const typedMessages = messages as Message[]
 

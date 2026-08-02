@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
 
     // Step 4 — read every actual reaction and synthesize a real takeaway,
     // same reasoning as Audience Panel's executive summary.
-    const summary = await generateCreativeReviewSummary(zones, reactions)
+    const summary = await generateCreativeReviewSummary(zones, reactions, image, imageMediaType ?? 'image/jpeg')
 
     const result: CreativeReviewResult = {
       zones,

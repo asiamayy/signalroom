@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { buildUserMessageContent, panelRosterEntry, extractJsonObjects } from '@/lib/anthropic/persona-engine'
-import type { Persona, CreativeZone, CreativePersonaReaction, CreativeReviewSummary } from '@/types'
+import type { Persona, CreativeZone, CreativePersonaReaction, CreativeReviewSummary, CreativeDiagnostic, CreativeDiagnosticDimension } from '@/types'
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -89,7 +89,7 @@ export function buildCreativePanelSystemPrompt(
     ? opts.zones.map(z => `  - ${z.label}: ${z.attention_pct}% of measured visual attention`).join('\n')
     : '  (no distinct elements were detected — react to the image as a whole)'
 
-  return `You are simulating a market-research panel: ${personas.length} DIFFERENT real people, each independently reacting to ONE shared visual asset (packaging, ad, landing page, or concept). You are not an AI assistant and you never break character for any of them.
+  return `You are simulating a visual creative-review panel: ${personas.length} DIFFERENT real people, each independently reacting to ONE shared visual asset (packaging, ad, landing page, or concept). You are not an AI assistant and you never break character for any of them.
 
 ## Objective visual attention data (measured from the actual image, not a guess)
 ${zoneLines}
@@ -99,13 +99,14 @@ ${opts.intendedFocus ? `\n## What the creator intended attention to land on\n"${
 ${roster}
 
 ## HARD RULES
-1. Voice EACH person as a real human, first person, grounded in their own life, job, income, and situation. Translate traits into concrete behavior — never cite a trait or rating as a label.
-2. Their attention is shaped by, but not identical to, the measured data above — a real person's own goals and habits still filter what registers with them. Let each person's "notices" list reflect their own honest read, referencing the measured data only where it genuinely explains their reaction.
-3. They are genuinely DIFFERENT people — what they notice first, what they trust, and what confuses them should differ meaningfully between them. Real consumers rarely agree.
-4. NO TWO PEOPLE MAY OPEN THE SAME WAY. Each person's reaction must enter from THAT person's own angle.
-5. Keep each reaction conversational — 3 to 5 sentences.
-6. ENGAGEMENT — for each person, give an Engagement Percentage from 0 to 100: how likely THEY, based on their own reaction, would keep engaging with this asset (keep reading, trust the claim, pick it up, click through) rather than disengage or dismiss it. This is NOT a comparison to other people or other concepts — it is that person's own read on this one asset. Anchors: 90-100 = fully hooked, no hesitation; 70-89 = engaged but with a specific reservation; 50-69 = lukewarm, could go either way; 30-49 = mostly tuned out; 0-29 = actively dismissive. Scatter widely across the panel — do not cluster.
-7. If nothing in the asset is confusing or no claim reads as believable to that person, use null rather than inventing one.
+1. This is a VISUAL CREATIVE TEST. React ONLY to what is visible in the asset: image, copy, hierarchy, color, contrast, packaging form as shown, composition, brand cues, clarity, credibility, and attention. Do NOT discuss unshown product features, portability, storage, price, shipping, product usability, purchase logistics, or whether the physical product would fit a person's lifestyle. For example, do not say a bottle should be compact or easy to transport unless that exact visual claim appears in the asset.
+2. Voice EACH person as a real human, first person. Their persona may shape how they interpret a visible visual cue, but it must never introduce an off-image need, preference, or product judgment. Never cite a trait or rating as a label.
+3. Their attention is shaped by, but not identical to, the measured data above. Let each person's "notices" list name visible elements only, referencing the measured data only where it genuinely explains their reaction.
+4. They are genuinely DIFFERENT people — what they notice first, what they trust, and what confuses them visually should differ meaningfully between them. Real viewers rarely agree.
+5. NO TWO PEOPLE MAY OPEN THE SAME WAY. Each person's reaction must enter from THAT person's own visual angle.
+6. Keep each reaction conversational — 3 to 5 sentences.
+7. ENGAGEMENT — for each person, give an Engagement Percentage from 0 to 100: how likely THEY are to keep looking at, understand, and trust this creative rather than tune it out. This is NOT purchase intent and is NOT a judgment of the product itself. Anchors: 90-100 = visually compelling and immediately clear; 70-89 = engaging with a specific visual reservation; 50-69 = understandable but not very compelling; 30-49 = visually easy to skip; 0-29 = actively dismissive. Scatter widely across the panel — do not cluster.
+8. If nothing in the asset is confusing or no claim reads as believable to that person, use null rather than inventing one.
 
 ## OUTPUT — STRICT
 Reply with ONLY a JSON array, one object per person, in the SAME ORDER as the panel above, each using that person's exact id. No markdown, no code fences, no text before or after the array:
@@ -201,11 +202,14 @@ const DEFAULT_CREATIVE_SUMMARY: CreativeReviewSummary = {
   where_personas_agree: null,
   where_personas_diverge: null,
   top_recommended_change: '',
+  diagnostics: [],
 }
 
 export async function generateCreativeReviewSummary(
   zones: CreativeZone[],
-  reactions: CreativePersonaReaction[]
+  reactions: CreativePersonaReaction[],
+  imageBase64: string,
+  imageMediaType: string
 ): Promise<CreativeReviewSummary> {
   const usable = reactions.filter(r => r.reaction)
   if (usable.length === 0) return DEFAULT_CREATIVE_SUMMARY
@@ -218,7 +222,7 @@ export async function generateCreativeReviewSummary(
     .map(r => `- ${r.persona_name} (${r.job_title}), engagement ${r.engagement_percentage ?? 'n/a'}%: "${r.reaction}"${r.most_confusing_element ? ` [confused by: ${r.most_confusing_element}]` : ''}${r.suggested_adjustment ? ` [suggests: ${r.suggested_adjustment}]` : ''}`)
     .join('\n')
 
-  const prompt = `You are a senior researcher synthesizing a persona panel's reactions to ONE visual asset (packaging, ad, or landing page).
+  const prompt = `You are a senior researcher synthesizing a persona panel's reactions to ONE visual asset (packaging, ad, or landing page). This is a visual creative test: keep every conclusion and recommendation strictly about visible imagery, copy, hierarchy, brand cues, clarity, credibility, or attention. Never introduce off-image product features, usability, portability, purchase logistics, or lifestyle fit.
 
 ## Measured visual attention
 ${zoneLines}
@@ -226,18 +230,30 @@ ${zoneLines}
 ## Panel reactions
 ${reactionLines}
 
+## Creative performance diagnostics
+Also assess the asset itself across these five creative-performance dimensions. Attention is about whether the hierarchy guides focus to the most important visible element; Emotion is about the visible asset's emotional intensity and likely positive or negative tone; Comprehension is about whether the visible message can be understood quickly; Memory is about whether the visual, copy, and branding offer distinctive recall cues; Persuasion is about whether the visible creative gives someone a clear reason to take the next step.
+
+These are AI-guided visual readouts, not lab-validated measurements. Use the uploaded image plus the actual panel reactions. Score each dimension from 0 to 100, give one concrete visible finding, and one practical visual or copy refinement. Do not infer product performance, purchase intent, ROI, or any off-image attribute.
+
 Write a short, honest synthesis grounded ONLY in what these specific people actually said above — never invent a reaction no one gave. Return ONLY a JSON object, no markdown, no preamble:
 {
   "overall_take": "<2-3 sentence synthesis of how the panel responded overall>",
   "where_personas_agree": "<1 sentence on a point of real agreement across multiple people, or null if there isn't one>",
   "where_personas_diverge": "<1 sentence on where people genuinely disagreed or reacted differently, or null if they didn't>",
-  "top_recommended_change": "<the single most impactful change to make, based on what multiple people actually raised>"
+  "top_recommended_change": "<the single most impactful visual or copy change to make, based on what multiple people actually raised>",
+  "diagnostics": [
+    { "dimension": "attention", "score": 0, "finding": "<specific visible finding>", "recommendation": "<specific refinement>" },
+    { "dimension": "emotion", "score": 0, "finding": "<specific visible finding>", "recommendation": "<specific refinement>" },
+    { "dimension": "comprehension", "score": 0, "finding": "<specific visible finding>", "recommendation": "<specific refinement>" },
+    { "dimension": "memory", "score": 0, "finding": "<specific visible finding>", "recommendation": "<specific refinement>" },
+    { "dimension": "persuasion", "score": 0, "finding": "<specific visible finding>", "recommendation": "<specific refinement>" }
+  ]
 }`
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 500,
-    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 1300,
+    messages: [{ role: 'user', content: buildUserMessageContent(prompt, imageBase64, imageMediaType) }],
   })
 
   const raw = response.content[0].type === 'text' ? response.content[0].text : ''
@@ -248,11 +264,29 @@ Write a short, honest synthesis grounded ONLY in what these specific people actu
     const end = cleaned.lastIndexOf('}')
     if (start === -1 || end === -1) return DEFAULT_CREATIVE_SUMMARY
     const parsed = JSON.parse(cleaned.slice(start, end + 1))
+    const validDimensions: CreativeDiagnosticDimension[] = ['attention', 'emotion', 'comprehension', 'memory', 'persuasion']
+    const rawDiagnostics: unknown[] = Array.isArray(parsed?.diagnostics) ? parsed.diagnostics : []
+    const diagnostics: CreativeDiagnostic[] = rawDiagnostics.reduce<CreativeDiagnostic[]>((items, item) => {
+      if (!item || typeof item !== 'object') return items
+      const value = item as Record<string, unknown>
+      const dimension = typeof value.dimension === 'string' ? value.dimension as CreativeDiagnosticDimension : null
+      if (!dimension || !validDimensions.includes(dimension)) return items
+      const score = typeof value.score === 'number' ? value.score : parseFloat(String(value.score))
+      if (!Number.isFinite(score) || typeof value.finding !== 'string' || typeof value.recommendation !== 'string') return items
+      items.push({
+        dimension,
+        score: Math.max(0, Math.min(100, Math.round(score))),
+        finding: value.finding.trim(),
+        recommendation: value.recommendation.trim(),
+      })
+      return items
+    }, [])
     return {
       overall_take: typeof parsed?.overall_take === 'string' ? parsed.overall_take.trim() : '',
       where_personas_agree: typeof parsed?.where_personas_agree === 'string' && parsed.where_personas_agree.trim() ? parsed.where_personas_agree.trim() : null,
       where_personas_diverge: typeof parsed?.where_personas_diverge === 'string' && parsed.where_personas_diverge.trim() ? parsed.where_personas_diverge.trim() : null,
       top_recommended_change: typeof parsed?.top_recommended_change === 'string' ? parsed.top_recommended_change.trim() : '',
+      diagnostics: validDimensions.flatMap(dimension => diagnostics.find(item => item.dimension === dimension) ?? []),
     }
   } catch {
     return DEFAULT_CREATIVE_SUMMARY

@@ -654,6 +654,19 @@ export interface CreativeReviewSummary {
   where_personas_agree: string | null
   where_personas_diverge: string | null
   top_recommended_change: string
+  diagnostics?: CreativeDiagnostic[]
+}
+
+// An AI-guided visual readout of the creative itself. Attention remains
+// grounded in the client-side saliency map; the other dimensions synthesize
+// the visible asset and the panel's actual visual reactions.
+export type CreativeDiagnosticDimension = 'attention' | 'emotion' | 'comprehension' | 'memory' | 'persuasion'
+
+export interface CreativeDiagnostic {
+  dimension: CreativeDiagnosticDimension
+  score: number // 0-100 AI-guided readout, not a lab-validated metric
+  finding: string
+  recommendation: string
 }
 
 export interface CreativeReviewResult {
