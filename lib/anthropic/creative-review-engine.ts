@@ -231,7 +231,7 @@ ${zoneLines}
 ${reactionLines}
 
 ## Creative performance diagnostics
-Also assess the asset itself across these five creative-performance dimensions. Attention is about whether the hierarchy guides focus to the most important visible element; Emotion is about the visible asset's emotional intensity and likely positive or negative tone; Comprehension is about whether the visible message can be understood quickly; Memory is about whether the visual, copy, and branding offer distinctive recall cues; Persuasion is about whether the visible creative gives someone a clear reason to take the next step.
+Also assess the asset itself across these five creative-performance dimensions. Attention is about whether the hierarchy guides focus to the most important visible element; Emotion is about the visible asset's emotional intensity and likely positive or negative tone; Message clarity (the "comprehension" field) is about whether the visible message can be understood quickly; Memory is about whether the visual, copy, and branding offer distinctive recall cues; Action pull (the "persuasion" field) is about whether the visible creative gives someone a clear reason to take the next step.
 
 These are AI-guided visual readouts, not lab-validated measurements. Use the uploaded image plus the actual panel reactions. Score each dimension from 0 to 100, give one concrete visible finding, and one practical visual or copy refinement. Do not infer product performance, purchase intent, ROI, or any off-image attribute.
 

@@ -149,17 +149,17 @@ function ReactionCard({ reaction, image, imageMediaType, intendedFocus }: { reac
 
   return (
     <article className="flex h-full flex-col rounded-xl border p-6 transition-shadow hover:shadow-md sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
-      <div className="mb-7 flex items-start justify-between gap-4">
+      <div className="mb-7 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="flex min-w-0 items-center gap-4">
           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border-2" style={{ borderColor: `${HOME_COLORS.primary}1a` }}>
             <PersonaAvatar avatarUrl={reaction.avatar_url} avatarInitials={reaction.avatar_initials} avatarColor={reaction.avatar_color} name={reaction.persona_name} size="lg" />
           </div>
           <div className="min-w-0">
-            <h3 className="truncate text-xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{reaction.persona_name}</h3>
-            {reaction.job_title && <p className="mt-1 truncate text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{reaction.job_title}</p>}
+            <h3 className="break-words text-xl leading-tight" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{reaction.persona_name}</h3>
+            {reaction.job_title && <p className="mt-1 break-words text-[10px] font-bold uppercase leading-relaxed tracking-[0.14em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>{reaction.job_title}</p>}
           </div>
         </div>
-        {reaction.engagement_percentage !== null && <div className="shrink-0 text-right"><p className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Visual engagement</p><p className="text-3xl leading-none" style={{ color: HOME_COLORS.primary, fontFamily: HOME_FONT_DISPLAY }}>{reaction.engagement_percentage}%</p></div>}
+        {reaction.engagement_percentage !== null && <div className="justify-self-start text-left sm:justify-self-end sm:text-right"><p className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Visual engagement</p><p className="text-3xl leading-none" style={{ color: HOME_COLORS.primary, fontFamily: HOME_FONT_DISPLAY }}>{reaction.engagement_percentage}%</p></div>}
       </div>
 
       {reaction.error ? (
@@ -382,11 +382,11 @@ function StatCardsRow({ result }: { result: CreativeReviewResult }) {
 }
 
 const DIAGNOSTIC_DETAILS = {
-  attention: { label: 'Attention', question: 'Does the creative grab and hold visual attention?', color: '#C45AC8', tint: '#F7EAF7', icon: Eye },
-  emotion: { label: 'Emotion', question: 'Does the creative create a positive emotional response?', color: '#E64E99', tint: '#FCE9F2', icon: Heart },
-  comprehension: { label: 'Comprehension', question: 'Is the message clear and understood quickly?', color: '#D99B00', tint: '#FFF4D9', icon: MessageCircle },
-  memory: { label: 'Memory', question: 'Will the creative, brand, and message be remembered?', color: '#39AFAF', tint: '#E3F7F5', icon: Brain },
-  persuasion: { label: 'Persuasion', question: 'Does the creative encourage the desired next step?', color: '#6D6BC4', tint: '#EEEDFC', icon: Sparkles },
+  attention: { label: 'Attention', question: 'Does the hierarchy bring the right element forward?', color: '#2D5A3B', tint: '#E5F0E6', icon: Eye },
+  emotion: { label: 'Emotion', question: 'What feeling does the creative leave behind?', color: '#A65068', tint: '#F7E8EC', icon: Heart },
+  comprehension: { label: 'Message clarity', question: 'Can someone understand the message at a glance?', color: '#9A6A1C', tint: '#F9EFD8', icon: MessageCircle },
+  memory: { label: 'Memory', question: 'Are the brand and message distinct enough to recall?', color: '#387B78', tint: '#E4F2F0', icon: Brain },
+  persuasion: { label: 'Action pull', question: 'Does the creative give someone a reason to act next?', color: '#66639B', tint: '#EEEDF8', icon: Sparkles },
 } as const
 
 function CreativePerformanceDiagnostics({ diagnostics }: { diagnostics?: CreativeDiagnostic[] }) {
@@ -398,50 +398,40 @@ function CreativePerformanceDiagnostics({ diagnostics }: { diagnostics?: Creativ
 
   if (!ordered.length) return null
 
-  const Orb = ({ diagnostic, lower = false }: { diagnostic: CreativeDiagnostic; lower?: boolean }) => {
-    const detail = DIAGNOSTIC_DETAILS[diagnostic.dimension]
-    const Icon = detail.icon
-    return (
-      <div className="relative mx-auto w-full max-w-[270px] pb-8 pt-8">
-        <span className={`absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-xl border px-5 py-2 text-base font-semibold shadow-sm ${lower ? 'bottom-0' : 'top-0'}`} style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${detail.color}30`, color: detail.color }}>{detail.label}</span>
-        <div className="flex aspect-square flex-col items-center justify-center rounded-full border-[13px] px-7 text-center" style={{ borderColor: `${detail.color}73`, background: HOME_COLORS.surfaceContainerLowest, boxShadow: `0 0 0 10px ${detail.tint}` }}>
-          <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-full" style={{ background: detail.tint, color: detail.color }}><Icon size={20} /></span>
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>AI readout · {diagnostic.score}/100</p>
-          <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{detail.question}</p>
-        </div>
-      </div>
-    )
-  }
-
-  const top = ordered.slice(0, 3)
-  const lower = ordered.slice(3)
-
   return (
-    <section className="overflow-hidden rounded-xl border p-6 sm:p-9" style={{ background: '#F8FBFA', borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
-      <div className="mb-8 max-w-2xl">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Creative performance</p>
-        <h2 className="mb-2 text-2xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>How the creative is likely to perform</h2>
-        <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>A combined visual readout of what gets noticed, felt, understood, remembered, and acted on.</p>
+    <section className="overflow-hidden rounded-xl border" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
+      <div className="flex flex-col justify-between gap-5 p-6 sm:flex-row sm:items-end sm:p-8" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary }}>
+        <div className="max-w-2xl">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">Creative performance</p>
+          <h2 className="mb-2 text-2xl sm:text-3xl" style={{ fontFamily: HOME_FONT_DISPLAY }}>Five signals behind the creative</h2>
+          <p className="text-sm leading-relaxed text-white/70">A visual assessment of how the asset earns attention, clarity, recall, and momentum.</p>
+        </div>
+        <span className="inline-flex w-fit items-center rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/80" style={{ borderColor: 'rgba(255,255,255,.18)' }}>AI-guided readout</span>
       </div>
-
-      <div className="mx-auto max-w-5xl">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-5">{top.map(item => <Orb key={item.dimension} diagnostic={item} />)}</div>
-        {lower.length > 0 && <div className="mx-auto grid max-w-3xl grid-cols-1 gap-3 sm:-mt-14 sm:grid-cols-2 sm:gap-5">{lower.map(item => <Orb key={item.dimension} diagnostic={item} lower />)}</div>}
-      </div>
-
-      <div className="mt-7 grid grid-cols-1 gap-3 border-t pt-6 sm:grid-cols-2 xl:grid-cols-5" style={{ borderColor: `${HOME_COLORS.outlineVariant}66` }}>
+      <div className="grid grid-cols-1 divide-y md:grid-cols-5 md:divide-x md:divide-y-0" style={{ borderColor: `${HOME_COLORS.outlineVariant}55` }}>
         {ordered.map(diagnostic => {
           const detail = DIAGNOSTIC_DETAILS[diagnostic.dimension]
+          const Icon = detail.icon
           return (
-            <div key={diagnostic.dimension} className="rounded-lg p-4" style={{ background: HOME_COLORS.surfaceContainerLowest }}>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: detail.color }}>{detail.label}</p>
-              <p className="mb-3 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{diagnostic.finding}</p>
-              <p className="text-[11px] leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}><span className="font-bold" style={{ color: HOME_COLORS.primary }}>Refine:</span> {diagnostic.recommendation}</p>
+            <div key={diagnostic.dimension} className="min-w-0 p-5 sm:p-6">
+              <div className="mb-8 flex items-start justify-between gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: detail.tint, color: detail.color }}><Icon size={17} /></span><span className="text-3xl leading-none" style={{ fontFamily: HOME_FONT_DISPLAY, color: detail.color }}>{diagnostic.score}</span></div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: detail.color }}>{detail.label}</p>
+              <p className="min-h-10 text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{detail.question}</p>
+              <div className="mt-5 h-1.5 overflow-hidden rounded-full" style={{ background: detail.tint }}><div className="h-full rounded-full" style={{ width: `${diagnostic.score}%`, background: detail.color }} /></div>
             </div>
           )
         })}
       </div>
-      <p className="mt-5 text-[11px] leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Attention uses the image’s measured saliency map. The remaining dimensions are AI-guided visual assessments based on the asset and the panel’s reactions; validate important decisions with real customer research.</p>
+      <div className="border-t p-6 sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLow, borderColor: `${HOME_COLORS.outlineVariant}55` }}>
+        <div className="mb-5 flex items-center justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Diagnostic notes</p><h3 className="mt-1 text-xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>What to refine next</h3></div><span className="hidden h-px flex-1 sm:block" style={{ background: `${HOME_COLORS.outlineVariant}88` }} /></div>
+        <div className="grid grid-cols-1 gap-x-8 gap-y-5 lg:grid-cols-2">
+          {ordered.map((diagnostic, index) => {
+            const detail = DIAGNOSTIC_DETAILS[diagnostic.dimension]
+            return <div key={diagnostic.dimension} className="flex gap-4"><span className="mt-0.5 text-lg leading-none" style={{ color: detail.color, fontFamily: HOME_FONT_DISPLAY }}>0{index + 1}</span><div><p className="mb-1 text-xs font-semibold" style={{ color: HOME_COLORS.onSurface }}>{diagnostic.finding}</p><p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}><span className="font-semibold" style={{ color: detail.color }}>Refine:</span> {diagnostic.recommendation}</p></div></div>
+          })}
+        </div>
+        <p className="mt-6 text-[11px] leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Attention uses the image’s measured saliency map. The remaining dimensions are AI-guided visual assessments based on the asset and the panel’s reactions; validate important decisions with real customer research.</p>
+      </div>
     </section>
   )
 }
@@ -846,7 +836,7 @@ export default function CreativeReviewPage() {
                     <div className="creative-loading-sweep absolute inset-x-0 top-0" />
                     <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white" style={{ background: 'rgba(4,18,8,.76)', backdropFilter: 'blur(8px)' }}><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full" style={{ background: '#b8ccb9' }} /><span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: '#d4e8d5' }} /></span>Analyzing visual attention</div>
                   </div>}
-                  <button type="button" onClick={clearImage} className="absolute -top-2 -right-2 w-6 h-6 text-white rounded-full flex items-center justify-center" style={{ background: HOME_COLORS.error, border: 'none', cursor: 'pointer' }}>
+                  <button type="button" onClick={clearImage} className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-sm transition-transform hover:scale-105" style={{ background: HOME_COLORS.error, border: 'none', cursor: 'pointer' }}>
                     <X size={13} />
                   </button>
                   {processingImage && (
