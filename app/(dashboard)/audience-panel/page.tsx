@@ -414,7 +414,7 @@ export default function AudiencePanelPage() {
         <div className="mb-8">
           <h1 className="flex items-center gap-2" style={{ ...DISPLAY_LG_STYLE, fontSize: '28px', lineHeight: '36px', color: HOME_COLORS.onSurface }}>
             <BarChart3 size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-            Audience Panel
+            Audience Testing
           </h1>
           <p className="text-sm mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Ask one question to 5–10 personas simultaneously and visualize the results</p>
         </div>

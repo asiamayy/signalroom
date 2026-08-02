@@ -48,7 +48,7 @@ const hanken = Hanken_Grotesk({ subsets: ['latin'], weight: ['400', '600', '700'
 
 const NAV_SECTIONS = [
   { id: 'research', label: 'Research', icon: Briefcase, items: [{ href: '/projects', label: 'Projects', icon: Briefcase }, { href: '/personas', label: 'Personas', icon: Users }, { href: '/interviews', label: 'Interviews', icon: MessageSquare }] },
-  { id: 'test', label: 'Test ideas', icon: Layers, items: [{ href: '/compare', label: 'Compare reactions', icon: ArrowLeftRight }, { href: '/audience-panel', label: 'Audience test', icon: UsersRound }, { href: '/concept-test', label: 'Concept test', icon: Layers }, { href: '/creative-review', label: 'Creative Testing', icon: Eye }] },
+  { id: 'test', label: 'Test ideas', icon: Layers, items: [{ href: '/compare', label: 'Compare reactions', icon: ArrowLeftRight }, { href: '/audience-panel', label: 'Audience Testing', icon: UsersRound }, { href: '/concept-test', label: 'Concept Testing', icon: Layers }, { href: '/creative-review', label: 'Creative Testing', icon: Eye }] },
   { id: 'results', label: 'Results', icon: BarChart2, items: [{ href: '/reports', label: 'Insights', icon: Activity }, { href: '/signals', label: 'Research signals', icon: BarChart2 }] },
   { id: 'team', label: 'Team', icon: Building2, requiresWorkspaceAccess: true, items: [{ href: '/workspaces', label: 'Workspaces', icon: Building2 }] },
 ]

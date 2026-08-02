@@ -299,15 +299,11 @@ function ZoneCallouts({ zones, contentBox }: { zones: CreativeReviewResult['zone
 function ScanningOverlay() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0 creative-scan-tint" />
       <div className="absolute left-0 right-0 h-1/3 creative-scan-line" />
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,0,0,0.65)', color: 'white' }}>
         <Loader2 size={10} className="animate-spin" /> Analyzing
       </div>
       <style jsx>{`
-        .creative-scan-tint {
-          background: linear-gradient(180deg, rgba(24, 40, 28, 0.1), rgba(24, 40, 28, 0.02));
-        }
         .creative-scan-line {
           top: -34%;
           background: linear-gradient(
@@ -785,7 +781,7 @@ export default function CreativeReviewPage() {
             )}
             {loading && (
               <div className="flex flex-col gap-4">
-                {imagePreview && <SquareImageFrame src={imagePreview} zones={[]} analyzing />}
+                {imagePreview && <SquareImageFrame src={imagePreview} heatmapSrc={saliency?.heatmapDataUrl ?? null} zones={[]} analyzing />}
                 <div className="rounded-xl py-6 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
                   <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Reviewing asset</h3>
                   <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Identifying elements, then interviewing {selectedIds.length} personas...</p>
