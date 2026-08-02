@@ -175,7 +175,7 @@ function ReactionCard({ reaction, image, imageMediaType, intendedFocus }: { reac
   const [chatOpen, setChatOpen] = useState(false)
 
   return (
-    <article className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+    <article className="rounded-xl border p-5 sm:p-6" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
       <div className="flex items-start gap-3 mb-3">
         {reaction.engagement_percentage !== null && (
           <div className="flex flex-col items-center gap-1 flex-shrink-0">
@@ -325,12 +325,12 @@ function SquareImageFrame({ src, heatmapSrc, zones, analyzing = false, showHeatm
   const [contentBox, setContentBox] = useState<ContentBox>({ xPct: 0, yPct: 0, wPct: 100, hPct: 100 })
 
   return (
-    <div className="rounded-2xl p-4 sm:p-6" style={{ background: 'white', boxShadow: CARD_SHADOW }}>
+    <div className="group rounded-xl border p-5 sm:p-7" style={{ background: 'white', borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
       <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-lg">
         <img
           src={src}
           alt="Creative asset"
-          className="absolute inset-0 w-full h-full object-contain"
+          className="absolute inset-0 h-full w-full object-contain transition-transform duration-700 group-hover:scale-[1.015]"
           onLoad={e => {
             const img = e.currentTarget
             setContentBox(computeContentBox(img.naturalWidth, img.naturalHeight))
@@ -373,9 +373,9 @@ function SquareImageFrame({ src, heatmapSrc, zones, analyzing = false, showHeatm
 // Measured-attention card, paired alongside the image in the bento row.
 function MeasuredAttentionCard({ zones }: { zones: CreativeReviewResult['zones'] }) {
   return (
-    <div className="flex-1 min-w-[260px] w-full rounded-xl p-5 sm:p-6" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-      <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
-      <p className="text-[11px] mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share of the heatmap's visual weight that falls on each element, computed directly from the image's pixels.</p>
+    <div className="w-full min-w-[260px] flex-1 rounded-xl border p-6 sm:p-7" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
+      <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention</p>
+      <h3 className="mb-5 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Visual weight by element</h3>
       <ZoneBreakdown zones={zones} />
     </div>
   )
@@ -385,9 +385,9 @@ function MeasuredAttentionCard({ zones }: { zones: CreativeReviewResult['zones']
 // invented "readiness" labels, just what's actually in the reactions.
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-      <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>{value}</p>
-      <p className="text-[10px] uppercase tracking-wider mt-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</p>
+    <div className="rounded-xl border p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
+      <p className="text-3xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.primary }}>{value}</p>
+      <p className="mt-1.5 text-[10px] uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</p>
     </div>
   )
 }
@@ -414,9 +414,9 @@ function StatCardsRow({ result }: { result: CreativeReviewResult }) {
 // first, rather than buried inside a stats box.
 function TopRecommendedCard({ change }: { change: string }) {
   return (
-    <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
-      <p className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-3">Top recommended change</p>
-      <p className="text-lg leading-relaxed" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 500 }}>&ldquo;{change}&rdquo;</p>
+    <div className="rounded-xl p-7 sm:p-9" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+      <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] opacity-65">Top recommended change</p>
+      <p className="text-xl leading-relaxed sm:text-2xl" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 500 }}>&ldquo;{change}&rdquo;</p>
     </div>
   )
 }
@@ -426,8 +426,8 @@ function TopRecommendedCard({ change }: { change: string }) {
 function ConsensusDivergence({ overallTake, agree, diverge }: { overallTake?: string; agree: string | null; diverge: string | null }) {
   if (!overallTake && !agree && !diverge) return null
   return (
-    <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-      <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Consensus &amp; divergence</p>
+    <div className="rounded-xl border p-6 sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
+      <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Consensus &amp; divergence</p>
       {overallTake && <p className="text-sm leading-relaxed mb-5" style={{ color: HOME_COLORS.onSurface }}>{overallTake}</p>}
       {(agree || diverge) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -457,11 +457,11 @@ function ConsensusDivergence({ overallTake, agree, diverge }: { overallTake?: st
 
 function CreativeReviewResultsView({ result, image, imageMediaType, heatmapDataUrl }: { result: CreativeReviewResult; image: string | null; imageMediaType: string; heatmapDataUrl: string | null }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       {image && (
-        <div className="flex flex-col lg:flex-row gap-4 items-start">
-          <SquareImageFrame src={`data:${imageMediaType};base64,${image}`} heatmapSrc={heatmapDataUrl} zones={result.zones} />
-          <MeasuredAttentionCard zones={result.zones} />
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-8"><SquareImageFrame src={`data:${imageMediaType};base64,${image}`} heatmapSrc={heatmapDataUrl} zones={result.zones} /></div>
+          <div className="lg:col-span-4"><MeasuredAttentionCard zones={result.zones} /></div>
         </div>
       )}
 
@@ -614,25 +614,26 @@ export default function CreativeReviewPage() {
 
   if (!loadingPersonas && !hasAccess) {
     return (
-      <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full p-4 sm:p-10 max-w-2xl">
+      <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full px-4 py-10 sm:px-10 sm:py-14">
+        <div className="max-w-2xl">
         <div className="mb-8">
-          <h1 className="flex items-center gap-2" style={{ ...DISPLAY_LG_STYLE, fontSize: '28px', lineHeight: '36px', color: HOME_COLORS.onSurface }}>
-            <Eye size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-            Creative Testing
-          </h1>
-          <p className="text-sm mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>See how your persona panel reads a packaging concept, ad, or landing page — grounded in real measured attention, not a guess.</p>
+          <div className="mb-4 flex items-center gap-3"><span className="h-px w-12" style={{ background: HOME_COLORS.primary }} /><span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Visual perception</span></div>
+          <h1 style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>Attention <span className="italic" style={{ fontWeight: 400 }}>Map</span></h1>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>See how your persona panel reads a packaging concept, ad, or landing page — grounded in measured attention, not a guess.</p>
         </div>
-        <div className="rounded-2xl p-10 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
-            <Lock size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
+        <div className="rounded-xl border p-8 text-center sm:p-10" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full mx-auto" style={{ background: HOME_COLORS.secondaryContainer }}>
+            <Lock size={21} style={{ color: HOME_COLORS.primary }} />
           </div>
-          <h2 className="text-lg font-bold mb-2" style={{ color: HOME_COLORS.onSurface }}>Signal or Broadcast plan required</h2>
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Plan feature</p>
+          <h2 className="mb-3 text-xl" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Creative testing is available on Signal and Broadcast</h2>
           <p className="text-sm mb-6 max-w-sm mx-auto leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
             Upload a visual asset and see what each persona actually notices, trusts, and questions — backed by a real, independently-computed attention map.
           </p>
-          <Link href="/settings" className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-full text-white transition-colors" style={{ background: HOME_COLORS.primary }}>
-            Upgrade plan →
+          <Link href="/settings" className="inline-flex items-center gap-1.5 text-sm font-semibold px-6 py-3 rounded-full text-white transition-transform hover:-translate-y-0.5" style={{ background: HOME_COLORS.primary, boxShadow: '0 10px 20px -14px rgba(4,18,8,.7)' }}>
+            View plans →
           </Link>
+        </div>
         </div>
       </div>
     )
@@ -640,45 +641,49 @@ export default function CreativeReviewPage() {
 
   return (
     <div style={{ background: HOME_COLORS.surface, fontFamily: HOME_FONT_BODY }} className="min-h-full">
-      <section className="relative px-4 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-12 overflow-hidden">
-        <div className="relative z-10 max-w-3xl flex items-start justify-between gap-6 flex-wrap">
+      <section className="relative overflow-hidden px-4 pb-10 pt-10 sm:px-10 sm:pb-12 sm:pt-14">
+        <div className="relative z-10 flex max-w-4xl flex-wrap items-end justify-between gap-6">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
-              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Creative Intelligence</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Visual perception</span>
             </div>
             <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
-              See what each persona <span className="italic" style={{ fontWeight: 400 }}>notices</span>.
+              Attention <span className="italic" style={{ fontWeight: 400 }}>Map</span>
             </h1>
             <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-              Upload a packaging shot, ad, or landing page and see how each persona reads it.
+              Test what stands out in a packaging shot, ad, or landing page before you commit to the creative.
             </p>
           </div>
           <div className="flex items-center gap-1 p-1 rounded-full flex-shrink-0" style={{ background: HOME_COLORS.surfaceContainerHigh }}>
             <button onClick={() => setViewMode('new')} className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-colors" style={viewMode === 'new' ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' } : { color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}>
-              <Sparkles size={13} /> New
+              <Sparkles size={13} /> New review
             </button>
             <button onClick={() => setViewMode('history')} className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-colors" style={viewMode === 'history' ? { background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: 'pointer' } : { color: HOME_COLORS.onSurfaceVariant, background: 'none', border: 'none', cursor: 'pointer' }}>
-              <History size={13} /> History
+              <History size={13} /> Review history
             </button>
           </div>
         </div>
       </section>
 
       {viewMode === 'history' ? (
-        <div className="px-4 sm:px-10 pb-20 max-w-4xl">
+        <div className="max-w-6xl px-4 pb-20 sm:px-10">
           {loadingHistory ? (
-            <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading...</p>
+            <div className="rounded-xl border p-6" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44` }}><p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>Loading saved reviews...</p></div>
           ) : historyRuns.length === 0 ? (
-            <p className="text-sm" style={{ color: HOME_COLORS.onSurfaceVariant }}>No saved reviews yet — run one with a project selected to see it here.</p>
+            <div className="rounded-xl border p-7 sm:p-9" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44` }}>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Review library</p>
+              <h2 className="mb-2 text-xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>No saved reviews yet</h2>
+              <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>Run a review with a project selected to keep it here for your team.</p>
+            </div>
           ) : selectedRun ? (
             <div className="flex flex-col gap-8">
-              <button onClick={() => setSelectedRun(null)} className="text-xs font-semibold self-start" style={{ color: HOME_COLORS.primary, background: 'none', border: 'none', cursor: 'pointer' }}>← Back to history</button>
-              <div className="flex flex-col gap-4">
+              <button onClick={() => setSelectedRun(null)} className="self-start rounded-full px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-[#eef1ed]" style={{ color: HOME_COLORS.primary, background: 'none', border: 'none', cursor: 'pointer' }}>← Back to history</button>
+              <div className="flex flex-col gap-6">
                 {historyImageUrl && (
-                  <div className="flex flex-col lg:flex-row gap-4 items-start">
-                    <SquareImageFrame src={historyImageUrl} zones={selectedRun.result.zones} showHeatmapToggle={false} />
-                    <MeasuredAttentionCard zones={selectedRun.result.zones} />
+                  <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+                    <div className="lg:col-span-8"><SquareImageFrame src={historyImageUrl} zones={selectedRun.result.zones} showHeatmapToggle={false} /></div>
+                    <div className="lg:col-span-4"><MeasuredAttentionCard zones={selectedRun.result.zones} /></div>
                   </div>
                 )}
                 <StatCardsRow result={selectedRun.result} />
@@ -692,10 +697,11 @@ export default function CreativeReviewPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {historyRuns.map(run => (
-                <button key={run.id} onClick={() => setSelectedRun(run)} className="w-full text-left p-4 rounded-xl transition-colors hover:shadow-md" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW, border: 'none', cursor: 'pointer' }}>
-                  <p className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>{run.intended_focus || 'Creative review'}</p>
+                <button key={run.id} onClick={() => setSelectedRun(run)} className="group w-full rounded-xl border p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW, cursor: 'pointer' }}>
+                  <div className="mb-5 flex items-center justify-between"><span className="flex h-9 w-9 items-center justify-center rounded-full transition-colors group-hover:bg-[#dbe8dc]" style={{ background: HOME_COLORS.surfaceContainerHigh, color: HOME_COLORS.primary }}><Eye size={15} /></span><span className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Open review</span></div>
+                  <p className="mb-1 text-base" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{run.intended_focus || 'Creative review'}</p>
                   <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>{formatRelativeTime(run.created_at)} · {run.persona_ids.length} personas</p>
                 </button>
               ))}
@@ -703,11 +709,11 @@ export default function CreativeReviewPage() {
           )}
         </div>
       ) : (
-        <div className="px-4 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 pb-20">
-          <aside className="lg:col-span-4 flex flex-col gap-6 order-2 lg:order-1">
-            <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+        <div className="grid grid-cols-1 gap-6 px-4 pb-20 sm:px-10 lg:grid-cols-12 lg:gap-8">
+          <aside className="order-2 flex flex-col gap-6 lg:col-span-4 lg:order-2">
+            <section className="rounded-xl border p-6 sm:p-7" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Personas</h3>
+                <div><p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Persona panel</p><h3 className="mt-1 text-lg" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>Choose perspectives</h3></div>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: selectedIds.length >= MIN_PERSONAS ? HOME_COLORS.secondaryContainer : HOME_COLORS.surfaceContainerHigh, color: selectedIds.length >= MIN_PERSONAS ? HOME_COLORS.primary : HOME_COLORS.onSurfaceVariant }}>
                   {selectedIds.length} / {maxPersonas}
                 </span>
@@ -720,12 +726,12 @@ export default function CreativeReviewPage() {
                   <Link href="/personas/new" className="text-xs font-semibold" style={{ color: HOME_COLORS.primary }}>Create your first persona →</Link>
                 </div>
               ) : (
-                <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
                   {personas.map(persona => {
                     const isSelected = selectedIds.includes(persona.id)
                     const atLimit = selectedIds.length >= maxPersonas && !isSelected
                     return (
-                      <button key={persona.id} onClick={() => !atLimit && togglePersona(persona.id)} disabled={atLimit} className="group w-full flex items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-all hover:border-[#c3c8c1]/20 hover:bg-[#eae7e7] disabled:cursor-not-allowed disabled:opacity-40" style={isSelected ? { background: HOME_COLORS.secondaryContainer } : undefined}>
+                      <button key={persona.id} onClick={() => !atLimit && togglePersona(persona.id)} disabled={atLimit} className="group flex w-full items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-all hover:border-[#c3c8c1]/30 hover:bg-[#f0edec] disabled:cursor-not-allowed disabled:opacity-40" style={isSelected ? { background: HOME_COLORS.secondaryContainer, borderColor: `${HOME_COLORS.primary}22` } : undefined}>
                         <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full">
                           <PersonaAvatar avatarUrl={persona.avatar_url} avatarInitials={persona.avatar_initials} avatarColor={persona.avatar_color} name={persona.name} size="lg" />
                         </div>
@@ -741,16 +747,17 @@ export default function CreativeReviewPage() {
               )}
             </section>
 
-            <section className="p-6 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-              <h3 className="text-sm font-semibold mb-4" style={{ color: HOME_COLORS.onSurface }}>Save to project</h3>
+            <section className="rounded-xl p-6 sm:p-7" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] opacity-60">Review setup</p>
+              <h3 className="mt-1 mb-5 text-lg" style={{ fontFamily: HOME_FONT_DISPLAY }}>Save &amp; share</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Project <span className="normal-case font-normal">(optional)</span></label>
+                  <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-white/65">Project <span className="normal-case font-normal">(optional)</span></label>
                   <Dropdown value={projectId} onChange={setProjectId} options={projectOptions} className="w-full" />
                 </div>
                 {workspaces.length > 0 && (
                   <div>
-                    <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share with workspace</label>
+                    <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-white/65">Share with workspace</label>
                     <Dropdown value={workspaceId} onChange={setWorkspaceId} options={workspaceOptions} className="w-full" />
                   </div>
                 )}
@@ -758,12 +765,12 @@ export default function CreativeReviewPage() {
             </section>
           </aside>
 
-          <main className="lg:col-span-8 flex flex-col gap-8 order-1 lg:order-2 min-w-0">
-            <section className="p-6 sm:p-8 rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-              <h3 className="text-sm font-semibold mb-4" style={{ color: HOME_COLORS.onSurface }}>Upload the asset</h3>
+          <main className="order-1 flex min-w-0 flex-col gap-6 lg:col-span-8 lg:order-1">
+            <section className="relative overflow-hidden rounded-xl border p-6 sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
+              <div className="mb-5 flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Visual analysis core</p><h3 className="mt-1 text-xl" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>Upload the asset</h3></div>{imagePreview && <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}>Ready to review</span>}</div>
               {imagePreview ? (
-                <div className="relative inline-block mb-4">
-                  <img src={imagePreview} alt="Upload preview" className="max-h-52 w-auto rounded-lg object-contain" style={{ border: `1px solid ${HOME_COLORS.outlineVariant}66` }} />
+                <div className="relative mb-5 flex min-h-[280px] items-center justify-center overflow-hidden rounded-xl" style={{ background: HOME_COLORS.surfaceContainerLow }}>
+                  <img src={imagePreview} alt="Upload preview" className="max-h-[340px] w-full rounded-lg object-contain transition-transform duration-500 hover:scale-[1.015]" />
                   <button type="button" onClick={clearImage} className="absolute -top-2 -right-2 w-6 h-6 text-white rounded-full flex items-center justify-center" style={{ background: HOME_COLORS.error, border: 'none', cursor: 'pointer' }}>
                     <X size={13} />
                   </button>
@@ -776,14 +783,15 @@ export default function CreativeReviewPage() {
               ) : (
                 <>
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 text-sm font-medium px-4 py-3 rounded-lg mb-4 transition-colors" style={{ border: `1px dashed ${HOME_COLORS.outlineVariant}`, color: HOME_COLORS.onSurfaceVariant, background: 'none', cursor: 'pointer' }}>
-                    <ImagePlus size={16} />
-                    {processingImage ? 'Processing...' : 'Choose an image'}
+                  <button type="button" onClick={() => fileInputRef.current?.click()} className="mb-5 flex min-h-[280px] w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed text-sm font-medium transition-colors hover:bg-[#f6f3f2]" style={{ borderColor: HOME_COLORS.outlineVariant, color: HOME_COLORS.onSurfaceVariant, background: 'none', cursor: 'pointer' }}>
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full" style={{ background: HOME_COLORS.secondaryContainer, color: HOME_COLORS.primary }}><ImagePlus size={21} /></span>
+                    <span>{processingImage ? 'Processing image...' : 'Choose an image to begin'}</span>
+                    <span className="text-xs font-normal" style={{ color: HOME_COLORS.onSurfaceVariant }}>PNG, JPG, or WEBP</span>
                   </button>
                 </>
               )}
 
-              <label className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                 <Target size={12} /> Where should attention land? <span className="normal-case font-normal">(optional)</span>
               </label>
               <input
@@ -799,16 +807,17 @@ export default function CreativeReviewPage() {
                 <p className="text-xs mt-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Select {MIN_PERSONAS - selectedIds.length} more persona{MIN_PERSONAS - selectedIds.length === 1 ? '' : 's'} to run the review.</p>
               )}
 
-              <button onClick={handleRun} disabled={!canRun} className="mt-5 flex items-center gap-2 px-8 py-3 rounded-full text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-40" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: canRun ? 'pointer' : 'not-allowed' }}>
+              <button onClick={handleRun} disabled={!canRun} className="mt-5 flex items-center gap-2 rounded-full px-8 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, border: 'none', cursor: canRun ? 'pointer' : 'not-allowed', boxShadow: canRun ? '0 10px 20px -14px rgba(4,18,8,.7)' : 'none' }}>
                 {loading ? <><Loader2 size={15} className="animate-spin" /> Reviewing...</> : <><Eye size={15} /> Run Creative Testing</>}
               </button>
             </section>
 
             {!result && !loading && (
-              <div className="rounded-xl py-20 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, border: `1px dashed ${HOME_COLORS.outlineVariant}` }}>
-                <Eye size={28} className="mx-auto mb-3" style={{ color: HOME_COLORS.outlineVariant }} />
-                <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Results appear here</h3>
-                <p className="text-xs max-w-xs mx-auto leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
+              <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.surfaceContainer, border: `1px solid ${HOME_COLORS.outlineVariant}44` }}>
+                <div className="mb-5 flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: HOME_COLORS.primary }} /><span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: HOME_COLORS.onSurfaceVariant }}>Review feed</span></div>
+                <Eye size={24} className="mb-3" style={{ color: HOME_COLORS.primary }} />
+                <h3 className="mb-1 text-sm font-semibold" style={{ color: HOME_COLORS.onSurface }}>Results appear here</h3>
+                <p className="max-w-sm text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
                   Upload an image and select {MIN_PERSONAS}–{maxPersonas} personas to see measured attention and how each one reads it.
                 </p>
               </div>
