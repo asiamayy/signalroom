@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
   Eye, Loader2, Lock, Sparkles, ImagePlus, X, History, CheckSquare, Square,
-  Send, ChevronDown, ChevronUp, Quote, HelpCircle, Target,
+  Send, ChevronDown, ChevronUp, HelpCircle, Target, CheckCircle2, Users, Shuffle,
 } from 'lucide-react'
 import { PersonaAvatar } from '@/components/persona/PersonaAvatar'
 import { Dropdown } from '@/components/ui/Dropdown'
@@ -211,14 +211,20 @@ function ReactionCard({ reaction, image, imageMediaType, intendedFocus }: { reac
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
             {reaction.most_believable_claim && (
-              <div className="rounded-lg p-2.5" style={{ background: HOME_COLORS.surfaceContainerLow }}>
-                <p className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.primary }}>Believes</p>
+              <div className="p-2.5 border-l-2 rounded-r-lg" style={{ borderColor: HOME_COLORS.primary, background: HOME_COLORS.surfaceContainerLow }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <CheckCircle2 size={11} style={{ color: HOME_COLORS.primary }} />
+                  <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: HOME_COLORS.primary }}>Believes</p>
+                </div>
                 <p className="text-xs" style={{ color: HOME_COLORS.onSurface }}>{reaction.most_believable_claim}</p>
               </div>
             )}
             {reaction.most_confusing_element && (
-              <div className="rounded-lg p-2.5" style={{ background: HOME_COLORS.surfaceContainerLow }}>
-                <p className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.error }}>Confused by</p>
+              <div className="p-2.5 border-l-2 rounded-r-lg" style={{ borderColor: HOME_COLORS.error, background: HOME_COLORS.surfaceContainerLow }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <HelpCircle size={11} style={{ color: HOME_COLORS.error }} />
+                  <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: HOME_COLORS.error }}>Confused by</p>
+                </div>
                 <p className="text-xs" style={{ color: HOME_COLORS.onSurface }}>{reaction.most_confusing_element}</p>
               </div>
             )}
@@ -227,7 +233,7 @@ function ReactionCard({ reaction, image, imageMediaType, intendedFocus }: { reac
           {reaction.suggested_adjustment && (
             <div className="rounded-lg p-2.5 mb-3" style={{ background: HOME_COLORS.secondaryContainer }}>
               <p className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSecondaryContainer }}>Suggested adjustment</p>
-              <p className="text-xs" style={{ color: HOME_COLORS.onSecondaryContainer }}>{reaction.suggested_adjustment}</p>
+              <p className="text-xs italic" style={{ color: HOME_COLORS.onSecondaryContainer }}>&ldquo;{reaction.suggested_adjustment}&rdquo;</p>
             </div>
           )}
 
@@ -293,12 +299,10 @@ function ZoneCallouts({ zones, contentBox }: { zones: CreativeReviewResult['zone
   )
 }
 
-// A subtle "Analyzing" badge shown during generation — the actual visual
-// interest is the heatmap reveal + scan line rendered in SquareImageFrame
-// (see the creative-heatmap-reveal / creative-scan-line global styles
-// below), which mirrors the reference video: the heatmap develops
-// progressively as the scan line sweeps down the image, instead of just
-// sitting fully-formed under a translucent bar.
+// A subtle "Analyzing" badge shown during generation, alongside a plain
+// scan-line sweep over the image (see .creative-scan-line below). The
+// heatmap itself is intentionally not shown here — just the plain asset
+// with the scan animation while the panel call is in flight.
 function AnalyzingBadge() {
   return (
     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider pointer-events-none" style={{ background: 'rgba(0,0,0,0.65)', color: 'white' }}>
@@ -332,14 +336,10 @@ function SquareImageFrame({ src, heatmapSrc, zones, analyzing = false, showHeatm
             setContentBox(computeContentBox(img.naturalWidth, img.naturalHeight))
           }}
         />
-        {heatmapSrc && (showHeatmap || analyzing) && (
-          <img
-            src={heatmapSrc}
-            alt=""
-            className={`absolute inset-0 w-full h-full object-contain pointer-events-none ${analyzing ? 'creative-heatmap-reveal' : ''}`}
-          />
+        {!analyzing && heatmapSrc && showHeatmap && (
+          <img src={heatmapSrc} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" />
         )}
-        {analyzing && heatmapSrc && <div className="absolute left-0 right-0 h-[6%] creative-scan-line pointer-events-none" />}
+        {analyzing && <div className="absolute left-0 right-0 h-1/3 creative-scan-line pointer-events-none" />}
         {!analyzing && zones.length > 0 && <ZoneCallouts zones={zones} contentBox={contentBox} />}
         {analyzing && <AnalyzingBadge />}
         {!analyzing && showHeatmapToggle && heatmapSrc && (
@@ -349,40 +349,50 @@ function SquareImageFrame({ src, heatmapSrc, zones, analyzing = false, showHeatm
         )}
       </div>
       <style jsx global>{`
-        .creative-heatmap-reveal {
-          clip-path: inset(0 0 100% 0);
-          animation: creativeHeatReveal 2s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
-        }
-        @keyframes creativeHeatReveal {
-          0% { clip-path: inset(0 0 100% 0); }
-          100% { clip-path: inset(0 0 0% 0); }
-        }
         .creative-scan-line {
-          top: 0%;
+          top: -34%;
           background: linear-gradient(
             180deg,
             rgba(150, 169, 152, 0) 0%,
-            rgba(150, 169, 152, 0.6) 35%,
-            rgba(212, 232, 213, 0.95) 50%,
-            rgba(150, 169, 152, 0.6) 65%,
+            rgba(150, 169, 152, 0.55) 45%,
+            rgba(212, 232, 213, 0.9) 50%,
+            rgba(150, 169, 152, 0.55) 55%,
             rgba(150, 169, 152, 0) 100%
           );
-          box-shadow: 0 0 16px 2px rgba(212, 232, 213, 0.65);
-          animation: creativeScanSweep 2s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+          animation: creativeScanSweep 2.2s ease-in-out infinite;
         }
         @keyframes creativeScanSweep {
-          0% { top: -3%; }
-          100% { top: 97%; }
+          0% { top: -34%; }
+          100% { top: 100%; }
         }
       `}</style>
     </div>
   )
 }
 
-// Headline read on the whole panel — real counts computed from the actual
-// reactions (never fabricated), plus the genuine cross-panel synthesis from
-// generateCreativeReviewSummary when the run has one.
-function PanelHeadline({ result }: { result: CreativeReviewResult }) {
+// Measured-attention card, paired alongside the image in the bento row.
+function MeasuredAttentionCard({ zones }: { zones: CreativeReviewResult['zones'] }) {
+  return (
+    <div className="flex-1 min-w-[260px] w-full rounded-xl p-5 sm:p-6" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+      <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
+      <p className="text-[11px] mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share of the heatmap's visual weight that falls on each element, computed directly from the image's pixels.</p>
+      <ZoneBreakdown zones={zones} />
+    </div>
+  )
+}
+
+// Three real, computed counts (never fabricated) — no trend arrows or
+// invented "readiness" labels, just what's actually in the reactions.
+function StatCard({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+      <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY, color: HOME_COLORS.onSurface }}>{value}</p>
+      <p className="text-[10px] uppercase tracking-wider mt-1.5" style={{ color: HOME_COLORS.onSurfaceVariant }}>{label}</p>
+    </div>
+  )
+}
+
+function StatCardsRow({ result }: { result: CreativeReviewResult }) {
   const withEngagement = result.reactions.filter(r => r.engagement_percentage !== null)
   const avgEngagement = withEngagement.length
     ? Math.round(withEngagement.reduce((sum, r) => sum + (r.engagement_percentage ?? 0), 0) / withEngagement.length)
@@ -391,43 +401,52 @@ function PanelHeadline({ result }: { result: CreativeReviewResult }) {
   const confusedCount = result.reactions.filter(r => r.most_confusing_element).length
 
   return (
-    <div className="rounded-xl p-5 sm:p-6" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
-      <div className="grid grid-cols-3 gap-4 mb-5">
-        <div>
-          <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY }}>{avgEngagement !== null ? `${avgEngagement}%` : '—'}</p>
-          <p className="text-[10px] uppercase tracking-wider opacity-70 mt-1">Avg. engagement</p>
-        </div>
-        <div>
-          <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY }}>{highEngagementCount}/{result.total_personas}</p>
-          <p className="text-[10px] uppercase tracking-wider opacity-70 mt-1">Engaged (70%+)</p>
-        </div>
-        <div>
-          <p className="text-2xl font-semibold" style={{ fontFamily: HOME_FONT_DISPLAY }}>{confusedCount}/{result.total_personas}</p>
-          <p className="text-[10px] uppercase tracking-wider opacity-70 mt-1">Flagged confusion</p>
-        </div>
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <StatCard value={avgEngagement !== null ? `${avgEngagement}%` : '—'} label="Avg. engagement" />
+      <StatCard value={`${highEngagementCount}/${result.total_personas}`} label="Engaged (70%+)" />
+      <StatCard value={`${confusedCount}/${result.total_personas}`} label="Flagged confusion" />
+    </div>
+  )
+}
 
-      {result.summary?.overall_take && (
-        <div className="pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.15)' }}>
-          <p className="text-sm leading-relaxed mb-3">{result.summary.overall_take}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {result.summary.where_personas_agree && (
-              <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mb-1">Where the panel agrees</p>
-                <p className="text-xs">{result.summary.where_personas_agree}</p>
+// The single most impactful change, read from generateCreativeReviewSummary
+// — given its own prominent card since it's the one thing worth acting on
+// first, rather than buried inside a stats box.
+function TopRecommendedCard({ change }: { change: string }) {
+  return (
+    <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.primary, color: HOME_COLORS.onPrimary, boxShadow: CARD_SHADOW }}>
+      <p className="text-[10px] font-bold uppercase tracking-wider opacity-70 mb-3">Top recommended change</p>
+      <p className="text-lg leading-relaxed" style={{ fontFamily: HOME_FONT_DISPLAY, fontWeight: 500 }}>&ldquo;{change}&rdquo;</p>
+    </div>
+  )
+}
+
+// Genuine synthesis across the panel's real reactions — omitted entirely
+// when the run has no summary (older persisted runs) or nothing to show.
+function ConsensusDivergence({ overallTake, agree, diverge }: { overallTake?: string; agree: string | null; diverge: string | null }) {
+  if (!overallTake && !agree && !diverge) return null
+  return (
+    <div className="rounded-xl p-6 sm:p-8" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
+      <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Consensus &amp; divergence</p>
+      {overallTake && <p className="text-sm leading-relaxed mb-5" style={{ color: HOME_COLORS.onSurface }}>{overallTake}</p>}
+      {(agree || diverge) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {agree && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Users size={13} style={{ color: HOME_COLORS.primary }} />
+                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Where the panel agrees</p>
               </div>
-            )}
-            {result.summary.where_personas_diverge && (
-              <div className="rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mb-1">Where they diverge</p>
-                <p className="text-xs">{result.summary.where_personas_diverge}</p>
+              <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{agree}</p>
+            </div>
+          )}
+          {diverge && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Shuffle size={13} style={{ color: HOME_COLORS.secondary }} />
+                <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: HOME_COLORS.onSurfaceVariant }}>Where they diverge</p>
               </div>
-            )}
-          </div>
-          {result.summary.top_recommended_change && (
-            <div className="mt-3 rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.12)' }}>
-              <p className="text-[9px] font-bold uppercase tracking-wider opacity-60 mb-1">Top recommended change</p>
-              <p className="text-xs">{result.summary.top_recommended_change}</p>
+              <p className="text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurface }}>{diverge}</p>
             </div>
           )}
         </div>
@@ -438,20 +457,21 @@ function PanelHeadline({ result }: { result: CreativeReviewResult }) {
 
 function CreativeReviewResultsView({ result, image, imageMediaType, heatmapDataUrl }: { result: CreativeReviewResult; image: string | null; imageMediaType: string; heatmapDataUrl: string | null }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {image && (
-        <SquareImageFrame src={`data:${imageMediaType};base64,${image}`} heatmapSrc={heatmapDataUrl} zones={result.zones} />
+        <div className="flex flex-col lg:flex-row gap-4 items-start">
+          <SquareImageFrame src={`data:${imageMediaType};base64,${image}`} heatmapSrc={heatmapDataUrl} zones={result.zones} />
+          <MeasuredAttentionCard zones={result.zones} />
+        </div>
       )}
 
-      <PanelHeadline result={result} />
+      <StatCardsRow result={result} />
 
-      <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-        <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
-        <p className="text-[11px] mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share of the heatmap's visual weight that falls on each element below, computed directly from the image's pixels.</p>
-        <ZoneBreakdown zones={result.zones} />
-      </div>
+      {result.summary?.top_recommended_change && <TopRecommendedCard change={result.summary.top_recommended_change} />}
 
-      <div>
+      <ConsensusDivergence overallTake={result.summary?.overall_take} agree={result.summary?.where_personas_agree ?? null} diverge={result.summary?.where_personas_diverge ?? null} />
+
+      <div className="mt-2">
         <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Persona reactions</p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {result.reactions.map(r => (
@@ -654,17 +674,17 @@ export default function CreativeReviewPage() {
           ) : selectedRun ? (
             <div className="flex flex-col gap-8">
               <button onClick={() => setSelectedRun(null)} className="text-xs font-semibold self-start" style={{ color: HOME_COLORS.primary, background: 'none', border: 'none', cursor: 'pointer' }}>← Back to history</button>
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4">
                 {historyImageUrl && (
-                  <SquareImageFrame src={historyImageUrl} zones={selectedRun.result.zones} showHeatmapToggle={false} />
+                  <div className="flex flex-col lg:flex-row gap-4 items-start">
+                    <SquareImageFrame src={historyImageUrl} zones={selectedRun.result.zones} showHeatmapToggle={false} />
+                    <MeasuredAttentionCard zones={selectedRun.result.zones} />
+                  </div>
                 )}
-                <PanelHeadline result={selectedRun.result} />
-                <div className="rounded-xl p-5" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: HOME_COLORS.onSurfaceVariant }}>Measured attention by element</p>
-                  <p className="text-[11px] mb-4" style={{ color: HOME_COLORS.onSurfaceVariant }}>Share of the heatmap's visual weight that falls on each element below, computed directly from the image's pixels.</p>
-                  <ZoneBreakdown zones={selectedRun.result.zones} />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <StatCardsRow result={selectedRun.result} />
+                {selectedRun.result.summary?.top_recommended_change && <TopRecommendedCard change={selectedRun.result.summary.top_recommended_change} />}
+                <ConsensusDivergence overallTake={selectedRun.result.summary?.overall_take} agree={selectedRun.result.summary?.where_personas_agree ?? null} diverge={selectedRun.result.summary?.where_personas_diverge ?? null} />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">
                   {selectedRun.result.reactions.map(r => (
                     <ReactionCard key={r.persona_id} reaction={r} image={null} imageMediaType="image/jpeg" intendedFocus={selectedRun.result.intended_focus} />
                   ))}
@@ -795,7 +815,7 @@ export default function CreativeReviewPage() {
             )}
             {loading && (
               <div className="flex flex-col gap-4">
-                {imagePreview && <SquareImageFrame src={imagePreview} heatmapSrc={saliency?.heatmapDataUrl ?? null} zones={[]} analyzing />}
+                {imagePreview && <SquareImageFrame src={imagePreview} zones={[]} analyzing />}
                 <div className="rounded-xl py-6 text-center" style={{ background: HOME_COLORS.surfaceContainerLowest, boxShadow: CARD_SHADOW }}>
                   <h3 className="text-sm font-semibold mb-1" style={{ color: HOME_COLORS.onSurface }}>Reviewing asset</h3>
                   <p className="text-xs" style={{ color: HOME_COLORS.onSurfaceVariant }}>Identifying elements, then interviewing {selectedIds.length} personas...</p>
