@@ -273,6 +273,31 @@ export default function LandingPage() {
           30% { left: 130%; }
           100% { left: 130%; }
         }
+
+        /* A restrained, product-shaped animation for the toolkit preview. */
+        @keyframes toolkitPreviewScan {
+          0%, 18% { transform: translateX(-135%); opacity: 0; }
+          28% { opacity: 0.9; }
+          68% { opacity: 0.9; }
+          78%, 100% { transform: translateX(260%); opacity: 0; }
+        }
+        .toolkit-preview-scan { animation: toolkitPreviewScan 6.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        @keyframes toolkitPreviewBar {
+          0%, 12% { transform: scaleX(0.38); opacity: 0.55; }
+          42%, 78% { transform: scaleX(1); opacity: 1; }
+          100% { transform: scaleX(0.72); opacity: 0.8; }
+        }
+        .toolkit-preview-bar { transform-origin: left; animation: toolkitPreviewBar 4.8s ease-in-out infinite; }
+        .toolkit-preview-bar-delay { animation-delay: -1.5s; }
+        .toolkit-preview-bar-delay-2 { animation-delay: -3s; }
+        @keyframes toolkitPreviewFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        .toolkit-preview-float { animation: toolkitPreviewFloat 4.2s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .toolkit-preview-scan, .toolkit-preview-bar, .toolkit-preview-float { animation: none; }
+        }
       `}</style>
 
       {/* TopNavBar */}
@@ -700,15 +725,53 @@ export default function LandingPage() {
         <section id="features" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center gap-4 mb-4">
-              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">02 // The Toolkit</span>
+              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">02 // Test Before You Build</span>
               <div className="hidden sm:block h-px flex-grow bg-[#1A3024]/10" />
             </div>
             <h2 className="text-[28px] sm:text-[40px] mb-4 tracking-tighter font-normal text-[#121314] max-w-2xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Every way to test an idea, before you bet real money on it.
+              Put every important decision in front of the people it needs to win over.
             </h2>
             <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed max-w-2xl mb-12 sm:mb-16">
-              One persona engine, six ways to put it to work — from a quick gut-check to a full research report.
+              Test your message, concept, product, or creative, then turn real-looking reactions into a clear next move before you commit time, budget, or a launch.
             </p>
+
+            <div aria-label="SignalRoom concept test preview" className="mb-12 overflow-hidden rounded-[6px] border border-[#1A3024]/15 bg-white shadow-[0_24px_60px_rgba(26,48,36,0.10)] sm:mb-16">
+              <div className="flex h-10 items-center justify-between border-b border-[#1A3024]/10 bg-[#fbfcfa] px-4 sm:px-5">
+                <div className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#d6a4a1]" /><span className="h-1.5 w-1.5 rounded-full bg-[#d8c58e]" /><span className="h-1.5 w-1.5 rounded-full bg-[#9ebaa5]" /></div>
+                <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#6b726c]">SignalRoom · Concept test</span>
+                <span className="hidden text-[9px] text-[#7e847f] sm:block">Live analysis</span>
+              </div>
+              <div className="grid min-h-[330px] grid-cols-1 sm:grid-cols-[150px_1fr]">
+                <aside className="hidden border-r border-[#1A3024]/10 bg-[#f7f8f6] p-4 sm:block">
+                  <div className="mb-6 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#1A3024] text-[10px] font-semibold text-white">S</span><span className="text-[10px] font-semibold text-[#1A3024]">SignalRoom</span></div>
+                  <div className="space-y-2 text-[9px] font-medium text-[#767d77]"><div className="rounded-md bg-[#e8eee8] px-2.5 py-2 text-[#1A3024]">Research</div><div className="px-2.5 py-1.5">Personas</div><div className="px-2.5 py-1.5">Interviews</div><div className="px-2.5 py-1.5">Reports</div></div>
+                  <div className="mt-8 border-t border-[#1A3024]/10 pt-4"><p className="text-[8px] uppercase tracking-[0.17em] text-[#858c86]">Project</p><p className="mt-1 text-[10px] font-semibold text-[#303a31]">Spring launch</p></div>
+                </aside>
+                <div className="relative overflow-hidden p-5 sm:p-7">
+                  <div className="toolkit-preview-scan pointer-events-none absolute inset-y-0 z-10 w-20 bg-gradient-to-r from-transparent via-[#dcebdd]/40 to-transparent" />
+                  <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+                    <div><p className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#6b726c]">Testing now</p><h3 className="mt-1 text-[19px] tracking-tight text-[#1A3024] sm:text-[23px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>New product positioning</h3></div>
+                    <div className="rounded-full border border-[#a8c0ac] bg-[#eef6ee] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#294b31]">4 reactions in</div>
+                  </div>
+                  <div className="grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+                    <div className="rounded-[5px] border border-[#1A3024]/10 bg-[#fcfdfb] p-4">
+                      <div className="mb-4 flex items-center justify-between"><span className="text-[10px] font-semibold text-[#26392a]">Persona reactions</span><span className="text-[9px] text-[#7d867e]">Updated now</span></div>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3"><img src="/landing-personas/priya.jpg" alt="" className="h-8 w-8 rounded-full object-cover" /><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="text-[10px] font-semibold text-[#26392a]">Priya Nair</span><span className="text-[9px] font-semibold text-[#3d6947]">Strong fit</span></div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#e4e9e3]"><div className="toolkit-preview-bar h-full w-[83%] rounded-full bg-[#52765a]" /></div></div></div>
+                        <div className="flex items-center gap-3"><img src="/landing-personas/arjun.jpg" alt="" className="h-8 w-8 rounded-full object-cover" /><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="text-[10px] font-semibold text-[#26392a]">Arjun Sharma</span><span className="text-[9px] font-semibold text-[#3d6947]">Interested</span></div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#e4e9e3]"><div className="toolkit-preview-bar toolkit-preview-bar-delay h-full w-[68%] rounded-full bg-[#7b9a80]" /></div></div></div>
+                        <div className="flex items-center gap-3"><img src="/landing-personas/marisol.jpg" alt="" className="h-8 w-8 rounded-full object-cover" /><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><span className="text-[10px] font-semibold text-[#26392a]">Marisol Vega</span><span className="text-[9px] font-semibold text-[#846559]">Needs proof</span></div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#e4e9e3]"><div className="toolkit-preview-bar toolkit-preview-bar-delay-2 h-full w-[48%] rounded-full bg-[#a48275]" /></div></div></div>
+                      </div>
+                    </div>
+                    <div className="toolkit-preview-float rounded-[5px] bg-[#1A3024] p-4 text-white shadow-lg shadow-[#1A3024]/15">
+                      <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-[#bcd0bf]">Signal emerging</p>
+                      <p className="mt-3 text-[18px] leading-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>The benefit is clear, but buyers need proof before they switch.</p>
+                      <div className="mt-5 border-t border-white/15 pt-4"><div className="flex items-end justify-between"><div><p className="text-[9px] uppercase tracking-[0.16em] text-white/55">Evidence strength</p><p className="mt-1 text-[13px] font-semibold text-[#d8ead9]">Growing</p></div><span className="text-[24px] leading-none text-[#d8ead9]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>3</span></div><div className="mt-3 flex gap-1"><span className="h-1.5 flex-1 rounded-full bg-[#b7cfb9]" /><span className="h-1.5 flex-1 rounded-full bg-[#b7cfb9]" /><span className="h-1.5 flex-1 rounded-full bg-[#b7cfb9]" /><span className="h-1.5 flex-1 rounded-full bg-white/15" /></div></div>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2 rounded-[5px] border border-[#1A3024]/10 bg-[#f8faf7] px-3 py-2.5"><span className="material-symbols-outlined text-[15px] text-[#5a7960]">auto_awesome</span><span className="text-[10px] text-[#526057]">AI has connected a new response to this signal</span><span className="ml-auto hidden text-[9px] font-semibold uppercase tracking-[0.12em] text-[#355d3e] sm:inline">View evidence →</span></div>
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
               {[
