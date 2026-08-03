@@ -274,30 +274,6 @@ export default function LandingPage() {
           100% { left: 130%; }
         }
 
-        /* A restrained, product-shaped animation for the toolkit preview. */
-        @keyframes toolkitPreviewScan {
-          0%, 18% { transform: translateX(-135%); opacity: 0; }
-          28% { opacity: 0.9; }
-          68% { opacity: 0.9; }
-          78%, 100% { transform: translateX(260%); opacity: 0; }
-        }
-        .toolkit-preview-scan { animation: toolkitPreviewScan 6.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-        @keyframes toolkitPreviewBar {
-          0%, 12% { transform: scaleX(0.38); opacity: 0.55; }
-          42%, 78% { transform: scaleX(1); opacity: 1; }
-          100% { transform: scaleX(0.72); opacity: 0.8; }
-        }
-        .toolkit-preview-bar { transform-origin: left; animation: toolkitPreviewBar 4.8s ease-in-out infinite; }
-        .toolkit-preview-bar-delay { animation-delay: -1.5s; }
-        .toolkit-preview-bar-delay-2 { animation-delay: -3s; }
-        @keyframes toolkitPreviewFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
-        }
-        .toolkit-preview-float { animation: toolkitPreviewFloat 4.2s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .toolkit-preview-scan, .toolkit-preview-bar, .toolkit-preview-float { animation: none; }
-        }
       `}</style>
 
       {/* TopNavBar */}
@@ -735,7 +711,35 @@ export default function LandingPage() {
               Test your message, concept, product, or creative, then turn real-looking reactions into a clear next move before you commit time, budget, or a launch.
             </p>
 
-            <div aria-label="SignalRoom concept test preview" className="mb-12 overflow-hidden rounded-[6px] border border-[#1A3024]/15 bg-white shadow-[0_24px_60px_rgba(26,48,36,0.10)] sm:mb-16">
+            <div aria-label="SignalRoom platform preview" className="mb-12 overflow-hidden rounded-[8px] border border-[#1A3024]/15 bg-white shadow-[0_24px_60px_rgba(26,48,36,0.10)] sm:mb-16">
+              <div className="flex h-11 items-center justify-between border-b border-[#1A3024]/10 bg-[#fcfdfb] px-4 sm:px-6">
+                <div className="flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#1A3024] text-[10px] font-semibold text-white">S</span><span className="text-[10px] font-semibold text-[#26392a]">SignalRoom</span></div>
+                <div className="hidden gap-5 text-[9px] font-medium text-[#7e847f] sm:flex"><span className="text-[#1A3024]">Dashboard</span><span>Research</span><span>Signals</span></div>
+                <span className="rounded-full bg-[#edf5ee] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-[#3a6744]">Research live</span>
+              </div>
+              <div className="grid lg:grid-cols-12">
+                <div className="relative min-h-[315px] overflow-hidden bg-[#17291d] p-6 text-white sm:p-8 lg:col-span-7">
+                  <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(207,230,209,0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(207,230,209,0.16) 1px, transparent 1px)', backgroundSize: '38px 38px' }} />
+                  <div className="relative z-10 flex items-start justify-between"><div><p className="text-[9px] font-medium uppercase tracking-[0.22em] text-[#bbd1bd]">Research at a glance</p><h3 className="mt-2 text-[25px] leading-tight sm:text-[30px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>What your audience is telling you.</h3></div><span className="hidden rounded-full border border-white/15 px-2.5 py-1 text-[8px] font-medium uppercase tracking-[0.15em] text-[#d9eadb] sm:block">Spring launch</span></div>
+                  <svg className="absolute bottom-11 left-6 right-6 h-32 w-[calc(100%-3rem)] sm:left-8 sm:right-8 sm:w-[calc(100%-4rem)]" viewBox="0 0 540 130" fill="none" aria-hidden="true"><path d="M0 105 C60 92, 87 106, 138 75 S220 88, 277 47 S369 77, 414 43 S492 35, 540 15" stroke="#b9d4bd" strokeOpacity="0.28" strokeWidth="2" /><path d="M0 105 C60 92, 87 106, 138 75 S220 88, 277 47 S369 77, 414 43 S492 35, 540 15" stroke="#dceedd" strokeWidth="2" strokeDasharray="8 11" /><circle cx="138" cy="75" r="5" fill="#dceedd" /><circle cx="277" cy="47" r="5" fill="#dceedd" /><circle cx="414" cy="43" r="5" fill="#dceedd" /></svg>
+                  <div className="absolute bottom-5 left-6 right-6 z-10 flex items-end justify-between sm:left-8 sm:right-8"><div className="flex -space-x-2"><img src="/landing-personas/priya.jpg" alt="" className="h-8 w-8 rounded-full border-2 border-[#17291d] object-cover" /><img src="/landing-personas/arjun.jpg" alt="" className="h-8 w-8 rounded-full border-2 border-[#17291d] object-cover" /><img src="/landing-personas/marisol.jpg" alt="" className="h-8 w-8 rounded-full border-2 border-[#17291d] object-cover" /></div><span className="text-[9px] font-medium uppercase tracking-[0.16em] text-[#c1d8c4]">3 signals growing</span></div>
+                </div>
+                <div className="grid bg-[#f8f9f7] sm:grid-cols-2 lg:col-span-5 lg:grid-cols-1">
+                  <div className="border-b border-[#1A3024]/10 p-6 sm:border-r sm:border-b-0 lg:border-r-0 lg:border-b lg:p-7">
+                    <div className="flex items-center justify-between"><span className="text-[9px] font-medium uppercase tracking-[0.18em] text-[#6d756e]">Latest reaction</span><span className="material-symbols-outlined text-[17px] text-[#56735d]">format_quote</span></div>
+                    <p className="mt-5 text-[19px] leading-snug text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>&ldquo;The value is clear. I would just need evidence before switching.&rdquo;</p>
+                    <div className="mt-5 flex items-center gap-2.5"><img src="/landing-personas/priya.jpg" alt="" className="h-7 w-7 rounded-full object-cover" /><div><p className="text-[10px] font-semibold text-[#26392a]">Priya Nair</p><p className="text-[8px] uppercase tracking-[0.1em] text-[#7d857e]">Product leader</p></div></div>
+                  </div>
+                  <div className="p-6 lg:p-7">
+                    <div className="flex items-center justify-between"><span className="text-[9px] font-medium uppercase tracking-[0.18em] text-[#6d756e]">Decision readiness</span><span className="rounded-full bg-[#e5efe6] px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.13em] text-[#3b6744]">Promising</span></div>
+                    <div className="mt-6 flex h-16 items-end gap-2"><span className="h-[32%] flex-1 rounded-t-sm bg-[#d4dfd5]" /><span className="h-[54%] flex-1 rounded-t-sm bg-[#9db8a1]" /><span className="h-[76%] flex-1 rounded-t-sm bg-[#587d60]" /><span className="h-full flex-1 rounded-t-sm bg-[#1A3024]" /></div>
+                    <div className="mt-5 border-t border-[#1A3024]/10 pt-4"><p className="text-[10px] leading-relaxed text-[#596159]">Test one more message with decision-makers to strengthen this direction.</p></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div aria-hidden="true" className="hidden">
               <div className="flex h-10 items-center justify-between border-b border-[#1A3024]/10 bg-[#fbfcfa] px-4 sm:px-5">
                 <div className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#d6a4a1]" /><span className="h-1.5 w-1.5 rounded-full bg-[#d8c58e]" /><span className="h-1.5 w-1.5 rounded-full bg-[#9ebaa5]" /></div>
                 <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#6b726c]">SignalRoom · Concept test</span>
