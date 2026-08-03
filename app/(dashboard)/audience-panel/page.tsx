@@ -414,7 +414,7 @@ export default function AudiencePanelPage() {
         <div className="mb-8">
           <h1 className="flex items-center gap-2" style={{ ...DISPLAY_LG_STYLE, fontSize: '28px', lineHeight: '36px', color: HOME_COLORS.onSurface }}>
             <BarChart3 size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-            Audience Testing
+            Audience Test
           </h1>
           <p className="text-sm mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Ask one question to 5–10 personas simultaneously and visualize the results</p>
         </div>
@@ -442,7 +442,7 @@ export default function AudiencePanelPage() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
-              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Audience Intelligence</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Audience Test</span>
             </div>
             <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
               Synthesize market voice through <span className="italic" style={{ fontWeight: 400 }}>neural modeling</span>.

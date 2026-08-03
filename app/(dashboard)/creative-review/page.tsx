@@ -152,7 +152,7 @@ function ReactionCard({ reaction, image, imageMediaType, intendedFocus }: { reac
       <div className="mb-7 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="flex min-w-0 items-center gap-4">
           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border-2" style={{ borderColor: `${HOME_COLORS.primary}1a` }}>
-            <PersonaAvatar avatarUrl={reaction.avatar_url} avatarInitials={reaction.avatar_initials} avatarColor={reaction.avatar_color} name={reaction.persona_name} size="lg" />
+            <PersonaAvatar avatarUrl={reaction.avatar_url} avatarInitials={reaction.avatar_initials} avatarColor={reaction.avatar_color} name={reaction.persona_name} size="lg" className="h-full w-full" />
           </div>
           <div className="min-w-0">
             <h3 className="break-words text-xl leading-tight" style={{ color: HOME_COLORS.onSurface, fontFamily: HOME_FONT_DISPLAY }}>{reaction.persona_name}</h3>
@@ -647,7 +647,7 @@ export default function CreativeReviewPage() {
         <div className="max-w-2xl">
         <div className="mb-8">
           <div className="mb-4 flex items-center gap-3"><span className="h-px w-12" style={{ background: HOME_COLORS.primary }} /><span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Visual perception</span></div>
-          <h1 style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>Creative <span className="italic" style={{ fontWeight: 400 }}>Audit</span></h1>
+          <h1 style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>Creative <span className="italic" style={{ fontWeight: 400 }}>Assessment</span></h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>See how your persona panel reads a packaging concept, ad, or landing page — grounded in measured attention, not a guess.</p>
         </div>
         <div className="rounded-xl border p-8 text-center sm:p-10" style={{ background: HOME_COLORS.surfaceContainerLowest, borderColor: `${HOME_COLORS.outlineVariant}44`, boxShadow: CARD_SHADOW }}>
@@ -705,7 +705,7 @@ export default function CreativeReviewPage() {
               <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Visual perception</span>
             </div>
             <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
-              Creative <span className="italic" style={{ fontWeight: 400 }}>Audit</span>
+              Creative <span className="italic" style={{ fontWeight: 400 }}>Assessment</span>
             </h1>
             <p className="text-sm sm:text-base leading-relaxed max-w-2xl" style={{ color: HOME_COLORS.onSurfaceVariant }}>
               Test what stands out in a packaging shot, ad, or landing page before you commit to the creative.

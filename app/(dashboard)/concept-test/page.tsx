@@ -258,7 +258,7 @@ export default function ConceptTestPage() {
         <div className="mb-8">
           <h1 className="flex items-center gap-2" style={{ ...DISPLAY_LG_STYLE, fontSize: '28px', lineHeight: '36px', color: HOME_COLORS.onSurface }}>
             <Layers size={22} style={{ color: HOME_COLORS.onSurfaceVariant }} />
-            Concept Testing
+            Concept Test
           </h1>
           <p className="text-sm mt-2" style={{ color: HOME_COLORS.onSurfaceVariant }}>Compare multiple concepts side by side across a panel of personas.</p>
         </div>
@@ -286,7 +286,7 @@ export default function ConceptTestPage() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="w-12 h-px opacity-50" style={{ background: HOME_COLORS.primaryFixed }} />
-              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Concept Testing</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Concept Test</span>
             </div>
             <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onPrimary }}>
               Put your concepts <span className="italic" style={{ color: HOME_COLORS.primaryFixed, fontWeight: 400 }}>head to head</span>.
@@ -464,7 +464,7 @@ export default function ConceptTestPage() {
           </section>
 
           <button onClick={handleRun} disabled={!canRun} className="self-center flex items-center gap-3 px-10 py-5 rounded-full text-base font-semibold shadow-sm transition-shadow hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60" style={{ background: canRun ? HOME_COLORS.primary : HOME_COLORS.surfaceContainerHigh, color: canRun ? HOME_COLORS.onPrimary : HOME_COLORS.onSurfaceVariant }}>
-            {loading ? <><Loader2 size={18} className="animate-spin" /> Running simulation...</> : <>Run Concept Testing <Rocket size={18} /></>}
+            {loading ? <><Loader2 size={18} className="animate-spin" /> Running simulation...</> : <>Run Concept Test <Rocket size={18} /></>}
           </button>
           {error && <p className="text-sm rounded-lg px-3 py-2" style={{ color: HOME_COLORS.error, background: '#FFDAD6' }}>{error}</p>}
           {/* Results */}
