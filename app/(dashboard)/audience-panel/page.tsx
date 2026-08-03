@@ -442,7 +442,7 @@ export default function AudiencePanelPage() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="w-12 h-px" style={{ background: HOME_COLORS.primary }} />
-              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Audience Test</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primary }}>Audience Testing</span>
             </div>
             <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onSurface }}>
               Synthesize market voice through <span className="italic" style={{ fontWeight: 400 }}>neural modeling</span>.

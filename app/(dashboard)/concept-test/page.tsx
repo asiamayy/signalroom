@@ -286,7 +286,7 @@ export default function ConceptTestPage() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="w-12 h-px opacity-50" style={{ background: HOME_COLORS.primaryFixed }} />
-              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Concept Test</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: HOME_COLORS.primaryFixed }}>Concept Testing</span>
             </div>
             <h1 className="mb-6 leading-tight" style={{ ...DISPLAY_LG_STYLE, color: HOME_COLORS.onPrimary }}>
               Put your concepts <span className="italic" style={{ color: HOME_COLORS.primaryFixed, fontWeight: 400 }}>head to head</span>.
