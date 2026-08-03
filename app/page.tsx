@@ -289,6 +289,7 @@ export default function LandingPage() {
         <div className="hidden lg:flex items-center gap-10">
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#dashboard-replica">Platform</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#methodology">Methodology</a>
+          <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#features">Features</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#integrations">Integrations</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#roi">ROI</a>
           <a className="text-[11px] font-medium uppercase tracking-[0.15em] border-b border-transparent hover:border-[#1A3024]/40 text-[#454947] hover:text-[#121314] transition-all duration-300" href="#pricing">Pricing</a>
@@ -694,12 +695,81 @@ export default function LandingPage() {
         })()}
       </div>
 
+      {/* Feature Showcase — every way to test an idea */}
+      <RevealSection>
+        <section id="features" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-4 mb-4">
+              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">02 // The Toolkit</span>
+              <div className="hidden sm:block h-px flex-grow bg-[#1A3024]/10" />
+            </div>
+            <h2 className="text-[28px] sm:text-[40px] mb-4 tracking-tighter font-normal text-[#121314] max-w-2xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Every way to test an idea, before you bet real money on it.
+            </h2>
+            <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed max-w-2xl mb-12 sm:mb-16">
+              One persona engine, six ways to put it to work — from a quick gut-check to a full research report.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
+              {[
+                {
+                  icon: 'compare_arrows',
+                  title: 'Compare Reactions',
+                  body: 'Put 2–4 personas side by side on the same question and see exactly where their reactions split — and why.',
+                },
+                {
+                  icon: 'groups',
+                  title: 'Audience Testing',
+                  body: 'Run one question against 5–10 personas at once and get sentiment distribution, a consensus score, and an AI executive summary in minutes.',
+                },
+                {
+                  icon: 'layers',
+                  title: 'Concept Testing',
+                  body: 'Upload up to 4 concepts — images included — and let the full panel rank them: a declared winner, per-persona scores, and the reasoning behind each.',
+                },
+                {
+                  icon: 'visibility',
+                  title: 'Creative Testing',
+                  badge: 'New',
+                  body: 'See where attention actually lands on your packaging, ad, or landing page — a real measured heatmap, not a guess — then hear how each persona reads what’s there.',
+                },
+                {
+                  icon: 'sensors',
+                  title: 'Market Signals',
+                  body: 'Every interview and test feeds a living signal feed — recurring pain points, objections, and opportunities, tracked as they strengthen or fade.',
+                },
+                {
+                  icon: 'description',
+                  title: 'Research Reports',
+                  body: 'Every interview becomes a structured report: key themes, verbatim quotes, a confidence score, and next-step recommendations — shareable with your team.',
+                },
+              ].map((feature) => (
+                <div key={feature.title} className="bg-white p-8 sm:p-10 group hover:bg-[#fafbfa] transition-all duration-500 flex flex-col">
+                  <div className="flex items-center justify-between mb-8">
+                    <span className="material-symbols-outlined text-neutral-400 text-3xl transition-all duration-300 transform animate-editorial-bounce">{feature.icon}</span>
+                    {feature.badge && (
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-white bg-[#1A3024] px-2 py-1 rounded-full">{feature.badge}</span>
+                    )}
+                  </div>
+                  <h3 className="text-[20px] sm:text-[22px] mb-3 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-[13px] sm:text-sm text-neutral-600 leading-relaxed">
+                    {feature.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </RevealSection>
+
       {/* Team Workspaces + Integrations Section */}
       <RevealSection>
         <section id="integrations" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center gap-4 mb-10 sm:mb-16">
-              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">02 // Built For Teams</span>
+              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">03 // Built For Teams</span>
               <div className="hidden sm:block h-px flex-grow bg-[#1A3024]/10" />
             </div>
 
