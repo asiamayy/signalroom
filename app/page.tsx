@@ -250,6 +250,45 @@ export default function LandingPage() {
           animation: flowDash 3.6s linear infinite;
         }
 
+        .thermal-map { isolation: isolate; }
+        .thermal-blob {
+          position: absolute;
+          border-radius: 9999px;
+          filter: blur(22px);
+          mix-blend-mode: screen;
+          opacity: 0.55;
+        }
+        .thermal-blob-1 {
+          width: 55%; height: 65%; left: -10%; top: -12%;
+          background: radial-gradient(circle, rgba(214,74,64,0.65) 0%, rgba(214,74,64,0) 70%);
+          animation: thermalDrift1 9s ease-in-out infinite;
+        }
+        .thermal-blob-2 {
+          width: 45%; height: 55%; right: -8%; top: 8%;
+          background: radial-gradient(circle, rgba(224,158,58,0.6) 0%, rgba(224,158,58,0) 70%);
+          animation: thermalDrift2 11s ease-in-out infinite;
+        }
+        .thermal-blob-3 {
+          width: 50%; height: 50%; left: 22%; bottom: -18%;
+          background: radial-gradient(circle, rgba(206,190,70,0.55) 0%, rgba(206,190,70,0) 70%);
+          animation: thermalDrift3 8s ease-in-out infinite;
+        }
+        .thermal-blob-4 {
+          width: 42%; height: 50%; right: 8%; bottom: -12%;
+          background: radial-gradient(circle, rgba(72,148,138,0.55) 0%, rgba(72,148,138,0) 70%);
+          animation: thermalDrift4 10s ease-in-out infinite;
+        }
+        .thermal-blob-5 {
+          width: 36%; height: 45%; left: 38%; top: 18%;
+          background: radial-gradient(circle, rgba(70,108,176,0.5) 0%, rgba(70,108,176,0) 70%);
+          animation: thermalDrift5 12s ease-in-out infinite;
+        }
+        @keyframes thermalDrift1 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(14%,10%) scale(1.15); } }
+        @keyframes thermalDrift2 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-12%,14%) scale(0.9); } }
+        @keyframes thermalDrift3 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(10%,-12%) scale(1.1); } }
+        @keyframes thermalDrift4 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-10%,-10%) scale(1.08); } }
+        @keyframes thermalDrift5 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(8%,8%) scale(0.92); } }
+
         .roi-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
@@ -335,7 +374,7 @@ export default function LandingPage() {
               <span className="block mt-1 lg:mt-2"><span ref={nAnchorRef}>N</span>ow you can ask.</span>
             </h1>
 
-            <div className="mt-4 mb-4 w-full max-w-[900px] bg-transparent overflow-visible">
+            <div className="mt-3 mb-3 w-full max-w-[900px] bg-transparent overflow-visible">
               <IntelligenceSignal anchorRef={nAnchorRef} boundaryRef={rightColRef} />
             </div>
 
@@ -343,7 +382,7 @@ export default function LandingPage() {
               SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
             </p>
 
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1A3024] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[#5A7973] hover:shadow-lg hover:shadow-[#1A3024]/15">
                 Start your first interview
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -354,7 +393,7 @@ export default function LandingPage() {
               </a>
             </div>
 
-            <div className="mt-10 flex items-center gap-6">
+            <div className="mt-6 flex items-center gap-6">
               <div className="flex -space-x-3">
                 {DASHBOARD_PERSONAS.map((p) => (
                   <img
@@ -373,12 +412,12 @@ export default function LandingPage() {
 
           {/* RIGHT SIDE */}
           <div ref={rightColRef} className="md:col-span-12 lg:col-span-5 lg:pt-36 xl:pt-44">
-            <div className="rounded-2xl border border-[#d1d5d3]/70 bg-white p-6 shadow-2xl shadow-[#1A3024]/10">
-              <div className="mb-5 flex items-center justify-between"><span className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#5A7973]"><span className="h-2 w-2 rounded-full bg-[#5A7973]" /> Live interview</span><span className="text-[10px] text-neutral-400">01:23</span></div>
-              <div className="mb-5 flex items-center gap-3"><img src={DASHBOARD_PERSONAS[0].imgUrl} alt={DASHBOARD_PERSONAS[0].name} className="h-12 w-12 rounded-full object-cover" /><div><p className="text-sm font-medium text-[#121314]">{DASHBOARD_PERSONAS[0].name}</p><p className="text-xs text-[#748076]">{DASHBOARD_PERSONAS[0].title}</p></div></div>
-              <p className="rounded-lg bg-[#fafbfa] p-4 text-[13px] italic leading-relaxed text-[#454947]">&ldquo;{DASHBOARD_PERSONAS[0].interviewQuote.slice(0, 170)}&hellip;&rdquo;</p>
-              <div className="mt-5 border-t border-[#e3e5e3] pt-4"><div className="mb-2 flex justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-[#748076]"><span>Confidence score</span><span className="text-[#121314]">82% · Strong</span></div><div className="h-2 overflow-hidden rounded-full bg-[#e3e5e3]"><div className="h-full w-[82%] rounded-full bg-gradient-to-r from-[#5A7973] to-[#1A3024]" /></div></div>
-              <div className="mt-4 flex items-center gap-1.5">
+            <div className="rounded-2xl border border-[#d1d5d3]/70 bg-white p-5 shadow-2xl shadow-[#1A3024]/10">
+              <div className="mb-4 flex items-center justify-between"><span className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#5A7973]"><span className="h-2 w-2 rounded-full bg-[#5A7973]" /> Live interview</span><span className="text-[10px] text-neutral-400">01:23</span></div>
+              <div className="mb-4 flex items-center gap-3"><img src={DASHBOARD_PERSONAS[0].imgUrl} alt={DASHBOARD_PERSONAS[0].name} className="h-10 w-10 rounded-full object-cover" /><div><p className="text-sm font-medium text-[#121314]">{DASHBOARD_PERSONAS[0].name}</p><p className="text-xs text-[#748076]">{DASHBOARD_PERSONAS[0].title}</p></div></div>
+              <p className="rounded-lg bg-[#fafbfa] p-3 text-xs italic leading-relaxed text-[#454947]">&ldquo;{DASHBOARD_PERSONAS[0].interviewQuote.slice(0, 130)}&hellip;&rdquo;</p>
+              <div className="mt-4 border-t border-[#e3e5e3] pt-3"><div className="mb-2 flex justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-[#748076]"><span>Confidence score</span><span className="text-[#121314]">82% · Strong</span></div><div className="h-1.5 overflow-hidden rounded-full bg-[#e3e5e3]"><div className="h-full w-[82%] rounded-full bg-gradient-to-r from-[#5A7973] to-[#1A3024]" /></div></div>
+              <div className="mt-3 flex items-center gap-1.5">
                 {DASHBOARD_PERSONAS.map((p, i) => (
                   <div
                     key={p.id}
@@ -502,7 +541,7 @@ export default function LandingPage() {
               <div className="min-h-[420px] rounded-2xl border border-[#d1d5d3] bg-white p-7 sm:p-9 lg:col-span-7">
                 {activeToolkit === 0 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">01 / Persona interviews</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Hear the reason behind the reaction.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">Run one-on-one simulated interviews with AI personas that represent your target customer. Every response includes a confidence score, behavioral signals, and a verbatim quote you can trace back to the source.</p><div className="mt-8 flex gap-4 rounded-xl bg-[#fafbfa] p-5"><img src={DASHBOARD_PERSONAS[1].imgUrl} alt={DASHBOARD_PERSONAS[1].name} className="h-11 w-11 rounded-full object-cover" /><div><p className="text-xs font-medium text-[#121314]">{DASHBOARD_PERSONAS[1].name}</p><p className="mt-2 text-[13px] italic leading-relaxed text-[#5c625d]">&ldquo;The confidence score is useful, but I&rsquo;d want to see how it holds up against a real customer panel before I trust it for roadmap decisions.&rdquo;</p></div></div><div className="mt-5 flex items-center gap-3 px-2"><span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#748076]">Confidence</span><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#e3e5e3]"><div className="h-full w-[82%] rounded-full bg-[#1A3024]" /></div><span className="text-sm font-medium">82%</span></div><div className="mt-3 flex gap-1.5 px-2">{DASHBOARD_PERSONAS.map((p, i) => <div key={p.id} className={`h-1.5 rounded-full ${i === 1 ? 'w-6 bg-[#1A3024]' : 'w-1.5 bg-[#d1d5d3]'}`} />)}</div></div>}
                 {activeToolkit === 1 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">02 / Concept test</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See which idea wins.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">Upload up to four concepts — images included — and let the full panel rank them. You get a declared winner, per-persona scores, and the reasoning behind each vote before you commit to a direction.</p><div className="mt-8 flex items-center justify-between"><span className="text-xs font-medium text-[#454947]">Winner: Concept B</span><span className="rounded-full bg-[#F3F5F3] px-2 py-0.5 text-[10px] text-[#748076]">84%</span></div><div className="mt-3 space-y-4">{[['Concept A', 68, '#5A7973'], ['Concept B', 84, '#1A3024'], ['Concept C', 45, '#748076'], ['Concept D', 72, '#454947']].map(([name, score, color]) => <div key={String(name)} className="flex items-center gap-4"><span className="w-20 flex-shrink-0 text-xs font-medium text-[#5c625d]">{name}</span><div className="h-7 flex-1 overflow-hidden rounded-md bg-[#e9edea]"><div className="flex h-full items-center justify-end rounded-md pr-2 text-[10px] text-white" style={{ width: `${score}%`, backgroundColor: color as string }}>{score}%</div></div></div>)}</div></div>}
-                {activeToolkit === 2 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">03 / Creative assessment</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See what earns attention.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">See where attention actually lands on your packaging, ad, or landing page — a real measured heatmap, not a guess — then hear how each persona reads what&rsquo;s there.</p><div className="relative mt-8 overflow-hidden rounded-lg bg-[#fafbfa] p-4"><div className="relative aspect-[16/9] overflow-hidden rounded-md bg-gradient-to-br from-[#E3E5E3] to-[#D1D5D3]"><div className="absolute left-1/3 top-1/4 h-24 w-24 rounded-full bg-[#5A7973]/20 blur-2xl" /><div className="absolute right-1/4 top-1/2 h-20 w-20 rounded-full bg-[#B2B7AB]/20 blur-2xl" /><div className="absolute inset-0 flex items-center justify-center"><div className="text-center"><span className="material-symbols-outlined text-5xl text-[#1A3024]/40">center_focus_strong</span><div className="mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#5A7973]">Heatmap overlay</div></div></div></div><div className="mt-3 flex items-center justify-between"><span className="text-xs text-[#748076]">Attention concentration: top-left quadrant</span><span className="text-[10px] text-[#aab0a3]">7 of 10 personas</span></div></div></div>}
+                {activeToolkit === 2 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">03 / Creative assessment</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See what earns attention.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">See where attention actually lands on your packaging, ad, or landing page — a real measured heatmap, not a guess — then hear how each persona reads what&rsquo;s there.</p><div className="relative mt-8 overflow-hidden rounded-lg bg-[#fafbfa] p-4"><div className="thermal-map relative aspect-[16/9] overflow-hidden rounded-md bg-[#20261F]"><span className="thermal-blob thermal-blob-1" /><span className="thermal-blob thermal-blob-2" /><span className="thermal-blob thermal-blob-3" /><span className="thermal-blob thermal-blob-4" /><span className="thermal-blob thermal-blob-5" /><div className="absolute inset-0 flex items-center justify-center"><div className="text-center"><span className="material-symbols-outlined text-5xl text-white/70">center_focus_strong</span><div className="mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-white/80">Heatmap overlay</div></div></div></div><div className="mt-3 flex items-center justify-between"><span className="text-xs text-[#748076]">Attention concentration: top-left quadrant</span><span className="text-[10px] text-[#aab0a3]">7 of 10 personas</span></div></div></div>}
                 {activeToolkit === 3 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">04 / Insight reports</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Turn scattered reactions into a decision your team can stand behind.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">Every interview becomes a structured report: key themes, verbatim quotes, a confidence score, and next-step recommendations — shareable with your team in one click.</p><div className="mt-8 grid grid-cols-3 gap-3">{[['6', 'Themes'], ['12', 'Signals'], ['→', 'Next step']].map(([metric, label]) => <div key={label} className="rounded-lg border border-[#e3e5e3] p-3 text-center"><p className="text-2xl text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{metric}</p><p className="mt-1 text-[10px] uppercase tracking-wider text-[#748076]">{label}</p></div>)}</div><div className="mt-3 space-y-2 rounded-lg bg-[#fafbfa] p-4">{['Price sensitivity is the primary objection', 'All personas value speed over depth', 'Slack integration is a top-3 feature request'].map((theme) => <div key={theme} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#5A7973]" /><span className="text-xs leading-relaxed text-[#454947]">{theme}</span></div>)}</div></div>}
               </div>
             </div>

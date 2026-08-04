@@ -31,7 +31,7 @@ interface IntelligenceSignalProps {
 export default function IntelligenceSignal({ anchorRef, boundaryRef }: IntelligenceSignalProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [widthPx, setWidthPx] = useState<number | null>(null)
-  const [box, setBox] = useState({ w: 960, h: 200 })
+  const [box, setBox] = useState({ w: 960, h: 160 })
   const [pts, setPts] = useState<{ A: Point; B: Point; C: Point; D: Point }>({
     A: { x: 80, y: 135 },
     B: { x: 305, y: 30 },
@@ -112,7 +112,7 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
   return (
     <div
       ref={wrapRef}
-      className="relative w-full max-w-[900px] h-[200px] mt-4"
+      className="relative w-full max-w-[900px] h-[160px] mt-4"
       style={widthPx ? { width: `${widthPx}px` } : undefined}
     >
       <svg viewBox={`0 0 ${box.w} ${box.h}`} preserveAspectRatio="none" className="absolute inset-0 w-full h-full overflow-visible">
