@@ -324,7 +324,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative pt-20 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
+      <header className="relative pt-20 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-16 z-10">
         <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 md:grid-cols-12 gap-6">
 
           {/* LEFT SIDE */}
@@ -350,7 +350,7 @@ export default function LandingPage() {
               <span className="block mt-1 lg:mt-2"><span ref={nAnchorRef}>N</span>ow you can ask.</span>
             </h1>
 
-            <div className="mt-3 mb-3 w-full max-w-[900px] bg-transparent overflow-visible">
+            <div className="mt-3 mb-8 w-full max-w-[900px] bg-transparent overflow-visible">
               <IntelligenceSignal anchorRef={nAnchorRef} boundaryRef={rightColRef} />
             </div>
 
@@ -363,10 +363,6 @@ export default function LandingPage() {
                 Start your first interview
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </Link>
-              <a href="#dashboard-replica" className="inline-flex items-center justify-center gap-2 rounded-full border border-[#1A3024]/20 px-6 py-3 text-sm font-medium text-[#1A3024] transition-all duration-300 hover:border-[#1A3024]/40 hover:bg-[#fafbfa]">
-                <span className="material-symbols-outlined text-[18px]">play_circle</span>
-                See how it works
-              </a>
             </div>
 
             <div className="mt-6 flex items-center gap-6">
