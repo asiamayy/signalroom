@@ -1,19 +1,40 @@
 // Client-side visual saliency — where attention objectively lands on an
 // image, computed from real pixels, never from an LLM's guess about a
-// screenshot. Runs in the browser (Canvas API), same as compressImageFile in
+// screenshot. Runs in the browser, same as compressImageFile in
 // lib/utils/image.ts, so this needs no new server-side image-decoding
 // dependency (no sharp/OpenCV) and no vendor account.
 //
-// Algorithm: Spectral Residual (Hou & Zhang, 2007) — a well-known, simple
-// saliency method. Take the image's log-amplitude spectrum, subtract a
-// locally-smoothed version of itself (the "residual" is what doesn't match
-// the image's own average spectral shape — i.e. what stands out), then
-// invert back to the spatial domain. No training data, no model weights,
-// fully deterministic.
+// Primary algorithm: MSI-Net (Kroner et al., 2020, "Contextual encoder-decoder
+// network for visual saliency prediction", Neural Networks) — a CNN trained on
+// SALICON and validated against real human fixations on the MIT/Tübingen
+// saliency benchmark (MIT1003, CAT2000, etc). Weights are the author's public
+// pretrained model (MIT-licensed), loaded client-side via TensorFlow.js from
+// https://github.com/alexanderkroner/saliency. This is genuinely grounded in
+// eye-tracking data, unlike a from-scratch heuristic.
 //
-// The working resolution (64x64) keeps a naive O(n^2) DFT fast enough to run
-// synchronously in the browser (a few million multiply-adds, well under a
-// frame budget) — no need for a real FFT library.
+// Fallback algorithm (used only if the model fails to load/run — offline,
+// blocked request, unsupported browser): Spectral Residual (Hou & Zhang,
+// 2007). Take the image's log-amplitude spectrum, subtract a locally-smoothed
+// version of itself (the "residual" is what doesn't match the image's own
+// average spectral shape — i.e. what stands out), then invert back to the
+// spatial domain. No training data, fully deterministic, so it degrades
+// gracefully instead of breaking the feature outright.
+
+import * as tf from '@tensorflow/tfjs'
+
+// "high" tier: input at 168x224, a reasonable balance of fidelity (small
+// text/logos on ad creatives are still visible) vs. in-browser inference
+// speed. Other tiers (very_low..very_high) are available at the same host if
+// this needs tuning later.
+const MODEL_URL = 'https://storage.googleapis.com/msi-net/model/high/model.json'
+const MODEL_INPUT_HEIGHT = 168
+const MODEL_INPUT_WIDTH = 224
+
+let modelPromise: Promise<tf.GraphModel> | null = null
+function getModel(): Promise<tf.GraphModel> {
+  if (!modelPromise) modelPromise = tf.loadGraphModel(MODEL_URL)
+  return modelPromise
+}
 
 const GRID_SIZE = 64
 
@@ -149,34 +170,88 @@ export interface SaliencyResult {
   heatmapDataUrl: string // colorized RGBA PNG at gridWidth x gridHeight, same aspect ratio as the source image
 }
 
-// Computes the saliency map for an already-loaded <img> element (e.g. the
-// same preview image used elsewhere after compressImageFile). Synchronous —
-// no network, no worker needed at this resolution.
-//
-// The DFT needs a square working canvas, but most creative assets (ads,
-// landing pages, packaging) aren't square — squishing them to fit would
-// distort spatial frequency content and shift where things register as
-// salient. Instead this letterboxes the image into the square (centered, on
-// a neutral gray fill) for the transform, then crops the padding back out of
-// the result, so the returned grid and heatmap only ever describe the real
-// image at its true aspect ratio.
-export function computeSaliency(imgEl: HTMLImageElement): SaliencyResult {
-  const n = GRID_SIZE
+// Shared by both the ML and heuristic paths — renders a normalized 0-1 grid
+// as a colorized, semi-transparent heatmap PNG at the grid's own resolution.
+function gridToHeatmapDataUrl(grid: Float32Array, width: number, height: number): string {
+  const heatCanvas = document.createElement('canvas')
+  heatCanvas.width = width
+  heatCanvas.height = height
+  const heatCtx = heatCanvas.getContext('2d')
+  if (!heatCtx) throw new Error('Could not render heatmap')
+  const heatImageData = heatCtx.createImageData(width, height)
+  for (let i = 0; i < grid.length; i++) {
+    const [r, g, b] = saliencyToColor(grid[i])
+    heatImageData.data[i * 4] = r
+    heatImageData.data[i * 4 + 1] = g
+    heatImageData.data[i * 4 + 2] = b
+    heatImageData.data[i * 4 + 3] = Math.round(140 * grid[i]) // more salient = more opaque
+  }
+  heatCtx.putImageData(heatImageData, 0, 0)
+  return heatCanvas.toDataURL('image/png')
+}
 
-  const scale = Math.min(n / imgEl.width, n / imgEl.height)
+// Letterboxes imgEl into a `size`x`size`-ish (targetW x targetH) canvas,
+// centered on a neutral gray fill, and returns both the canvas and the
+// content's offset/dimensions within it — needed so the padding can be
+// cropped back out of whatever the model/transform produces, leaving only
+// real image content at the image's true aspect ratio.
+function letterboxToCanvas(imgEl: HTMLImageElement, targetW: number, targetH: number) {
+  const scale = Math.min(targetW / imgEl.width, targetH / imgEl.height)
   const contentW = Math.max(1, Math.round(imgEl.width * scale))
   const contentH = Math.max(1, Math.round(imgEl.height * scale))
-  const offsetX = Math.floor((n - contentW) / 2)
-  const offsetY = Math.floor((n - contentH) / 2)
+  const offsetX = Math.floor((targetW - contentW) / 2)
+  const offsetY = Math.floor((targetH - contentH) / 2)
 
-  const srcCanvas = document.createElement('canvas')
-  srcCanvas.width = n
-  srcCanvas.height = n
-  const srcCtx = srcCanvas.getContext('2d')
+  const canvas = document.createElement('canvas')
+  canvas.width = targetW
+  canvas.height = targetH
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Could not process image')
+  ctx.fillStyle = 'rgb(128,128,128)'
+  ctx.fillRect(0, 0, targetW, targetH)
+  ctx.drawImage(imgEl, offsetX, offsetY, contentW, contentH)
+
+  return { canvas, contentW, contentH, offsetX, offsetY }
+}
+
+// Primary path — MSI-Net, a CNN trained on real eye-tracking data (see file
+// header). Async: loads/warms the model (cached after the first call) and
+// runs inference.
+async function computeSaliencyML(imgEl: HTMLImageElement): Promise<SaliencyResult> {
+  const model = await getModel()
+  const { canvas, contentW, contentH, offsetX, offsetY } = letterboxToCanvas(imgEl, MODEL_INPUT_WIDTH, MODEL_INPUT_HEIGHT)
+
+  const outputData = tf.tidy(() => {
+    const input = tf.browser.fromPixels(canvas).toFloat().expandDims(0)
+    const prediction = model.predict(input) as tf.Tensor
+    // The model's raw output resolution isn't guaranteed to match the input
+    // canvas, so resize to it explicitly — the crop below assumes offsets in
+    // that coordinate space.
+    const resized = tf.image.resizeBilinear(prediction as tf.Tensor4D, [MODEL_INPUT_HEIGHT, MODEL_INPUT_WIDTH], true)
+    return resized.squeeze() as tf.Tensor2D
+  })
+  const raw = await outputData.data()
+  outputData.dispose()
+
+  // Crop the letterbox padding back out, then normalize 0-1.
+  const cropped = new Float64Array(contentW * contentH)
+  for (let row = 0; row < contentH; row++) {
+    for (let col = 0; col < contentW; col++) {
+      cropped[row * contentW + col] = raw[(offsetY + row) * MODEL_INPUT_WIDTH + (offsetX + col)]
+    }
+  }
+  const grid = normalize01(cropped)
+
+  return { grid, gridWidth: contentW, gridHeight: contentH, heatmapDataUrl: gridToHeatmapDataUrl(grid, contentW, contentH) }
+}
+
+// Fallback path — Spectral Residual (Hou & Zhang, 2007), used only if the ML
+// model fails to load or run. See file header for how it works.
+function computeSaliencyHeuristic(imgEl: HTMLImageElement): SaliencyResult {
+  const n = GRID_SIZE
+  const { canvas, contentW, contentH, offsetX, offsetY } = letterboxToCanvas(imgEl, n, n)
+  const srcCtx = canvas.getContext('2d')
   if (!srcCtx) throw new Error('Could not process image')
-  srcCtx.fillStyle = 'rgb(128,128,128)' // neutral fill contributes ~no spectral residual of its own
-  srcCtx.fillRect(0, 0, n, n)
-  srcCtx.drawImage(imgEl, offsetX, offsetY, contentW, contentH)
   const { data } = srcCtx.getImageData(0, 0, n, n)
 
   const gray = new Float64Array(n * n)
@@ -232,22 +307,21 @@ export function computeSaliency(imgEl: HTMLImageElement): SaliencyResult {
   // the uniform padding, not the actual content.
   const grid = normalize01(cropped)
 
-  const heatCanvas = document.createElement('canvas')
-  heatCanvas.width = contentW
-  heatCanvas.height = contentH
-  const heatCtx = heatCanvas.getContext('2d')
-  if (!heatCtx) throw new Error('Could not render heatmap')
-  const heatImageData = heatCtx.createImageData(contentW, contentH)
-  for (let i = 0; i < grid.length; i++) {
-    const [r, g, b] = saliencyToColor(grid[i])
-    heatImageData.data[i * 4] = r
-    heatImageData.data[i * 4 + 1] = g
-    heatImageData.data[i * 4 + 2] = b
-    heatImageData.data[i * 4 + 3] = Math.round(140 * grid[i]) // more salient = more opaque
-  }
-  heatCtx.putImageData(heatImageData, 0, 0)
+  return { grid, gridWidth: contentW, gridHeight: contentH, heatmapDataUrl: gridToHeatmapDataUrl(grid, contentW, contentH) }
+}
 
-  return { grid, gridWidth: contentW, gridHeight: contentH, heatmapDataUrl: heatCanvas.toDataURL('image/png') }
+// Computes the saliency map for an already-loaded <img> element (e.g. the
+// same preview image used elsewhere after compressImageFile). Tries the
+// eye-tracking-grounded ML model first; if it can't load or run (offline,
+// blocked request, unsupported browser), falls back to the deterministic
+// heuristic so the feature still works.
+export async function computeSaliency(imgEl: HTMLImageElement): Promise<SaliencyResult> {
+  try {
+    return await computeSaliencyML(imgEl)
+  } catch (err) {
+    console.error('[saliency] ML model failed, falling back to heuristic:', err)
+    return computeSaliencyHeuristic(imgEl)
+  }
 }
 
 export interface ZoneBox {

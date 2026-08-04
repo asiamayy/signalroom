@@ -586,7 +586,7 @@ export default function CreativeReviewPage() {
       setImagePreview(dataUrl)
       setImageData(base64)
       const imgEl = await loadImageFromDataUrl(dataUrl)
-      setSaliency(computeSaliency(imgEl))
+      setSaliency(await computeSaliency(imgEl))
     } catch {
       setError('Could not process that image — try a different file')
     } finally {
@@ -899,7 +899,7 @@ export default function CreativeReviewPage() {
             <div className="flex items-start gap-2 rounded-xl p-4" style={{ background: HOME_COLORS.surfaceContainerLow }}>
               <HelpCircle size={14} className="flex-shrink-0 mt-0.5" style={{ color: HOME_COLORS.onSurfaceVariant }} />
               <p className="text-xs leading-relaxed" style={{ color: HOME_COLORS.onSurfaceVariant }}>
-                The attention breakdown is computed directly from the image's pixels in your browser — Claude never sees or influences those numbers, it only names what each region is. Treat it as a directional signal, not lab-validated eye-tracking.
+                The attention breakdown is computed in your browser by a neural network trained on published eye-tracking research — Claude never sees or influences those numbers, it only names what each region is. Treat it as a directional signal modeled on real gaze data, not a live eye-tracking study of your actual customers.
               </p>
             </div>
           </main>
