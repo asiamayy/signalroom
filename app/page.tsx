@@ -309,7 +309,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative pt-16 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
+      <header className="relative pt-20 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
 
           {/* LEFT SIDE */}
