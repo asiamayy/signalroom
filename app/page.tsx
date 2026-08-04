@@ -131,8 +131,6 @@ export default function LandingPage() {
   const rightColRef = useRef<HTMLDivElement>(null);
 
   const [selectedPersona, setSelectedPersona] = useState<DashboardPersona>(DASHBOARD_PERSONAS[0]);
-  const [streamingText, setStreamingText] = useState<string>('');
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [activeToolkit, setActiveToolkit] = useState<number>(0);
 
   const wordsDataset = ["signals", "opinions", "objections", "blindspots", "expectations"];
@@ -156,28 +154,6 @@ export default function LandingPage() {
     }, 3800);
     return () => clearInterval(rotationInterval);
   }, [currentWordIndex]);
-
-  useEffect(() => {
-    setStreamingText('');
-    setIsSimulating(true);
-    const targetPayload = selectedPersona.interviewQuote;
-    let charCount = 0;
-
-    // Recompute the substring from scratch each tick (rather than
-    // accumulating via prev + char) so this stays correct even under
-    // React Strict Mode's dev-only double effect invocation, which
-    // otherwise risks losing the first character or two.
-    const stream = setInterval(() => {
-      charCount++;
-      setStreamingText(targetPayload.slice(0, charCount));
-      if (charCount >= targetPayload.length) {
-        clearInterval(stream);
-        setIsSimulating(false);
-      }
-    }, 8);
-
-    return () => clearInterval(stream);
-  }, [selectedPersona]);
 
   return (
     <div className="overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -349,7 +325,7 @@ export default function LandingPage() {
 
       {/* Hero Header Section */}
       <header className="relative pt-20 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 md:grid-cols-12 gap-6">
 
           {/* LEFT SIDE */}
           <div className="md:col-span-12 lg:col-span-7 flex flex-col justify-between min-h-[350px] overflow-visible">
@@ -441,7 +417,7 @@ export default function LandingPage() {
             <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
               {DASHBOARD_PERSONAS.map((persona) => {
                 const active = selectedPersona.id === persona.id
-                return <button key={persona.id} onClick={() => !isSimulating && setSelectedPersona(persona)} className={`group rounded-xl border p-5 text-left transition-all duration-500 ${active ? 'border-[#1A3024]/25 bg-white shadow-xl shadow-[#1A3024]/10 -translate-y-1' : 'border-[#d1d5d3] bg-[#fafbfa]/70 hover:border-[#aeb7af] hover:bg-white'}`}>
+                return <button key={persona.id} onClick={() => setSelectedPersona(persona)} className={`group rounded-xl border p-5 text-left transition-all duration-500 ${active ? 'border-[#1A3024]/25 bg-white shadow-xl shadow-[#1A3024]/10 -translate-y-1' : 'border-[#d1d5d3] bg-[#fafbfa]/70 hover:border-[#aeb7af] hover:bg-white'}`}>
                   <div className="relative mb-5 aspect-square overflow-hidden rounded-lg"><img src={persona.imgUrl} alt={persona.name} className={`h-full w-full object-cover transition-transform duration-700 ${active ? 'scale-100' : 'scale-95 group-hover:scale-100'}`} /><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-3 text-[10px] font-medium text-white">{persona.location}</div></div>
                   <h3 className="text-[22px] text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{persona.name}</h3><p className="mt-1 text-[11px] text-[#748076]">{persona.title}</p><p className="mt-4 line-clamp-3 text-[13px] leading-relaxed text-[#5c625d]">{persona.bio}</p>
                 </button>

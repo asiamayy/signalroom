@@ -72,16 +72,20 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
 
       const nRect = anchor.getBoundingClientRect()
       const ax = nRect.left + nRect.width / 2 - wrapRect.left
-      const ay = 135
+      // Vertical offsets below were tuned for the original 340px-tall
+      // canvas; scale them with the wrap's actual height so nodes/labels
+      // stay proportionally placed (and clear of the box edges) at any size.
+      const vScale = h / 340
+      const ay = 135 * vScale
 
       // up, then a bigger drop down past the start line, then back up —
       // three roughly even-length legs, compressed by `scale` whenever the
       // available width is too tight for the full spread
       const scale = Math.min(1, (w - ax - 80) / 675)
 
-      const bx = ax + 225 * scale, by = ay - 105 * scale
-      const cx = bx + 225 * scale, cy = by + 120 * scale
-      const dx = cx + 225 * scale, dy = cy - 105 * scale
+      const bx = ax + 225 * scale, by = ay - 105 * scale * vScale
+      const cx = bx + 225 * scale, cy = by + 120 * scale * vScale
+      const dx = cx + 225 * scale, dy = cy - 105 * scale * vScale
 
       setPts({
         A: { x: ax, y: ay },
@@ -108,6 +112,11 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
     { key: 'b', from: pts.B, to: pts.C },
     { key: 'c', from: pts.C, to: pts.D },
   ]
+
+  // Same scale as place()'s vScale — keeps label offsets proportional to
+  // the box's actual height instead of the fixed values overshooting a
+  // shrunk container.
+  const labelVScale = box.h / 340
 
   return (
     <div
@@ -158,7 +167,7 @@ export default function IntelligenceSignal({ anchorRef, boundaryRef }: Intellige
           style={{
             color: '#1A3024',
             left: pt.x,
-            top: labelSide === 'below' ? pt.y + 20 : pt.y - 34,
+            top: labelSide === 'below' ? pt.y + 20 * labelVScale : pt.y - 34 * labelVScale,
             transform: align === 'left' ? 'none' : 'translateX(-50%)',
           }}
         >
