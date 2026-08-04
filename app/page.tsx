@@ -127,6 +127,7 @@ export default function LandingPage() {
   const [selectedPersona, setSelectedPersona] = useState<DashboardPersona>(DASHBOARD_PERSONAS[0]);
   const [streamingText, setStreamingText] = useState<string>('');
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [activeToolkit, setActiveToolkit] = useState<number>(0);
 
   const wordsDataset = ["signals", "opinions", "objections", "blindspots", "expectations"];
 
@@ -345,172 +346,37 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div ref={rightColRef} className="md:col-span-12 lg:col-span-5 lg:pt-64 flex flex-col justify-start lg:self-start">
-            <div className="border-l-2 pl-4 mb-6 border-[#5A7973]/30">
-              <p className="text-xs font-medium uppercase tracking-wide text-[#1A3024] mb-2 leading-snug">AI-powered customer intelligence for brands and teams building what customers actually want.</p>
-              
-              <p className="text-[11px] sm:text-xs text-neutral-600 leading-relaxed mb-2">
-                SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
-              </p>
-              
-              <p className="text-xs text-neutral-500 italic">Built for teams that can't afford to invest in the wrong thing.</p>
+          <div ref={rightColRef} className="md:col-span-12 lg:col-span-5 lg:pt-36 xl:pt-44">
+            <div className="rounded-2xl border border-[#d1d5d3]/70 bg-white p-6 shadow-2xl shadow-[#1A3024]/10">
+              <div className="mb-5 flex items-center justify-between"><span className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#5A7973]"><span className="h-2 w-2 rounded-full bg-[#5A7973]" /> Live interview</span><span className="text-[10px] text-neutral-400">01:23</span></div>
+              <div className="mb-5 flex items-center gap-3"><img src={DASHBOARD_PERSONAS[0].imgUrl} alt={DASHBOARD_PERSONAS[0].name} className="h-12 w-12 rounded-full object-cover" /><div><p className="text-sm font-medium text-[#121314]">{DASHBOARD_PERSONAS[0].name}</p><p className="text-xs text-[#748076]">{DASHBOARD_PERSONAS[0].title}</p></div></div>
+              <p className="rounded-lg bg-[#fafbfa] p-4 text-[13px] italic leading-relaxed text-[#454947]">&ldquo;{DASHBOARD_PERSONAS[0].interviewQuote.slice(0, 170)}&hellip;&rdquo;</p>
+              <div className="mt-5 border-t border-[#e3e5e3] pt-4"><div className="mb-2 flex justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-[#748076]"><span>Confidence score</span><span className="text-[#121314]">82% · Strong</span></div><div className="h-2 overflow-hidden rounded-full bg-[#e3e5e3]"><div className="h-full w-[82%] rounded-full bg-gradient-to-r from-[#5A7973] to-[#1A3024]" /></div></div>
             </div>
-
-            <div className="flex items-center gap-8">
-              <a href="#dashboard-replica" className="w-full sm:w-auto text-center border border-[#1A3024]/20 px-8 py-4 text-[11px] font-medium uppercase tracking-[0.3em] bg-[#1A3024] text-white hover:bg-[#5A7973] transition-all duration-500 shadow-xl shadow-black/5 rounded-[4px]">
-                Explore Platform
-              </a>
-            </div>
+            <Link href="/signup" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1A3024] px-6 py-3 text-[12px] font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-[#5A7973]">Start your first interview <span className="material-symbols-outlined text-[17px]">arrow_forward</span></Link>
           </div>
 
         </div>
       </header>
 
-      {/* DASHBOARD PREVIEW WORKSPACE */}
+      {/* Personas */}
       <RevealSection>
-        <section id="dashboard-replica" className="px-6 sm:px-12 pb-16 sm:pb-24 scroll-mt-20 z-10 relative">
-          <div className="bg-[#FCF9F8] border border-[#E3E5E3] rounded-[12px] shadow-xs min-h-[640px] grid grid-cols-1 md:grid-cols-12 overflow-hidden">
-            
-            <div className="md:col-span-3 lg:col-span-2 bg-white border-r border-[#E3E5E3] p-5 flex flex-col justify-between hidden md:flex">
-              <div className="space-y-8">
-                <div className="px-2 text-[11px] font-mono tracking-widest text-neutral-400 font-medium uppercase">Navigation</div>
-                <div className="space-y-1">
-                  {[
-                    { n: 'Home', i: 'home', a: false },
-                    { n: 'Projects', i: 'folder', a: false },
-                    { n: 'Personas', i: 'groups', a: true },
-                    { n: 'Interviews', i: 'chat_bubble', a: false },
-                    { n: 'Compare', i: 'compare_arrows', a: false },
-                    { n: 'Audience Panel', i: 'assignment_ind', a: false },
-                    { n: 'Signals', i: 'analytics', a: false },
-                    { n: 'Insights', i: 'insights', a: false }
-                  ].map((route, rIdx) => (
-                    <div 
-                      key={rIdx} 
-                      className={`flex items-center gap-3 px-3 py-2 text-[13px] font-medium tracking-tight rounded-[6px] transition-colors ${
-                        route.a ? 'bg-[#D1D6CE] text-[#1A3024]' : 'text-neutral-500 opacity-80'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">{route.i}</span>
-                      {route.n}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="pt-6 border-t border-[#E3E5E3] space-y-2">
-                <span className="text-[10px] uppercase tracking-wider font-semibold font-mono text-neutral-400 block px-2">Recent Projects</span>
-                <div className="flex items-center gap-2 px-2 py-1 text-[12px] text-neutral-700 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1A3024]" />
-                  Sustainable Skincare L...
-                </div>
-              </div>
+        <section id="dashboard-replica" className="relative border-b border-[#1A3024]/10 px-6 py-20 sm:px-12 sm:py-28">
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-12 flex items-center gap-4"><span className="text-[10px] font-medium uppercase tracking-[0.4em] text-[#5A7973]">01 // Personas</span><span className="hidden h-px flex-1 bg-[#1A3024]/10 sm:block" /></div>
+            <h2 className="max-w-3xl text-[32px] leading-[1.1] tracking-tight text-[#121314] sm:text-[44px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>AI-generated personas built from real research.</h2>
+            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-[#5c625d]">Explore beliefs, behaviors, needs, and motivations. Each persona answers with the nuance of a real interview, including the objections that matter.</p>
+            <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
+              {DASHBOARD_PERSONAS.map((persona) => {
+                const active = selectedPersona.id === persona.id
+                return <button key={persona.id} onClick={() => !isSimulating && setSelectedPersona(persona)} className={`group rounded-xl border p-5 text-left transition-all duration-500 ${active ? 'border-[#1A3024]/25 bg-white shadow-xl shadow-[#1A3024]/10 -translate-y-1' : 'border-[#d1d5d3] bg-[#fafbfa]/70 hover:border-[#aeb7af] hover:bg-white'}`}>
+                  <div className="relative mb-5 aspect-square overflow-hidden rounded-lg"><img src={persona.imgUrl} alt={persona.name} className={`h-full w-full object-cover transition-transform duration-700 ${active ? 'scale-100' : 'scale-95 group-hover:scale-100'}`} /><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-3 text-[10px] font-medium text-white">{persona.location}</div></div>
+                  <h3 className="text-[22px] text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{persona.name}</h3><p className="mt-1 text-[11px] text-[#748076]">{persona.title}</p><p className="mt-4 line-clamp-3 text-[13px] leading-relaxed text-[#5c625d]">{persona.bio}</p>
+                </button>
+              })}
             </div>
-
-            <div className="md:col-span-9 lg:col-span-10 p-6 sm:p-10 flex flex-col justify-between bg-[#FCF9F8] relative">
-              <div>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 mb-6">
-                  <div>
-                    <h2 className="text-[32px] font-normal text-neutral-900 tracking-tight leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Personas</h2>
-                    <p className="text-xs text-neutral-500 mt-2 max-w-2xl">AI-generated personas built from real research. Explore beliefs, behaviors, needs, and motivations.</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button disabled className="bg-[#1A3024] text-white px-4 py-2 text-[12px] font-medium rounded-[6px] opacity-95 cursor-not-allowed flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-sm">add</span> Create Persona
-                    </button>
-                    <button disabled className="border border-[#E3E5E3] text-neutral-600 px-3 py-2 text-[12px] rounded-[6px] bg-white cursor-not-allowed flex items-center gap-1"><span className="material-symbols-outlined text-sm">tune</span> Filters</button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-[#E3E5E3] text-[12px] whitespace-nowrap font-medium">
-                  <span className="bg-[#1A3024] text-white px-3 py-1.5 rounded-[6px]">All Personas <span className="opacity-60 ml-1 text-xs bg-black/20 px-1.5 py-0.5 rounded-full">3</span></span>
-                  <span className="border border-[#E3E5E3] text-neutral-500 px-3 py-1.5 rounded-[6px] bg-white">Awareness <span className="opacity-50 text-xs">0</span></span>
-                  <span className="border border-[#E3E5E3] text-neutral-500 px-3 py-1.5 rounded-[6px] bg-white">Consideration <span className="opacity-50 text-xs">0</span></span>
-                  <span className="border border-[#E3E5E3] text-neutral-500 px-3 py-1.5 rounded-[6px] bg-white">Purchase <span className="opacity-50 text-xs">0</span></span>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {DASHBOARD_PERSONAS.map((persona) => {
-                    const isSelected = selectedPersona.id === persona.id;
-                    return (
-                      <div 
-                        key={persona.id}
-                        onClick={() => !isSimulating && setSelectedPersona(persona)}
-                        className={`border p-6 rounded-[12px] transition-all duration-500 flex flex-col justify-between relative group ${
-                          isSelected 
-                            ? 'bg-[#E3E5E3] border-neutral-400 shadow-xs scale-[1.01]' 
-                            : 'bg-white border-[#E3E5E3] opacity-80 hover:opacity-100 hover:border-neutral-300'
-                        }`}
-                      >
-                        <div>
-                          <div className="flex items-start gap-4 mb-4">
-                            <img src={persona.imgUrl} alt={persona.name} className="w-14 h-14 rounded-[8px] object-cover border border-neutral-100" />
-                            <div>
-                              <h4 className="text-[20px] font-normal text-neutral-900 tracking-tight leading-snug" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{persona.name}</h4>
-                              <p className="text-[12px] text-neutral-500 font-light mt-0.5">{persona.title}</p>
-                              <p className="text-[11px] text-neutral-400 mt-1 flex items-center gap-0.5 font-light">
-                                <span className="material-symbols-outlined text-[12px]">location_on</span> {persona.location}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5 mb-5">
-                            {persona.tags.map((tag, tIdx) => (
-                              <span key={tIdx} className="bg-[#FCF9F8] text-neutral-600 text-[10px] px-2.5 py-0.5 rounded-[4px] border border-[#E3E5E3]/60 font-light">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                          <p className="text-[12px] text-neutral-600 leading-relaxed font-light mb-6">
-                            {persona.bio}
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 mt-auto pt-4 border-t border-neutral-200/50">
-                          <button disabled className="w-full text-center border border-[#E3E5E3] bg-white text-neutral-700 py-2 rounded-[6px] text-[12px] font-medium cursor-not-allowed">View Details</button>
-                          <button 
-                            className={`w-full text-center py-2 rounded-[6px] text-[12px] font-medium transition-all ${
-                              isSelected 
-                                ? 'bg-[#1A3024] text-white font-semibold' 
-                                : 'bg-[#1A3024] text-white hover:bg-[#5A7973]'
-                            }`}
-                          >
-                            {isSelected ? 'Selected' : 'Start Interview'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-8 space-y-4">
-                  {/* Researcher question — mirrors the real Interview Chat's "You" bubble */}
-                  <div className="flex flex-col gap-1.5 items-end">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">You</span>
-                    <div className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] bg-[#1A3024] shadow-sm">
-                      <p className="text-sm font-light leading-relaxed text-white">{selectedPersona.question}</p>
-                    </div>
-                  </div>
-
-                  {/* Persona response — mirrors the real Interview Chat's persona bubble */}
-                  <div className="flex flex-col gap-1.5 items-start group">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 flex items-center gap-1.5">
-                      <img src={selectedPersona.imgUrl} alt="" className="w-4 h-4 rounded-full object-cover" />
-                      {selectedPersona.name}
-                    </span>
-                    <div className="rounded-xl px-5 py-3.5 max-w-[92%] sm:max-w-[85%] bg-white border border-[#E3E5E3] shadow-sm group-hover:shadow-md transition-shadow duration-300">
-                      <p className="text-[13px] text-neutral-700 font-light leading-relaxed">
-                        {streamingText}
-                        {isSimulating && (
-                          <span className="inline-block w-1 h-3.5 bg-[#1A3024] ml-1 editorial-stream-cursor align-middle" />
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-[#E3E5E3] mt-8 flex justify-between items-center text-neutral-400 text-[11px] font-light">
-                <span>Example persona exchange</span>
-                <span className="text-[#1A3024] font-medium uppercase tracking-wider text-[10px]">Click a card above to preview another persona</span>
-              </div>
+            <div className="mt-12 rounded-xl border border-[#d1d5d3] bg-white p-7 sm:p-10">
+              <div className="flex flex-col gap-7 lg:flex-row"><img src={selectedPersona.imgUrl} alt={selectedPersona.name} className="h-20 w-20 rounded-full object-cover" /><div className="flex-1"><p className="text-[10px] font-medium uppercase tracking-[0.22em] text-[#748076]">Interview question</p><p className="mt-3 text-[21px] leading-snug text-[#121314] sm:text-[26px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{selectedPersona.question}</p><div className="mt-6 border-l-2 border-[#1A3024] bg-[#fafbfa] p-5"><p className="text-[14px] italic leading-relaxed text-[#454947]">&ldquo;{selectedPersona.interviewQuote}&rdquo;</p></div><div className="mt-6 flex items-center gap-4"><span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#748076]">Confidence</span><div className="h-1.5 max-w-xs flex-1 overflow-hidden rounded-full bg-[#e3e5e3]"><div className="h-full rounded-full bg-[#1A3024]" style={{ width: '82%' }} /></div><span className="text-[13px] font-medium text-[#121314]">82%</span></div></div></div>
             </div>
           </div>
         </section>
@@ -518,15 +384,15 @@ export default function LandingPage() {
 
       {/* Methodology Section */}
       <RevealSection>
-        <section id="methodology" className="px-6 sm:px-12 py-16 sm:py-20 border-t border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
+        <section id="methodology" className="bg-[#F5F2F0] px-6 sm:px-12 py-20 sm:py-28 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
           <div 
             id="methodology-header" 
             onClick={() => setIsMethodologyActive(!isMethodologyActive)}
             className={`mb-12 sm:mb-20 flex items-end justify-between cursor-pointer group ${isMethodologyActive ? 'is-active' : ''}`}
           >
             <div className="flex-shrink-0">
-              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">00 // Operational Logic</span>
-              <h2 className="text-[28px] sm:text-[36px] mt-2 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>The Methodology</h2>
+              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">02 // The Methodology</span>
+              <h2 className="max-w-3xl text-[30px] sm:text-[42px] mt-2 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>From assumptions to decisions — in three movements.</h2>
             </div>
             <div className="hidden sm:block h-px flex-grow ml-16 bg-[#b5bab7]/20 relative">
               <div 
@@ -539,8 +405,8 @@ export default function LandingPage() {
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-[4px] overflow-hidden bg-white">
-            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
+          <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-xl overflow-hidden bg-[#F5F2F0]">
+            <div className="p-8 sm:p-10 group hover:bg-white transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
                 <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">hub</span>
@@ -550,7 +416,7 @@ export default function LandingPage() {
                 Transform assumptions into intelligence. Bring your customer, market, brand, and product context together to build a foundation for smarter decisions.
               </p>
             </div>
-            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
+            <div className="p-8 sm:p-10 group hover:bg-white transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
                 <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">psychology</span>
@@ -560,7 +426,7 @@ export default function LandingPage() {
                 Understand your customers at scale. Model perspectives, uncover motivations, objections, and opportunities before investing time, media, inventory, or engineering resources.
               </p>
             </div>
-            <div className="p-8 sm:p-16 group hover:bg-[#fafbfa] transition-all duration-500">
+            <div className="p-8 sm:p-10 group hover:bg-white transition-all duration-500">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
                 <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">location_on</span>
@@ -573,225 +439,39 @@ export default function LandingPage() {
           </div>
         </section>
       </RevealSection>
-{/* Confidence Score demo — mirrors the report-page Confidence Score */}
-      <div className="relative">
-        {/* We use a local state-wrapped inner block to handle the scroll-triggered ring draw */}
-        {(() => {
-          const [hasLoaded, setHasLoaded] = React.useState(false);
-          const elementRef = React.useRef<HTMLDivElement>(null);
-
-          React.useEffect(() => {
-            const observer = new IntersectionObserver(
-              ([entry]) => {
-                if (entry.isIntersecting) {
-                  setHasLoaded(true);
-                  observer.unobserve(entry.target);
-                }
-              },
-              { threshold: 0.2 }
-            );
-
-            if (elementRef.current) {
-              observer.observe(elementRef.current);
-            }
-
-            return () => observer.disconnect();
-          }, []);
-
-          return (
-            <RevealSection>
-              <section 
-                ref={elementRef}
-                id="calibration" 
-                className="px-6 sm:px-12 py-20 bg-[#F5F2F0] border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative"
-              >
-                <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                  
-                  {/* Left Column: New Copy and 3 Pillars */}
-                  <div className="lg:col-span-7 space-y-8">
-                    <div>
-                      <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">01 // Confidence Engine</span>
-                      <h2 className="text-[28px] sm:text-[36px] mt-2 sm:mt-4 tracking-tighter font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                        Move Forward With Confidence.
-                      </h2>
-                      <p className="text-[13px] sm:text-[14px] text-neutral-500 font-light mt-2 max-w-xl">
-                        Every AI interview gets a Confidence Score — how strongly that persona's response indicates they'd buy, adopt, or recommend what you're testing. It's a read on one simulated person's conviction, not a verdict on the market; SignalRoom always tells you to validate real findings with real customers.
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-6 border-l-2 border-[#5A7973]/20 pl-4">
-                      <div>
-                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Stated Conviction</h4>
-                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Extracted directly from the persona's own response, not calculated as a separate judgment layered on top.</p>
-                      </div>
-                      <div>
-                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Behavioral Anchors</h4>
-                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Calibrated against concrete reactions, from "I'd sign up today" to "this doesn't work for me," for scores that are differentiated instead of generic.</p>
-                      </div>
-                      <div>
-                        <h4 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A3024] mb-1">Visible Justification</h4>
-                        <p className="text-[12px] sm:text-[13px] text-neutral-600 leading-relaxed font-light">Every score ships with a one-sentence reason pulled straight from what the persona said, so you can audit it instead of trusting a black box.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Premium Scroll-Animated Metric Gauge */}
-                  <div className="lg:col-span-5 flex flex-col items-center justify-center">
-                    <div className="relative w-64 h-64 flex items-center justify-center bg-white rounded-full border border-[#E3E5E3] shadow-sm group hover:shadow-md transition-shadow duration-500">
-                      
-                      {/* SVG Radial Progress Ring */}
-                      <svg className="absolute transform -rotate-90 w-56 h-56">
-                        {/* Track Circle */}
-                        <circle
-                          cx="112"
-                          cy="112"
-                          r="98"
-                          stroke="#E3E5E3"
-                          strokeWidth="3"
-                          fill="transparent"
-                          strokeOpacity="0.6"
-                        />
-                        {/* Active Ring — Animates dynamically from 615.75 to the 95% offset value when scrolled into view */}
-                        <circle
-                          cx="112"
-                          cy="112"
-                          r="98"
-                          stroke="#1A3024"
-                          strokeWidth="4"
-                          fill="transparent"
-                          strokeDasharray="615.75"
-                          strokeLinecap="round"
-                          style={{
-                            strokeDashoffset: hasLoaded
-                              ? "calc(615.75 - (615.75 * 95) / 100)"
-                              : "615.75",
-                            transition: "stroke-dashoffset 2.5s cubic-bezier(0.16, 1, 0.3, 1)"
-                          }}
-                        />
-                      </svg>
-
-                      {/* Internal Center Typography Panel */}
-                      <div className="text-center z-10 flex flex-col items-center justify-center">
-                        <span className="text-[56px] font-normal leading-none text-[#121314] tracking-tighter mb-2.5" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                          95
-                        </span>
-                        <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#1A3024] bg-[#e9edea] px-2.5 py-0.5 rounded-[4px]">
-                          Confidence Score
-                        </span>
-                      </div>
-
-                    </div>
-
-                    <div className="mt-4 text-center">
-                      <span className="text-[10px] text-neutral-400 italic font-light">
-                        *Illustrative example — extracted from a persona's stated response, not calculated independently
-                      </span>
-                    </div>
-                  </div>
-
-                </div>
-              </section>
-            </RevealSection>
-          );
-        })()}
-      </div>
-
-      {/* Feature Showcase — every way to test an idea */}
+      {/* Confidence score */}
       <RevealSection>
-        <section id="features" className="px-6 sm:px-12 py-16 sm:py-20 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-center gap-4 mb-4">
-              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">02 // Test Before You Build</span>
-              <div className="hidden sm:block h-px flex-grow bg-[#1A3024]/10" />
-            </div>
-            <h2 className="text-[28px] sm:text-[40px] mb-4 tracking-tighter font-normal text-[#121314] max-w-2xl" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-              Put every important decision in front of the people it needs to win over.
-            </h2>
-            <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed max-w-2xl mb-12 sm:mb-16">
-              Test your message, concept, product, or creative, then turn real-looking reactions into a clear next move before you commit time, budget, or a launch.
-            </p>
+        <section className="relative overflow-hidden border-b border-[#1A3024]/10 bg-[#1A3024] px-6 py-20 text-[#fcf9f8] sm:px-12 sm:py-28">
+          <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)', backgroundSize: '4px 4px' }} />
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-7"><div className="mb-10 flex items-center gap-4"><span className="text-[10px] font-medium uppercase tracking-[0.4em] text-[#b8ccba]">Confidence score</span><span className="hidden h-px flex-1 bg-white/15 sm:block" /></div><h2 className="text-[32px] leading-[1.1] tracking-tight sm:text-[44px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Move Forward With Confidence.</h2><p className="mt-6 max-w-xl text-[15px] leading-relaxed text-white/70">Every AI interview gets a Confidence Score: how strongly that persona’s response indicates they would buy, adopt, or recommend what you’re testing. It is a read on one simulated person’s conviction, not a market verdict.</p><div className="mt-10 space-y-2">{[['Stated Conviction', 'Extracted directly from the persona’s own response.'], ['Behavioral Anchors', 'Calibrated against concrete reactions instead of generic sentiment.'], ['Visible Justification', 'Every score includes a reason you can audit.']].map(([title, description]) => <div key={title} className="flex gap-5 rounded-xl p-4 transition-colors hover:bg-white/5"><span className="material-symbols-outlined mt-0.5 text-[#b8ccba]">check_circle</span><div><h3 className="text-[11px] font-medium uppercase tracking-[0.18em] text-white">{title}</h3><p className="mt-1 text-[13px] leading-relaxed text-white/60">{description}</p></div></div>)}</div></div>
+            <div className="flex flex-col items-center lg:col-span-5"><div className="relative flex h-64 w-64 items-center justify-center rounded-full border border-[#e3e5e3] bg-white shadow-xl shadow-black/20"><svg className="absolute h-56 w-56 -rotate-90"><circle cx="112" cy="112" r="98" stroke="#e3e5e3" strokeWidth="3" fill="none" /><circle cx="112" cy="112" r="98" stroke="#1A3024" strokeWidth="4" fill="none" strokeDasharray="615.75" strokeDashoffset="30.79" strokeLinecap="round" /></svg><div className="z-10 text-center"><p className="text-[56px] leading-none text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>95</p><span className="mt-3 inline-block rounded bg-[#e9edea] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#1A3024]">Confidence Score</span></div></div><p className="mt-4 text-center text-[10px] uppercase tracking-[0.16em] text-white/40">Stated conviction · Visible justification</p></div>
+          </div>
+        </section>
+      </RevealSection>
 
-            <div aria-label="SignalRoom product previews" className="mb-12 sm:mb-16">
-              <div className="grid gap-4 lg:grid-cols-12">
-                <article className="group relative min-h-[380px] overflow-hidden rounded-[8px] bg-[#17291d] p-6 text-white shadow-[0_22px_50px_rgba(26,48,36,0.16)] transition-transform duration-500 hover:-translate-y-1 sm:p-8 lg:col-span-7">
-                  <div className="absolute inset-0 opacity-[0.16]" style={{ backgroundImage: 'linear-gradient(rgba(215,235,217,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(215,235,217,0.18) 1px, transparent 1px)', backgroundSize: '34px 34px' }} />
-                  <div className="relative z-10 flex items-start justify-between"><div><p className="text-[9px] font-medium uppercase tracking-[0.22em] text-[#bdd4c0]">01 / Persona interviews</p><h3 className="mt-2 text-[27px] leading-[1.05] sm:text-[34px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Hear the reason behind the reaction.</h3></div><span className="material-symbols-outlined rounded-full border border-white/15 p-2 text-[17px] text-[#d7ead8]">forum</span></div>
-                  <div className="relative z-10 mt-8 max-w-[430px] space-y-3">
-                    <div className="flex items-start gap-3"><img src="/landing-personas/priya.jpg" alt="" className="h-10 w-10 rounded-full border-2 border-[#8cae91] object-cover" /><div className="rounded-[3px_14px_14px_14px] bg-white px-4 py-3 text-[12px] leading-relaxed text-[#26392a] shadow-sm">The positioning is compelling. I would want proof that it fits into the workflow I already have.</div></div>
-                    <div className="ml-10 flex items-center gap-2 text-[9px] font-medium uppercase tracking-[0.15em] text-[#c2d8c5]"><span className="h-px w-7 bg-[#9fbea4]" /> Stated conviction</div>
-                  </div>
-                  <div className="relative z-10 mt-7 flex max-w-[440px] items-center justify-between rounded-[5px] border border-white/10 bg-white/[0.055] px-4 py-3"><div><p className="text-[8px] font-medium uppercase tracking-[0.16em] text-[#bcd2bf]">Confidence score</p><p className="mt-1 text-[12px] font-medium text-white">82% <span className="font-normal text-[#c5d8c7]">· Strong stated interest</span></p></div><span className="rounded-full border border-white/15 px-3 py-1.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-[#d7ead8]">View full transcript</span></div>
-                  <div className="absolute bottom-6 left-6 right-6 z-10 flex items-end justify-between border-t border-white/15 pt-4 sm:bottom-8 sm:left-8 sm:right-8"><div className="flex -space-x-2"><img src="/landing-personas/priya.jpg" alt="" className="h-8 w-8 rounded-full border-2 border-[#17291d] object-cover" /><img src="/landing-personas/arjun.jpg" alt="" className="h-8 w-8 rounded-full border-2 border-[#17291d] object-cover" /><img src="/landing-personas/marisol.jpg" alt="" className="h-8 w-8 rounded-full border-2 border-[#17291d] object-cover" /></div><div className="text-right"><p className="text-[9px] uppercase tracking-[0.17em] text-white/55">Confidence</p><p className="mt-1 text-[23px] leading-none text-[#d7ead8]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>82%</p></div></div>
-                </article>
-
-                <div className="grid gap-4 lg:col-span-5">
-                  <article className="group overflow-hidden rounded-[8px] border border-[#1A3024]/12 bg-[#f7f5f3] p-5 transition-transform duration-500 hover:-translate-y-1 sm:p-6">
-                    <div className="flex items-start justify-between"><div><p className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#707870]">02 / Concept test</p><h3 className="mt-1 text-[22px] text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See which idea wins.</h3></div><span className="material-symbols-outlined text-[19px] text-[#6d8a72]">compare</span></div>
-                    <div className="mt-5 grid grid-cols-2 gap-3"><div className="rounded-[5px] border border-[#1A3024]/10 bg-white p-3"><div className="h-16 rounded-[3px] bg-gradient-to-br from-[#cad8cb] via-[#e7ece7] to-[#9db69f]" /><div className="mt-3 flex items-end justify-between"><span className="text-[9px] font-semibold text-[#526057]">Concept A</span><span className="text-[21px] leading-none text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>86</span></div></div><div className="mt-4 rounded-[5px] border border-[#1A3024]/10 bg-white p-3"><div className="h-16 rounded-[3px] bg-gradient-to-br from-[#e8d8d1] via-[#f2eeeb] to-[#c6a79a]" /><div className="mt-3 flex items-end justify-between"><span className="text-[9px] font-semibold text-[#526057]">Concept B</span><span className="text-[21px] leading-none text-[#7b6258]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>64</span></div></div></div>
-                  </article>
-
-                  <article className="group overflow-hidden rounded-[8px] border border-[#1A3024]/12 bg-white p-5 transition-transform duration-500 hover:-translate-y-1 sm:p-6">
-                    <div className="flex items-start justify-between"><div><p className="text-[9px] font-medium uppercase tracking-[0.2em] text-[#707870]">03 / Creative assessment</p><h3 className="mt-1 text-[22px] text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See what earns attention.</h3></div><span className="material-symbols-outlined text-[19px] text-[#aa756d]">visibility</span></div>
-                    <div className="relative mt-5 h-16 overflow-hidden rounded-[4px] border border-[#163223]/35 bg-[#1f3b2a] shadow-[0_7px_16px_rgba(26,48,36,0.14)]"><div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 25% 150% at 22% 48%, #f6d545 0%, #f3be36 12%, #e24d37 24%, rgba(201,92,50,0.78) 34%, rgba(104,155,79,0.72) 48%, rgba(65,112,65,0.26) 62%, transparent 76%), radial-gradient(ellipse 20% 138% at 79% 46%, #f6d545 0%, #f2bd35 12%, #e24d37 25%, rgba(203,94,49,0.75) 35%, rgba(107,156,78,0.7) 49%, rgba(65,112,65,0.22) 63%, transparent 77%), radial-gradient(ellipse 31% 110% at 42% 112%, rgba(89,144,72,0.7) 0%, transparent 72%)' }} /><span className="absolute bottom-2 left-2.5 rounded-full border border-white/70 bg-white/95 px-2 py-1 text-[7px] font-semibold uppercase tracking-[0.11em] text-[#36453a] shadow-sm">High attention</span></div>
-                  </article>
-                </div>
-
-                <article className="group relative overflow-hidden rounded-[8px] border border-[#1A3024]/12 bg-[#edf2ed] p-6 transition-transform duration-500 hover:-translate-y-1 sm:p-8 lg:col-span-12">
-                  <div className="absolute right-0 top-0 h-full w-[34%] bg-[radial-gradient(circle_at_top_right,_rgba(119,154,126,0.25),_transparent_62%)]" />
-                  <div className="relative grid items-center gap-6 md:grid-cols-[1fr_auto]"><div><p className="text-[9px] font-medium uppercase tracking-[0.22em] text-[#607460]">04 / Insight reports</p><h3 className="mt-2 max-w-xl text-[25px] leading-tight text-[#1A3024] sm:text-[31px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Turn scattered reactions into a decision your team can stand behind.</h3></div><div className="grid grid-cols-3 gap-2 sm:gap-3"><div className="min-w-[96px] rounded-[5px] border border-[#1A3024]/10 bg-white p-4 sm:min-w-[112px] sm:p-5"><p className="text-[8px] uppercase tracking-[0.13em] text-[#748076]">Themes</p><p className="mt-3 text-[34px] leading-none text-[#1A3024] sm:text-[40px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>6</p></div><div className="min-w-[96px] rounded-[5px] border border-[#1A3024]/10 bg-white p-4 sm:min-w-[112px] sm:p-5"><p className="text-[8px] uppercase tracking-[0.13em] text-[#748076]">Signals</p><p className="mt-3 text-[34px] leading-none text-[#1A3024] sm:text-[40px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>12</p></div><div className="min-w-[96px] rounded-[5px] border border-[#1A3024]/10 bg-[#1A3024] p-4 text-white sm:min-w-[112px] sm:p-5"><p className="text-[8px] uppercase tracking-[0.13em] text-[#bfd1c1]">Next step</p><span className="material-symbols-outlined mt-3 block text-[30px] text-[#d8ead9]">arrow_forward</span></div></div></div>
-                </article>
+      {/* Platform toolkit */}
+      <RevealSection>
+        <section id="features" className="relative border-b border-[#1A3024]/10 px-6 py-20 sm:px-12 sm:py-28">
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-12 flex items-center gap-4"><span className="text-[10px] font-medium uppercase tracking-[0.4em] text-[#5A7973]">03 // Platform</span><span className="hidden h-px flex-1 bg-[#1A3024]/10 sm:block" /></div>
+            <h2 className="max-w-3xl text-[32px] leading-[1.1] tracking-tight text-[#121314] sm:text-[44px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Put every important decision in front of the people it needs to win over.</h2>
+            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-[#5c625d]">Test your message, concept, product, or creative, then turn reactions into a clear next move before you commit time, budget, or a launch.</p>
+            <div className="mt-14 grid gap-8 lg:grid-cols-12">
+              <div className="space-y-2 lg:col-span-5">
+                {[
+                  ['01', 'Persona interviews', 'Hear the reason behind each reaction.'],
+                  ['02', 'Concept test', 'Find the strongest direction before you build.'],
+                  ['03', 'Creative assessment', 'See where visual attention lands.'],
+                  ['04', 'Insight reports', 'Make the decision with clear evidence.'],
+                ].map(([number, label, title], index) => <button key={label} onClick={() => setActiveToolkit(index)} className={`w-full rounded-xl border p-5 text-left transition-all duration-300 ${activeToolkit === index ? 'border-[#1A3024]/25 bg-white shadow-lg shadow-[#1A3024]/10' : 'border-transparent hover:bg-[#fafbfa]'}`}><div className="mb-2 flex items-center gap-3"><span className={`text-xs ${activeToolkit === index ? 'text-[#1A3024]' : 'text-[#aab0a3]'}`}>{number}</span><span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#748076]">{label}</span></div><p className="text-[18px] text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{title}</p></button>)}
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#d1d5d3] border border-[#d1d5d3] rounded-[4px] overflow-hidden">
-              {[
-                {
-                  icon: 'compare_arrows',
-                  title: 'Compare Reactions',
-                  body: 'Put 2–4 personas side by side on the same question and see exactly where their reactions split — and why.',
-                },
-                {
-                  icon: 'groups',
-                  title: 'Audience Testing',
-                  body: 'Run one question against 5–10 personas at once and get sentiment distribution, a consensus score, and an AI executive summary in minutes.',
-                },
-                {
-                  icon: 'layers',
-                  title: 'Concept Testing',
-                  body: 'Upload up to 4 concepts — images included — and let the full panel rank them: a declared winner, per-persona scores, and the reasoning behind each.',
-                },
-                {
-                  icon: 'visibility',
-                  title: 'Creative Testing',
-                  badge: 'New',
-                  body: 'See where attention actually lands on your packaging, ad, or landing page — a real measured heatmap, not a guess — then hear how each persona reads what’s there.',
-                },
-                {
-                  icon: 'sensors',
-                  title: 'Market Signals',
-                  body: 'Every interview and test feeds a living signal feed — recurring pain points, objections, and opportunities, tracked as they strengthen or fade.',
-                },
-                {
-                  icon: 'description',
-                  title: 'Research Reports',
-                  body: 'Every interview becomes a structured report: key themes, verbatim quotes, a confidence score, and next-step recommendations — shareable with your team.',
-                },
-              ].map((feature) => (
-                <div key={feature.title} className="bg-white p-8 sm:p-10 group hover:bg-[#fafbfa] transition-all duration-500 flex flex-col">
-                  <div className="flex items-center justify-between mb-8">
-                    <span className="material-symbols-outlined text-neutral-400 text-3xl transition-all duration-300 transform animate-editorial-bounce">{feature.icon}</span>
-                    {feature.badge && (
-                      <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-white bg-[#1A3024] px-2 py-1 rounded-full">{feature.badge}</span>
-                    )}
-                  </div>
-                  <h3 className="text-[20px] sm:text-[22px] mb-3 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                    {feature.title}
-                  </h3>
-                  <p className="text-[13px] sm:text-sm text-neutral-600 leading-relaxed">
-                    {feature.body}
-                  </p>
-                </div>
-              ))}
+              <div className="min-h-[420px] rounded-2xl border border-[#d1d5d3] bg-white p-7 sm:p-9 lg:col-span-7">
+                {activeToolkit === 0 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">01 / Persona interview</p><h3 className="mt-3 text-[28px] text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Customer context, in their own words.</h3><div className="mt-8 flex gap-4 rounded-xl bg-[#fafbfa] p-5"><img src={DASHBOARD_PERSONAS[1].imgUrl} alt={DASHBOARD_PERSONAS[1].name} className="h-11 w-11 rounded-full object-cover" /><div><p className="text-xs font-medium text-[#121314]">{DASHBOARD_PERSONAS[1].name}</p><p className="mt-2 text-[13px] italic leading-relaxed text-[#5c625d]">&ldquo;{DASHBOARD_PERSONAS[1].interviewQuote.slice(0, 210)}&hellip;&rdquo;</p></div></div><div className="mt-7 flex items-center gap-3"><span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#748076]">Confidence</span><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#e3e5e3]"><div className="h-full w-[82%] rounded-full bg-[#1A3024]" /></div><span className="text-sm font-medium">82%</span></div></div>}
+                {activeToolkit === 1 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">02 / Concept test</p><h3 className="mt-3 text-[28px] text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See which idea has the strongest response.</h3><div className="mt-10 space-y-4">{[['Concept A', 68], ['Concept B', 84], ['Concept C', 45], ['Concept D', 72]].map(([name, score]) => <div key={String(name)} className="flex items-center gap-4"><span className="w-20 text-xs font-medium text-[#5c625d]">{name}</span><div className="h-7 flex-1 overflow-hidden rounded-md bg-[#e9edea]"><div className="flex h-full items-center justify-end rounded-md bg-[#1A3024] pr-2 text-[10px] text-white" style={{ width: `${score}%` }}>{score}%</div></div></div>)}</div></div>}
+                {activeToolkit === 2 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">03 / Creative assessment</p><h3 className="mt-3 text-[28px] text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See what earns attention.</h3><div className="relative mt-10 h-52 overflow-hidden rounded-xl bg-[#1f3b2a]" style={{ backgroundImage: 'radial-gradient(ellipse 24% 72% at 24% 47%, #f6d545 0%, #ed7131 17%, rgba(94,144,71,.72) 45%, transparent 74%), radial-gradient(ellipse 20% 65% at 78% 42%, #f6d545 0%, #ed7131 18%, rgba(94,144,71,.7) 47%, transparent 74%)' }}><span className="absolute bottom-4 left-4 rounded-full bg-white px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#36453a]">High attention</span></div></div>}
+                {activeToolkit === 3 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">04 / Insight report</p><h3 className="mt-3 text-[28px] text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Evidence your whole team can act on.</h3><div className="mt-10 grid grid-cols-3 gap-3">{[['6', 'Key themes'], ['12', 'Signals'], ['82%', 'Confidence']].map(([metric, label]) => <div key={label} className="rounded-xl border border-[#d1d5d3] p-4"><p className="text-[29px] leading-none text-[#1A3024]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{metric}</p><p className="mt-2 text-[9px] font-medium uppercase tracking-[0.12em] text-[#748076]">{label}</p></div>)}</div><div className="mt-5 rounded-xl bg-[#fafbfa] p-5 text-[13px] leading-relaxed text-[#5c625d]">Price sensitivity is the primary objection. All personas value speed over depth. Slack integration is a top feature request.</div></div>}
+              </div>
             </div>
           </div>
         </section>
