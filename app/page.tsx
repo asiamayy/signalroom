@@ -386,6 +386,10 @@ export default function LandingPage() {
                 Start your first interview
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </Link>
+              <a href="#dashboard-replica" className="inline-flex items-center justify-center gap-2 rounded-full border border-[#1A3024]/20 px-6 py-3 text-sm font-medium text-[#1A3024] transition-all duration-300 hover:border-[#1A3024]/40 hover:bg-[#fafbfa]">
+                <span className="material-symbols-outlined text-[18px]">play_circle</span>
+                See how it works
+              </a>
             </div>
 
             <div className="mt-6 flex items-center gap-6">
