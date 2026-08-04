@@ -250,28 +250,6 @@ export default function LandingPage() {
           animation: flowDash 3.6s linear infinite;
         }
 
-        .eyebrow-shine-wrap {
-          position: relative;
-          display: inline-block;
-          overflow: hidden;
-        }
-        .eyebrow-shine-sweep {
-          position: absolute;
-          top: 0;
-          left: -75%;
-          width: 50%;
-          height: 100%;
-          pointer-events: none;
-          background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.65) 50%, transparent 100%);
-          mix-blend-mode: overlay;
-          animation: eyebrowShineSweep 15s ease-in-out infinite;
-        }
-        @keyframes eyebrowShineSweep {
-          0% { left: -75%; }
-          30% { left: 130%; }
-          100% { left: 130%; }
-        }
-
         .roi-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
@@ -331,17 +309,8 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative pt-16 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
+      <header className="relative pt-16 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
-          
-          {/* Eyebrow sub-header */}
-          <div className="md:col-span-12 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <span className="eyebrow-shine-wrap">
-              <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-[#5A7973] leading-relaxed">Customer intelligence that turns market signals into strategic decisions</span>
-              <span className="eyebrow-shine-sweep" aria-hidden="true" />
-            </span>
-            <div className="hidden sm:block h-px w-20 bg-[#1A3024]/10" />
-          </div>
 
           {/* LEFT SIDE */}
           <div className="md:col-span-12 lg:col-span-7 flex flex-col justify-between min-h-[350px] overflow-visible">
