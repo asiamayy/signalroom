@@ -184,7 +184,7 @@ export default function LandingPage() {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
 
       <div 
         className="pointer-events-none fixed inset-0 z-0 opacity-[0.12] mix-blend-multiply"
@@ -309,12 +309,12 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative pt-20 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
+      <header className="relative pt-20 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-12 z-10">
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6">
 
           {/* LEFT SIDE */}
           <div className="md:col-span-12 lg:col-span-7 flex flex-col justify-between min-h-[350px] overflow-visible">
-            <h1 className="text-[38px] sm:text-[64px] lg:text-[84px] leading-[1.1] lg:leading-[82px] tracking-tight font-normal text-[#121314] break-words" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+            <h1 className="text-[34px] sm:text-[56px] lg:text-[72px] leading-[1.1] lg:leading-[70px] tracking-tight font-normal text-[#121314] break-words" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               <span className="block lg:whitespace-nowrap">
                 Your market has {' '}
                 <span className="relative inline-block text-[#AAB0A3] italic whitespace-nowrap min-w-[220px]">
@@ -339,7 +339,7 @@ export default function LandingPage() {
               <IntelligenceSignal anchorRef={nAnchorRef} boundaryRef={rightColRef} />
             </div>
 
-            <p className="max-w-xl text-base sm:text-lg leading-relaxed text-[#454947]">
+            <p className="max-w-xl text-sm sm:text-base leading-relaxed text-[#454947]">
               SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
             </p>
 
@@ -417,11 +417,11 @@ export default function LandingPage() {
 
       {/* Methodology Section */}
       <RevealSection>
-        <section id="methodology" className="bg-[#F7F5F3] px-6 sm:px-12 py-20 sm:py-28 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
-          <div 
-            id="methodology-header" 
+        <section id="methodology" className="bg-[#F7F5F3] px-6 sm:px-12 py-12 sm:py-16 border-b border-[#1A3024]/10 scroll-mt-16 z-10 relative">
+          <div
+            id="methodology-header"
             onClick={() => setIsMethodologyActive(!isMethodologyActive)}
-            className={`mb-12 sm:mb-20 flex items-end justify-between cursor-pointer group ${isMethodologyActive ? 'is-active' : ''}`}
+            className={`mb-8 sm:mb-10 flex items-end justify-between cursor-pointer group ${isMethodologyActive ? 'is-active' : ''}`}
           >
             <div className="flex-shrink-0">
               <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.3em] sm:tracking-[0.4em] text-neutral-600">02 // The Methodology</span>
@@ -439,30 +439,30 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#D1D5D3]/40 rounded-xl overflow-hidden">
-            <div className="group relative bg-[#F7F5F3] p-8 sm:p-10 transition-all duration-500 hover:bg-white">
-              <div className="flex justify-between items-start mb-10 sm:mb-16">
+            <div className="group relative bg-[#F7F5F3] p-6 sm:p-8 transition-all duration-500 hover:bg-white">
+              <div className="flex justify-between items-start mb-6 sm:mb-8">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
-                <span className="inline-block animate-editorial-bounce"><span className="material-symbols-outlined text-[#D1D5D3] text-2xl sm:text-3xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110">hub</span></span>
+                <span className="inline-block animate-editorial-bounce"><span className="material-symbols-outlined text-[#B2B7AB] text-3xl sm:text-4xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110">hub</span></span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Transform assumptions into intelligence. Bring your customer, market, brand, and product context together to build a foundation for smarter decisions.
               </p>
             </div>
-            <div className="group relative bg-[#F7F5F3] p-8 sm:p-10 transition-all duration-500 hover:bg-white">
-              <div className="flex justify-between items-start mb-10 sm:mb-16">
+            <div className="group relative bg-[#F7F5F3] p-6 sm:p-8 transition-all duration-500 hover:bg-white">
+              <div className="flex justify-between items-start mb-6 sm:mb-8">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
-                <span className="inline-block animate-editorial-bounce"><span className="material-symbols-outlined text-[#D1D5D3] text-2xl sm:text-3xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110">insights</span></span>
+                <span className="inline-block animate-editorial-bounce"><span className="material-symbols-outlined text-[#B2B7AB] text-3xl sm:text-4xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110">insights</span></span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Understand your customers at scale. Model perspectives, uncover motivations, objections, and opportunities before investing time, media, inventory, or engineering resources.
               </p>
             </div>
-            <div className="group relative bg-[#F7F5F3] p-8 sm:p-10 transition-all duration-500 hover:bg-white">
-              <div className="flex justify-between items-start mb-10 sm:mb-16">
+            <div className="group relative bg-[#F7F5F3] p-6 sm:p-8 transition-all duration-500 hover:bg-white">
+              <div className="flex justify-between items-start mb-6 sm:mb-8">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
-                <span className="inline-block animate-editorial-bounce"><span className="material-symbols-outlined text-[#D1D5D3] text-2xl sm:text-3xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110">checkbook</span></span>
+                <span className="inline-block animate-editorial-bounce"><span className="material-symbols-outlined text-[#B2B7AB] text-3xl sm:text-4xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110">checkbook</span></span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
@@ -501,7 +501,7 @@ export default function LandingPage() {
               </div>
               <div className="min-h-[420px] rounded-2xl border border-[#d1d5d3] bg-white p-7 sm:p-9 lg:col-span-7">
                 {activeToolkit === 0 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">01 / Persona interviews</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Hear the reason behind the reaction.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">Run one-on-one simulated interviews with AI personas that represent your target customer. Every response includes a confidence score, behavioral signals, and a verbatim quote you can trace back to the source.</p><div className="mt-8 flex gap-4 rounded-xl bg-[#fafbfa] p-5"><img src={DASHBOARD_PERSONAS[1].imgUrl} alt={DASHBOARD_PERSONAS[1].name} className="h-11 w-11 rounded-full object-cover" /><div><p className="text-xs font-medium text-[#121314]">{DASHBOARD_PERSONAS[1].name}</p><p className="mt-2 text-[13px] italic leading-relaxed text-[#5c625d]">&ldquo;The confidence score is useful, but I&rsquo;d want to see how it holds up against a real customer panel before I trust it for roadmap decisions.&rdquo;</p></div></div><div className="mt-5 flex items-center gap-3 px-2"><span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#748076]">Confidence</span><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#e3e5e3]"><div className="h-full w-[82%] rounded-full bg-[#1A3024]" /></div><span className="text-sm font-medium">82%</span></div><div className="mt-3 flex gap-1.5 px-2">{DASHBOARD_PERSONAS.map((p, i) => <div key={p.id} className={`h-1.5 rounded-full ${i === 1 ? 'w-6 bg-[#1A3024]' : 'w-1.5 bg-[#d1d5d3]'}`} />)}</div></div>}
-                {activeToolkit === 1 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">02 / Concept test</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See which idea wins.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">Upload up to four concepts — images included — and let the full panel rank them. You get a declared winner, per-persona scores, and the reasoning behind each vote before you commit to a direction.</p><div className="mt-8 flex items-center justify-between"><span className="text-xs font-medium text-[#454947]">Winner: Concept B</span><span className="rounded-full bg-[#F3F5F3] px-2 py-0.5 text-[10px] text-[#748076]">84%</span></div><div className="mt-3 space-y-4">{[['Concept A', 68], ['Concept B', 84], ['Concept C', 45], ['Concept D', 72]].map(([name, score]) => <div key={String(name)} className="flex items-center gap-4"><span className="w-20 flex-shrink-0 text-xs font-medium text-[#5c625d]">{name}</span><div className="h-7 flex-1 overflow-hidden rounded-md bg-[#e9edea]"><div className="flex h-full items-center justify-end rounded-md bg-[#1A3024] pr-2 text-[10px] text-white" style={{ width: `${score}%` }}>{score}%</div></div></div>)}</div></div>}
+                {activeToolkit === 1 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">02 / Concept test</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See which idea wins.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">Upload up to four concepts — images included — and let the full panel rank them. You get a declared winner, per-persona scores, and the reasoning behind each vote before you commit to a direction.</p><div className="mt-8 flex items-center justify-between"><span className="text-xs font-medium text-[#454947]">Winner: Concept B</span><span className="rounded-full bg-[#F3F5F3] px-2 py-0.5 text-[10px] text-[#748076]">84%</span></div><div className="mt-3 space-y-4">{[['Concept A', 68, '#5A7973'], ['Concept B', 84, '#1A3024'], ['Concept C', 45, '#748076'], ['Concept D', 72, '#454947']].map(([name, score, color]) => <div key={String(name)} className="flex items-center gap-4"><span className="w-20 flex-shrink-0 text-xs font-medium text-[#5c625d]">{name}</span><div className="h-7 flex-1 overflow-hidden rounded-md bg-[#e9edea]"><div className="flex h-full items-center justify-end rounded-md pr-2 text-[10px] text-white" style={{ width: `${score}%`, backgroundColor: color as string }}>{score}%</div></div></div>)}</div></div>}
                 {activeToolkit === 2 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">03 / Creative assessment</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>See what earns attention.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">See where attention actually lands on your packaging, ad, or landing page — a real measured heatmap, not a guess — then hear how each persona reads what&rsquo;s there.</p><div className="relative mt-8 overflow-hidden rounded-lg bg-[#fafbfa] p-4"><div className="relative aspect-[16/9] overflow-hidden rounded-md bg-gradient-to-br from-[#E3E5E3] to-[#D1D5D3]"><div className="absolute left-1/3 top-1/4 h-24 w-24 rounded-full bg-[#5A7973]/20 blur-2xl" /><div className="absolute right-1/4 top-1/2 h-20 w-20 rounded-full bg-[#B2B7AB]/20 blur-2xl" /><div className="absolute inset-0 flex items-center justify-center"><div className="text-center"><span className="material-symbols-outlined text-5xl text-[#1A3024]/40">center_focus_strong</span><div className="mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#5A7973]">Heatmap overlay</div></div></div></div><div className="mt-3 flex items-center justify-between"><span className="text-xs text-[#748076]">Attention concentration: top-left quadrant</span><span className="text-[10px] text-[#aab0a3]">7 of 10 personas</span></div></div></div>}
                 {activeToolkit === 3 && <div><p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[#748076]">04 / Insight reports</p><h3 className="mt-3 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Turn scattered reactions into a decision your team can stand behind.</h3><p className="mt-5 text-sm leading-relaxed text-[#5c625d]">Every interview becomes a structured report: key themes, verbatim quotes, a confidence score, and next-step recommendations — shareable with your team in one click.</p><div className="mt-8 grid grid-cols-3 gap-3">{[['6', 'Themes'], ['12', 'Signals'], ['→', 'Next step']].map(([metric, label]) => <div key={label} className="rounded-lg border border-[#e3e5e3] p-3 text-center"><p className="text-2xl text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{metric}</p><p className="mt-1 text-[10px] uppercase tracking-wider text-[#748076]">{label}</p></div>)}</div><div className="mt-3 space-y-2 rounded-lg bg-[#fafbfa] p-4">{['Price sensitivity is the primary objection', 'All personas value speed over depth', 'Slack integration is a top-3 feature request'].map((theme) => <div key={theme} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#5A7973]" /><span className="text-xs leading-relaxed text-[#454947]">{theme}</span></div>)}</div></div>}
               </div>
@@ -528,7 +528,7 @@ export default function LandingPage() {
               ].map((cap) => (
                 <div key={cap.title} className="group flex flex-col bg-white p-8 transition-all duration-500 hover:bg-[#fafbfa]/80 sm:p-10">
                   <span className="inline-block animate-editorial-bounce">
-                    <span className="material-symbols-outlined text-3xl text-[#d1d5d3] transition-all duration-300 group-hover:scale-110 group-hover:text-[#454947]">
+                    <span className="material-symbols-outlined text-4xl text-[#B2B7AB] transition-all duration-300 group-hover:scale-110 group-hover:text-[#454947]">
                       {cap.icon}
                     </span>
                   </span>
@@ -542,7 +542,7 @@ export default function LandingPage() {
       </RevealSection>
 
       {/* Teams and integrations */}
-      <RevealSection><section id="integrations" className="border-b border-[#1A3024]/10 px-6 py-20 sm:px-12 sm:py-28"><div className="mx-auto max-w-6xl"><div className="mb-12 flex items-center gap-4"><span className="text-[10px] font-medium uppercase tracking-[0.4em] text-[#5A7973]">03 // Built For Teams</span><span className="hidden h-px flex-1 bg-[#1A3024]/10 sm:block" /></div><div className="grid gap-8 lg:grid-cols-2"><article className="group rounded-xl border border-[#D1D5D3]/60 bg-white p-8 transition-all duration-500 hover:bg-[#FAFBFA]/60 sm:p-12"><span className="material-symbols-outlined mb-6 block text-3xl text-[#D1D5D3] transition-colors duration-300 group-hover:text-[#454947] animate-editorial-bounce">workspaces</span><h2 className="text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Keep every research initiative in its own space.</h2><p className="mt-4 text-[14px] leading-relaxed text-[#5c625d]">Whether you&rsquo;re managing multiple brands, launching a new product, or supporting different clients, create dedicated workspaces that keep customer research organized and teams aligned. Share access with the right people while keeping each initiative focused.</p></article><article className="group rounded-xl border border-[#D1D5D3]/60 bg-white p-8 transition-all duration-500 hover:bg-[#FAFBFA]/60 sm:p-12"><span className="material-symbols-outlined mb-6 block text-3xl text-[#D1D5D3] transition-colors duration-300 group-hover:text-[#454947] animate-editorial-bounce">share</span><h2 className="text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Bring customer intelligence into your workflow.</h2><p className="mt-4 text-[14px] leading-relaxed text-[#5c625d]">Connect Slack and Notion once, and SignalRoom automatically delivers new reports, trends, and customer signals where your team already works — turning research into action without another dashboard to check.</p><div className="mt-7 flex gap-3"><div className="flex items-center gap-2 rounded-lg border border-[#e3e5e3] bg-[#fafbfa] px-4 py-3"><SlackMark size={18}/><span className="text-sm font-medium text-[#454947]">Slack</span></div><div className="flex items-center gap-2 rounded-lg border border-[#e3e5e3] bg-[#fafbfa] px-4 py-3"><NotionMark size={18}/><span className="text-sm font-medium text-[#454947]">Notion</span></div></div></article></div></div></section></RevealSection>
+      <RevealSection><section id="integrations" className="border-b border-[#1A3024]/10 px-6 py-20 sm:px-12 sm:py-28"><div className="mx-auto max-w-6xl"><div className="mb-12 flex items-center gap-4"><span className="text-[10px] font-medium uppercase tracking-[0.4em] text-[#5A7973]">03 // Built For Teams</span><span className="hidden h-px flex-1 bg-[#1A3024]/10 sm:block" /></div><div className="grid gap-8 lg:grid-cols-2"><article className="group rounded-xl border border-[#D1D5D3]/60 bg-white p-8 transition-all duration-500 hover:bg-[#FAFBFA]/60 sm:p-12"><span className="material-symbols-outlined mb-6 block text-4xl text-[#B2B7AB] transition-colors duration-300 group-hover:text-[#454947] animate-editorial-bounce">workspaces</span><h2 className="text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Keep every research initiative in its own space.</h2><p className="mt-4 text-[14px] leading-relaxed text-[#5c625d]">Whether you&rsquo;re managing multiple brands, launching a new product, or supporting different clients, create dedicated workspaces that keep customer research organized and teams aligned. Share access with the right people while keeping each initiative focused.</p><div className="mt-6 flex gap-2">{['Brand A', 'Product B', 'Client C'].map((label) => <span key={label} className="rounded-full border border-[#D1D5D3] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.15em] text-[#5A7973]">{label}</span>)}</div></article><article className="group rounded-xl border border-[#D1D5D3]/60 bg-white p-8 transition-all duration-500 hover:bg-[#FAFBFA]/60 sm:p-12"><span className="material-symbols-outlined mb-6 block text-4xl text-[#B2B7AB] transition-colors duration-300 group-hover:text-[#454947] animate-editorial-bounce">share</span><h2 className="text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Bring customer intelligence into your workflow.</h2><p className="mt-4 text-[14px] leading-relaxed text-[#5c625d]">Connect Slack and Notion once, and SignalRoom automatically delivers new reports, trends, and customer signals where your team already works — turning research into action without another dashboard to check.</p><div className="mt-7 flex gap-3"><div className="flex items-center gap-2 rounded-lg border border-[#e3e5e3] bg-[#fafbfa] px-4 py-3"><SlackMark size={18}/><span className="text-sm font-medium text-[#454947]">Slack</span></div><div className="flex items-center gap-2 rounded-lg border border-[#e3e5e3] bg-[#fafbfa] px-4 py-3"><NotionMark size={18}/><span className="text-sm font-medium text-[#454947]">Notion</span></div></div></article></div></div></section></RevealSection>
 
       {/* ROI */}
       <RevealSection><section id="roi" className="border-b border-[#1A3024]/10 bg-[#F7F5F3] px-6 py-20 sm:px-12 sm:py-28"><div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-12 items-start"><div className="lg:col-span-6"><p className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[.4em] text-[#5A7973]">04 // ROI</p><h2 className="mt-4 text-[32px] leading-[1.1] tracking-tight text-[#121314] sm:text-[44px]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Quantify the Signal. Eliminate Waste.</h2><p className="mt-6 max-w-xl text-[15px] leading-relaxed text-[#5c625d]">Traditional research engagements can cost thousands for a single study and move too slowly for real product cycles. SignalRoom gives teams a faster, more predictable way to pressure-test decisions before budget, inventory, packaging, media spend, or engineering time are committed.</p></div>
