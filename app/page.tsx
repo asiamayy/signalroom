@@ -174,7 +174,10 @@ export default function LandingPage() {
   }, [selectedPersona]);
 
   return (
-    <div className="font-body-md overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased">
+    <div className="overflow-x-hidden relative min-h-screen bg-[#FCFCFB] text-[#121314] antialiased" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0,0" rel="stylesheet" />
 
       <div 
@@ -343,6 +346,37 @@ export default function LandingPage() {
             <div className="mt-4 mb-4 w-full max-w-[900px] bg-transparent overflow-visible">
               <IntelligenceSignal anchorRef={nAnchorRef} boundaryRef={rightColRef} />
             </div>
+
+            <p className="max-w-xl text-base sm:text-lg leading-relaxed text-[#454947]">
+              SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
+            </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1A3024] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[#5A7973] hover:shadow-lg hover:shadow-[#1A3024]/15">
+                Start your first interview
+                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </Link>
+              <a href="#dashboard-replica" className="inline-flex items-center justify-center gap-2 rounded-full border border-[#1A3024]/20 px-6 py-3 text-sm font-medium text-[#1A3024] transition-all duration-300 hover:border-[#1A3024]/40 hover:bg-[#fafbfa]">
+                <span className="material-symbols-outlined text-[18px]">play_circle</span>
+                See how it works
+              </a>
+            </div>
+
+            <div className="mt-10 flex items-center gap-6">
+              <div className="flex -space-x-3">
+                {DASHBOARD_PERSONAS.map((p) => (
+                  <img
+                    key={p.id}
+                    src={p.imgUrl}
+                    alt={p.name}
+                    className="w-8 h-8 rounded-full border-2 border-[#FCFCFB] object-cover"
+                  />
+                ))}
+              </div>
+              <div className="text-sm text-[#5A7973]">
+                Built for teams that can&rsquo;t afford to invest in the wrong thing.
+              </div>
+            </div>
           </div>
 
           {/* RIGHT SIDE */}
@@ -352,8 +386,15 @@ export default function LandingPage() {
               <div className="mb-5 flex items-center gap-3"><img src={DASHBOARD_PERSONAS[0].imgUrl} alt={DASHBOARD_PERSONAS[0].name} className="h-12 w-12 rounded-full object-cover" /><div><p className="text-sm font-medium text-[#121314]">{DASHBOARD_PERSONAS[0].name}</p><p className="text-xs text-[#748076]">{DASHBOARD_PERSONAS[0].title}</p></div></div>
               <p className="rounded-lg bg-[#fafbfa] p-4 text-[13px] italic leading-relaxed text-[#454947]">&ldquo;{DASHBOARD_PERSONAS[0].interviewQuote.slice(0, 170)}&hellip;&rdquo;</p>
               <div className="mt-5 border-t border-[#e3e5e3] pt-4"><div className="mb-2 flex justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-[#748076]"><span>Confidence score</span><span className="text-[#121314]">82% · Strong</span></div><div className="h-2 overflow-hidden rounded-full bg-[#e3e5e3]"><div className="h-full w-[82%] rounded-full bg-gradient-to-r from-[#5A7973] to-[#1A3024]" /></div></div>
+              <div className="mt-4 flex items-center gap-1.5">
+                {DASHBOARD_PERSONAS.map((p, i) => (
+                  <div
+                    key={p.id}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${i === 0 ? 'w-6 bg-[#1A3024]' : 'w-1.5 bg-[#d1d5d3]'}`}
+                  />
+                ))}
+              </div>
             </div>
-            <Link href="/signup" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1A3024] px-6 py-3 text-[12px] font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-[#5A7973]">Start your first interview <span className="material-symbols-outlined text-[17px]">arrow_forward</span></Link>
           </div>
 
         </div>
@@ -477,6 +518,35 @@ export default function LandingPage() {
         </section>
       </RevealSection>
 
+      {/* Capabilities */}
+      <RevealSection>
+        <section className="relative border-b border-[#1A3024]/10 bg-[#fafbfa]/60 px-6 py-20 sm:px-12 sm:py-28">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="max-w-3xl text-[28px] sm:text-[36px] leading-tight tracking-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              Every tool you need to turn customer reactions into decisions.
+            </h2>
+            <div className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-xl bg-[#d1d5d3]/50 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { icon: 'compare_arrows', title: 'Compare Reactions', description: 'Put 2–4 personas side by side on the same question and see exactly where their reactions split — and why.' },
+                { icon: 'groups', title: 'Audience Testing', description: 'Run one question against 5–10 personas at once and get sentiment distribution, a consensus score, and an AI executive summary in minutes.' },
+                { icon: 'lightbulb', title: 'Concept Testing', description: 'Upload up to 4 concepts — images included — and let the full panel rank them: a declared winner, per-persona scores, and the reasoning behind each.' },
+                { icon: 'center_focus_strong', title: 'Creative Testing', description: 'See where attention actually lands on your packaging, ad, or landing page — a real measured heatmap, not a guess — then hear how each persona reads what’s there.' },
+                { icon: 'sensors', title: 'Market Signals', description: 'Every interview and test feeds a living signal feed — recurring pain points, objections, and opportunities, tracked as they strengthen or fade.' },
+                { icon: 'description', title: 'Research Reports', description: 'Every interview becomes a structured report: key themes, verbatim quotes, a confidence score, and next-step recommendations — shareable with your team.' },
+              ].map((cap) => (
+                <div key={cap.title} className="group flex flex-col bg-white p-8 transition-all duration-500 hover:bg-[#fafbfa]/80 sm:p-10">
+                  <span className="material-symbols-outlined text-3xl text-[#d1d5d3] transition-all duration-300 group-hover:scale-110 group-hover:text-[#454947] animate-editorial-bounce">
+                    {cap.icon}
+                  </span>
+                  <h3 className="mt-8 text-xl tracking-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{cap.title}</h3>
+                  <p className="mt-3 text-[13px] leading-relaxed text-[#5c625d]">{cap.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </RevealSection>
+
       {/* Teams and integrations */}
       <RevealSection><section id="integrations" className="border-b border-[#1A3024]/10 px-6 py-20 sm:px-12 sm:py-28"><div className="mx-auto max-w-6xl"><div className="mb-12 flex items-center gap-4"><span className="text-[10px] font-medium uppercase tracking-[0.4em] text-[#5A7973]">04 // Built for teams</span><span className="hidden h-px flex-1 bg-[#1A3024]/10 sm:block" /></div><div className="grid gap-8 lg:grid-cols-2"><article className="rounded-2xl border border-[#d1d5d3] bg-white p-8 transition-colors hover:bg-[#fafbfa] sm:p-12"><span className="material-symbols-outlined text-3xl text-[#aab0a3]">workspaces</span><h2 className="mt-6 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Keep every research initiative in its own space.</h2><p className="mt-4 text-[14px] leading-relaxed text-[#5c625d]">Create dedicated workspaces for brands, launches, and clients. Keep the right research, context, and teammates together.</p><div className="mt-7 flex flex-wrap gap-2">{['Brand A','Product B','Client C'].map(item=><span key={item} className="rounded-full border border-[#d1d5d3] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[.13em] text-[#5c625d]">{item}</span>)}</div></article><article className="rounded-2xl border border-[#d1d5d3] bg-white p-8 transition-colors hover:bg-[#fafbfa] sm:p-12"><span className="material-symbols-outlined text-3xl text-[#aab0a3]">share</span><h2 className="mt-6 text-[28px] leading-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Bring intelligence into the workflow you already use.</h2><p className="mt-4 text-[14px] leading-relaxed text-[#5c625d]">Send reports, trends, and signals to the places your team already checks.</p><div className="mt-7 flex gap-3"><div className="flex items-center gap-2 rounded-lg border border-[#e3e5e3] bg-[#fafbfa] px-4 py-3"><SlackMark size={18}/><span className="text-sm font-medium text-[#454947]">Slack</span></div><div className="flex items-center gap-2 rounded-lg border border-[#e3e5e3] bg-[#fafbfa] px-4 py-3"><NotionMark size={18}/><span className="text-sm font-medium text-[#454947]">Notion</span></div></div></article></div></div></section></RevealSection>
 
@@ -490,35 +560,63 @@ export default function LandingPage() {
       <RevealSection><section className="relative overflow-hidden bg-[#1A3024] px-6 py-24 text-[#fcf9f8] sm:px-12 sm:py-32"><div className="absolute inset-0 opacity-[.07]" style={{backgroundImage:'linear-gradient(rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.35) 1px, transparent 1px)',backgroundSize:'4px 4px'}}/><div className="relative mx-auto max-w-4xl text-center"><img src="/signalroom-logo.svg" alt="SignalRoom" className="mx-auto h-12 w-auto brightness-0 invert"/><h2 className="mt-8 text-[38px] leading-[1.08] sm:text-[58px]" style={{fontFamily:"'Playfair Display', Georgia, serif"}}>The market is speaking.<br/><span className="italic text-white/70">It’s time you answered back.</span></h2><p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-white/65">Find the signal before the market does. Validate faster. Reduce risk. Build what customers actually want.</p><div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row"><Link href="/signup" className="rounded-full bg-[#fcf9f8] px-7 py-3.5 text-sm font-medium text-[#1A3024]">Start your first interview</Link><a href="#methodology" className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium text-white">See the methodology</a></div></div></section></RevealSection>
 
       {/* Footer */}
-      <footer className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-8 md:gap-6 px-6 sm:px-12 py-16 sm:py-20 w-full bg-[#ECE9E6] relative z-10">
-        <div className="sm:col-span-2 md:col-span-4">
-          <div className="flex items-center gap-3 mb-6">
-            <img
-              src="/signalroom-logo.svg"
-              alt="SignalRoom Logo"
-              width="109"
-              height="64"
-              className="h-16 w-auto object-contain mobile-crisp-vector"
-            />
+      <footer className="px-6 sm:px-12 py-14 sm:py-16 w-full bg-[#ECE9E6] relative z-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+            <div className="col-span-2 md:col-span-1">
+              <img
+                src="/signalroom-logo.svg"
+                alt="SignalRoom Logo"
+                width="109"
+                height="64"
+                className="h-14 w-auto object-contain mobile-crisp-vector mb-4"
+              />
+              <p className="text-xs leading-relaxed max-w-xs text-[#454947] opacity-90">
+                Customer intelligence infrastructure for modern teams.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#5c625d] mb-4">Product</h4>
+              <ul className="space-y-2.5">
+                <li><a href="#dashboard-replica" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">Platform</a></li>
+                <li><a href="#features" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">Features</a></li>
+                <li><a href="#pricing" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">Pricing</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#5c625d] mb-4">Company</h4>
+              <ul className="space-y-2.5">
+                <li><a href="#methodology" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">Methodology</a></li>
+                <li><a href="#integrations" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">Integrations</a></li>
+                <li><Link href="/contact" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">Contact</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-[10px] font-medium uppercase tracking-[0.3em] text-[#5c625d] mb-4">Support</h4>
+              <ul className="space-y-2.5">
+                <li><Link href="/faq" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">FAQ</Link></li>
+                <li><Link href="/privacy" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">Privacy</Link></li>
+                <li><Link href="/terms" className="text-xs text-[#454947] hover:text-[#1A3024] transition-colors">Terms</Link></li>
+              </ul>
+            </div>
           </div>
-          <p className="text-[14px] sm:text-[15px] text-[#454947] max-w-xs mb-6 sm:mb-10 leading-relaxed opacity-90">
-            Customer intelligence infrastructure for modern teams.
-          </p>
-        </div>
-        <div className="md:col-start-6 md:col-span-2 space-y-3 sm:space-y-4">
-          <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-medium block mb-4 sm:mb-6">Legal</span>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1A3024] transition-colors font-medium" href="/privacy">Privacy</Link>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1A3024] transition-colors font-medium" href="/terms">Terms</Link>
-        </div>
-        <div className="md:col-span-2 space-y-3 sm:space-y-4">
-          <span className="text-[11px] uppercase tracking-[0.4em] text-neutral-700 font-medium block mb-4 sm:mb-6">Support</span>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1A3024] transition-colors font-medium" href="/faq">FAQ</Link>
-          <Link className="block text-[9px] uppercase tracking-[0.3em] text-[#454947] hover:text-[#1A3024] transition-colors font-medium" href="/contact">Contact</Link>
-        </div>
-        <div className="sm:col-span-2 md:col-span-4 text-left sm:text-right flex flex-col justify-end mt-8 sm:mt-12 md:mt-0">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-600 font-medium leading-loose">
-            © 2026 SignalRoom. All rights reserved. SignalRoom™ is a proprietary product and trademark.
-          </p>
+
+          <div className="border-t border-[#1A3024]/10 pt-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#5c625d] font-medium">
+              © 2026 SignalRoom. All rights reserved. SignalRoom™ is a proprietary product and trademark.
+            </p>
+            <div className="flex gap-4">
+              <a href="#" className="text-[#5c625d] hover:text-[#1A3024] transition-colors" aria-label="LinkedIn">
+                <span className="material-symbols-outlined text-[18px]">share</span>
+              </a>
+              <Link href="/contact" className="text-[#5c625d] hover:text-[#1A3024] transition-colors" aria-label="Email">
+                <span className="material-symbols-outlined text-[18px]">mail</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
