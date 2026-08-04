@@ -223,13 +223,12 @@ export default function LandingPage() {
           animation: subtleCursorBlink 1s infinite;
         }
         
-        @keyframes clearIconBounce {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-7px) scale(1.04); }
+        @keyframes editorialBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
         }
-        .group:hover .animate-editorial-bounce {
-          animation: clearIconBounce 1.4s ease-in-out infinite;
-          color: #1A3024 !important;
+        .animate-editorial-bounce {
+          animation: editorialBounce 2.5s ease-in-out infinite;
         }
 
         /* Gentler hover drift for the Integrations icon — a smaller nudge
@@ -481,31 +480,31 @@ export default function LandingPage() {
               />
             </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 border border-[#d1d5d3] divide-y lg:divide-y-0 lg:divide-x divide-[#d1d5d3] rounded-xl overflow-hidden bg-[#F7F5F3]">
-            <div className="p-8 sm:p-10 group hover:bg-white transition-all duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#D1D5D3]/40 rounded-xl overflow-hidden">
+            <div className="group relative bg-[#F7F5F3] p-8 sm:p-10 transition-all duration-500 hover:bg-white">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>01</span>
-                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">hub</span>
+                <span className="material-symbols-outlined text-[#D1D5D3] text-2xl sm:text-3xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110 animate-editorial-bounce">hub</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Ingest</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Transform assumptions into intelligence. Bring your customer, market, brand, and product context together to build a foundation for smarter decisions.
               </p>
             </div>
-            <div className="p-8 sm:p-10 group hover:bg-white transition-all duration-500">
+            <div className="group relative bg-[#F7F5F3] p-8 sm:p-10 transition-all duration-500 hover:bg-white">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>02</span>
-                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">insights</span>
+                <span className="material-symbols-outlined text-[#D1D5D3] text-2xl sm:text-3xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110 animate-editorial-bounce">insights</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Simulate</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
                 Understand your customers at scale. Model perspectives, uncover motivations, objections, and opportunities before investing time, media, inventory, or engineering resources.
               </p>
             </div>
-            <div className="p-8 sm:p-10 group hover:bg-white transition-all duration-500">
+            <div className="group relative bg-[#F7F5F3] p-8 sm:p-10 transition-all duration-500 hover:bg-white">
               <div className="flex justify-between items-start mb-10 sm:mb-16">
                 <span className="text-[44px] sm:text-[56px] text-[#1A3024]/10 leading-none" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>03</span>
-                <span className="material-symbols-outlined text-neutral-400 text-2xl sm:text-3xl transition-all duration-300 transform animate-editorial-bounce">checkbook</span>
+                <span className="material-symbols-outlined text-[#D1D5D3] text-2xl sm:text-3xl transition-all duration-500 group-hover:text-[#5A7973] group-hover:scale-110 animate-editorial-bounce">checkbook</span>
               </div>
               <h3 className="text-[24px] sm:text-[28px] mb-3 sm:mb-4 tracking-tight font-normal text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Decide</h3>
               <p className="text-[14px] sm:text-[15px] text-[#454947] leading-relaxed opacity-85">
@@ -560,7 +559,7 @@ export default function LandingPage() {
             <h2 className="max-w-3xl text-[28px] sm:text-[36px] leading-tight tracking-tight text-[#121314]" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
               Every tool you need to turn customer reactions into decisions.
             </h2>
-            <div className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-xl bg-[#d1d5d3]/50 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-xl bg-[#d1d5d3]/30 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 { icon: 'compare_arrows', title: 'Compare Reactions', description: 'Put 2–4 personas side by side on the same question and see exactly where their reactions split — and why.' },
                 { icon: 'groups', title: 'Audience Testing', description: 'Run one question against 5–10 personas at once and get sentiment distribution, a consensus score, and an AI executive summary in minutes.' },
@@ -637,9 +636,9 @@ export default function LandingPage() {
 
       {/* Pricing */}
       <RevealSection><section id="pricing" className="border-b border-[#1A3024]/10 px-6 py-20 sm:px-12 sm:py-28"><div className="mx-auto max-w-6xl"><div className="mb-12 flex items-center gap-4"><span className="text-[10px] font-medium uppercase tracking-[.4em] text-[#5A7973]">05 // Pricing</span><span className="hidden h-px flex-1 bg-[#1A3024]/10 sm:block"/></div><h2 className="max-w-3xl text-[32px] leading-[1.1] text-[#121314] sm:text-[44px]" style={{fontFamily:"'Playfair Display', Georgia, serif"}}>Built for validation. Designed for scale.</h2><p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-[#5c625d]">Start with a single interview or scale customer intelligence across your entire organization.</p><div className="mt-14 grid gap-6 md:grid-cols-3">{[
-        { name: 'Pulse', price: '$49', tagline: 'Validate ideas before investing in launch, inventory, media, or engineering time.', features: ['100 AI persona interviews / month', '3 persona profiles', 'Confidence scores & quotes', 'Basic insight reports', 'Email support'], cta: 'Start validating', highlighted: false },
-        { name: 'Signal', price: '$149', tagline: 'Replace slow research cycles with continuous customer intelligence for faster decisions.', features: ['500 AI persona interviews / month', '10 persona profiles', 'Concept & creative testing', 'Full insight reports & themes', 'Slack + Notion integration', 'Priority support'], cta: 'Get continuous signal', highlighted: true },
-        { name: 'Broadcast', price: '$399', tagline: 'For agencies and growing teams running research across multiple brands or clients at once.', features: ['Unlimited interviews', 'Unlimited persona profiles', 'Multi-workspace support', 'Audience testing (up to 10 personas)', 'Living signal feed', 'Dedicated success manager'], cta: 'Scale your research', highlighted: false },
+        { name: 'Pulse', price: '$199', tagline: 'For solo founders getting started.', features: ['3 active research projects', '10 AI customer personas', 'Core simulation dialogue templates', 'Automated intelligence summaries'], cta: 'Start validating', highlighted: false },
+        { name: 'Signal', price: '$499', tagline: 'For teams validating fast.', features: ['Unlimited research projects', 'Up to 50 AI customer personas', '100 interviews per month', 'Executive-ready research reports', 'Multi-persona comparative analysis', 'Advanced insight synthesis', 'Slack & Notion integrations'], cta: 'Get continuous signal', highlighted: true },
+        { name: 'Broadcast', price: '$999', tagline: 'For agencies and growing teams.', features: ['Unlimited AI customer personas', 'Unlimited interviews', 'Everything in Signal', '10 collaborative team seats', 'Client-ready white-label reports', 'Priority feature access and support'], cta: 'Scale your research', highlighted: false },
       ].map((plan, index) => <article key={plan.name} className={plan.highlighted ? 'relative flex min-h-[430px] flex-col rounded-2xl border border-[#1A3024] bg-[#1A3024] p-8 text-white shadow-2xl shadow-[#1A3024]/20 md:-translate-y-3' : 'flex min-h-[430px] flex-col rounded-2xl border border-[#d1d5d3] bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[#B2B7AB] hover:shadow-lg hover:shadow-[#1A3024]/8'}>{plan.highlighted && <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#5A7973] px-4 py-1 text-[10px] font-bold uppercase tracking-[.15em] text-[#fcf9f8]">Most popular</span>}<h3 className="text-2xl" style={{fontFamily:"'Playfair Display', Georgia, serif"}}>{plan.name}</h3><p className={plan.highlighted ? 'mb-6 mt-2 text-xs leading-relaxed text-white/60' : 'mb-6 mt-2 text-xs leading-relaxed text-[#748076]'}>{plan.tagline}</p><div className="mb-8 flex items-baseline gap-1"><span className="text-4xl" style={{fontFamily:"'Playfair Display', Georgia, serif"}}>{plan.price}</span><span className={plan.highlighted ? 'text-sm text-white/50' : 'text-sm text-[#748076]'}>/month</span></div><ul className="mb-8 flex-1 space-y-3">{plan.features.map(feature=><li key={feature} className="flex items-start gap-2.5"><span className={`material-symbols-outlined mt-0.5 flex-shrink-0 text-[16px] ${plan.highlighted ? 'text-[#B2B7AB]' : 'text-[#5A7973]'}`}>check_circle</span><span className={plan.highlighted ? 'text-[13px] leading-relaxed text-white/80' : 'text-[13px] leading-relaxed text-[#5c625d]'}>{feature}</span></li>)}</ul><Link href="/signup" className={plan.highlighted ? 'block rounded-full bg-[#fcf9f8] py-3 text-center text-[11px] font-medium uppercase tracking-[.15em] text-[#121314] transition-all duration-300 hover:bg-[#FAFBFA] hover:shadow-lg hover:shadow-white/20' : 'block rounded-full bg-[#1A3024] py-3 text-center text-[11px] font-medium uppercase tracking-[.15em] text-white transition-all duration-300 hover:bg-[#454947]'}>{plan.cta}</Link></article>)}</div><p className="mt-10 text-center text-sm text-[#748076]">For teams scaling customer intelligence across the organization, <a href="#contact" className="text-[#1A3024] underline underline-offset-4 hover:text-[#121314]">contact us for tailored enterprise solutions</a>.</p></div></section></RevealSection>
 
       {/* CTA */}
