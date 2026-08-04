@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import IntelligenceSignal from '@/components/IntelligenceSignal';
 
 function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode; delay?: string }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -175,6 +174,7 @@ export default function LandingPage() {
 
       <style jsx global>{`
         html { scroll-behavior: smooth; }
+        .perspective-1000 { perspective: 1000px; }
         @keyframes premiumCharIn {
           0% { opacity: 0; transform: translateY(0.18em) scale(0.99); filter: blur(1.5px); }
           100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
@@ -324,7 +324,34 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative pt-20 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-16 z-10">
+      <header className="relative overflow-hidden pt-20 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-16 z-10">
+        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="hero-flow-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#FCFCFB" stopOpacity="0" />
+              <stop offset="50%" stopColor="#FCFCFB" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#FCFCFB" stopOpacity="0.8" />
+            </linearGradient>
+          </defs>
+          <g transform="translate(400, 0)">
+            <path d="M 0 100 Q 150 150 50 300 T 100 500" fill="none" stroke="#1A3024" strokeOpacity="0.2" strokeWidth="1.5" strokeDasharray="200 600">
+              <animate attributeName="stroke-dashoffset" dur="10s" from="800" to="0" repeatCount="indefinite" />
+            </path>
+            <path d="M 50 50 Q 200 200 100 350 T 150 550" fill="none" stroke="#1A3024" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="150 450">
+              <animate attributeName="stroke-dashoffset" dur="14s" from="600" to="0" repeatCount="indefinite" />
+            </path>
+            <path d="M 150 80 Q 50 250 200 400 T 50 580" fill="none" stroke="#1A3024" strokeOpacity="0.1" strokeWidth="2" strokeDasharray="300 900">
+              <animate attributeName="stroke-dashoffset" dur="18s" from="1200" to="0" repeatCount="indefinite" />
+            </path>
+            <circle r="3" fill="#1A3024" fillOpacity="0.4">
+              <animateMotion dur="10s" path="M 0 100 Q 150 150 50 300 T 100 500" repeatCount="indefinite" />
+            </circle>
+            <circle r="2" fill="#1A3024" fillOpacity="0.3">
+              <animateMotion dur="14s" path="M 50 50 Q 200 200 100 350 T 150 550" repeatCount="indefinite" />
+            </circle>
+          </g>
+          <rect width="100%" height="100%" fill="url(#hero-flow-fade)" />
+        </svg>
         <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 md:grid-cols-12 gap-6">
 
           {/* LEFT SIDE */}
@@ -350,11 +377,7 @@ export default function LandingPage() {
               <span className="block mt-1 lg:mt-2"><span ref={nAnchorRef}>N</span>ow you can ask.</span>
             </h1>
 
-            <div className="mt-3 mb-8 w-full max-w-[900px] bg-transparent overflow-visible">
-              <IntelligenceSignal anchorRef={nAnchorRef} boundaryRef={rightColRef} />
-            </div>
-
-            <p className="max-w-xl text-sm sm:text-base leading-relaxed text-[#454947]">
+            <p className="mt-6 max-w-xl text-sm sm:text-base leading-relaxed text-[#454947]">
               SignalRoom uses AI-powered research simulations and market intelligence to reveal customer needs, validate decisions, and uncover opportunities faster. No noise, just architecture.
             </p>
 
@@ -383,8 +406,9 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div ref={rightColRef} className="md:col-span-12 lg:col-span-5 lg:pt-36 xl:pt-44">
-            <div className="rounded-2xl border border-[#d1d5d3]/70 bg-white p-5 shadow-2xl shadow-[#1A3024]/10">
+          <div ref={rightColRef} className="group perspective-1000 relative md:col-span-12 lg:col-span-5 lg:pt-36 xl:pt-44">
+            <div className="pointer-events-none absolute -inset-4 rounded-full bg-gradient-to-br from-[#B2B7AB]/40 to-transparent opacity-60 blur-3xl transition-opacity duration-700 group-hover:opacity-90" />
+            <div className="relative transform-gpu rounded-2xl border border-[#d1d5d3]/70 bg-white p-5 shadow-2xl shadow-[#1A3024]/10 transition-transform duration-700 hover:-translate-y-2 hover:rotate-1">
               <div className="mb-4 flex items-center justify-between"><span className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#5A7973]"><span className="h-2 w-2 rounded-full bg-[#5A7973]" /> Live interview</span><span className="text-[10px] text-neutral-400">01:23</span></div>
               <div className="mb-4 flex items-center gap-3"><img src={DASHBOARD_PERSONAS[0].imgUrl} alt={DASHBOARD_PERSONAS[0].name} className="h-10 w-10 rounded-full object-cover" /><div><p className="text-sm font-medium text-[#121314]">{DASHBOARD_PERSONAS[0].name}</p><p className="text-xs text-[#748076]">{DASHBOARD_PERSONAS[0].title}</p></div></div>
               <p className="rounded-lg bg-[#fafbfa] p-3 text-xs italic leading-relaxed text-[#454947]">&ldquo;{DASHBOARD_PERSONAS[0].interviewQuote.slice(0, 130)}&hellip;&rdquo;</p>
