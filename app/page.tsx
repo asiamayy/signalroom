@@ -325,7 +325,7 @@ export default function LandingPage() {
 
       {/* Hero Header Section */}
       <header className="relative overflow-hidden pt-20 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-16 z-10">
-        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 800 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
           <defs>
             <linearGradient id="hero-flow-fade" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#FCFCFB" stopOpacity="0" />
