@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import HeroSignalNetwork from '@/components/HeroSignalNetwork';
 
 function RevealSection({ children, delay = '0ms' }: { children: React.ReactNode; delay?: string }) {
   const [isVisible, setIsVisible] = useState(false);
@@ -324,34 +325,8 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Header Section */}
-      <header className="relative overflow-hidden pt-20 sm:pt-24 pb-12 sm:pb-16 px-6 sm:px-16 z-10">
-        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 800 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-          <defs>
-            <linearGradient id="hero-flow-fade" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#FCFCFB" stopOpacity="0" />
-              <stop offset="50%" stopColor="#FCFCFB" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#FCFCFB" stopOpacity="0.8" />
-            </linearGradient>
-          </defs>
-          <g transform="translate(400, 0)">
-            <path d="M 0 100 Q 150 150 50 300 T 100 500" fill="none" stroke="#1A3024" strokeOpacity="0.2" strokeWidth="1.5" strokeDasharray="200 600">
-              <animate attributeName="stroke-dashoffset" dur="10s" from="800" to="0" repeatCount="indefinite" />
-            </path>
-            <path d="M 50 50 Q 200 200 100 350 T 150 550" fill="none" stroke="#1A3024" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="150 450">
-              <animate attributeName="stroke-dashoffset" dur="14s" from="600" to="0" repeatCount="indefinite" />
-            </path>
-            <path d="M 150 80 Q 50 250 200 400 T 50 580" fill="none" stroke="#1A3024" strokeOpacity="0.1" strokeWidth="2" strokeDasharray="300 900">
-              <animate attributeName="stroke-dashoffset" dur="18s" from="1200" to="0" repeatCount="indefinite" />
-            </path>
-            <circle r="3" fill="#1A3024" fillOpacity="0.4">
-              <animateMotion dur="10s" path="M 0 100 Q 150 150 50 300 T 100 500" repeatCount="indefinite" />
-            </circle>
-            <circle r="2" fill="#1A3024" fillOpacity="0.3">
-              <animateMotion dur="14s" path="M 50 50 Q 200 200 100 350 T 150 550" repeatCount="indefinite" />
-            </circle>
-          </g>
-          <rect width="100%" height="100%" fill="url(#hero-flow-fade)" />
-        </svg>
+      <header className="relative overflow-hidden pt-24 sm:pt-28 pb-12 sm:pb-16 px-6 sm:px-16 z-10">
+        <HeroSignalNetwork />
         <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 md:grid-cols-12 gap-6">
 
           {/* LEFT SIDE */}
