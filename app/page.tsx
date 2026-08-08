@@ -66,6 +66,23 @@ function NotionMark({ size = 24 }: { size?: number }) {
   );
 }
 
+function ArrowForwardIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+      <path d="M5 12h13M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function PlayCircleIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m10 8 5 4-5 4V8Z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 interface DashboardPersona {
   id: string;
   name: string;
@@ -412,10 +429,10 @@ export default function LandingPage() {
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#1A3024] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[#5A7973] hover:shadow-lg hover:shadow-[#1A3024]/15">
                 Start your first interview
-                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                <ArrowForwardIcon className="h-[18px] w-[18px]" />
               </Link>
               <a href="#dashboard-replica" className="inline-flex items-center justify-center gap-2 rounded-full border border-[#1A3024]/20 px-6 py-3 text-sm font-medium text-[#1A3024] transition-all duration-300 hover:border-[#1A3024]/40 hover:bg-[#fafbfa]">
-                <span className="material-symbols-outlined text-[18px]">play_circle</span>
+                <PlayCircleIcon className="h-[18px] w-[18px]" />
                 See how it works
               </a>
             </div>
