@@ -233,13 +233,18 @@ export default function LandingPage() {
         @keyframes heroSignalDash {
           to { stroke-dashoffset: -1200; }
         }
+        @keyframes heroSignalReveal {
+          to { opacity: 1; }
+        }
         .hero-signal-flow {
           stroke-dasharray: 8 24;
-          animation: heroSignalDash 20s linear infinite;
+          opacity: 0;
+          animation: heroSignalDash 20s linear infinite, heroSignalReveal 420ms ease-out 120ms forwards;
         }
         .hero-signal-flow-2 {
           stroke-dasharray: 6 30;
-          animation: heroSignalDash 28s linear infinite;
+          opacity: 0;
+          animation: heroSignalDash 28s linear infinite, heroSignalReveal 420ms ease-out 120ms forwards;
         }
 
         .thermal-map { isolation: isolate; }
