@@ -226,6 +226,22 @@ export default function LandingPage() {
           animation: flowDash 3.6s linear infinite;
         }
 
+        .hero-signal-path {
+          fill: none;
+          stroke-linecap: round;
+        }
+        @keyframes heroSignalDash {
+          to { stroke-dashoffset: -1200; }
+        }
+        .hero-signal-flow {
+          stroke-dasharray: 8 24;
+          animation: heroSignalDash 20s linear infinite;
+        }
+        .hero-signal-flow-2 {
+          stroke-dasharray: 6 30;
+          animation: heroSignalDash 28s linear infinite;
+        }
+
         .thermal-map { isolation: isolate; }
         .thermal-blob {
           position: absolute;
@@ -325,32 +341,39 @@ export default function LandingPage() {
 
       {/* Hero Header Section */}
       <header className="relative overflow-hidden pt-24 sm:pt-28 pb-12 sm:pb-16 px-6 sm:px-16 z-10">
-        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 800 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <defs>
-            <linearGradient id="hero-flow-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id="hero-curve-fade" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#FCFCFB" stopOpacity="0" />
-              <stop offset="50%" stopColor="#FCFCFB" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#FCFCFB" stopOpacity="0.8" />
+              <stop offset="30%" stopColor="#FCFCFB" stopOpacity="0.3" />
+              <stop offset="70%" stopColor="#FCFCFB" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#FCFCFB" stopOpacity="0.9" />
             </linearGradient>
           </defs>
-          <g transform="translate(400, 0)">
-            <path d="M 0 100 Q 150 150 50 300 T 100 500" fill="none" stroke="#1A3024" strokeOpacity="0.2" strokeWidth="1.5" strokeDasharray="200 600">
-              <animate attributeName="stroke-dashoffset" dur="10s" from="800" to="0" repeatCount="indefinite" />
-            </path>
-            <path d="M 50 50 Q 200 200 100 350 T 150 550" fill="none" stroke="#1A3024" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="150 450">
-              <animate attributeName="stroke-dashoffset" dur="14s" from="600" to="0" repeatCount="indefinite" />
-            </path>
-            <path d="M 150 80 Q 50 250 200 400 T 50 580" fill="none" stroke="#1A3024" strokeOpacity="0.1" strokeWidth="2" strokeDasharray="300 900">
-              <animate attributeName="stroke-dashoffset" dur="18s" from="1200" to="0" repeatCount="indefinite" />
-            </path>
-            <circle r="3" fill="#1A3024" fillOpacity="0.4">
-              <animateMotion dur="10s" path="M 0 100 Q 150 150 50 300 T 100 500" repeatCount="indefinite" />
-            </circle>
-            <circle r="2" fill="#1A3024" fillOpacity="0.3">
-              <animateMotion dur="14s" path="M 50 50 Q 200 200 100 350 T 150 550" repeatCount="indefinite" />
-            </circle>
+          <g className="hero-signal-path">
+            <path
+              d="M -50 180 Q 200 120 400 260 T 800 220 T 1250 340"
+              stroke="#1A3024"
+              strokeOpacity="0.13"
+              strokeWidth="1.5"
+              className="hero-signal-flow"
+            />
+            <path
+              d="M -50 80 Q 250 200 500 140 T 900 380 T 1250 200"
+              stroke="#5A7973"
+              strokeOpacity="0.1"
+              strokeWidth="1"
+              className="hero-signal-flow-2"
+            />
+            <path
+              d="M -50 420 Q 300 350 550 460 T 950 400 T 1250 480"
+              stroke="#1A3024"
+              strokeOpacity="0.08"
+              strokeWidth="1.2"
+              className="hero-signal-flow"
+            />
           </g>
-          <rect width="100%" height="100%" fill="url(#hero-flow-fade)" />
+          <rect width="100%" height="100%" fill="url(#hero-curve-fade)" />
         </svg>
         <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 md:grid-cols-12 gap-6">
 
