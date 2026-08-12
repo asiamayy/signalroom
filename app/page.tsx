@@ -343,33 +343,7 @@ export default function LandingPage() {
 
       {/* Hero Header Section */}
       <header className="relative overflow-hidden pt-24 sm:pt-28 pb-12 sm:pb-16 px-6 sm:px-16 z-10">
-        <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full" viewBox="0 0 800 600" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-          <defs>
-            <linearGradient id="hero-flow-fade" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#FCFCFB" stopOpacity="0" />
-              <stop offset="50%" stopColor="#FCFCFB" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#FCFCFB" stopOpacity="0.8" />
-            </linearGradient>
-          </defs>
-          <g transform="translate(400, 0)">
-            <path d="M 0 100 Q 150 150 50 300 T 100 500" fill="none" stroke="#1A3024" strokeOpacity="0.2" strokeWidth="1.5" strokeDasharray="200 600">
-              <animate attributeName="stroke-dashoffset" dur="10s" from="800" to="0" repeatCount="indefinite" />
-            </path>
-            <path d="M 50 50 Q 200 200 100 350 T 150 550" fill="none" stroke="#1A3024" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="150 450">
-              <animate attributeName="stroke-dashoffset" dur="14s" from="600" to="0" repeatCount="indefinite" />
-            </path>
-            <path d="M 150 80 Q 50 250 200 400 T 50 580" fill="none" stroke="#1A3024" strokeOpacity="0.1" strokeWidth="2" strokeDasharray="300 900">
-              <animate attributeName="stroke-dashoffset" dur="18s" from="1200" to="0" repeatCount="indefinite" />
-            </path>
-            <circle r="3" fill="#1A3024" fillOpacity="0.4">
-              <animateMotion dur="10s" path="M 0 100 Q 150 150 50 300 T 100 500" repeatCount="indefinite" />
-            </circle>
-            <circle r="2" fill="#1A3024" fillOpacity="0.3">
-              <animateMotion dur="14s" path="M 50 50 Q 200 200 100 350 T 150 550" repeatCount="indefinite" />
-            </circle>
-          </g>
-          <rect width="100%" height="100%" fill="url(#hero-flow-fade)" />
-        </svg>
+
         <div className="relative z-10 mx-auto grid max-w-6xl grid-cols-1 md:grid-cols-12 gap-6">
 
           {/* LEFT SIDE */}
@@ -428,9 +402,9 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div ref={rightColRef} className="group perspective-1000 relative md:col-span-12 lg:col-span-5 lg:pt-36 xl:pt-44">
-            <div className="pointer-events-none absolute -inset-4 rounded-full bg-gradient-to-br from-[#B2B7AB]/40 to-transparent opacity-60 blur-3xl transition-opacity duration-700 group-hover:opacity-90" />
-            <div className="relative transform-gpu rounded-2xl border border-[#d1d5d3]/70 bg-white p-5 shadow-2xl shadow-[#1A3024]/10 transition-transform duration-700 hover:-translate-y-2 hover:rotate-1">
+          <div ref={rightColRef} className="group perspective-1000 relative isolate transform-gpu md:col-span-12 lg:col-span-5 lg:pt-36 xl:pt-44 transition-transform duration-300 ease-out hover:-translate-y-1 hover:rotate-1">
+            <div className="pointer-events-none absolute -inset-8 -z-10 rounded-full bg-[radial-gradient(circle_at_center,rgba(30,58,43,0.18)_0%,rgba(30,58,43,0)_70%)] opacity-70 blur-2xl transition-all duration-300 ease-out group-hover:opacity-100 group-hover:blur-3xl" />
+            <div className="relative rounded-2xl border border-neutral-200/80 bg-white p-5 shadow-2xl shadow-[#1A3024]/10">
               <div className="mb-4 flex items-center justify-between"><span className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#5A7973]"><span className="h-2 w-2 rounded-full bg-[#5A7973]" /> Live interview</span><span className="text-[10px] text-neutral-400">01:23</span></div>
               <div className="mb-4 flex items-center gap-3"><img src={DASHBOARD_PERSONAS[0].imgUrl} alt={DASHBOARD_PERSONAS[0].name} className="h-10 w-10 rounded-full object-cover" /><div><p className="text-sm font-medium text-[#121314]">{DASHBOARD_PERSONAS[0].name}</p><p className="text-xs text-[#748076]">{DASHBOARD_PERSONAS[0].title}</p></div></div>
               <p className="rounded-lg bg-[#fafbfa] p-3 text-xs italic leading-relaxed text-[#454947]">&ldquo;{DASHBOARD_PERSONAS[0].interviewQuote.slice(0, 130)}&hellip;&rdquo;</p>
